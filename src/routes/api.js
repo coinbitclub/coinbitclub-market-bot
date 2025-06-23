@@ -1,46 +1,70 @@
-// src/routes/api.js
 import express from 'express';
-import axios   from 'axios';
+import { query } from '../services/databaseService.js';
 
 const router = express.Router();
-const KEY    = process.env.COINSTATS_API_KEY;
 
-// 1) Fear & Greed
-router.get('/fear-greed', async (_req, res) => {
+// GET /api/signals?limit=N
+router.get('/signals', async (req, res) => {
+  const limit = parseInt(req.query.limit, 10) || 10;
   try {
-    const { data } = await axios.get(
-      'https://openapiv1.coinstats.app/insights/fear-and-greed',
-      { headers: { accept: 'application/json', 'X-API-KEY': KEY } }
+    const result = await query(
+      `SELECT * FROM public.signals
+       ORDER BY received_at DESC
+       LIMIT $1`,
+      [limit]
     );
-    res.json({ status: 'ok', data });
+    res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ status: 'error', message: err.message });
+    res.status(500).json({ message: 'Erro ao buscar signals', error: err.message });
   }
 });
 
-// 2) BTC Dominance
-router.get('/btc-dominance', async (_req, res) => {
+// GET /api/dominance?period=24h
+router.get('/dominance', async (req, res) => {
+  const period = req.query.period || '24h';
   try {
-    const { data } = await axios.get(
-      'https://openapiv1.coinstats.app/insights/btc-dominance?type=24h',
-      { headers: { accept: 'application/json', 'X-API-KEY': KEY } }
+    const result = await query(
+      `SELECT * FROM public.dominance
+       WHERE timestamp >= now() - ($1)::interval
+       ORDER BY timestamp DESC`,
+      [period]
     );
-    res.json({ status: 'ok', data });
+    res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ status: 'error', message: err.message });
+    res.status(500).json({ message: 'Erro ao buscar dominance', error: err.message });
   }
 });
 
-// 3) Markets
-router.get('/market', async (_req, res) => {
+// GET /api/fear-greed
+router.get('/fear-greed', async (req, res) => {
   try {
-    const { data } = await axios.get(
-      'https://openapiv1.coinstats.app/markets',
-      { headers: { accept: 'application/json', 'X-API-KEY': KEY } }
+    const result = await query(
+      `SELECT index_value, value_classification, timestamp
+         FROM public.fear_greed
+        ORDER BY timestamp DESC
+        LIMIT 1`,
+      []
     );
-    res.json({ status: 'ok', data });
+    res.json(result.rows[0] || {});
   } catch (err) {
-    res.status(500).json({ status: 'error', message: err.message });
+    res.status(500).json({ message: 'Erro ao buscar fear & greed', error: err.message });
+  }
+});
+
+// GET /api/market?limit=N
+router.get('/market', async (req, res) => {
+  const limit = parseInt(req.query.limit, 10) || 10;
+  try {
+    const result = await query(
+      `SELECT symbol, price, timestamp
+         FROM public.market
+        ORDER BY timestamp DESC
+        LIMIT $1`,
+      [limit]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ message: 'Erro ao buscar market', error: err.message });
   }
 });
 
