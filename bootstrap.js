@@ -1,34 +1,15 @@
-import dotenv from 'dotenv';
-import { execSync } from 'child_process';
-import path from 'path';
-import app from './src/index.js';
-import { logger } from './src/logger.js';
+﻿import cron from 'node-cron';
+import { fetchAndSaveDominance } from './src/services/dominanceService.js';
+import { fetchAndSaveFearGreed } from './src/services/fearGreedService.js';
+import { fetchAndSaveMarkets } from './src/services/marketsService.js';
 
-dotenv.config();
-
-const port = process.env.PORT || 3000;
-const mdir = path.join(process.cwd(), 'migrations');
-
-// 1) ESLint — nunca trava o fluxo
-try {
-  logger.info('🔍 Running ESLint...');
-  execSync('npm run lint', { stdio: 'inherit' });
-} catch (e) {
-  logger.warn('⚠️ ESLint issues detected, continuing...');
-}
-
-// 2) Testes — nunca trava o fluxo
-try {
-  logger.info('🧪 Running unit tests...');
-  execSync('npm test', { stdio: 'inherit' });
-} catch (e) {
-  logger.warn('⚠️ Unit test failures detected, continuing...');
-}
-
-// 4) Start server — só trava se não conseguir subir servidor
-try {
-  app.listen(port, () => logger.info(`🚀 Server running on port ${port}`));
-} catch (err) {
-  logger.error('❌ Server startup error', err);
-  process.exit(1);
+/**
+ * Agenda os jobs: a cada 30 minutos
+ */
+export function scheduleJobs() {
+  cron.schedule('*/30 * * * *', () => {
+    fetchAndSaveDominance();
+    fetchAndSaveFearGreed();
+    fetchAndSaveMarkets();
+  });
 }

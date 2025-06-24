@@ -1,42 +1,38 @@
-// src/routes/webhook.js
-import { Router } from 'express';
-import logger from '../utils/logger.js';
-import { parseSignal } from '../parseSignal.js';
-import { saveSignal } from '../services/signalsService.js';
-import { parseDominance } from '../parseDominance.js';
-import { saveDominance } from '../services/dominanceService.js';
+import express from 'express';
+import {
+  insertSignal,
+  insertDominance,
+  insertFearGreed
+} from '../services/databaseService.js';
 
-const router = Router();
+const router = express.Router();
 
-// extrai o userId (se houver)
-router.use((req, _res, next) => {
-  req.userId = req.query.userId || (req.user && req.user.id) || null;
-  next();
-});
+router.use(express.json());
 
-router.post('/signal', async (req, res, next) => {
+router.post('/webhook/signal', async (req, res) => {
   try {
-    const raw = req.body.trim();
-    logger.info('[raw webhook/signal]', raw);
-    const signal = parseSignal(raw);
-    await saveSignal(req.userId, signal);
-    return res.json({ status: 'ok' });
+    await insertSignal(req.body);
+    res.status(200).send('Signal saved');
   } catch (err) {
-    logger.error('Signal handler error', err);
-    return res.status(500).json({ error: 'Signal processing failed' });
+    res.status(500).send('Error saving signal');
   }
 });
 
-router.post('/dominance', async (req, res, next) => {
+router.post('/webhook/dominance', async (req, res) => {
   try {
-    const raw = req.body.trim();
-    logger.info('[raw webhook/dominance]', raw);
-    const dom = parseDominance(raw);
-    await saveDominance(req.userId, dom);
-    return res.json({ status: 'ok' });
+    await insertDominance(req.body);
+    res.status(200).send('Dominance saved');
   } catch (err) {
-    logger.error('Dominance handler error', err);
-    return res.status(500).json({ error: 'Dominance processing failed' });
+    res.status(500).send('Error saving dominance');
+  }
+});
+
+router.post('/webhook/fear-greed', async (req, res) => {
+  try {
+    await insertFearGreed(req.body);
+    res.status(200).send('Fear & Greed saved');
+  } catch (err) {
+    res.status(500).send('Error saving fear-greed');
   }
 });
 

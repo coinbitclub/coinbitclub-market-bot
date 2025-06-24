@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { fetchMetrics, fetchFearGreed, fetchDominance } from '../services/coinstatsService.js';
-import { executeQuery } from '../services/databaseService.js';
+import { executeQuery } from './services/databaseService.js';
 
 export function setupScheduler() {
   // A cada 2h, coleta e salva no banco

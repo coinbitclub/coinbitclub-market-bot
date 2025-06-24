@@ -1,41 +1,30 @@
-// src/services/coinstatsService.js
 import axios from 'axios';
-import logger from '../utils/logger.js';
 import { query } from './databaseService.js';
 
-const BASE = 'https://api.coinstats.app/public/v1';
+const API_KEY = process.env.COINSTATS_API_KEY;
+const BASE = 'https://openapiv1.coinstats.app';
 
-// Dominância
-export async function fetchAndSaveDominance() {
-  const res = await axios.get(`${BASE}/global-stats`, {
-    headers: { 'X-API-KEY': process.env.COINSTATS_API_KEY }
-  });
-  const { btcDominance } = res.data;
-  logger.info('Fetched dominance', { btcDominance });
-  await query(
-    'INSERT INTO dominance_daily(time, dominance) VALUES($1, $2)',
-    [new Date().toISOString(), btcDominance]
-  );
-}
-
-// Fear & Greed
 export async function fetchAndSaveFearGreed() {
-  const res = await axios.get(`${BASE}/fear-and-greed`, {
-    headers: { 'X-API-KEY': process.env.COINSTATS_API_KEY }
-  });
-  const { index } = res.data;
-  logger.info('Fetched Fear & Greed', { index });
-  await query(
-    'INSERT INTO fear_greed(time, index) VALUES($1, $2)',
-    [new Date().toISOString(), index]
-  );
-}
+  try {
+    const res = await axios.get(`${BASE}/insights/fear-and-greed`, {
+      headers: { 'X-API-KEY': API_KEY }
+    });
 
-// Métricas de mercado
-export async function fetchAndSaveMarkets() {
-  const res = await axios.get(`${BASE}/coins`, {
-    headers: { 'X-API-KEY': process.env.COINSTATS_API_KEY }
-  });
-  logger.info('Fetched markets', { count: res.data.coins.length });
-  // implementar gravação em coinstats_metrics conforme schema
+    const { value, value_classification, timestamp } = res.data.now;
+    const captured_at = new Date(timestamp * 1000).toISOString();
+
+    const sql = `
+      INSERT INTO public.fear_greed (value, value_classification, captured_at, created_at)
+      VALUES ($1, $2, $3, NOW())
+    `;
+
+    console.log('Executando query:', sql.trim());
+    console.log('Com parâmetros:', [value, value_classification, captured_at]);
+
+    await query(sql, [value, value_classification, captured_at]);
+
+    console.log('[FearGreed] Dados inseridos com sucesso');
+  } catch (err) {
+    console.error('[FearGreed] Erro ao inserir:', err.response?.data || err.message);
+  }
 }

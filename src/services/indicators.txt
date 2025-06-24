@@ -1,0 +1,23 @@
+import { RSI, EMA, ATR } from 'technicalindicators';
+
+export function calcRSI(closes, period) {
+  return RSI.calculate({ values: closes, period });
+}
+
+export function calcEMA(closes, period) {
+  return EMA.calculate({ values: closes, period });
+}
+
+export function calcATR(high, low, close, period) {
+  return ATR.calculate({ high, low, close, period });
+}
+
+export function calcMomentum(closes, period) {
+  return closes
+    .map((v, i, arr) => (i >= period ? v - arr[i - period] : undefined))
+    .filter(v => v !== undefined);
+}
+
+export function calcDiff(current, emaValue) {
+  return current - emaValue;
+}

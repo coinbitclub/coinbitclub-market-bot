@@ -1,9 +1,18 @@
-import pkg from 'pg';
-const { Pool } = pkg;
+import pg from 'pg';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const pool = new Pool({
+const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
-  // ssl: { rejectUnauthorized: false }, // descomente se usar Railway/Heroku
+  ssl: false,
 });
 
-export default pool;
+export async function query(text, params) {
+  const client = await pool.connect();
+  try {
+    const res = await client.query(text, params);
+    return res.rows;
+  } finally {
+    client.release();
+  }
+}

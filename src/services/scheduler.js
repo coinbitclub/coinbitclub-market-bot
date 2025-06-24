@@ -1,28 +1,17 @@
-// src/services/scheduler.js
-import cron from 'node-cron';
-import logger from '../utils/logger.js';
-import {
-  fetchAndSaveDominance,
-  fetchAndSaveFearGreed,
-  fetchAndSaveMarkets
-} from './coinstatsService.js';
+import { CronJob } from "cron";
+import logger from "../utils/logger.js";
+import { fetchAndSaveDominance } from "./dominanceService.js";
+import { fetchAndSaveFearGreed }   from "./fearGreedService.js";
+import { fetchAndSaveMarkets }     from "./marketsService.js";
 
 export function setupScheduler() {
-  cron.schedule('0 * * * *', async () => {
-    try {
-      await fetchAndSaveDominance();
-    } catch (err) {
-      logger.error('Dominance job error, but moving on', err);
-    }
-    try {
-      await fetchAndSaveFearGreed();
-    } catch (err) {
-      logger.error('Fear & Greed job error, but moving on', err);
-    }
-    try {
-      await fetchAndSaveMarkets();
-    } catch (err) {
-      logger.error('Markets job error, but moving on', err);
-    }
-  });
+  logger.info("Scheduler: starting jobs");
+  new CronJob(
+    "0 0 * * *", async () => {
+      try { await fetchAndSaveDominance();   logger.info("Dominance job OK"); } catch(e){logger.error("Dominance job failed",e);}
+      try { await fetchAndSaveFearGreed();   logger.info("FearGreed job OK"); } catch(e){logger.error("FearGreed job failed",e);}
+      try { await fetchAndSaveMarkets();     logger.info("Markets job OK"); } catch(e){logger.error("Markets job failed",e);}
+    },
+    null, true, "UTC"
+  );
 }

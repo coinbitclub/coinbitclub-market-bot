@@ -1,6 +1,0 @@
-PORT=3000
-DATABASE_URL=postgres://postgres:WxZyoibLaQepvEFgzScTPziwCalxeGqa@hopper.proxy.rlwy.net:28808/railway
-COINSTATS_API_KEY=ZFIxigBcVaCyXDL1Qp/Ork7TOL3+h07NM2f3YoSrMkI=
-WEBHOOK_TOKEN=210406
-NODE_ENV=development
-DATABASE_SSL=true

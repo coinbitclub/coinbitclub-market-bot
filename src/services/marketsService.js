@@ -1,11 +1,9 @@
-import db from '../db.js';
+import axios from 'axios';
 
-export async function saveMarkets(markets) {
-  for (const m of markets) {
-    await db.query(
-      `INSERT INTO markets (symbol, price, change, volume) VALUES ($1,$2,$3,$4) 
-      ON CONFLICT (symbol) DO UPDATE SET price=$2, change=$3, volume=$4`,
-      [m.symbol, m.price, m.change, m.volume]
-    );
-  }
+export async function fetchMarkets() {
+  const resp = await axios.get('https://openapiv1.coinstats.app/markets', {
+    headers: { 'X-API-KEY': process.env.COINSTATS_API_KEY }
+  });
+  if (!Array.isArray(resp.data)) throw new Error('MarketsService: resposta inválida');
+  return resp.data;
 }
