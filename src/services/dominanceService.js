@@ -1,22 +1,41 @@
 import { query } from '../db.js';
 
-// INSER«√O DE NOVO DOMINANCE (BTC)
+/**
+ * Salva um registro de domin√¢ncia.
+ * Aceita payload com { btc_dom, eth_dom?, timestamp } ou { dominance, eth_dom?, timestamp }.
+ */
 export async function saveDominance(data) {
-  const btc_dom = data.btc_dom || data.dominance; // Permite ambos os formatos
+  // Permitir tanto data.btc_dom quanto data.dominance
+  const btc_dom = data.btc_dom ?? data.dominance;
   const { eth_dom = null, timestamp } = data;
 
-  // Insert din‚mico (com ou sem ETH dominance)
+  if (!timestamp) {
+    throw new Error('Campo "timestamp" √© obrigat√≥rio para saveDominance');
+  }
+
   let sql, params;
+
   if (eth_dom !== null && eth_dom !== undefined) {
     sql = `
-      INSERT INTO dominance (btc_dom, eth_dom, timestamp, created_at)
-      VALUES ($1, $2, $3, NOW())
+      INSERT INTO dominance (
+        btc_dom,
+        eth_dom,
+        timestamp,
+        created_at,
+        updated_at
+      )
+      VALUES ($1, $2, $3, NOW(), NOW())
     `;
     params = [btc_dom, eth_dom, timestamp];
   } else {
     sql = `
-      INSERT INTO dominance (btc_dom, timestamp, created_at)
-      VALUES ($1, $2, NOW())
+      INSERT INTO dominance (
+        btc_dom,
+        timestamp,
+        created_at,
+        updated_at
+      )
+      VALUES ($1, $2, NOW(), NOW())
     `;
     params = [btc_dom, timestamp];
   }
@@ -24,7 +43,10 @@ export async function saveDominance(data) {
   return query(sql, params);
 }
 
-// CONSULTA DIFEREN«A PERCENTUAL
+/**
+ * Retorna a diferen√ßa percentual entre o √∫ltimo valor de fechamento e sua EMA7.
+ * Se n√£o houver dados, ou em caso de erro, retorna zero.
+ */
 export async function getBtcDominanceDiff() {
   try {
     const rows = await query(`
@@ -34,15 +56,18 @@ export async function getBtcDominanceDiff() {
        LIMIT 1
     `);
 
-    if (rows.length === 0) return 0;
+    if (!rows.length) return 0;
 
     const closeVal = parseFloat(rows[0].close);
     const ema7Val  = parseFloat(rows[0].ema7);
 
-    if (isNaN(closeVal) || isNaN(ema7Val) || ema7Val === 0) return 0;
+    if (isNaN(closeVal) || isNaN(ema7Val) || ema7Val === 0) {
+      return 0;
+    }
 
     return ((closeVal - ema7Val) / ema7Val) * 100;
   } catch (err) {
+    console.error('Erro em getBtcDominanceDiff:', err);
     return 0;
   }
 }

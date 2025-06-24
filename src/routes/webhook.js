@@ -6,9 +6,11 @@ const router = express.Router();
 
 router.post('/signal', async (req, res) => {
   try {
-    const { ticker, time } = req.body; await saveSignal({ time, ticker, payload: req.body });
+    const { ticker, time } = req.body;
+    await saveSignal({ time, ticker, payload: req.body });
     res.json({ ok: true });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -18,6 +20,7 @@ router.post('/dominance', async (req, res) => {
     await saveDominance(req.body);
     res.json({ ok: true });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
