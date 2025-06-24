@@ -1,23 +1,47 @@
-// knexfile.js
-import dotenv from 'dotenv';
-import path from 'path';
+// Update with your config settings.
 
-// Carrega o .env correspondente (default a 'test' se NODE_ENV não definido)
-dotenv.config({ path: `.env.${process.env.NODE_ENV || 'test'}` });
+/**
+ * @type { Object.<string, import("knex").Knex.Config> }
+ */
+module.exports = {
 
-export default {
-  test: {
-    client: 'pg',
-    connection: process.env.DATABASE_URL,
-    migrations: {
-      directory: path.resolve('migrations')
+  development: {
+    client: 'sqlite3',
+    connection: {
+      filename: './dev.sqlite3'
     }
   },
-  production: {
-    client: 'pg',
-    connection: process.env.DATABASE_URL,
+
+  staging: {
+    client: 'postgresql',
+    connection: {
+      database: 'my_db',
+      user:     'username',
+      password: 'password'
+    },
+    pool: {
+      min: 2,
+      max: 10
+    },
     migrations: {
-      directory: path.resolve('migrations')
+      tableName: 'knex_migrations'
+    }
+  },
+
+  production: {
+    client: 'postgresql',
+    connection: {
+      database: 'my_db',
+      user:     'username',
+      password: 'password'
+    },
+    pool: {
+      min: 2,
+      max: 10
+    },
+    migrations: {
+      tableName: 'knex_migrations'
     }
   }
+
 };

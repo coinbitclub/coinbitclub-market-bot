@@ -1,72 +1,71 @@
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-// Corrige __dirname para ES Modules
+// Corrige __dirname para ESModules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Carrega .env ANTES de qualquer outro import que usa env!
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-console.log('DATABASE_URL NO INDEX:', process.env.DATABASE_URL);
+// Carrega .env
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+console.log("DATABASE_URL NO INDEX:", process.env.DATABASE_URL);
 
-// Agora os outros imports
-import express from 'express';
-import basicAuth from 'express-basic-auth';
-import client from 'prom-client';
-// services
-import { monitorPositions } from './services/orderManager.js';
-// logger
-import pino from 'pino';
-import pinoPretty from 'pino-pretty';
+import express from "express";
+import "dotenv/config";
+import { expressjwt as jwt } from "express-jwt";
+import webhookRouter from "./routes/webhook.js";
+import basicAuth from "express-basic-auth";
+import client from "prom-client";
+import pino from "pino";
+import pinoPretty from "pino-pretty";
+import { monitorPositions } from "./services/orderManager.js";
 
-const logger = pino(
-  pinoPretty({ colorize: true, translateTime: true }),
-  pino.destination({ sync: false })
-);
+const logger = pino(pinoPretty({ colorize: true, translateTime: true }), pino.destination({ sync: false }));
 
 const PORT = process.env.PORT || 3000;
 const DASHBOARD_USER = process.env.DASHBOARD_USER;
 const DASHBOARD_PASS = process.env.DASHBOARD_PASS;
 if (!DASHBOARD_USER || !DASHBOARD_PASS) {
-  console.error('âŒ DASHBOARD_USER e DASHBOARD_PASS devem estar definidos no .env');
+  console.error("? DASHBOARD_USER e DASHBOARD_PASS devem estar definidos no .env");
   process.exit(1);
 }
 
-// express setup
 const app = express();
 app.use(express.json());
+app.use("/webhook", jwt({ secret: process.env.WEBHOOK_JWT_SECRET, algorithms: ["HS256"] }));
+app.use('/webhook', webhookRouter);
+app.use('/webhook', webhookRouter);
+app.use('/webhook', jwt({ secret: process.env.WEBHOOK_JWT_SECRET, algorithms: ['HS256'] }));
+app.use('/webhook', webhookRouter);
+app.use('/webhook', webhookRouter);
 
-// basic auth for dashboard
+// Rotas
+app.use("/webhook", webhookRouter);
+
 app.use(
-  '/dashboard',
+  "/dashboard",
   basicAuth({ users: { [DASHBOARD_USER]: DASHBOARD_PASS }, challenge: true }),
-  express.static(path.join(__dirname, '../dashboard'))
+  express.static(path.join(__dirname, "../dashboard"))
 );
-app.get('/dashboard/*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dashboard', 'index.html'));
+
+app.get("/dashboard/*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../dashboard/index.html"));
 });
 
-// prometheus metrics
-const register = new client.Registry();
-client.collectDefaultMetrics({ register });
-
-app.get('/metrics', async (req, res) => {
-  res.set('Content-Type', register.contentType);
-  res.send(await register.metrics());
+app.get("/", (req, res) => {
+  res.send("CoinbitClub Market Bot está rodando! ??");
 });
 
-// health-check
-app.get('/healthz', (req, res) => res.send('OK'));
+// Health check
+app.get("/healthz", (req, res) => res.send("OK"));
 
-// TESTE: rota raiz
-app.get('/', (req, res) => res.send('CoinbitClub Market Bot estÃ¡ rodando! ðŸš€'));
+// Métricas Prometheus
+app.get("/metrics", async (req, res) => {
+  res.set("Content-Type", client.register.contentType);
+  res.end(await client.register.metrics());
+});
 
-// start scheduler
-monitorPositions();
-setInterval(monitorPositions, 60 * 1000);
-
-// start server
+// Inicia servidor
 app.listen(PORT, () => {
-  logger.info(`Server listening on port ${PORT}`);
+  logger.info(`Servidor rodando na porta ${PORT}`);
 });

@@ -1,67 +1,55 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-import express from 'express';
-import basicAuth from 'express-basic-auth';
-import client from 'prom-client';
-import dotenv from 'dotenv';
-// services
-import { monitorPositions } from './services/orderManager.js';
-
-// __dirname for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Carrega dotenv do caminho absoluto
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-console.log('DATABASE_URL EM USO:', process.env.DATABASE_URL); // Remova após debug
-
-const PORT = process.env.PORT || 3000;
-const DASHBOARD_USER = process.env.DASHBOARD_USER;
-const DASHBOARD_PASS = process.env.DASHBOARD_PASS;
-if (!DASHBOARD_USER || !DASHBOARD_PASS) {
-  console.error('❌ DASHBOARD_USER e DASHBOARD_PASS devem estar definidos no .env');
-  process.exit(1);
-}
-
-// setup logger (pino)
-import pino from 'pino';
-import pinoPretty from 'pino-pretty';
-const logger = pino(
-  pinoPretty({ colorize: true, translateTime: true }),
-  pino.destination({ sync: false })
-);
-
-// express setup
-const app = express();
-app.use(express.json());
-
-// basic auth for dashboard
-app.use(
-  '/dashboard',
-  basicAuth({ users: { [DASHBOARD_USER]: DASHBOARD_PASS }, challenge: true }),
-  express.static(path.join(__dirname, '../dashboard'))
-);
-app.get('/dashboard/*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dashboard', 'index.html'));
-});
-
-// prometheus metrics
-const register = new client.Registry();
-client.collectDefaultMetrics({ register });
-
-app.get('/metrics', async (req, res) => {
-  res.set('Content-Type', register.contentType);
-  res.send(await register.metrics());
-});
-
-// health-check
-app.get('/healthz', (req, res) => res.send('OK'));
-
-// start scheduler
-monitorPositions();
-setInterval(monitorPositions, 60 * 1000);
-
-// start server
-app.listen(PORT, () => {
-  logger.info(`Server listening on port ${PORT}`);
-});
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>CoinbitClub Market Bot - Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #181c24;
+      color: #f3f3f3;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 540px;
+      margin: 60px auto;
+      background: #232834;
+      padding: 40px;
+      border-radius: 18px;
+      box-shadow: 0 0 24px #0004;
+      text-align: center;
+    }
+    h1 {
+      color: #18e0b2;
+      margin-bottom: 10px;
+    }
+    .logo {
+      margin-bottom: 20px;
+    }
+    .powered {
+      color: #18e0b2;
+      font-size: 13px;
+      margin-top: 40px;
+      opacity: 0.7;
+    }
+    a {
+      color: #18e0b2;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="https://i.ibb.co/hyBNFLQ/logo-coinbitclub-bot.png" width="96" alt="CoinbitClub Logo" style="border-radius:12px;">
+    </div>
+    <h1>CoinbitClub Market Bot</h1>
+    <p>Dashboard restrito.<br>Faça login para visualizar dados e métricas do robô.</p>
+    <div class="powered">
+      Powered by <a href="https://coinbitclub.com.br/" target="_blank">CoinbitClub</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,38 +1,24 @@
 import express from 'express';
-import {
-  insertSignal,
-  insertDominance,
-  insertFearGreed
-} from '../services/databaseService.js';
+import { saveSignal } from '../services/signalService.js';
+import { saveDominance } from '../services/dominanceService.js';
 
 const router = express.Router();
 
-router.use(express.json());
-
-router.post('/webhook/signal', async (req, res) => {
+router.post('/signal', async (req, res) => {
   try {
-    await insertSignal(req.body);
-    res.status(200).send('Signal saved');
+    const { ticker, time } = req.body; await saveSignal({ time, ticker, payload: req.body });
+    res.json({ ok: true });
   } catch (err) {
-    res.status(500).send('Error saving signal');
+    res.status(500).json({ error: err.message });
   }
 });
 
-router.post('/webhook/dominance', async (req, res) => {
+router.post('/dominance', async (req, res) => {
   try {
-    await insertDominance(req.body);
-    res.status(200).send('Dominance saved');
+    await saveDominance(req.body);
+    res.json({ ok: true });
   } catch (err) {
-    res.status(500).send('Error saving dominance');
-  }
-});
-
-router.post('/webhook/fear-greed', async (req, res) => {
-  try {
-    await insertFearGreed(req.body);
-    res.status(200).send('Fear & Greed saved');
-  } catch (err) {
-    res.status(500).send('Error saving fear-greed');
+    res.status(500).json({ error: err.message });
   }
 });
 

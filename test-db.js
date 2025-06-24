@@ -1,26 +1,16 @@
-﻿import { query } from './src/services/databaseService.js';
+import 'dotenv/config';
+import pg from 'pg';
 
-(async () => {
-  try {
-    const value = 99;
-    const value_classification = 'NODE_TESTE';
-    const captured_at = new Date().toISOString();
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: false,
+});
 
-    const sql = `
-      INSERT INTO public.fear_greed (value, value_classification, captured_at, created_at)
-      VALUES ($1, $2, $3, NOW())
-    `;
-
-    console.log('Executando query:');
-    console.log(sql.trim());
-    console.log('Com parâmetros:', [value, value_classification, captured_at]);
-
-    const res = await query(sql, [value, value_classification, captured_at]);
-
-    console.log('Insert OK:', res.rowCount);
-    process.exit(0);
-  } catch (err) {
-    console.error('Erro Insert:', err);
-    process.exit(1);
+pool.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error('Erro:', err);
+  } else {
+    console.log('Conexão ok:', res.rows);
   }
-})();
+  pool.end();
+});
