@@ -21,35 +21,80 @@
       box-shadow: 0 0 24px #0004;
       text-align: center;
     }
-    h1 {
-      color: #18e0b2;
-      margin-bottom: 10px;
+    h1 { color: #18e0b2; margin-bottom: 10px; }
+    .logo { margin-bottom: 10px; }
+    .logs, .status { font-size: 15px; margin-top: 24px; text-align: left; }
+    button {
+      background: #18e0b2; color: #232834;
+      border: none; border-radius: 8px; padding: 12px 32px;
+      font-size: 16px; margin: 16px 0; cursor: pointer;
     }
-    .logo {
-      margin-bottom: 20px;
-    }
-    .powered {
-      color: #18e0b2;
-      font-size: 13px;
-      margin-top: 40px;
-      opacity: 0.7;
-    }
-    a {
-      color: #18e0b2;
-      text-decoration: none;
+    button:hover { background: #12b89a; }
+    input[type="text"], input[type="password"] {
+      border-radius: 6px; border: 1px solid #555; padding: 8px 12px; font-size: 16px; width: 65%;
+      margin-bottom: 8px; margin-top: 8px; background: #232834; color: #fff;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="logo">
-      <img src="https://i.ibb.co/hyBNFLQ/logo-coinbitclub-bot.png" width="96" alt="CoinbitClub Logo" style="border-radius:12px;">
+      <h1>CoinbitClub Market Bot</h1>
+      <div id="status">Status: <span style="color:#aaa">Carregando...</span></div>
     </div>
-    <h1>CoinbitClub Market Bot</h1>
-    <p>Dashboard restrito.<br>Faça login para visualizar dados e métricas do robô.</p>
-    <div class="powered">
-      Powered by <a href="https://coinbitclub.com.br/" target="_blank">CoinbitClub</a>
+    <div>
+      <button onclick="fetchMarket()">🔄 Atualizar Mercado</button>
+      <pre class="logs" id="market"></pre>
+    </div>
+    <div>
+      <button onclick="fetchDominance()">🔄 Atualizar Dominância</button>
+      <pre class="logs" id="dominance"></pre>
+    </div>
+    <div>
+      <button onclick="fetchFearGreed()">🔄 Atualizar Fear & Greed</button>
+      <pre class="logs" id="feargreed"></pre>
     </div>
   </div>
+  <script>
+    // Token JWT (coloque igual ao backend/env!)
+    const jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NTA4MDA3NjF9.Oma8am-r5qb17sGniVlcSFyKmTZgMrzieGMJFzTyB5Ut";
+    // API base (ajuste para produção quando for deploy)
+    const API_BASE = "";
+
+    async function fetchMarket() {
+      setStatus("Buscando dados de mercado...");
+      try {
+        const r = await fetch(API_BASE + "/fetch/market", {
+          headers: { Authorization: "Bearer " + jwt }
+        });
+        document.getElementById("market").textContent = JSON.stringify(await r.json(), null, 2);
+        setStatus("Mercado OK");
+      } catch (e) { setStatus("Erro ao buscar mercado"); }
+    }
+    async function fetchDominance() {
+      setStatus("Buscando dominância...");
+      try {
+        const r = await fetch(API_BASE + "/fetch/dominance", {
+          headers: { Authorization: "Bearer " + jwt }
+        });
+        document.getElementById("dominance").textContent = JSON.stringify(await r.json(), null, 2);
+        setStatus("Dominância OK");
+      } catch (e) { setStatus("Erro ao buscar dominância"); }
+    }
+    async function fetchFearGreed() {
+      setStatus("Buscando Fear & Greed...");
+      try {
+        const r = await fetch(API_BASE + "/fetch/fear_greed", {
+          headers: { Authorization: "Bearer " + jwt }
+        });
+        document.getElementById("feargreed").textContent = JSON.stringify(await r.json(), null, 2);
+        setStatus("Fear & Greed OK");
+      } catch (e) { setStatus("Erro ao buscar Fear & Greed"); }
+    }
+    function setStatus(msg) {
+      document.getElementById("status").innerHTML = "Status: <span style='color:#18e0b2'>" + msg + "</span>";
+    }
+    setStatus("Dashboard carregado.");
+  </script>
 </body>
 </html>
