@@ -25,8 +25,8 @@ res.end(await promClient.register.metrics());
 });
 
 // JWT protege apenas /webhook e /fetch
-app.use(jwt({ secret: process.env.WEBHOOK_JWT_SECRET, algorithms: \['HS256'] })
-.unless({ path: \['/', '/healthz', '/metrics'] })
+app.use(jwt({ secret: process.env.WEBHOOK_JWT_SECRET, algorithms: ['HS256'] })
+.unless({ path: ['/', '/healthz', '/metrics'] })
 );
 
 app.use('/webhook', webhookRouter);
@@ -36,6 +36,6 @@ app.use('/fetch',   fetchRouter);
 export default app;
 
 // Only start server if this file is run directly
-if (process.argv\[1].endsWith('src/index.js')) {
+if (process.argv[1].endsWith('src/index.js')) {
 app.listen(port, () => console.log(`🚀 Servidor rodando na porta ${port}`));
 }
