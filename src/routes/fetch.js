@@ -1,7 +1,7 @@
 import express from 'express';
 import { fetchFearGreed } from '../services/fearGreedService.js';
 import { getBtcDominanceDiff } from '../services/dominanceService.js';
-import { getMarketOverview } from '../services/marketService.js';
+import { fetchMarket } from '../services/marketService.js';
 
 const router = express.Router();
 
@@ -25,7 +25,7 @@ router.get('/dominance', async (req, res) => {
 
 router.get('/market', async (req, res) => {
   try {
-    const mkt = await getMarketOverview();
+    const mkt = await fetchMarket();
     res.json(mkt);
   } catch (err) {
     res.status(500).json({ error: err.message });
