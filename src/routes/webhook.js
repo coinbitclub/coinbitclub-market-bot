@@ -1,12 +1,11 @@
-// src/routes/webhook.js
-
 import express from 'express';
 import { saveSignal }    from '../services/signalService.js';
 import { saveDominance } from '../services/dominanceService.js';
-import { saveFearGreed } from '../services/fearGreedWriter.js';  // ajuste de caminho, se necessário
+import { saveFearGreed } from '../services/fearGreedService.js';
 
 const router = express.Router();
 
+// proteção via query-string ?token=…
 function verifyToken(req, res, next) {
   if (req.query.token !== process.env.WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Invalid token' });
