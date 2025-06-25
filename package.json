@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "jest --runInBand"
+    "test": "jest --runInBand", "dev": "nodemon --exec \"node -r dotenv/config\" src/index.js"
   },
   "repository": {
     "type": "git",
