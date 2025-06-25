@@ -1,13 +1,13 @@
-import express from 'express';
+import { Router } from 'express';
 import { saveSignal } from '../services/signalService.js';
 import { saveDominance } from '../services/dominanceService.js';
 
-const router = express.Router();
+const router = Router();
 
 router.post('/signal', async (req, res) => {
   try {
     const { ticker, time } = req.body;
-    await saveSignal({ time, ticker, payload: req.body });
+    await saveSignal({ ticker, time, payload: req.body });
     res.json({ ok: true });
   } catch (err) {
     console.error(err);
