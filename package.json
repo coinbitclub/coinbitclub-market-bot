@@ -18,7 +18,7 @@
     "knex": "^3.x",
     "pg": "^8.x",
     "prom-client": "^15.x",
-    "axios": "^1.x",
+    "axios": "^1.x"
   },
   "devDependencies": {
     "kill-port": "^2.x",
