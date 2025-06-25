@@ -20,16 +20,22 @@ app.use(bodyParser.json());
 app.get('/',        (req, res) => res.send('CoinbitClub Market Bot está rodando! 🚀'));
 app.get('/healthz', (req, res) => res.send('OK'));
 app.get('/metrics', async (req, res) => {
-  res.set('Content-Type', promClient.register.contentType);
-  res.end(await promClient.register.metrics());
+res.set('Content-Type', promClient.register.contentType);
+res.end(await promClient.register.metrics());
 });
 
-// JWT protegede apenas /webhook/*
-app.use(jwt({ secret: process.env.WEBHOOK_JWT_SECRET, algorithms: ['HS256'] })
-  .unless({ path: ['/', '/healthz', '/metrics', '/fetch/*'] })
+// JWT protege apenas /webhook e /fetch
+app.use(jwt({ secret: process.env.WEBHOOK_JWT_SECRET, algorithms: \['HS256'] })
+.unless({ path: \['/', '/healthz', '/metrics'] })
 );
 
 app.use('/webhook', webhookRouter);
 app.use('/fetch',   fetchRouter);
 
+// Export app for testing
+export default app;
+
+// Only start server if this file is run directly
+if (process.argv\[1].endsWith('src/index.js')) {
 app.listen(port, () => console.log(`🚀 Servidor rodando na porta ${port}`));
+}
