@@ -1,13 +1,14 @@
-import { Router } from 'express';
+import express from 'express';
 import { saveSignal } from '../services/signalService.js';
 import { saveDominance } from '../services/dominanceService.js';
 
-const router = Router();
+const router = express.Router();
 
+// POST /webhook/signal
 router.post('/signal', async (req, res) => {
   try {
     const { ticker, time } = req.body;
-    await saveSignal({ ticker, time, payload: req.body });
+    await saveSignal({ time, ticker, payload: req.body });
     res.json({ ok: true });
   } catch (err) {
     console.error(err);
@@ -15,6 +16,7 @@ router.post('/signal', async (req, res) => {
   }
 });
 
+// POST /webhook/dominance
 router.post('/dominance', async (req, res) => {
   try {
     await saveDominance(req.body);
