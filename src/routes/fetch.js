@@ -1,14 +1,13 @@
 import express from 'express';
 import { fetchFearGreed } from '../services/fearGreedService.js';
 import { getBtcDominanceDiff } from '../services/dominanceService.js';
-import { getMarketOverview } from '../services/marketService.js';
+import { fetchMarket } from '../services/marketService.js';
 
 const router = express.Router();
 
 router.get('/fear_greed', async (req, res) => {
   try {
-    const fg = await fetchFearGreed();
-    res.json(fg);
+    res.json(await fetchFearGreed());
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -16,8 +15,7 @@ router.get('/fear_greed', async (req, res) => {
 
 router.get('/dominance', async (req, res) => {
   try {
-    const diff = await getBtcDominanceDiff();
-    res.json({ diff });
+    res.json({ diff: await getBtcDominanceDiff() });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -25,8 +23,7 @@ router.get('/dominance', async (req, res) => {
 
 router.get('/market', async (req, res) => {
   try {
-    const mkt = await getMarketOverview();
-    res.json(mkt);
+    res.json(await fetchMarket());
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
