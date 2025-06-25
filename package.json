@@ -2,7 +2,7 @@
   "name": "coinbitclub-market-bot",
   "version": "1.0.0",
   "type": "module",
-  "scripts": {
+  "scripts": {`n    "test": "jest --runInBand",
     "prestart": "npx kill-port 3000 3001",
     "start": "node src/index.js",
     "dev": "npx kill-port 3000 3001 && nodemon --exec \"node -r dotenv/config\" src/index.js",
@@ -22,7 +22,10 @@
     "prom-client": "^15.x"
   },
   "devDependencies": {
+    "jest": "^30.0.2",
     "kill-port": "^2.x",
-    "nodemon": "^3.x"
+    "nodemon": "^3.x",
+    "supertest": "^7.1.1"
   }
 }
+
