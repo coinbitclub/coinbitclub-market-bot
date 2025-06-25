@@ -1,31 +1,32 @@
 {
   "name": "coinbitclub-market-bot",
   "version": "1.0.0",
-  "type": "module",
-  "scripts": {`n    "test": "jest --runInBand",
-    "prestart": "npx kill-port 3000 3001",
-    "start": "node src/index.js",
-    "dev": "npx kill-port 3000 3001 && nodemon --exec \"node -r dotenv/config\" src/index.js",
-    "token": "node -r dotenv/config -e \"console.log(require('jsonwebtoken').sign({}, process.env.WEBHOOK_JWT_SECRET))\""
+  "description": "/* =============================================\r    README.md\r    ============================================= */\r # CoinBitClub Market Bot",
+  "main": ".eslintrc.js",
+  "directories": {
+    "test": "tests"
   },
+  "scripts": {
+    "test": "jest --runInBand"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coinbitclub/coinbitclub-market-bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/coinbitclub/coinbitclub-market-bot/issues"
+  },
+  "homepage": "https://github.com/coinbitclub/coinbitclub-market-bot#readme",
   "dependencies": {
-    "axios": "^1.x",
-    "body-parser": "^2.2.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.x",
-    "express": "^4.x",
-    "express-jwt": "^8.5.1",
-    "jsonwebtoken": "^9.0.2",
-    "knex": "^3.x",
-    "morgan": "^1.10.0",
-    "pg": "^8.x",
-    "prom-client": "^15.x"
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
-    "jest": "^30.0.2",
-    "kill-port": "^2.x",
-    "nodemon": "^3.x",
+    "jest": "^30.0.3",
     "supertest": "^7.1.1"
   }
 }
-
