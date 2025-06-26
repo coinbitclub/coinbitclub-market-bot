@@ -1,100 +1,66 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>CoinbitClub Market Bot - Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #181c24;
-      color: #f3f3f3;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 540px;
-      margin: 60px auto;
-      background: #232834;
-      padding: 40px;
-      border-radius: 18px;
-      box-shadow: 0 0 24px #0004;
-      text-align: center;
-    }
-    h1 { color: #18e0b2; margin-bottom: 10px; }
-    .logo { margin-bottom: 10px; }
-    .logs, .status { font-size: 15px; margin-top: 24px; text-align: left; }
-    button {
-      background: #18e0b2; color: #232834;
-      border: none; border-radius: 8px; padding: 12px 32px;
-      font-size: 16px; margin: 16px 0; cursor: pointer;
-    }
-    button:hover { background: #12b89a; }
-    input[type="text"], input[type="password"] {
-      border-radius: 6px; border: 1px solid #555; padding: 8px 12px; font-size: 16px; width: 65%;
-      margin-bottom: 8px; margin-top: 8px; background: #232834; color: #fff;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="logo">
-      <h1>CoinbitClub Market Bot</h1>
-      <div id="status">Status: <span style="color:#aaa">Carregando...</span></div>
-    </div>
-    <div>
-      <button onclick="fetchMarket()">🔄 Atualizar Mercado</button>
-      <pre class="logs" id="market"></pre>
-    </div>
-    <div>
-      <button onclick="fetchDominance()">🔄 Atualizar Dominância</button>
-      <pre class="logs" id="dominance"></pre>
-    </div>
-    <div>
-      <button onclick="fetchFearGreed()">🔄 Atualizar Fear & Greed</button>
-      <pre class="logs" id="feargreed"></pre>
-    </div>
-  </div>
-  <script>
-    // Token JWT (coloque igual ao backend/env!)
-    const jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NTA4MDA3NjF9.Oma8am-r5qb17sGniVlcSFyKmTZgMrzieGMJFzTyB5Ut";
-    // API base (ajuste para produção quando for deploy)
-    const API_BASE = "";
+import express from 'express';
+import dotenv from 'dotenv';
+import morgan from 'morgan';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import { expressjwt as jwt } from 'express-jwt';
+import webhookRouter from './routes/webhook.js';
+import fetchRouter   from './routes/fetch.js';
+import promClient    from 'prom-client';
 
-    async function fetchMarket() {
-      setStatus("Buscando dados de mercado...");
-      try {
-        const r = await fetch(API_BASE + "/fetch/market", {
-          headers: { Authorization: "Bearer " + jwt }
-        });
-        document.getElementById("market").textContent = JSON.stringify(await r.json(), null, 2);
-        setStatus("Mercado OK");
-      } catch (e) { setStatus("Erro ao buscar mercado"); }
-    }
-    async function fetchDominance() {
-      setStatus("Buscando dominância...");
-      try {
-        const r = await fetch(API_BASE + "/fetch/dominance", {
-          headers: { Authorization: "Bearer " + jwt }
-        });
-        document.getElementById("dominance").textContent = JSON.stringify(await r.json(), null, 2);
-        setStatus("Dominância OK");
-      } catch (e) { setStatus("Erro ao buscar dominância"); }
-    }
-    async function fetchFearGreed() {
-      setStatus("Buscando Fear & Greed...");
-      try {
-        const r = await fetch(API_BASE + "/fetch/fear_greed", {
-          headers: { Authorization: "Bearer " + jwt }
-        });
-        document.getElementById("feargreed").textContent = JSON.stringify(await r.json(), null, 2);
-        setStatus("Fear & Greed OK");
-      } catch (e) { setStatus("Erro ao buscar Fear & Greed"); }
-    }
-    function setStatus(msg) {
-      document.getElementById("status").innerHTML = "Status: <span style='color:#18e0b2'>" + msg + "</span>";
-    }
-    setStatus("Dashboard carregado.");
-  </script>
-</body>
-</html>
+dotenv.config();
+const app = express();
+const port = process.env.PORT || 3000;
+
+// (opcional) log de todas as rotas
+app.use((req, res, next) => {
+  console.log('Rota requisitada:', req.method, req.originalUrl);
+  next();
+});
+
+app.use(cors());
+app.use(morgan('combined'));
+app.use(bodyParser.json());
+
+// rotas públicas
+app.get('/',       (req, res) => res.send('CoinbitClub Market Bot está rodando! 🚀'));
+app.get('/healthz',(req, res) => res.send('OK'));
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', promClient.register.contentType);
+  res.end(await promClient.register.metrics());
+});
+
+// JWT-protect: tudo protegido, exceto:
+//  • GET '/', '/healthz', '/metrics'
+//  • POST /webhook/... (token na query)
+app.use(
+  jwt({
+    secret:     process.env.WEBHOOK_JWT_SECRET,
+    algorithms: ['HS256']
+  }).unless({
+    path: [
+      '/', '/healthz', '/metrics',
+      { url: /^\/webhook\/signal(\?.*)?$/,     methods: ['POST'] },
+      { url: /^\/webhook\/dominance(\?.*)?$/,  methods: ['POST'] },
+      { url: /^\/webhook\/fear_greed(\?.*)?$/, methods: ['POST'] },
+    ]
+  })
+);
+
+// rotas
+app.use('/webhook', webhookRouter);
+app.use('/fetch',   fetchRouter);
+
+// handler global de erros
+app.use((err, req, res, next) => {
+  console.error('ERRO GERAL:', err);
+  res.status(err.status || 500).json({
+    error: err.message || 'Erro interno inesperado',
+    // remova stack em produção
+    stack: err.stack
+  });
+});
+
+app.listen(port, () => {
+  console.log('Server running on port', port);
+});

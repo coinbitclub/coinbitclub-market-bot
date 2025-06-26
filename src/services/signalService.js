@@ -1,12 +1,9 @@
-/**
- * parseSignal: para o teste de snake_case esta etapa é só retorno puro
- */
-export function parseSignal(data) {
-  return data;
-}
+import { pool } from '../database.js';
 
-// Exporta uma função dummy para não quebrar o import
-export async function saveSignal(signal) {
-  // No momento só loga. Implemente o real quando pronto.
-  console.log("saveSignal chamado:", signal);
+export async function saveSignal({ time, ticker: symbol, payload }) {
+  await pool.query(
+    `INSERT INTO market (symbol, price, captured_at)
+     VALUES ($1, $2, $3)`,
+    [symbol, payload.close, time]
+  );
 }
