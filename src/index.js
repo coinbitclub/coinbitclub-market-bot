@@ -16,7 +16,6 @@ dotenv.config();
 const app = express();
 
 // Prometheus instrumentation
-app.use(metricsMiddleware);
 app.get("/metrics", metricsHandler);
 
 const port = process.env.PORT || 3000;
