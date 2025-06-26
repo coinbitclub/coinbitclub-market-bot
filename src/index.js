@@ -1,3 +1,4 @@
+import promClient from "prom-client";
 console.log('? Iniciando CoinbitClub Bot');
 console.log('   PORT:', process.env.PORT);
 console.log('   WEBHOOK_JWT_SECRET:', !!process.env.WEBHOOK_JWT_SECRET);
@@ -72,4 +73,3 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
-import promClient from "prom-client";
