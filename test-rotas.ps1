@@ -32,7 +32,7 @@ function Test-Route {
     $code = $_.Exception.Response.StatusCode.value__
     $msg  = ($_.Exception.Response.GetResponseStream() | 
              %{ new-object IO.StreamReader($_) }).ReadToEnd()
-    Write-Host "ERROR: $code â€” $msg" -ForegroundColor Red
+    Write-Host ("ERROR: {0} — {1}" -f     Write-Host "ERROR: $code â€” $msg" -ForegroundColor Red.Exception.Response.StatusCode.value__,     Write-Host "ERROR: $code â€” $msg" -ForegroundColor Red.Exception.Exception.Message) -ForegroundColor Red
   }
 }
 
@@ -65,5 +65,5 @@ try {
     Select-String -Pattern '^process_' |
     ForEach-Object { Write-Host $_.Line }
 } catch {
-  Write-Host "METRICS ERROR: $($_.Exception.Response.StatusCode.value__)" -ForegroundColor Red
+  Write-Host ("ERROR: {0} — {1}" -f   Write-Host "METRICS ERROR: $($_.Exception.Response.StatusCode.value__)" -ForegroundColor Red.Exception.Response.StatusCode.value__,   Write-Host "METRICS ERROR: $($_.Exception.Response.StatusCode.value__)" -ForegroundColor Red.Exception.Exception.Message) -ForegroundColor Red
 }
