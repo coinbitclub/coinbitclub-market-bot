@@ -1,31 +1,57 @@
-import { saveMarketPrice } from '../services/marketService.js';
-import express from 'express';
-import { saveSignal }       from '../services/signalsService.js';
-import { saveDominance }    from '../services/dominanceService.js';
-import { saveFearAndGreed } from '../services/fearGreedService.js';
-import { verifyToken }      from '../middleware/auth.js';
+import {
+  saveSignal,
+  fetchAndSaveDominance as saveDominance,
+  fetchAndSaveFearGreed as saveFearGreed,
+  fetchAndSaveMarket as saveMarketPrice
+} from '../services/fetchAndSaveData.js';
 
-const router = express.Router();
+ import express from 'express';
+import { verifyToken } from '../middleware/auth.js';
 
-router.post('/signal', verifyToken, async (req, res) => {
-  await saveSignal(req.body);
-  res.json({ status: 'ok' });
-});
+ const router = express.Router();
 
-router.post('/dominance', verifyToken, async (req, res) => {
-  await saveDominance(req.body);
-  res.json({ status: 'ok' });
-});
+ router.post(
+   '/signal',
+   verifyToken,
+   async (req, res, next) => {
+     try {
+       await saveSignal(req.body);
+       res.json({ status: 'ok' });
+     } catch (err) { next(err); }
+   }
+ );
 
-router.post('/fear-greed', verifyToken, async (req, res) => {
-  await saveFearAndGreed(req.body);
-  res.json({ status: 'ok' });
-});
+ router.post(
+   '/dominance',
+   verifyToken,
+   async (req, res, next) => {
+     try {
+       await saveDominance(req.body);
+       res.json({ status: 'ok' });
+     } catch (err) { next(err); }
+   }
+ );
 
-router.post('/market', async (req, res) => {
-  const { symbol, price, timestamp } = req.body;
-  await saveMarketPrice({ symbol, price, timestamp });
-  res.json({ status: 'ok' });
-});
+ router.post(
+   '/fear-greed',
+   verifyToken,
+  async (req, res, next) => {
+    try {
+      await saveFearGreed(req.body);
+      res.json({ status: 'ok' });
+    } catch (err) { next(err); }
+   }
+ );
 
-export default router;
+ router.post(
+   '/market',
+   verifyToken,
+   async (req, res, next) => {
+     try {
+       await saveMarketPrice(req.body);
+       res.json({ status: 'ok' });
+     } catch (err) { next(err); }
+   }
+ );
+
+ export default router;

@@ -2,9 +2,11 @@ import jwt from 'jsonwebtoken';
 
 const { WEBHOOK_TOKEN, WEBHOOK_JWT_SECRET } = process.env;
 
-// Middleware para rotas protegidas por token OU JWT
-export function authenticate(req, res, next) {
-  // 1) Tenta autenticação via Bearer JWT
+/**
+ * Autentica Bearer JWT ou ?token= na query string
+ */
+export function verifyToken(req, res, next) {
+  // 1) Bearer JWT
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
@@ -16,7 +18,7 @@ export function authenticate(req, res, next) {
     }
   }
 
-  // 2) Tenta autenticação via ?token= na query string
+  // 2) ?token=
   if (req.query.token && req.query.token === WEBHOOK_TOKEN) {
     return next();
   }
