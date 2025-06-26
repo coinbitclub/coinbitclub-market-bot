@@ -14,7 +14,7 @@ import promClient from 'prom-client';
 
 dotenv.config();
 const app = express();
-import { metricsMiddleware, metricsHandler } from "./observability/metrics.js";
+import promClient from "prom-client";
 
 // Prometheus instrumentation
 app.use(metricsMiddleware);
