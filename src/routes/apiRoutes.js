@@ -1,17 +1,29 @@
- import express from 'express';
+import express from 'express';
 import { query } from '../services/databaseService.js';
 
- const router = express.Router();
+const router = express.Router();
 
- // já existia...
- router.get('/marketcap',   /* ... */);
- router.get('/dominance',   /* ... */);
- router.get('/feargreed',   /* ... */);
- router.get('/volatility',  /* ... */);
- router.get('/feargreed2',  /* ... */);
- router.get('/extra',       /* ... */);
+// Exemplos de rotas existentes (ajuste o corpo conforme seu código atual):
+router.get('/marketcap', async (req, res) => {
+  // … seu código original …
+});
+router.get('/dominance', async (req, res) => {
+  // … seu código original …
+});
+router.get('/feargreed', async (req, res) => {
+  // … seu código original …
+});
+router.get('/volatility', async (req, res) => {
+  // … seu código original …
+});
+router.get('/feargreed2', async (req, res) => {
+  // … seu código original …
+});
+router.get('/extra', async (req, res) => {
+  // … seu código original …
+});
 
-// Trades abertas
+// Rotas do dashboard
 router.get('/open_trades', async (req, res) => {
   try {
     const { rows } = await query(
@@ -23,7 +35,6 @@ router.get('/open_trades', async (req, res) => {
   }
 });
 
-// Logs recentes
 router.get('/logs_recent', async (req, res) => {
   try {
     const { rows } = await query(
@@ -35,4 +46,4 @@ router.get('/logs_recent', async (req, res) => {
   }
 });
 
- export default router;
+export default router;
