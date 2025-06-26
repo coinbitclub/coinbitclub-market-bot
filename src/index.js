@@ -11,7 +11,6 @@ import cors from 'cors';
 import { expressjwt as jwt } from 'express-jwt';
 import webhookRouter from './routes/webhook.js';
 import fetchRouter from './routes/fetch.js';
-import promClient from 'prom-client';
 
 dotenv.config();
 const app = express();
