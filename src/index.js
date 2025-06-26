@@ -16,7 +16,6 @@ dotenv.config();
 const app = express();
 
 // Prometheus instrumentation
-app.get("/metrics", metricsHandler);
 
 const port = process.env.PORT || 3000;
 
@@ -71,3 +70,4 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+app.get("/metrics", async (req, res) => { res.set("Content-Type", promClient.register.contentType); res.end(await promClient.register.metrics()); });
