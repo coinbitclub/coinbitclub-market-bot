@@ -14,6 +14,12 @@ import promClient from 'prom-client';
 
 dotenv.config();
 const app = express();
+import { metricsMiddleware, metricsHandler } from "./observability/metrics.js";
+
+// Prometheus instrumentation
+app.use(metricsMiddleware);
+app.get("/metrics", metricsHandler);
+
 const port = process.env.PORT || 3000;
 
 app.use(cors());
