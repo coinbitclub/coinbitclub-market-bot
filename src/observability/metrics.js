@@ -1,8 +1,8 @@
-import * as client from 'prom-client';
+import * as client from "prom-client";
 import promBundle from "express-prom-bundle";
 
 // Coleta métricas padrão de Node.js
-client.collectDefaultMetrics();
+client.collectDefaultMetrics(); // NÃO passe argumentos!
 
 // Middleware que injeta métricas HTTP
 export const metricsMiddleware = promBundle({
