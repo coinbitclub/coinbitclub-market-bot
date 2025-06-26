@@ -1,45 +1,30 @@
 import express from 'express';
-import { saveSignal }    from '../services/signalService.js';
-import { saveDominance } from '../services/dominanceService.js';
-import { saveFearGreed } from '../services/fearGreedService.js';
-
 const router = express.Router();
 
-// valida ?token=…
-function verifyToken(req, res, next) {
-  if (req.query.token !== process.env.WEBHOOK_TOKEN) {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-  next();
-}
-
-router.post('/signal', verifyToken, async (req, res) => {
+// ROTA PRINCIPAL: RECEBE SINAIS DO TRADINGVIEW
+router.post('/signal', async (req, res) => {
   try {
-    const { ticker, time } = req.body;
-    await saveSignal({ time, ticker, payload: req.body });
-    res.json({ ok: true });
+    // Lógica para processar o sinal recebido
+    res.json({ ok: true, received: req.body });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
 
-router.post('/dominance', verifyToken, async (req, res) => {
+router.post('/dominance', async (req, res) => {
   try {
-    await saveDominance(req.body);
-    res.json({ ok: true });
+    // Lógica para processar dominance
+    res.json({ ok: true, received: req.body });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
 
-router.post('/fear_greed', verifyToken, async (req, res) => {
+router.post('/fear_greed', async (req, res) => {
   try {
-    await saveFearGreed(req.body);
-    res.json({ ok: true });
+    // Lógica para processar fear/greed
+    res.json({ ok: true, received: req.body });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
