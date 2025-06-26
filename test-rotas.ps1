@@ -2,9 +2,9 @@ param(
   [string]$BaseUrl = "http://localhost:3000"
 )
 
-# Gere antes, uma única vez, o $env:WEBHOOK_TOKEN:
-#   $env:WEBHOOK_JWT_SECRET = "SEU_SECRET_PRODUCTION"
-#   $env:WEBHOOK_TOKEN = node -e "console.log(require('jsonwebtoken').sign({}, process.env.WEBHOOK_JWT_SECRET, { algorithm: 'HS256' }))"
+# Antes de rodar, gere os secrets uma vez no seu terminal:
+# $env:WEBHOOK_JWT_SECRET = "SUA_CHAVE_SECRETA"
+# $env:WEBHOOK_TOKEN = node -e "console.log(require('jsonwebtoken').sign({}, process.env.WEBHOOK_JWT_SECRET, { algorithm: 'HS256' }))"
 
 function Test-Route {
   param(
@@ -22,7 +22,7 @@ function Test-Route {
       Invoke-RestMethod -Method Post -Uri ($BaseUrl + $Path) -Headers $headers -UseBasicParsing | Format-List
     }
   } catch {
-    $status = $_.Exception.Response.StatusCode.value__
+    $status = $_.Exception.Response.StatusCode.value__ 
     $body   = (
       $_.Exception.Response.GetResponseStream() |
       ForEach-Object {
@@ -30,30 +30,30 @@ function Test-Route {
         $sr.ReadToEnd()
       }
     )
-    Write-Host ("ERROR: {0} — {1}" -f $status, $body) -ForegroundColor Red
+    Write-Host ("ERROR: {0}   {1}" -f $status, $body) -ForegroundColor Red
   }
 }
 
-# Rotas públicas
+# Rotas pÃºblicas
 Test-Route GET  "/"
 Test-Route GET  "/healthz"
 
-# Rotas protegidas
+# Rotas protegidas (GET)
 Test-Route GET  "/fetch/market"
 Test-Route GET  "/fetch/dominance"
 Test-Route GET  "/fetch/fear_greed"
 
-# Webhooks
+# Webhooks (POST)
 Test-Route POST "/webhook/signal?token=$env:WEBHOOK_TOKEN"
 Test-Route POST "/webhook/dominance?token=$env:WEBHOOK_TOKEN"
 Test-Route POST "/webhook/fear_greed?token=$env:WEBHOOK_TOKEN"
 
-# Re-fetch para verificar persistência
+# Re-fetch para verificar persistÃªncia
 Test-Route GET "/fetch/market"
 Test-Route GET "/fetch/dominance"
 Test-Route GET "/fetch/fear_greed"
 
-# Métricas Prometheus
+# MÃ©tricas Prometheus
 Write-Host ""
 Write-Host "--- GET /metrics ---"
 Write-Host ""

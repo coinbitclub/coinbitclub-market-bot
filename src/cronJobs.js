@@ -23,7 +23,7 @@ cron.schedule('*/1 * * * *', async () => {
   }
 });
 
-// Rotina de limpeza de dados e snapshot diário (pode ajustar para rodar apenas às 00h se quiser)
+// Rotina de auditoria, limpeza e snapshot diário rodando a cada hora (pode ajustar para rodar às 00h se preferir)
 cron.schedule('0 * * * *', async () => {
   try {
     await runAuditAndPurge();
@@ -33,4 +33,4 @@ cron.schedule('0 * * * *', async () => {
   }
 });
 
-console.log('Cron jobs in running...');
+console.log('Cron jobs running...');

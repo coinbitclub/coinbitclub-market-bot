@@ -1,18 +1,24 @@
-import * as client from "prom-client";
-import promBundle from "express-prom-bundle";
+import client from 'prom-client';
 
-// Coleta métricas padrão de Node.js
-client.collectDefaultMetrics(); // NÃO passe argumentos!
+// Cria um registry customizado
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
 
-// Middleware que injeta métricas HTTP
-export const metricsMiddleware = promBundle({
-  includeMethod: true,
-  includePath: true,
-  promClient: { collectDefaultMetrics: true }
+// Contador de requisições de webhook
+export const webhookCounter = new client.Counter({
+  name: 'webhook_requests_total',
+  help: 'Total de requisições recebidas nos webhooks',
+  labelNames: ['route']
 });
+register.registerMetric(webhookCounter);
 
-// Handler manual para o /metrics
-export async function metricsHandler(req, res) {
-  res.set("Content-Type", client.register.contentType);
-  res.end(await client.register.metrics());
-}
+// Histograma de latência dos sinais
+export const signalLatency = new client.Histogram({
+  name: 'signal_processing_latency_seconds',
+  help: 'Latência no processamento do webhook /signal',
+  buckets: [0.01, 0.05, 0.1, 0.5, 1, 2]
+});
+register.registerMetric(signalLatency);
+
+// Exporta o registry para o handler de métricas
+export default register;
