@@ -1,32 +1,40 @@
 import express from 'express';
+import { verifyToken } from '../middleware/auth.js';
+import {
+  saveSignal,
+  fetchAndSaveDominance as saveDominance,
+  fetchAndSaveFearGreed as saveFearGreed,
+  fetchAndSaveMarket as saveMarketPrice
+} from '../services/fetchAndSaveData.js';
+
 const router = express.Router();
 
-// ROTA PRINCIPAL: RECEBE SINAIS DO TRADINGVIEW
-router.post('/signal', async (req, res) => {
+router.post('/signal', verifyToken, async (req, res, next) => {
   try {
-    // Lógica para processar o sinal recebido
-    res.json({ ok: true, received: req.body });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    await saveSignal(req.body);
+    res.json({ status: 'ok' });
+  } catch (err) { next(err); }
 });
 
-router.post('/dominance', async (req, res) => {
+router.post('/dominance', verifyToken, async (req, res, next) => {
   try {
-    // Lógica para processar dominance
-    res.json({ ok: true, received: req.body });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    await saveDominance(req.body);
+    res.json({ status: 'ok' });
+  } catch (err) { next(err); }
 });
 
-router.post('/fear_greed', async (req, res) => {
+router.post('/fear_greed', verifyToken, async (req, res, next) => {
   try {
-    // Lógica para processar fear/greed
-    res.json({ ok: true, received: req.body });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    await saveFearGreed(req.body);
+    res.json({ status: 'ok' });
+  } catch (err) { next(err); }
+});
+
+router.post('/market', verifyToken, async (req, res, next) => {
+  try {
+    await saveMarketPrice(req.body);
+    res.json({ status: 'ok' });
+  } catch (err) { next(err); }
 });
 
 export default router;

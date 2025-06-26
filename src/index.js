@@ -13,7 +13,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Log de todas as requisições
+// log de todas as requisições
 app.use((req, res, next) => {
   console.log('Rota requisitada:', req.method, req.originalUrl);
   next();
@@ -23,7 +23,7 @@ app.use(cors());
 app.use(morgan('combined'));
 app.use(bodyParser.json());
 
-// Log de payloads de TODOS os POSTs em /webhook
+// log de payloads de TODOS os POSTs em /webhook
 app.use('/webhook', (req, res, next) => {
   if (req.method === 'POST') {
     console.log(
@@ -34,7 +34,7 @@ app.use('/webhook', (req, res, next) => {
   next();
 });
 
-// Rotas públicas
+// rotas públicas
 app.get('/',        (req, res) => res.send('CoinbitClub Market Bot está rodando! 🚀'));
 app.get('/healthz', (req, res) => res.send('OK'));
 app.get('/metrics', async (req, res) => {
@@ -42,21 +42,21 @@ app.get('/metrics', async (req, res) => {
   res.end(await register.metrics());
 });
 
-// Monta as rotas
+// monta as rotas
 app.use('/webhook', webhookRouter);
 app.use('/fetch',   fetchRouter);
 app.use('/api',     apiRouter);
 
-// Tratamento de erros
+// tratamento de erros
 app.use((err, req, res, next) => {
   console.error('ERRO GERAL:', err);
   res.status(err.status || 500).json({
     error: err.message || 'Erro interno inesperado',
-    stack: err.stack   // em produção, remova a stack
+    stack: err.stack   // remova em produção!
   });
 });
 
-// Sobe o servidor
+// sobe o servidor
 app.listen(port, () => {
   console.log('Server running on port', port);
 });
