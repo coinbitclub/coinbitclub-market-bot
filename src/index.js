@@ -14,7 +14,6 @@ import promClient from 'prom-client';
 
 dotenv.config();
 const app = express();
-import promClient from "prom-client";
 
 // Prometheus instrumentation
 app.use(metricsMiddleware);
@@ -73,3 +72,4 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+import promClient from "prom-client";
