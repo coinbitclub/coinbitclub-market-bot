@@ -1,3 +1,7 @@
+console.log('? Iniciando CoinbitClub Bot');
+console.log('   PORT:', process.env.PORT);
+console.log('   WEBHOOK_JWT_SECRET:', !!process.env.WEBHOOK_JWT_SECRET);
+
 import express from 'express';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
