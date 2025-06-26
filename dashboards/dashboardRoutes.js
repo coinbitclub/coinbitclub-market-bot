@@ -1,84 +1,35 @@
 import express from 'express';
-import pool from '../services/databaseService.js'; // ajuste o caminho conforme sua estrutura
 
 const router = express.Router();
 
-// Retorna dados diários consolidados de market_daily (exemplo)
-router.get('/dashboard/market_daily', async (req, res, next) => {
-  try {
-    const { rows } = await pool.query(`
-      SELECT * FROM market_daily
-      ORDER BY captured_at DESC
-      LIMIT 30
-    `);
-    res.json(rows);
-  } catch (err) {
-    next(err);
-  }
+// Dados simulados para teste - substitua depois por chamadas reais ao banco
+
+// 1. Dados Diários de Mercado
+router.get('/market_daily', (req, res) => {
+  const mockMarketDaily = [
+    { ticker: 'BTCUSDT', price: 65000.00, captured_at: new Date().toISOString() },
+    { ticker: 'ETHUSDT', price: 4000.00, captured_at: new Date().toISOString() },
+  ];
+  res.json(mockMarketDaily);
 });
 
-// Retorna dados diários consolidados de dominance_daily (exemplo)
-router.get('/dashboard/dominance_daily', async (req, res, next) => {
-  try {
-    const { rows } = await pool.query(`
-      SELECT * FROM dominance_daily
-      ORDER BY captured_at DESC
-      LIMIT 30
-    `);
-    res.json(rows);
-  } catch (err) {
-    next(err);
-  }
+// 2. Logs Recentes
+router.get('/logs_recent', (req, res) => {
+  const mockLogs = [
+    { created_at: new Date().toISOString(), severity: 'info', message: 'Bot started' },
+    { created_at: new Date().toISOString(), severity: 'warn', message: 'High volatility detected' },
+    { created_at: new Date().toISOString(), severity: 'error', message: 'Order execution failed' },
+  ];
+  res.json(mockLogs);
 });
 
-// Retorna dados diários consolidados de fear_greed_daily (exemplo)
-router.get('/dashboard/fear_greed_daily', async (req, res, next) => {
-  try {
-    const { rows } = await pool.query(`
-      SELECT * FROM fear_greed_daily
-      ORDER BY captured_at DESC
-      LIMIT 30
-    `);
-    res.json(rows);
-  } catch (err) {
-    next(err);
-  }
-});
-
-// Retorna logs recentes do bot
-router.get('/dashboard/logs', async (req, res, next) => {
-  try {
-    const { rows } = await pool.query(`
-      SELECT id, created_at, severity, message 
-      FROM bot_logs
-      ORDER BY created_at DESC
-      LIMIT 50
-    `);
-    res.json(rows);
-  } catch (err) {
-    next(err);
-  }
-});
-
-// Retorna estatísticas básicas (exemplo)
-router.get('/dashboard/stats', async (req, res, next) => {
-  try {
-    // Exemplo: contar trades abertas, fechadas, taxa de acerto, etc
-    // Ajuste as queries conforme a estrutura do seu banco
-    const tradesAbertas = await pool.query(`SELECT COUNT(*) FROM trades WHERE status = 'open'`);
-    const tradesFechadas = await pool.query(`SELECT COUNT(*) FROM trades WHERE status = 'closed'`);
-    
-    // Exemplo de taxa de acerto - pode adaptar
-    const taxaAcerto = 75; 
-
-    res.json({
-      tradesAbertas: tradesAbertas.rows[0].count,
-      tradesFechadas: tradesFechadas.rows[0].count,
-      taxaAcerto
-    });
-  } catch (err) {
-    next(err);
-  }
+// 3. Trades Abertas
+router.get('/open_trades', (req, res) => {
+  const mockTrades = [
+    { symbol: 'BTCUSDT', entryPrice: 64000, qty: 0.5, pnl: 500 },
+    { symbol: 'ETHUSDT', entryPrice: 3900, qty: 2, pnl: -150 },
+  ];
+  res.json(mockTrades);
 });
 
 export default router;
