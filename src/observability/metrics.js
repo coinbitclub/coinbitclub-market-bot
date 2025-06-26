@@ -1,4 +1,4 @@
-import client from "prom-client";
+import * as client from 'prom-client';
 import promBundle from "express-prom-bundle";
 
 // Coleta métricas padrão de Node.js
