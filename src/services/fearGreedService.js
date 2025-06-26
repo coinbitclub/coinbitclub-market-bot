@@ -1,4 +1,5 @@
 import { query } from './databaseService.js';
+
 /** Persiste no banco um novo valor de Fear & Greed. */
 export async function saveFearGreed({ fear_greed: value, time }) {
   await query(
