@@ -2,7 +2,7 @@ import * as client from 'prom-client';
 import promBundle from "express-prom-bundle";
 
 // Coleta métricas padrão de Node.js
-client.collectDefaultMetrics({ timeout: 5000 });
+client.collectDefaultMetrics();
 
 // Middleware que injeta métricas HTTP
 export const metricsMiddleware = promBundle({
