@@ -14,7 +14,7 @@ export async function saveSignal(body) {
        (signal_json, ticker, time, close, captured_at)
      VALUES
        ($1, $2, $3, $4, NOW())`,
-    [body, ticker, time, close]
+    [JSON.stringify(body), ticker, time, close]
   );
 }
 

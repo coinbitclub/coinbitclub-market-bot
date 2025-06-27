@@ -2,39 +2,27 @@ import express from 'express';
 import { verifyToken } from '../middleware/auth.js';
 import {
   saveSignal,
-  fetchAndSaveDominance as saveDominance,
-  fetchAndSaveFearGreed as saveFearGreed,
-  fetchAndSaveMarket as saveMarketPrice
+  fetchAndSaveDominance,
+  fetchAndSaveFearGreed,
+  fetchAndSaveMarket
 } from '../services/fetchAndSaveData.js';
 
 const router = express.Router();
 
-router.post('/signal', verifyToken, async (req, res, next) => {
+// Helper para evitar duplicação
+const handle = fn => async (req, res, next) => {
   try {
-    await saveSignal(req.body);
-    res.json({ status: 'ok' });
-  } catch (err) { next(err); }
-});
+    await fn(req.body);
+    return res.sendStatus(204);
+  } catch (err) {
+    return next(err);
+  }
+};
 
-router.post('/dominance', verifyToken, async (req, res, next) => {
-  try {
-    await saveDominance(req.body);
-    res.json({ status: 'ok' });
-  } catch (err) { next(err); }
-});
-
-router.post('/fear_greed', verifyToken, async (req, res, next) => {
-  try {
-    await saveFearGreed(req.body);
-    res.json({ status: 'ok' });
-  } catch (err) { next(err); }
-});
-
-router.post('/market', verifyToken, async (req, res, next) => {
-  try {
-    await saveMarketPrice(req.body);
-    res.json({ status: 'ok' });
-  } catch (err) { next(err); }
-});
+// Webhooks protegidos por token
+router.post('/signal',    verifyToken, handle(saveSignal));
+router.post('/dominance', verifyToken, handle(fetchAndSaveDominance));
+router.post('/fear_greed',verifyToken, handle(fetchAndSaveFearGreed));
+router.post('/market',    verifyToken, handle(fetchAndSaveMarket));
 
 export default router;

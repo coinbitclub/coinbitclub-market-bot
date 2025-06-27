@@ -1,51 +1,76 @@
+// src/routes/apiRoutes.js
 import express from 'express';
-import { query } from '../services/databaseService.js';
+import { pool } from '../database.js';
 
 const router = express.Router();
 
-// Preços de mercado: GET /api/market?limit=10
-router.get('/market', async (req, res) => {
+// GET /api/market?limit=10
+router.get('/market', async (req, res, next) => {
   try {
-    const limit = parseInt(req.query.limit, 10) || 10;
-    const { rows } = await query(
+    const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
+    const { rows } = await pool.query(
       'SELECT * FROM market ORDER BY captured_at DESC LIMIT $1',
       [limit]
     );
-    return res.json(rows);
+    res.json(rows);
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
-// Logs recentes: GET /api/logs_recent
-router.get('/logs_recent', async (req, res) => {
+// GET /api/logs_recent?limit=10
+router.get('/logs_recent', async (req, res, next) => {
   try {
-    const { rows } = await query(
-      'SELECT * FROM bot_logs ORDER BY created_at DESC LIMIT 10'
+    const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
+    const { rows } = await pool.query(
+      'SELECT * FROM bot_logs ORDER BY created_at DESC LIMIT $1',
+      [limit]
     );
-    return res.json(rows);
+    res.json(rows);
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
-// Trades abertas: GET /api/open_trades
-router.get('/open_trades', async (req, res) => {
+// GET /api/open_trades?limit=10
+router.get('/open_trades', async (req, res, next) => {
   try {
-    const { rows } = await query(
-      'SELECT * FROM open_trades ORDER BY created_at DESC LIMIT 10'
+    const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
+    const { rows } = await pool.query(
+      'SELECT * FROM open_trades ORDER BY created_at DESC LIMIT $1',
+      [limit]
     );
-    return res.json(rows);
+    res.json(rows);
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
 // (Opcional) demais rotas antigas – preserve seu código aqui:
-router.get('/dominance',   async (req, res) => { /* … */ });
-router.get('/feargreed',   async (req, res) => { /* … */ });
-router.get('/volatility',  async (req, res) => { /* … */ });
-router.get('/feargreed2',  async (req, res) => { /* … */ });
-router.get('/extra',       async (req, res) => { /* … */ });
+router.get('/dominance', async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT * FROM dominance ORDER BY timestamp DESC LIMIT 10'
+    );
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/fear_greed', async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT * FROM fear_greed ORDER BY timestamp DESC LIMIT 10'
+    );
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// outras rotas extras...
+// router.get('/volatility', ...);
+// router.get('/extra', ...);
 
 export default router;

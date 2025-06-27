@@ -14,79 +14,93 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Cria a tabela "signals" se não existir antes de iniciar o servidor
 async function runMigrations() {
-  console.log('▶️  Criando tabela signals (se não existir)...');
+  console.log('▶️  Ajustando schema e aplicando migrações…');
+
+  // Signals: cria tabela e coluna processed
   await pool.query(`
     CREATE TABLE IF NOT EXISTS signals (
-      id          SERIAL PRIMARY KEY,
-      ticker      VARCHAR NOT NULL,
-      price       NUMERIC,
-      payload     JSONB NOT NULL,
-      time        TIMESTAMP NOT NULL,
-      captured_at TIMESTAMP DEFAULT NOW()
+      id           SERIAL PRIMARY KEY,
+      ticker       VARCHAR NOT NULL,
+      price        NUMERIC,
+      signal_json  JSONB,
+      time         TIMESTAMP NOT NULL,
+      captured_at  TIMESTAMP DEFAULT NOW(),
+      processed    BOOLEAN NOT NULL DEFAULT FALSE
     );
   `);
-  console.log('✅ Migração concluída.');
+
+  await pool.query(`
+    ALTER TABLE signals
+    ADD COLUMN IF NOT EXISTS signal_json JSONB;
+  `);
+
+  await pool.query(`
+    ALTER TABLE signals
+    ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
+  `);
+
+  // Positions: adiciona coluna processed se não existir
+  await pool.query(`
+    ALTER TABLE positions
+    ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
+  `);
+
+  // Open trades: adiciona coluna processed se não existir
+  await pool.query(`
+    ALTER TABLE open_trades
+    ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
+  `);
+
+  console.log('✅ Migrações concluídas.');
 }
 
 async function main() {
-  // Executa migrações
+  // Exibe variáveis de ambiente (apenas as chaves, seguro)
+  console.log('🔎 ENV KEYS:', Object.keys(process.env));
+
   await runMigrations();
 
-  // Logger customizado de rota
-  app.use((req, res, next) => {
-    console.log('Rota requisitada:', req.method, req.originalUrl);
-    next();
-  });
-
-  // CORS e preflight
   app.use(cors());
   app.options('*', cors());
 
-  // HTTP logging
-  app.use(morgan('combined'));
+  app.use((req, res, next) => {
+    console.log(`📡 Rota: ${req.method} ${req.originalUrl}`);
+    next();
+  });
 
-  // Parser de JSON
+  app.use(morgan('combined'));
   app.use(bodyParser.json());
 
-  // Log de payloads de webhooks
   app.use('/webhook', (req, res, next) => {
     if (req.method === 'POST') {
-      console.log(
-        `[📥 WEBHOOK] ${req.method} ${req.originalUrl}\n`,
-        JSON.stringify(req.body, null, 2)
-      );
+      console.log('[📥 WEBHOOK]', req.originalUrl, JSON.stringify(req.body, null, 2));
     }
     next();
   });
 
-  // Rotas públicas
-  app.get('/',        (_req, res) => res.send('CoinbitClub Market Bot está rodando! 🚀'));
-  app.get('/healthz', (_req, res) => res.send('OK'));
-  app.get('/metrics', async (_req, res) => {
+  app.get('/',        (_, res) => res.send('🚀 CoinbitClub Market Bot ativo!'));
+  app.get('/healthz', (_, res) => res.send('OK'));
+  app.get('/metrics', async (_, res) => {
     res.set('Content-Type', register.contentType);
     res.end(await register.metrics());
   });
 
-  // Rotas principais
   app.use('/webhook', webhookRouter);
   app.use('/fetch',   fetchRouter);
   app.use('/api',     apiRouter);
 
-  // Tratamento de erros
-  app.use((err, _req, res, _next) => {
+  app.use((err, _, res, __) => {
     console.error('❌ ERRO GERAL:', err);
     res.status(err.status || 500).json({ error: err.message });
   });
 
-  // Inicia servidor
   app.listen(port, () => {
-    console.log(`🚀 Server running on port ${port}`);
+    console.log(`🚀 Server listening on port ${port}`);
   });
 }
 
 main().catch(err => {
-  console.error('❌ Falha ao iniciar servidor:', err);
+  console.error('❌ Falha ao iniciar:', err);
   process.exit(1);
 });
