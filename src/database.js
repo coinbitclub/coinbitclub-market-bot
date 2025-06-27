@@ -1,7 +1,6 @@
 import pg from 'pg';
 const { Pool } = pg;
 
-// Usa SSL somente se ambiente for production OU variável exigir
 const useSSL =
   process.env.DATABASE_SSL === 'true' ||
   process.env.PGSSLMODE === 'require' ||
@@ -9,10 +8,7 @@ const useSSL =
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: useSSL
-    ? { rejectUnauthorized: false }
-    : false,
-  // Se usar Railway, esse ajuste garante compatibilidade local/prod
+  ssl: useSSL ? { rejectUnauthorized: false } : false,
 });
 
 pool.on('error', err => {
