@@ -1,12 +1,20 @@
+// src/tradingBot.js
+
 import cron from 'node-cron';
 import { handleSignal } from './services/tradingEngine.js';
 import { pool } from './database.js';
 
+/**
+ * Atualiza open_trades (stub).
+ */
 async function fetchAndSaveOpenTrades() {
   console.log('[TradingBot] Buscando posições abertas (stub)…');
-  // TODO: implementar fetch via bybitOrderService e inserir em open_trades
+  // TODO: Implementar fetch real via bybitOrderService
 }
 
+/**
+ * Garante que as tabelas/colunas necessárias existem antes de rodar o bot.
+ */
 async function runMigrations() {
   console.log('[TradingBot] Migrando schema…');
 
@@ -26,17 +34,14 @@ async function runMigrations() {
     ALTER TABLE signals
       ADD COLUMN IF NOT EXISTS signal_json JSONB;
   `);
-
   await pool.query(`
     ALTER TABLE signals
       ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
   `);
-
   await pool.query(`
     ALTER TABLE positions
       ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
   `);
-
   await pool.query(`
     ALTER TABLE open_trades
       ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
@@ -45,11 +50,15 @@ async function runMigrations() {
   console.log('[TradingBot] Migração concluída.');
 }
 
+/**
+ * Loop principal do bot de trading.
+ */
 function startBot() {
   console.log('🤖 TradingBot iniciado');
 
   cron.schedule('* * * * *', async () => {
     try {
+      // Busca sinais não processados
       const { rows: signals } = await pool.query(
         'SELECT * FROM signals WHERE processed = false ORDER BY time ASC'
       );
@@ -62,6 +71,7 @@ function startBot() {
           signal_json: sig.signal_json
         });
 
+        // Marca como processado
         await pool.query(
           'UPDATE signals SET processed = true WHERE id = $1',
           [sig.id]
@@ -75,6 +85,7 @@ function startBot() {
   });
 }
 
+// Inicialização: roda migrações e inicia bot
 runMigrations()
   .then(startBot)
   .catch(err => {

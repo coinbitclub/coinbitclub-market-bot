@@ -5,12 +5,13 @@ CREATE TABLE IF NOT EXISTS signals (
   id           SERIAL PRIMARY KEY,
   ticker       VARCHAR NOT NULL,
   price        NUMERIC,
-  payload      JSONB NOT NULL,
+  signal_json  JSONB,
   time         TIMESTAMP NOT NULL,
   captured_at  TIMESTAMP DEFAULT NOW(),
   processed    BOOLEAN NOT NULL DEFAULT FALSE
 );
 ALTER TABLE signals
+  ADD COLUMN IF NOT EXISTS signal_json JSONB,
   ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- 2) indicators
@@ -36,7 +37,7 @@ CREATE TABLE IF NOT EXISTS fear_greed (
 CREATE TABLE IF NOT EXISTS dominance (
   id         SERIAL PRIMARY KEY,
   btc_dom    NUMERIC,
-  eth_dom    NUMERIC,
+  ema7       NUMERIC,
   timestamp  TIMESTAMP,
   created_at TIMESTAMP DEFAULT NOW()
 );

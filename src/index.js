@@ -14,10 +14,9 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+// --- Migrations ---
 async function runMigrations() {
   console.log('▶️  Ajustando schema e aplicando migrações…');
-
-  // Signals: cria tabela e coluna processed
   await pool.query(`
     CREATE TABLE IF NOT EXISTS signals (
       id           SERIAL PRIMARY KEY,
@@ -29,49 +28,36 @@ async function runMigrations() {
       processed    BOOLEAN NOT NULL DEFAULT FALSE
     );
   `);
-
   await pool.query(`
     ALTER TABLE signals
-    ADD COLUMN IF NOT EXISTS signal_json JSONB;
+      ADD COLUMN IF NOT EXISTS signal_json JSONB;
   `);
-
   await pool.query(`
     ALTER TABLE signals
-    ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
+      ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
   `);
-
-  // Positions: adiciona coluna processed se não existir
   await pool.query(`
     ALTER TABLE positions
-    ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
+      ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
   `);
-
-  // Open trades: adiciona coluna processed se não existir
   await pool.query(`
     ALTER TABLE open_trades
-    ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
+      ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
   `);
-
   console.log('✅ Migrações concluídas.');
 }
 
+// --- Startup ---
 async function main() {
-  // Exibe variáveis de ambiente (apenas as chaves, seguro)
   console.log('🔎 ENV KEYS:', Object.keys(process.env));
-
   await runMigrations();
 
   app.use(cors());
   app.options('*', cors());
-
-  app.use((req, res, next) => {
-    console.log(`📡 Rota: ${req.method} ${req.originalUrl}`);
-    next();
-  });
-
   app.use(morgan('combined'));
   app.use(bodyParser.json());
 
+  // Log payloads de webhooks recebidos
   app.use('/webhook', (req, res, next) => {
     if (req.method === 'POST') {
       console.log('[📥 WEBHOOK]', req.originalUrl, JSON.stringify(req.body, null, 2));
@@ -79,6 +65,12 @@ async function main() {
     next();
   });
 
+  // Roteamento REST principal
+  app.use('/webhook', webhookRouter);
+  app.use('/fetch',   fetchRouter);
+  app.use('/api',     apiRouter);
+
+  // Endpoints utilitários
   app.get('/',        (_, res) => res.send('🚀 CoinbitClub Market Bot ativo!'));
   app.get('/healthz', (_, res) => res.send('OK'));
   app.get('/metrics', async (_, res) => {
@@ -86,11 +78,8 @@ async function main() {
     res.end(await register.metrics());
   });
 
-  app.use('/webhook', webhookRouter);
-  app.use('/fetch',   fetchRouter);
-  app.use('/api',     apiRouter);
-
-  app.use((err, _, res, __) => {
+  // Handler de erro global
+  app.use((err, req, res, next) => {
     console.error('❌ ERRO GERAL:', err);
     res.status(err.status || 500).json({ error: err.message });
   });

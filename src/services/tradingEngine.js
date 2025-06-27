@@ -5,10 +5,10 @@ import { placeMarketOrder as placeOrder } from './bybitService.js';
 
 /**
  * Avalia um sinal e, se atender critérios, envia ordem LONG/SHORT e registra posição.
- * @param {{ ticker:string, price:number, time:string }} signal
+ * @param {{ ticker:string, price:number, time:string, signal_json?:object }} signal
  */
 export async function handleSignal(signal) {
-  const { ticker, price } = signal;
+  const { ticker, price, signal_json } = signal;
 
   // 1) Último Fear & Greed
   const { rows: fgRows } = await pool.query(
@@ -31,7 +31,7 @@ export async function handleSignal(signal) {
   );
   const { ema9 = 0, rsi4h = 0, rsi15m = 0, momentum = 0 } = indRows[0] || {};
 
-  // 4) Definir thresholds
+  // 4) Lógica do trade
   const diff = dg - ema9;
   const isLong =
     fg < 75 &&
@@ -49,29 +49,42 @@ export async function handleSignal(signal) {
     momentum < 0;
 
   if (!isLong && !isShort) {
-    console.log('[Engine] Sem sinal de trade para', ticker);
+    console.log('[Engine] Sem sinal de trade para', ticker, { fg, dg, ema9, rsi4h, rsi15m, momentum, price });
     return null;
   }
 
   // 5) Executar ordem via Bybit
   const side = isLong ? 'Buy' : 'Sell';
-  const qty = 1; // TODO: ajustar cálculo de tamanho de posição
+  const qty = 1; // TODO: ajustar cálculo de tamanho de posição futuramente
   console.log(`[Engine] Sinal ${side} ${ticker} qty=${qty} preço=${price}`);
-  const result = await placeOrder({
-    symbol: `${ticker}USDT`,
-    side,
-    qty,
-    tp: isLong ? price * 1.01 : undefined,
-    sl: isLong ? price * 0.99 : undefined
-  });
+
+  let result = null;
+  try {
+    result = await placeOrder({
+      symbol: `${ticker}USDT`,
+      side,
+      qty,
+      tp: isLong ? price * 1.01 : undefined,
+      sl: isLong ? price * 0.99 : undefined
+    });
+    console.log('[Engine] Ordem enviada para Bybit:', result);
+  } catch (err) {
+    console.error('[Engine] ERRO ao enviar ordem para Bybit:', err);
+    // Você pode decidir lançar ou só logar, dependendo da estratégia de erro
+    return null;
+  }
 
   // 6) Salvar posição aberta
-  await pool.query(
-    `INSERT INTO positions (symbol, side, qty, entry_price, status, created_at)
-     VALUES ($1, $2, $3, $4, 'open', NOW())`,
-    [ticker, side, qty, price]
-  );
+  try {
+    await pool.query(
+      `INSERT INTO positions (symbol, side, qty, entry_price, status, created_at)
+       VALUES ($1, $2, $3, $4, 'open', NOW())`,
+      [ticker, side, qty, price]
+    );
+    console.log('[Engine] Posição registrada em DB');
+  } catch (err) {
+    console.error('[Engine] ERRO ao registrar posição no DB:', err);
+  }
 
-  console.log('[Engine] Posição registrada em DB');
   return result;
 }

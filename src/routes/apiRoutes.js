@@ -46,11 +46,13 @@ router.get('/open_trades', async (req, res, next) => {
   }
 });
 
-// (Opcional) demais rotas antigas – preserve seu código aqui:
+// GET /api/dominance?limit=10
 router.get('/dominance', async (req, res, next) => {
   try {
+    const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
     const { rows } = await pool.query(
-      'SELECT * FROM dominance ORDER BY timestamp DESC LIMIT 10'
+      'SELECT * FROM dominance ORDER BY timestamp DESC LIMIT $1',
+      [limit]
     );
     res.json(rows);
   } catch (err) {
@@ -58,10 +60,13 @@ router.get('/dominance', async (req, res, next) => {
   }
 });
 
+// GET /api/fear_greed?limit=10
 router.get('/fear_greed', async (req, res, next) => {
   try {
+    const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
     const { rows } = await pool.query(
-      'SELECT * FROM fear_greed ORDER BY timestamp DESC LIMIT 10'
+      'SELECT * FROM fear_greed ORDER BY timestamp DESC LIMIT $1',
+      [limit]
     );
     res.json(rows);
   } catch (err) {
@@ -69,8 +74,9 @@ router.get('/fear_greed', async (req, res, next) => {
   }
 });
 
-// outras rotas extras...
-// router.get('/volatility', ...);
-// router.get('/extra', ...);
+// (Aqui pode adicionar rotas extras futuramente)
+
+// Exemplo de rota protegida (template):
+// router.get('/secure-data', authenticateJWT, async (req, res, next) => { ... });
 
 export default router;

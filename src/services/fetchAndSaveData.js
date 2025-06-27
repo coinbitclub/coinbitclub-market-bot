@@ -4,17 +4,17 @@ import { pool } from '../database.js';
 
 /**
  * Grava um signal na tabela signals.
- * Espera body = { ticker, time, close, ... }.
+ * Espera body = { ticker, time, price, ... }.
  * Armazena o JSON completo em signal_json.
  */
 export async function saveSignal(body) {
-  const { ticker, time, close } = body;
+  const { ticker, time, price } = body;
   await pool.query(
     `INSERT INTO signals
-       (signal_json, ticker, time, close, captured_at)
+       (signal_json, ticker, price, time, captured_at)
      VALUES
        ($1, $2, $3, $4, NOW())`,
-    [JSON.stringify(body), ticker, time, close]
+    [body, ticker, price, time]
   );
 }
 
