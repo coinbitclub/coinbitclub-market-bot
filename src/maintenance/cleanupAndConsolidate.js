@@ -1,20 +1,12 @@
-import pg from 'pg';
-const { Pool } = pg;
+import { pool } from '../database.js';
 import cron from 'node-cron';
-import dotenv from 'dotenv';
-dotenv.config();
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
+// Você pode remover o dotenv, pois já está carregado no projeto principal
 
 // Limpeza dos temporários
 const cleanup = async () => {
   await pool.query(`DELETE FROM signals WHERE received_at < NOW() - INTERVAL '72 hours';`);
   await pool.query(`DELETE FROM dominance WHERE created_at < NOW() - INTERVAL '72 hours';`);
   await pool.query(`DELETE FROM fear_greed WHERE created_at < NOW() - INTERVAL '72 hours';`);
-  // Adapte para demais entidades...
   console.log('[Maintenance] Limpeza concluída.');
 };
 
@@ -28,7 +20,6 @@ const consolidate = async () => {
     GROUP BY ticker, DATE(received_at)
     ON CONFLICT (ticker, date) DO NOTHING;
   `);
-  // Repita/adapte para dominance, fear_greed etc.
   console.log('[Maintenance] Consolidação concluída.');
 };
 
