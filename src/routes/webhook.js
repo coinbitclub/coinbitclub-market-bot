@@ -1,29 +1,56 @@
 import express from 'express';
-import { saveSignal, fetchAndSaveDominance } from '../services/fetchAndSaveData.js';
-import { parseSignal } from '../parseSignal.js';
-import { parseDominance } from '../parseDominance.js';
+import { saveSignal } from '../services/signalService.js';
+import { saveDominance } from '../services/dominanceService.js';
+import { saveFearGreed } from '../services/fearGreedWriter.js';
 
 const router = express.Router();
 
-router.post('/signal', async (req, res, next) => {
+function verifyToken(req, res, next) {
+  if (req.query.token !== process.env.WEBHOOK_TOKEN) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+  next();
+}
+
+// POST /webhook/signal
+router.post('/signal', verifyToken, async (req, res) => {
   try {
-    const parsed = parseSignal(req.body);   // parse antes de salvar
-    await saveSignal(parsed);
-    res.json({ status: 'ok' });
+    // Esperado: { ticker, price, time, ...outros }
+    const { ticker, price, time } = req.body;
+    await saveSignal({
+      ticker,
+      price,
+      time,
+      signal_json: req.body, // salva o payload inteiro
+    });
+    res.json({ ok: true });
   } catch (err) {
-    console.error('[webhook/signal] ERRO:', err);
-    next(err);
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-router.post('/dominance', async (req, res, next) => {
+// POST /webhook/dominance
+router.post('/dominance', verifyToken, async (req, res) => {
   try {
-    const parsed = parseDominance(req.body);
-    await fetchAndSaveDominance(parsed);
-    res.json({ status: 'ok' });
+    // Esperado: { btc_dom, ema7, timestamp }
+    await saveDominance(req.body);
+    res.json({ ok: true });
   } catch (err) {
-    console.error('[webhook/dominance] ERRO:', err);
-    next(err);
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /webhook/fear_greed
+router.post('/fear_greed', verifyToken, async (req, res) => {
+  try {
+    // Esperado: { index_value, value_classification, timestamp }
+    await saveFearGreed(req.body);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 

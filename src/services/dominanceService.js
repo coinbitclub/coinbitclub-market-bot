@@ -1,9 +1,23 @@
 import { pool } from '../database.js';
 
-export async function saveDominance({ dominance: value, time }) {
+/**
+ * Salva um novo valor de dominance
+ * @param {Object} params - { btc_dom, ema7, timestamp }
+ */
+export async function saveDominance({ btc_dom, ema7, timestamp }) {
   await pool.query(
-    `INSERT INTO btc_dominance (value, captured_at)
-     VALUES ($1, $2)`,
-    [value, time]
+    `INSERT INTO dominance (btc_dom, ema7, timestamp)
+     VALUES ($1, $2, $3)`,
+    [btc_dom, ema7, timestamp]
   );
+}
+
+/**
+ * Busca o último valor de dominance
+ */
+export async function fetchLastDominance() {
+  const { rows } = await pool.query(
+    `SELECT * FROM dominance ORDER BY created_at DESC LIMIT 1`
+  );
+  return rows[0] || null;
 }

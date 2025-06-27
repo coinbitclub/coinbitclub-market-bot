@@ -6,7 +6,7 @@ import cors from 'cors';
 
 import webhookRouter from './routes/webhook.js';
 import fetchRouter   from './routes/fetch.js';
-import apiRouter     from './routes/apiRoutes.js';
+// (opcional) import apiRouter   from './routes/apiRoutes.js'; // Se/quando precisar de API extra
 import register      from './observability/metrics.js';
 import { pool }      from './database.js';
 
@@ -14,9 +14,11 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// --- Migrations ---
+// --- Migrations (ajuste para todas as tabelas do seu migration.sql) ---
 async function runMigrations() {
   console.log('▶️  Ajustando schema e aplicando migrações…');
+
+  // Adapte se quiser criar todas as tabelas aqui ou só garantir os 'ALTER'
   await pool.query(`
     CREATE TABLE IF NOT EXISTS signals (
       id           SERIAL PRIMARY KEY,
@@ -28,22 +30,54 @@ async function runMigrations() {
       processed    BOOLEAN NOT NULL DEFAULT FALSE
     );
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS dominance (
+      id         SERIAL PRIMARY KEY,
+      btc_dom    NUMERIC,
+      ema7       NUMERIC,
+      timestamp  TIMESTAMP,
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS fear_greed (
+      id                   SERIAL PRIMARY KEY,
+      index_value          NUMERIC,
+      value_classification TEXT,
+      timestamp            TIMESTAMP,
+      captured_at          TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
+  // ... adicione outras tabelas essenciais conforme seu migration.sql ...
+
+  // Ajustes de colunas faltantes (idempotentes)
   await pool.query(`
     ALTER TABLE signals
-      ADD COLUMN IF NOT EXISTS signal_json JSONB;
-  `);
-  await pool.query(`
-    ALTER TABLE signals
+      ADD COLUMN IF NOT EXISTS signal_json JSONB,
       ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
   `);
+
   await pool.query(`
-    ALTER TABLE positions
-      ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE dominance
+      ADD COLUMN IF NOT EXISTS btc_dom NUMERIC,
+      ADD COLUMN IF NOT EXISTS ema7 NUMERIC,
+      ADD COLUMN IF NOT EXISTS timestamp TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();
   `);
+
   await pool.query(`
-    ALTER TABLE open_trades
-      ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE fear_greed
+      ADD COLUMN IF NOT EXISTS index_value NUMERIC,
+      ADD COLUMN IF NOT EXISTS value_classification TEXT,
+      ADD COLUMN IF NOT EXISTS timestamp TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS captured_at TIMESTAMP DEFAULT NOW();
   `);
+
+  // ... outros alters para garantir compatibilidade com migration.sql
+
   console.log('✅ Migrações concluídas.');
 }
 
@@ -68,7 +102,7 @@ async function main() {
   // Roteamento REST principal
   app.use('/webhook', webhookRouter);
   app.use('/fetch',   fetchRouter);
-  app.use('/api',     apiRouter);
+  // app.use('/api',     apiRouter); // Descomente se/quando usar
 
   // Endpoints utilitários
   app.get('/',        (_, res) => res.send('🚀 CoinbitClub Market Bot ativo!'));

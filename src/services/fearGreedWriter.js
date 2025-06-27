@@ -1,9 +1,23 @@
 import { pool } from '../database.js';
 
-export async function saveFearGreed({ fear_greed, time }) {
-  const sql = `
-    INSERT INTO fear_greed (value, timestamp)
-    VALUES ($1, $2)
-  `;
-  await pool.query(sql, [fear_greed, time]);
+/**
+ * Salva um novo valor do índice Fear & Greed
+ * @param {Object} params - { index_value, value_classification, timestamp }
+ */
+export async function saveFearGreed({ index_value, value_classification, timestamp }) {
+  await pool.query(
+    `INSERT INTO fear_greed (index_value, value_classification, timestamp)
+     VALUES ($1, $2, $3)`,
+    [index_value, value_classification, timestamp]
+  );
+}
+
+/**
+ * Busca o último valor Fear & Greed
+ */
+export async function fetchLastFearGreed() {
+  const { rows } = await pool.query(
+    `SELECT * FROM fear_greed ORDER BY captured_at DESC LIMIT 1`
+  );
+  return rows[0] || null;
 }
