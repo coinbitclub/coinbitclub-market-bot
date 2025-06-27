@@ -1,15 +1,14 @@
 import pg from 'pg';
 const { Pool } = pg;
 
-const useSSL =
-  process.env.DATABASE_SSL === 'true' ||
-  process.env.PGSSLMODE === 'require' ||
-  process.env.NODE_ENV === 'production';
+const shouldUseSSL =
+  process.env.DATABASE_URL && process.env.DATABASE_URL.includes('sslmode=require');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: useSSL ? { rejectUnauthorized: false } : false,
+  ssl: shouldUseSSL ? { rejectUnauthorized: false } : undefined,
 });
+
 
 pool.on('error', err => {
   console.error('❌ Erro inesperado no pool Postgres:', err);
