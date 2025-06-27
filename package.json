@@ -4,13 +4,16 @@
   "version": "1.0.0",
   "description": "Market data collector and webhook receiver",
   "main": "src/index.js",
-  "scripts": {
-    "prestart": "npx kill-port 3000 3001",
-    "start":    "node src/index.js",
-    "dev":      "npx kill-port 3000 3001 && nodemon --exec \"node -r dotenv/config\" src/index.js",
-    "start:test":"npx kill-port 3000 3001 && node -r dotenv/config src/index.js --env=test",
-    "start:prod":"npx kill-port 3000 3001 && node -r dotenv/config src/index.js --env=production"
-  },
+ "scripts": {
+  "prestart": "npx kill-port 3000 3001",
+  "start": "node -r dotenv/config src/index.js",
+  "dev": "npx kill-port 3000 3001 && nodemon --exec \"node -r dotenv/config\" src/index.js",
+  "start:test": "npx kill-port 3000 3001 && node -r dotenv/config src/index.js --env=test",
+  "start:prod": "npx kill-port 3000 3001 && node -r dotenv/config src/index.js --env=production",
+  "bot":   "node -r dotenv/config src/tradingBot.js",
+  "train": "node -r dotenv/config src/trainModel.js"
+},
+
   "dependencies": {
     "axios": "^1.10.0",
     "body-parser": "^2.2.0",
