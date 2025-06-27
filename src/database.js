@@ -1,15 +1,15 @@
 import pg from 'pg';
 const { Pool } = pg;
 
-const useSSL = (
+// Usa SSL só quando necessário
+const useSSL =
   process.env.DATABASE_SSL === 'true' ||
   process.env.PGSSLMODE === 'require' ||
-  process.env.NODE_ENV === 'production'
-);
+  process.env.NODE_ENV === 'production';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: useSSL ? { rejectUnauthorized: false } : false
+  ssl: useSSL ? { rejectUnauthorized: false } : false,
 });
 
 pool.on('error', err => {
