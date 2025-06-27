@@ -1,6 +1,5 @@
-// src/services/tradingEngine.js
 import { pool } from '../database.js';
-import { placeOrder } from './bybitAdapter.js';
+import { placeMarketOrder as placeOrder } from './bybitService.js';
 
 /**
  * Avalia um sinal e, se atender critérios, envia ordem LONG/SHORT e registra posição.
@@ -60,7 +59,6 @@ export async function handleSignal(signal) {
     symbol: `${ticker}USDT`,
     side,
     qty,
-    // ex: tp e sl podem ser calculados:
     tp: isLong ? price * 1.01 : undefined,
     sl: isLong ? price * 0.99 : undefined
   });
