@@ -1,6 +1,6 @@
 // src/services/tradingEngine.js
 import { pool } from '../database.js';
-import { placeOrder } from '../services/bybitAdapter.js';
+import { placeOrder } from './bybitAdapter.js';
 
 /**
  * Avalia um sinal e, se atender critérios, envia ordem LONG/SHORT e registra posição.
