@@ -5,12 +5,35 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 
 import webhookRouter from './routes/webhook.js';
-import fetchRouter   from './routes/fetch.js';
-// (opcional) import apiRouter   from './routes/apiRoutes.js'; // Se/quando precisar de API extra
-import register      from './observability/metrics.js';
-import { pool }      from './database.js';
+import fetchRouter from './routes/fetch.js';
+// (opcional) import apiRouter from './routes/apiRoutes.js'; // Se/quando precisar de API extra
+import register from './observability/metrics.js';
+import { pool } from './database.js';
 
+// Carrega o .env principal (ajuste se quiser múltiplos arquivos .env)
 dotenv.config();
+
+/** Função utilitária para logar variáveis essenciais do ambiente */
+function printEnvVars() {
+  const keys = [
+    'DATABASE_URL',
+    'COINSTATS_API_KEY',
+    'WEBHOOK_TOKEN',
+    'NODE_ENV',
+    'PORT'
+  ];
+  console.log('\n===== VARIÁVEIS DE AMBIENTE ATIVAS =====');
+  keys.forEach(key => {
+    // Evita mostrar tokens/senhas completos em produção
+    let value = process.env[key];
+    if (key.includes('KEY') || key.includes('TOKEN')) {
+      value = value ? value.substring(0, 8) + '...' : '';
+    }
+    console.log(`${key}: ${value}`);
+  });
+  console.log('========================================\n');
+}
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -83,7 +106,7 @@ async function runMigrations() {
 
 // --- Startup ---
 async function main() {
-  console.log('🔎 ENV KEYS:', Object.keys(process.env));
+  printEnvVars(); // LOG PRINCIPAIS VARIÁVEIS .env
   await runMigrations();
 
   app.use(cors());
@@ -101,11 +124,11 @@ async function main() {
 
   // Roteamento REST principal
   app.use('/webhook', webhookRouter);
-  app.use('/fetch',   fetchRouter);
-  // app.use('/api',     apiRouter); // Descomente se/quando usar
+  app.use('/fetch', fetchRouter);
+  // app.use('/api', apiRouter); // Descomente se/quando usar
 
   // Endpoints utilitários
-  app.get('/',        (_, res) => res.send('🚀 CoinbitClub Market Bot ativo!'));
+  app.get('/', (_, res) => res.send('🚀 CoinbitClub Market Bot ativo!'));
   app.get('/healthz', (_, res) => res.send('OK'));
   app.get('/metrics', async (_, res) => {
     res.set('Content-Type', register.contentType);
