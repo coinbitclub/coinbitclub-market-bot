@@ -1,36 +1,37 @@
+// src/services/tradingEngine.js
 import { pool } from '../database.js';
-import { placeOrder } from '../adapters/bybitAdapter.js';
+import { placeOrder } from '../services/bybitAdapter.js';
 
 /**
- * Avalia um sinal e, se atender critérios de LONG/SHORT, envia ordem via Bybit e registra em positions.
- * @param {{ symbol:string, price:number, timestamp:string }} signal
+ * Avalia um sinal e, se atender critérios, envia ordem LONG/SHORT e registra posição.
+ * @param {{ ticker:string, price:number, time:string }} signal
  */
 export async function handleSignal(signal) {
-  const { symbol, price } = signal;
+  const { ticker, price } = signal;
 
-  // 1) Buscar últimos valores globais
-  const fgRes = await pool.query(
-    'SELECT value FROM fear_greed ORDER BY id DESC LIMIT 1'
+  // 1) Último Fear & Greed
+  const { rows: fgRows } = await pool.query(
+    'SELECT index_value AS value FROM fear_greed ORDER BY id DESC LIMIT 1'
   );
-  const dgRes = await pool.query(
-    'SELECT value FROM dominance ORDER BY id DESC LIMIT 1'
-  );
-  const fg = fgRes.rows[0]?.value ?? 0;
-  const dg = dgRes.rows[0]?.value ?? 0;
+  const fg = fgRows[0]?.value ?? 0;
 
-  // 2) Buscar últimos indicadores calculados
-  const indRes = await pool.query(
+  // 2) Última Dominance (BTC.D)
+  const { rows: dgRows } = await pool.query(
+    'SELECT btc_dom AS value FROM dominance ORDER BY id DESC LIMIT 1'
+  );
+  const dg = dgRows[0]?.value ?? 0;
+
+  // 3) Últimos indicadores técnicos
+  const { rows: indRows } = await pool.query(
     `SELECT ema9, rsi4h, rsi15m, momentum
        FROM indicators
       ORDER BY id DESC
       LIMIT 1`
   );
-  const { ema9, rsi4h, rsi15m, momentum } = indRes.rows[0] || {};
+  const { ema9 = 0, rsi4h = 0, rsi15m = 0, momentum = 0 } = indRows[0] || {};
 
-  // 3) Calcular diff BTC.D vs EMA9 (supondo que dg = BTC.D)
+  // 4) Definir thresholds
   const diff = dg - ema9;
-
-  // 4) Verificar critérios
   const isLong =
     fg < 75 &&
     diff > 0.003 &&
@@ -38,7 +39,6 @@ export async function handleSignal(signal) {
     rsi4h < 75 &&
     rsi15m < 75 &&
     momentum > 0;
-
   const isShort =
     fg > 30 &&
     diff < -0.003 &&
@@ -47,23 +47,31 @@ export async function handleSignal(signal) {
     rsi15m > 35 &&
     momentum < 0;
 
-  if (!isLong && !isShort) return null;
+  if (!isLong && !isShort) {
+    console.log('[Engine] Sem sinal de trade para', ticker);
+    return null;
+  }
 
-  // 5) Executar ordem
+  // 5) Executar ordem via Bybit
   const side = isLong ? 'Buy' : 'Sell';
-  const qty = 1; // FIXME: ajustar sizing baseado em risco
-  const result = await placeOrder({ symbol: `${symbol}USDT`, side, qty });
+  const qty = 1; // TODO: ajustar cálculo de tamanho de posição
+  console.log(`[Engine] Sinal ${side} ${ticker} qty=${qty} preço=${price}`);
+  const result = await placeOrder({
+    symbol: `${ticker}USDT`,
+    side,
+    qty,
+    // ex: tp e sl podem ser calculados:
+    tp: isLong ? price * 1.01 : undefined,
+    sl: isLong ? price * 0.99 : undefined
+  });
 
-  // 6) Registrar em positions
+  // 6) Salvar posição aberta
   await pool.query(
-    `
-    INSERT INTO positions
-      (symbol, side, qty, entry_price, status, created_at)
-    VALUES
-      ($1, $2, $3, $4, 'open', NOW())
-    `,
-    [symbol, side, qty, price]
+    `INSERT INTO positions (symbol, side, qty, entry_price, status, created_at)
+     VALUES ($1, $2, $3, $4, 'open', NOW())`,
+    [ticker, side, qty, price]
   );
 
+  console.log('[Engine] Posição registrada em DB');
   return result;
 }
