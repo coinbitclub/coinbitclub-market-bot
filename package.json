@@ -8,6 +8,7 @@
     "prestart": "npx kill-port 3000 3001",
     "start": "node -r dotenv/config src/index.js",
     "dev": "npx kill-port 3000 3001 && nodemon --exec \"node -r dotenv/config\" src/index.js",
+    "listfiles": "node listFiles.js",
     "start:test": "npx kill-port 3000 3001 && node -r dotenv/config src/index.js --env=test",
     "start:prod": "npx kill-port 3000 3001 && node -r dotenv/config src/index.js --env=production",
     "bot": "node -r dotenv/config src/tradingBot.js",
