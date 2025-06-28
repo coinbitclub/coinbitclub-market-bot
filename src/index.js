@@ -1,3 +1,7 @@
+// força lookup IPv4 antes de IPv6 (Node 18+)
+import dns from 'dns';
+dns.setDefaultResultOrder('ipv4first');
+
 import express from 'express';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
@@ -6,7 +10,7 @@ import cors from 'cors';
 
 import webhookRouter from './routes/webhook.js';
 import fetchRouter   from './routes/fetch.js';
-import apiRouter     from './routes/apiRoutes.js';  // <--- IMPORTADO!
+import apiRouter     from './routes/apiRoutes.js';
 
 import register      from './observability/metrics.js';
 import { pool }      from './database.js';
@@ -15,9 +19,9 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// --- MigraÃ§Ãµes automÃ¡ticas ---
+// --- Migrações automáticas ---
 async function runMigrations() {
-  console.log('â–¶ï¸  Ajustando schema e aplicando migraÃ§Ãµesâ€¦');
+  console.log('⏳  Ajustando schema e aplicando migrações…');
   await pool.query(`
     CREATE TABLE IF NOT EXISTS signals (
       id           SERIAL PRIMARY KEY,
@@ -47,12 +51,12 @@ async function runMigrations() {
       captured_at          TIMESTAMP DEFAULT NOW()
     );
   `);
-  console.log('âœ… MigraÃ§Ãµes concluÃ­das.');
+  console.log('✅ Migrações concluídas.');
 }
 
 // --- MAIN ---
 async function main() {
-  console.log('ðŸ”Ž ENV KEYS:', Object.keys(process.env));
+  console.log('🔑 ENV KEYS:', Object.keys(process.env));
   await runMigrations();
 
   app.use(cors());
@@ -63,7 +67,7 @@ async function main() {
   // Log payloads de webhooks recebidos
   app.use('/webhook', (req, res, next) => {
     if (req.method === 'POST') {
-      console.log('[ðŸ“¥ WEBHOOK]', req.originalUrl, JSON.stringify(req.body, null, 2));
+      console.log('[📥 WEBHOOK]', req.originalUrl, JSON.stringify(req.body, null, 2));
     }
     next();
   });
@@ -71,9 +75,9 @@ async function main() {
   // --- Rotas ---
   app.use('/webhook', webhookRouter);
   app.use('/fetch',   fetchRouter);
-  app.use('/api',     apiRouter);      // <--- AGORA ATIVO!
+  app.use('/api',     apiRouter);
 
-  app.get('/',        (_, res) => res.send('ðŸš€ CoinbitClub Market Bot ativo!'));
+  app.get('/',        (_, res) => res.send('🚀 CoinbitClub Market Bot ativo!'));
   app.get('/healthz', (_, res) => res.send('OK'));
   app.get('/metrics', async (_, res) => {
     res.set('Content-Type', register.contentType);
@@ -82,16 +86,16 @@ async function main() {
 
   // --- Handler de erro global ---
   app.use((err, req, res, next) => {
-    console.error('âŒ ERRO GERAL:', err);
+    console.error('❌ ERRO GERAL:', err);
     res.status(err.status || 500).json({ error: err.message });
   });
 
   app.listen(port, () => {
-    console.log(`ðŸš€ Server listening on port ${port}`);
+    console.log(`🚀 Server listening on port ${port}`);
   });
 }
 
 main().catch(err => {
-  console.error('âŒ Falha ao iniciar:', err);
+  console.error('❌ Falha ao iniciar:', err);
   process.exit(1);
 });
