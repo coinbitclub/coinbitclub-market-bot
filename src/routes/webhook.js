@@ -1,7 +1,7 @@
 // src/routes/webhook.js
 import express from 'express';
 import { parseSignal } from '../parseSignal.js';
-import { saveSignal } from '../services/signalsService.js';
+import { saveSignal } from '../services/signalService.js';
 import { parseDominance } from '../parseDominance.js';
 import { saveDominance } from '../services/dominanceService.js';
 
