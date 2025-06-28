@@ -1,82 +1,49 @@
-// src/routes/apiRoutes.js
+// src/routes/api.js
 import express from 'express';
-import { pool } from '../database.js';
+import axios   from 'axios';
 
 const router = express.Router();
+const KEY    = process.env.COINSTATS_API_KEY;
 
-// GET /api/market?limit=10
-router.get('/market', async (req, res, next) => {
+// --- Proteção de todas as rotas externas ---
+async function fetchFromCoinStats(url, res) {
   try {
-    const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
-    const { rows } = await pool.query(
-      'SELECT * FROM market ORDER BY captured_at DESC LIMIT $1',
-      [limit]
-    );
-    res.json(rows);
+    const { data } = await axios.get(url, {
+      headers: {
+        accept: 'application/json',
+        'X-API-KEY': KEY
+      }
+    });
+    res.json({ status: 'ok', data });
   } catch (err) {
-    next(err);
+    const status = err?.response?.status || 500;
+    const message = err?.response?.data?.message || err.message;
+    res.status(status).json({ status: 'error', message });
   }
+}
+
+// 1) Fear & Greed
+router.get('/fear-greed', async (_req, res) => {
+  await fetchFromCoinStats(
+    'https://openapiv1.coinstats.app/insights/fear-and-greed',
+    res
+  );
 });
 
-// GET /api/logs_recent?limit=10
-router.get('/logs_recent', async (req, res, next) => {
-  try {
-    const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
-    const { rows } = await pool.query(
-      'SELECT * FROM bot_logs ORDER BY created_at DESC LIMIT $1',
-      [limit]
-    );
-    res.json(rows);
-  } catch (err) {
-    next(err);
-  }
+// 2) BTC Dominance
+router.get('/btc-dominance', async (_req, res) => {
+  await fetchFromCoinStats(
+    'https://openapiv1.coinstats.app/insights/btc-dominance?type=24h',
+    res
+  );
 });
 
-// GET /api/open_trades?limit=10
-router.get('/open_trades', async (req, res, next) => {
-  try {
-    const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
-    const { rows } = await pool.query(
-      'SELECT * FROM open_trades ORDER BY created_at DESC LIMIT $1',
-      [limit]
-    );
-    res.json(rows);
-  } catch (err) {
-    next(err);
-  }
+// 3) Markets
+router.get('/market', async (_req, res) => {
+  await fetchFromCoinStats(
+    'https://openapiv1.coinstats.app/markets',
+    res
+  );
 });
-
-// GET /api/dominance?limit=10
-router.get('/dominance', async (req, res, next) => {
-  try {
-    const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
-    const { rows } = await pool.query(
-      'SELECT * FROM dominance ORDER BY timestamp DESC LIMIT $1',
-      [limit]
-    );
-    res.json(rows);
-  } catch (err) {
-    next(err);
-  }
-});
-
-// GET /api/fear_greed?limit=10
-router.get('/fear_greed', async (req, res, next) => {
-  try {
-    const limit = Math.max(1, parseInt(req.query.limit, 10) || 10);
-    const { rows } = await pool.query(
-      'SELECT * FROM fear_greed ORDER BY timestamp DESC LIMIT $1',
-      [limit]
-    );
-    res.json(rows);
-  } catch (err) {
-    next(err);
-  }
-});
-
-// (Aqui pode adicionar rotas extras futuramente)
-
-// Exemplo de rota protegida (template):
-// router.get('/secure-data', authenticateJWT, async (req, res, next) => { ... });
 
 export default router;

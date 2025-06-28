@@ -6,7 +6,8 @@ import cors from 'cors';
 
 import webhookRouter from './routes/webhook.js';
 import fetchRouter   from './routes/fetch.js';
-// import apiRouter     from './routes/apiRoutes.js'; // Se/quando precisar
+import apiRouter     from './routes/apiRoutes.js';  // <--- IMPORTADO!
+
 import register      from './observability/metrics.js';
 import { pool }      from './database.js';
 
@@ -14,6 +15,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+// --- Migrações automáticas ---
 async function runMigrations() {
   console.log('▶️  Ajustando schema e aplicando migrações…');
   await pool.query(`
@@ -48,6 +50,7 @@ async function runMigrations() {
   console.log('✅ Migrações concluídas.');
 }
 
+// --- MAIN ---
 async function main() {
   console.log('🔎 ENV KEYS:', Object.keys(process.env));
   await runMigrations();
@@ -65,9 +68,10 @@ async function main() {
     next();
   });
 
+  // --- Rotas ---
   app.use('/webhook', webhookRouter);
   app.use('/fetch',   fetchRouter);
-  // app.use('/api',     apiRouter);
+  app.use('/api',     apiRouter);      // <--- AGORA ATIVO!
 
   app.get('/',        (_, res) => res.send('🚀 CoinbitClub Market Bot ativo!'));
   app.get('/healthz', (_, res) => res.send('OK'));
@@ -76,6 +80,7 @@ async function main() {
     res.end(await register.metrics());
   });
 
+  // --- Handler de erro global ---
   app.use((err, req, res, next) => {
     console.error('❌ ERRO GERAL:', err);
     res.status(err.status || 500).json({ error: err.message });
