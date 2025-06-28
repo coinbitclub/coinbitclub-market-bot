@@ -37,3 +37,7 @@ router.get('/fear_greed', async (_req, res, next) => {
 });
 
 export default router;
+
+
+
+

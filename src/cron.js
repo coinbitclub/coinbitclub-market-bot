@@ -20,3 +20,7 @@ cron.schedule('0 0 * * *', async () => {
     console.error('Erro na consolidaÃ§Ã£o:', err);
   }
 });
+
+
+
+

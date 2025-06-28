@@ -86,3 +86,7 @@ export async function closePosition({ symbol, side, qty, tp, sl }) {
 
 // Exporta o cliente direto caso precise de outros endpoints
 export { bybitClient };
+
+
+
+

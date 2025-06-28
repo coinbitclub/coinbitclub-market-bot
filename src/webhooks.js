@@ -67,3 +67,7 @@ router.post('/dominance', async (req, res) => {
 });
 
 export default router;
+
+
+
+

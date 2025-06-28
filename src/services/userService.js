@@ -10,3 +10,7 @@ export async function getUserByEmail(email) {
   const result = await query(sql, [email]);
   return result.rows[0];
 }
+
+
+
+

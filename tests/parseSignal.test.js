@@ -16,3 +16,7 @@ test('parseSignal fields', () => {
   };
   expect(parseSignal(raw)).toEqual(raw);
 });
+
+
+
+

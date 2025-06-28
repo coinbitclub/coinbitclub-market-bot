@@ -49,3 +49,7 @@ if (import.meta.url === `file://${process.cwd()}/src/trainModel.js`) {
       process.exit(1);
     });
 }
+
+
+
+

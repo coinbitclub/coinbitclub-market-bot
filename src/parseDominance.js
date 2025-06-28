@@ -5,3 +5,7 @@ export function parseDominance(body) {
     timestamp: new Date(body.timestamp)
   };
 }
+
+
+
+

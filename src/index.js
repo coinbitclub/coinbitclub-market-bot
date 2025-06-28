@@ -17,7 +17,7 @@ import { pool }      from './database.js';
 
 dotenv.config();
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 
 // --- Migrações automáticas ---
 async function runMigrations() {
@@ -99,3 +99,7 @@ main().catch(err => {
   console.error('❌ Falha ao iniciar:', err);
   process.exit(1);
 });
+
+
+
+

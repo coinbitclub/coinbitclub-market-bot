@@ -8,3 +8,7 @@ export async function getLatestSignal(symbol) {
   );
   return res.rows[0];  // jÃ¡ vem com diff_btc_ema7, cruzou_acima_ema9, etc.
 }
+
+
+
+

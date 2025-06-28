@@ -17,3 +17,7 @@ export function parseSignal(payload) {
     leverage:           payload.leverage ? parseInt(payload.leverage) : 6
   };
 }
+
+
+
+

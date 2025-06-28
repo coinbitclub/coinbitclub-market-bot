@@ -7,3 +7,7 @@ cron.schedule('*/10 * * * *', async () => { // a cada 10min
   await fetchAndSaveMarkets();
   console.log('CoinStats atualizado:', new Date());
 });
+
+
+
+

@@ -21,3 +21,7 @@ export async function fetchLastFearGreed() {
   );
   return rows[0] || null;
 }
+
+
+
+

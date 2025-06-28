@@ -52,3 +52,7 @@ export async function consolidateDailyData() {
     ON CONFLICT (date) DO NOTHING
   `);
 }
+
+
+
+

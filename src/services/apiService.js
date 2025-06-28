@@ -21,3 +21,7 @@ export async function fetchAndSaveFearGreed() {
 }
 
 // Inclua funÃ§Ãµes para os outros endpoints seguindo padrÃ£o similar
+
+
+
+

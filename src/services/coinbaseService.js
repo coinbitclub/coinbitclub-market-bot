@@ -52,3 +52,7 @@ export async function saveDominance(payload) {
     payload.sinal || payload.signal
   ]);
 }
+
+
+
+

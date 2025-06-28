@@ -41,3 +41,7 @@ export function canOpenShort({ diff_btc_ema7, cruzou_abaixo_ema9, rsi_4h, rsi_15
 export function riskAllows(openCount) {
   return openCount < MAX_OPEN_TRADES;
 }
+
+
+
+

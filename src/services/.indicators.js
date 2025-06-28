@@ -55,3 +55,7 @@ export function calcMomentum(closes, period) {
 export function calcDiff(current, emaValue) {
   return current - emaValue;
 }
+
+
+
+

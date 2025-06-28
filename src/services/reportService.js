@@ -3,3 +3,7 @@ export async function sendReport(type) {
   console.log(`[Report] sendReport called for ${type}`);
   // implementar geraÃ§Ã£o/envio de e-mail ou mensagem aqui
 }
+
+
+
+

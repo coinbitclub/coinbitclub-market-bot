@@ -22,3 +22,7 @@ register.registerMetric(signalLatency);
 
 // 4) Exporta o Registry para o endpoint /metrics
 export default register;
+
+
+
+

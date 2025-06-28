@@ -80,3 +80,7 @@ export async function getAllTrades(userId) {
     [userId]
   );
 }
+
+
+
+

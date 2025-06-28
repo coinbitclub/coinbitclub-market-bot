@@ -28,3 +28,7 @@ export async function fetchAndSaveFearGreed() {
     console.error('[FearGreed] Erro ao inserir:', err.response?.data || err.message);
   }
 }
+
+
+
+

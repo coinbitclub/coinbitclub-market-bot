@@ -28,3 +28,7 @@ cron.schedule('5 0 * * *', cleanup);      // Limpa todos os dias Ã s 00h05
 cron.schedule('0 0 * * *', consolidate); // Consolida todos os dias Ã s 00h00
 
 export { cleanup, consolidate };
+
+
+
+

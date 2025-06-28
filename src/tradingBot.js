@@ -64,3 +64,7 @@ runMigrations()
     console.error('[TradingBot] Falha na migraÃ§Ã£o:', err);
     process.exit(1);
   });
+
+
+
+

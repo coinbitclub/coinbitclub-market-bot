@@ -23,3 +23,7 @@ export async function monitorOpenPositions() {
     logger.error(`Erro em monitorOpenPositions: ${err.message}`);
   }
 }
+
+
+
+

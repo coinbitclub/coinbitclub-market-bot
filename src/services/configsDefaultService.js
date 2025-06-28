@@ -18,3 +18,7 @@ export async function saveDefaultConfigs(configs) {
   `;
   return await executeQuery(query, [/* valores */]);
 }
+
+
+
+

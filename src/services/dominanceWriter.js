@@ -8,3 +8,7 @@ export async function saveDominance({ dominance, time }) {
   `;
   await pool.query(sql, [dominance, time]);
 }
+
+
+
+

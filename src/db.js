@@ -16,3 +16,7 @@ export async function query(text, params) {
     client.release();
   }
 }
+
+
+
+

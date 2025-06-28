@@ -49,3 +49,7 @@ export async function insertFearGreed({ value, captured_at, ...rest }) {
   `;
   return pool.query(text, [value, captured_at, rest]);
 }
+
+
+
+

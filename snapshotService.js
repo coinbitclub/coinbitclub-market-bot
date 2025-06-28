@@ -26,3 +26,7 @@ export async function createDailySnapshot() {
 
   console.log('Snapshot diário criado.');
 }
+
+
+
+

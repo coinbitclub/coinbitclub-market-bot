@@ -50,3 +50,7 @@ export async function executeTrade(symbol, signalType, userId) {
     sl
   });
 }
+
+
+
+

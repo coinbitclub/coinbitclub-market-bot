@@ -11,3 +11,7 @@ export async function getBtcDominanceDiff() {
   // TODO: buscar o último diff armazenado na tabela dominance
   return 0;
 }
+
+
+
+

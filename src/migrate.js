@@ -24,3 +24,7 @@ migrate().catch(err => {
   console.error('âŒ Erro ao migrar:', err);
   process.exit(1);
 });
+
+
+
+

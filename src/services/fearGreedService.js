@@ -7,3 +7,7 @@ export async function saveFearGreed({ fear_greed: value, time }) {
     [value, time]
   );
 }
+
+
+
+

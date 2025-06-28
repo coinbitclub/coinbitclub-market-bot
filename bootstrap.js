@@ -1,4 +1,4 @@
-﻿import cron from 'node-cron';
+import cron from 'node-cron';
 import { fetchAndSaveDominance } from './src/services/dominanceService.js';
 import { fetchAndSaveFearGreed } from './src/services/fearGreedService.js';
 import { fetchAndSaveMarkets } from './src/services/marketsService.js';
@@ -13,3 +13,7 @@ export function scheduleJobs() {
     fetchAndSaveMarkets();
   });
 }
+
+
+
+

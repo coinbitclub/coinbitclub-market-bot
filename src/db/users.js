@@ -8,3 +8,7 @@ export async function listUsers() {
   const res = await query('SELECT id FROM users');
   return res.rows;
 }
+
+
+
+

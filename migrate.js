@@ -17,3 +17,7 @@ try {
   console.error('❌ Falha ao rodar migrations:', err);
   process.exit(1);
 }
+
+
+
+

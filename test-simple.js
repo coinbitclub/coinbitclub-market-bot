@@ -1,4 +1,4 @@
-Ôªøimport pkg from 'pg';
+import pkg from 'pg';
 const { Pool } = pkg;
 
 const pool = new Pool({
@@ -12,11 +12,11 @@ const pool = new Pool({
     const value_classification = 'NODE_TESTE';
     const captured_at = new Date().toISOString();
 
-    // Apenas para debug: montar a query manualmente (n√£o use assim em produ√ß√£o)
+    // Apenas para debug: montar a query manualmente (n„o use assim em produÁ„o)
     const queryText = `INSERT INTO public.fear_greed (value, value_classification, captured_at, created_at) VALUES (${value}, '${value_classification}', '${captured_at}', NOW())`;
     console.log('Query com valores inline para debug:', queryText);
 
-    // Executa a query com par√¢metros
+    // Executa a query com par‚metros
     const sql = 'INSERT INTO public.fear_greed (value, value_classification, captured_at, created_at) VALUES ($1, $2, $3, NOW())';
     const res = await pool.query(sql, [value, value_classification, captured_at]);
 
@@ -28,3 +28,7 @@ const pool = new Pool({
     process.exit(1);
   }
 })();
+
+
+
+

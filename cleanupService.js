@@ -7,3 +7,7 @@ export async function deleteOldData() {
   await pool.query('DELETE FROM fear_greed WHERE created_at < NOW() - INTERVAL \'72 hours\'');
   console.log('Dados antigos apagados do banco.');
 }
+
+
+
+

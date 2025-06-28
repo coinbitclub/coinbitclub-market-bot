@@ -16,3 +16,7 @@ export function parseSignal(data) {
     signal_time: data.signal_time ?? new Date().toISOString()
   };
 }
+
+
+
+

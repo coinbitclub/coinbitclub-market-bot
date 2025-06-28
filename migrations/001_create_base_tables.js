@@ -35,3 +35,7 @@ export async function down(knex) {
     .dropTableIfExists('dominance')
     .dropTableIfExists('signals');
 }
+
+
+
+

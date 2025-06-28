@@ -17,3 +17,7 @@ export function parseSignal(body) {
     leverage:        parseInt(body.leverage,10)
   };
 }
+
+
+
+

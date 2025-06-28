@@ -72,3 +72,7 @@ export function calculateTpsl(leverage) {
 export function calculatePositionSize(balance) {
   return parseFloat((balance * 0.3).toFixed(8));
 }
+
+
+
+

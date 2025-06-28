@@ -89,3 +89,7 @@ export async function closePosition({ symbol, side, qty, leverage }) {
 
 // Exporta a funÃ§Ã£o genÃ©rica de request caso precise de outros endpoints
 export { requestV5 as bybitRequest };
+
+
+
+

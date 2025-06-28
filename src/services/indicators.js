@@ -19,3 +19,7 @@ export function calcEMA(values, period) {
 export function calcDiff(current, emaValue) {
   return current - emaValue;
 }
+
+
+
+

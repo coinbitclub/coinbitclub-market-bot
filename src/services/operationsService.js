@@ -25,3 +25,7 @@ export async function getOperationsByUser(user_id, limit = 50) {
   `;
   return await executeQuery(query, [user_id, limit]);
 }
+
+
+
+

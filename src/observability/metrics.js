@@ -22,3 +22,7 @@ register.registerMetric(signalLatency);
 
 // Exporta o registry para o handler de métricas
 export default register;
+
+
+
+

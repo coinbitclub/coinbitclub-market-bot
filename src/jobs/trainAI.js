@@ -3,3 +3,7 @@ export async function trainModel() {
   // TODO: implementar treino IA com dados reais
   console.log('Treino da IA finalizado (simulado)');
 }
+
+
+
+

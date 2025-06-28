@@ -1,4 +1,4 @@
-ï»¿import axios from 'axios';
+import axios from 'axios';
 
 (async () => {
   try {
@@ -13,6 +13,10 @@
     console.log('Headers:', response.headers);
     console.log('Body:', JSON.stringify(response.data, null, 2));
   } catch (error) {
-    console.error('Erro na requisiÃ§Ã£o:', error.response?.data || error.message);
+    console.error('Erro na requisição:', error.response?.data || error.message);
   }
 })();
+
+
+
+

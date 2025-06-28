@@ -22,3 +22,7 @@ const email = 'erica@seudominio.com'; // troque pelo email que estÃ¡ no seu ba
     console.error('Erro ao enviar ordem:', err.message, err.response?.data);
   }
 })();
+
+
+
+

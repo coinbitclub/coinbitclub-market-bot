@@ -38,3 +38,7 @@ export async function fetchRecentSignals(limit = 10) {
   );
   return rows;
 }
+
+
+
+

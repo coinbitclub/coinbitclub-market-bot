@@ -21,3 +21,7 @@ export async function fetchLastDominance() {
   );
   return rows[0] || null;
 }
+
+
+
+

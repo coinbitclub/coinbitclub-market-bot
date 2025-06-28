@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-const base = "http://localhost:3000";
+const base = "http://localhost:8080";
 const token = "210406";
 
 async function main() {
@@ -38,3 +38,7 @@ async function main() {
 }
 
 main();
+
+
+
+

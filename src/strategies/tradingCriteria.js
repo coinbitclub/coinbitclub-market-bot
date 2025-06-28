@@ -84,3 +84,7 @@ export function calculateTpsl(leverage = 5) {
   const slPct = 2 * leverage * 1;     // 2x alavancagem
   return { tpPct, slPct };
 }
+
+
+
+

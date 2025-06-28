@@ -14,3 +14,7 @@ export async function getMovingAverageATR(windowSize = 7) {
   const result = await query(sql, [windowSize]);
   return result[0]?.moving_average_atr || null;
 }
+
+
+
+

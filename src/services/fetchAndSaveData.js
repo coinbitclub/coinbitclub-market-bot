@@ -62,3 +62,7 @@ export async function fetchAndSaveMarket(body) {
     [symbol, price, timestamp]
   );
 }
+
+
+
+
