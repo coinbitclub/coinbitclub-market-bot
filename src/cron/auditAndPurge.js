@@ -8,7 +8,7 @@ async function purgeOldData() {
   await query(`DELETE FROM market WHERE created_at < NOW() - INTERVAL '72 HOURS'`);
 }
 
-// Salva snapshot diário nas tabelas *_daily (campos alinhados!)
+// Salva snapshot diÃ¡rio nas tabelas *_daily (campos alinhados!)
 async function snapshotDailyData() {
   await query(`
     INSERT INTO signals_daily (
