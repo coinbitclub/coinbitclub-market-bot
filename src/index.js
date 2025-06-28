@@ -1,105 +1,83 @@
-// força lookup IPv4 antes de IPv6 (Node 18+)
-import dns from 'dns';
-dns.setDefaultResultOrder('ipv4first');
-
+// src/index.js - versão consolidada e ajustada
 import express from 'express';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
-import bodyParser from 'body-parser';
 import cors from 'cors';
+import bodyParser from 'body-parser';
 
-import webhookRouter from './routes/webhook.js';
-import fetchRouter   from './routes/fetch.js';
-import apiRouter     from './routes/apiRoutes.js';
+import { pool, getBybitCredentials, hasActiveSubscription } from './database.js';
 
-import register      from './observability/metrics.js';
-import { pool }      from './database.js';
+// Rotas já existentes/importadas
+import webhookRouter from './routes/webhook.js';         // Dominance e webhooks
+import signalRouter from './routes/signals.js';          // Sinais TradingView
+import apiRouter    from './routes/apiRoutes.js';        // API REST principal
+import dashboardRouter from './routes/dashboard.js';     // Painel de controle/admin
+
+import { setupScheduler } from './services/scheduler.js'; // Jobs agendados
 
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 8080;
 
-// --- Migrações automáticas ---
-async function runMigrations() {
-  console.log('⏳  Ajustando schema e aplicando migrações…');
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS signals (
-      id           SERIAL PRIMARY KEY,
-      ticker       VARCHAR NOT NULL,
-      price        NUMERIC,
-      signal_json  JSONB,
-      time         TIMESTAMP NOT NULL,
-      captured_at  TIMESTAMP DEFAULT NOW(),
-      processed    BOOLEAN NOT NULL DEFAULT FALSE
-    );
-  `);
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS dominance (
-      id         SERIAL PRIMARY KEY,
-      btc_dom    NUMERIC,
-      ema7       NUMERIC,
-      timestamp  TIMESTAMP,
-      created_at TIMESTAMP DEFAULT NOW()
-    );
-  `);
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS fear_greed (
-      id                   SERIAL PRIMARY KEY,
-      index_value          NUMERIC,
-      value_classification TEXT,
-      timestamp            TIMESTAMP,
-      captured_at          TIMESTAMP DEFAULT NOW()
-    );
-  `);
-  console.log('✅ Migrações concluídas.');
-}
+// --- Middlewares globais ---
+app.use(cors());
+app.use(morgan('combined'));
+app.use(bodyParser.json({ limit: '200kb' }));
 
-// --- MAIN ---
-async function main() {
-  console.log('🔑 ENV KEYS:', Object.keys(process.env));
-  await runMigrations();
+// --- Health checks ---
+app.get('/', (_req, res) => res.send('🚀 CoinbitClub Market Bot ativo!'));
+app.get('/healthz', (_req, res) => res.send('OK'));
 
-  app.use(cors());
-  app.options('*', cors());
-  app.use(morgan('combined'));
-  app.use(bodyParser.json());
+// --- Webhooks e integrações externas ---
+app.use('/webhook/signal', signalRouter);      // POST sinal TradingView
+app.use('/webhook/dominance', webhookRouter);  // POST dominance CoinStats
 
-  // Log payloads de webhooks recebidos
-  app.use('/webhook', (req, res, next) => {
-    if (req.method === 'POST') {
-      console.log('[📥 WEBHOOK]', req.originalUrl, JSON.stringify(req.body, null, 2));
-    }
-    next();
-  });
+// --- API REST público (dados de mercado, operações, etc) ---
+app.use('/api', apiRouter);                    // GET market, dominance, fear_greed etc.
 
-  // --- Rotas ---
-  app.use('/webhook', webhookRouter);
-  app.use('/fetch',   fetchRouter);
-  app.use('/api',     apiRouter);
+// --- Painel restrito (dashboard central) ---
+// Aqui, autenticação básica com usuário/senha do painel
+import basicAuth from 'express-basic-auth';
+app.use('/dashboard', basicAuth({
+  users: { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS },
+  challenge: true
+}), dashboardRouter);
 
-  app.get('/',        (_, res) => res.send('🚀 CoinbitClub Market Bot ativo!'));
-  app.get('/healthz', (_, res) => res.send('OK'));
-  app.get('/metrics', async (_, res) => {
-    res.set('Content-Type', register.contentType);
-    res.end(await register.metrics());
-  });
-
-  // --- Handler de erro global ---
-  app.use((err, req, res, next) => {
-    console.error('❌ ERRO GERAL:', err);
-    res.status(err.status || 500).json({ error: err.message });
-  });
-
-  app.listen(port, () => {
-    console.log(`🚀 Server listening on port ${port}`);
-  });
-}
-
-main().catch(err => {
-  console.error('❌ Falha ao iniciar:', err);
-  process.exit(1);
+// --- Rotas para IA (stub, para futura automação) ---
+app.post('/ia/analyze', async (req, res) => {
+  res.json({ result: 'Análise de IA em construção...' });
 });
 
+// --- Modo produção/teste Bybit: Rota de ordem ---
+app.post('/bybit/order', async (req, res) => {
+  const { user_id, symbol, qty, side, test } = req.body;
 
+  // Checa assinatura ativa ANTES de operar
+  if (!(await hasActiveSubscription(user_id))) {
+    return res.status(403).json({ error: 'Usuário sem assinatura ativa' });
+  }
 
+  // Busca credenciais Bybit corretas do banco (real ou testnet)
+  const creds = await getBybitCredentials(user_id, !!test);
+  if (!creds) {
+    return res.status(404).json({ error: 'Credenciais não encontradas para esse usuário' });
+  }
 
+  // Aqui: chamar lógica real da Bybit (com as credenciais buscadas do banco)
+  // Exemplo stub:
+  res.json({ status: 'ok', mode: test ? 'testnet' : 'production', symbol, qty, side });
+});
+
+// --- Handler de erro global ---
+app.use((err, req, res, next) => {
+  console.error('❌ ERRO GERAL:', err);
+  res.status(err.status || 500).json({ error: err.message });
+});
+
+// --- Inicialização dos jobs e servidor ---
+app.listen(port, () => {
+  console.log(`🚀 Server listening on port ${port}`);
+  setupScheduler && setupScheduler();
+});
+
+export default app;
