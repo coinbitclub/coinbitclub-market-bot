@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import { query } from "../services/databaseService.js";
 
 const router = express.Router();

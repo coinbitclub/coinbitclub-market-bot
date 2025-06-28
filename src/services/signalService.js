@@ -1,12 +1,12 @@
 import { pool } from '../database.js';
 
 /**
- * Salva um sinal recebido no padrão da tabela signals.
+ * Salva um sinal recebido no padrÃ£o da tabela signals.
  * @param {Object} params - { ticker, price, signal_json, time }
  */
 export async function saveSignal({ ticker, price, signal_json, time }) {
   if (!ticker || typeof price === 'undefined' || !signal_json || !time) {
-    throw new Error('Campos obrigatórios: ticker, price, signal_json, time');
+    throw new Error('Campos obrigatÃ³rios: ticker, price, signal_json, time');
   }
 
   // Protege tipo dos dados antes de inserir
@@ -17,7 +17,7 @@ export async function saveSignal({ ticker, price, signal_json, time }) {
     : time;
 
   if (!_time || isNaN(new Date(_time))) {
-    throw new Error('Campo time inválido ou ausente');
+    throw new Error('Campo time invÃ¡lido ou ausente');
   }
 
   await pool.query(
@@ -28,7 +28,7 @@ export async function saveSignal({ ticker, price, signal_json, time }) {
 }
 
 /**
- * Busca os últimos sinais recebidos.
+ * Busca os Ãºltimos sinais recebidos.
  */
 export async function fetchRecentSignals(limit = 10) {
   const lim = Math.max(1, parseInt(limit, 10) || 10);

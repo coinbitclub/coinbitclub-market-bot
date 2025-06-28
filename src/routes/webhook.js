@@ -13,7 +13,7 @@ router.use((req, _res, next) => {
   next();
 });
 
-// Função utilitária para normalizar timestamp/date
+// FunÃ§Ã£o utilitÃ¡ria para normalizar timestamp/date
 function normalizeTimestamp(ts) {
   if (!ts) return null;
   if (typeof ts === 'number') return new Date(ts);
@@ -29,16 +29,16 @@ router.post('/signal', async (req, res, next) => {
     // 1) Log raw
     console.log('[raw webhook/signal]', req.body);
 
-    // 2) Proteção: valida campos obrigatórios
+    // 2) ProteÃ§Ã£o: valida campos obrigatÃ³rios
     const { ticker, price, time } = req.body;
     if (!ticker || !price || !time) {
-      return res.status(400).json({ error: 'ticker, price, time obrigatórios' });
+      return res.status(400).json({ error: 'ticker, price, time obrigatÃ³rios' });
     }
 
     // 3) Parse seguro do sinal
     const parsedTime = normalizeTimestamp(time);
     if (isNaN(parsedTime)) {
-      return res.status(400).json({ error: 'timestamp inválido' });
+      return res.status(400).json({ error: 'timestamp invÃ¡lido' });
     }
 
     const signal = parseSignal({
@@ -47,7 +47,7 @@ router.post('/signal', async (req, res, next) => {
       price: Number(price)
     });
 
-    // 4) Salva (mantém padrão original)
+    // 4) Salva (mantÃ©m padrÃ£o original)
     await saveSignal(req.userId, signal);
     res.json({ status: 'ok' });
   } catch (err) {
@@ -59,10 +59,10 @@ router.post('/dominance', async (req, res, next) => {
   try {
     console.log('[raw webhook/dominance]', req.body);
 
-    // Protege campo value obrigatório (pode ser btc_dom ou value)
+    // Protege campo value obrigatÃ³rio (pode ser btc_dom ou value)
     const value = req.body.value || req.body.btc_dom;
     if (typeof value === 'undefined') {
-      return res.status(400).json({ error: 'value (btc_dom) obrigatório' });
+      return res.status(400).json({ error: 'value (btc_dom) obrigatÃ³rio' });
     }
 
     // Parse seguro de data

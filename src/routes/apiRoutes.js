@@ -5,7 +5,7 @@ import axios   from 'axios';
 const router = express.Router();
 const KEY    = process.env.COINSTATS_API_KEY;
 
-// --- Proteção de todas as rotas externas ---
+// --- ProteÃ§Ã£o de todas as rotas externas ---
 async function fetchFromCoinStats(url, res) {
   try {
     const { data } = await axios.get(url, {

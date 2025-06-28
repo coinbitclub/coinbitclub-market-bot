@@ -2,7 +2,7 @@
 import { query } from '../db.js';
 
 /**
- * Retorna todos os usuários cadastrados (só o ID por enquanto).
+ * Retorna todos os usuÃ¡rios cadastrados (sÃ³ o ID por enquanto).
  */
 export async function listUsers() {
   const res = await query('SELECT id FROM users');

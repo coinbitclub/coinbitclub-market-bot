@@ -1,9 +1,9 @@
 import { EMA } from 'technicalindicators';
 
 /**
- * Calcula a série EMA a partir de um array de valores.
+ * Calcula a sÃ©rie EMA a partir de um array de valores.
  * @param {number[]} values - Fechamentos.
- * @param {number} period - Período da EMA.
+ * @param {number} period - PerÃ­odo da EMA.
  * @returns {number[]} - Array de valores da EMA.
  */
 export function calcEMA(values, period) {
@@ -11,7 +11,7 @@ export function calcEMA(values, period) {
 }
 
 /**
- * Calcula a diferença entre valor atual e valor da EMA.
+ * Calcula a diferenÃ§a entre valor atual e valor da EMA.
  * @param {number} current - Valor atual.
  * @param {number} emaValue - Valor da EMA.
  * @returns {number}

@@ -3,12 +3,12 @@ import { fetchKlines } from './marketService.js';
 
 /**
  * Retorna:
- *   – 'REVERSE_LONG' se o preço cruzou a EMA9 para baixo (inverteria um LONG),
- *   – 'REVERSE_SHORT' se o preço cruzou a EMA9 para cima (inverteria um SHORT),
- *   – ou null caso não haja reversão.
+ *   â€“ 'REVERSE_LONG' se o preÃ§o cruzou a EMA9 para baixo (inverteria um LONG),
+ *   â€“ 'REVERSE_SHORT' se o preÃ§o cruzou a EMA9 para cima (inverteria um SHORT),
+ *   â€“ ou null caso nÃ£o haja reversÃ£o.
  */
 export async function getEma9Cross(symbol) {
-  // busca as últimas 10 velas de 30m
+  // busca as Ãºltimas 10 velas de 30m
   const klines = await fetchKlines(symbol, '30', 10);
   const closes = klines.map(k => parseFloat(k.close));
   if (closes.length < 10) return null;
@@ -31,11 +31,11 @@ export async function getEma9Cross(symbol) {
   const lastClose = closes[closes.length - 1];
   const lastEma   = emaValues[emaValues.length - 1];
 
-  // cross under → possível reversão LONG
+  // cross under â†’ possÃ­vel reversÃ£o LONG
   if (prevClose > prevEma && lastClose < lastEma) {
     return 'REVERSE_LONG';
   }
-  // cross over → possível reversão SHORT
+  // cross over â†’ possÃ­vel reversÃ£o SHORT
   if (prevClose < prevEma && lastClose > lastEma) {
     return 'REVERSE_SHORT';
   }

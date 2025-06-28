@@ -11,7 +11,7 @@ const BASE_URL       = IS_TESTNET
   || 'https://api.bybit.com';
 
 /**
- * Gera assinatura HMAC-SHA256 para parâmetros de query
+ * Gera assinatura HMAC-SHA256 para parÃ¢metros de query
  */
 function signParams(params) {
   const ordered = Object.keys(params)
@@ -22,13 +22,13 @@ function signParams(params) {
 }
 
 /**
- * Wrapper para chamadas à API Bybit (v5)
+ * Wrapper para chamadas Ã  API Bybit (v5)
  */
 async function requestV5({ endpoint, method = 'GET', params = {}, data = {} }) {
   const url = `${BASE_URL}${endpoint}`;
   const headers = {};
 
-  // Autenticação de endpoints privados
+  // AutenticaÃ§Ã£o de endpoints privados
   if (endpoint.startsWith('/private') || endpoint.startsWith('/v5/order')) {
     const timestamp = Date.now();
     const q = { api_key: API_KEY, timestamp, ...params };
@@ -80,12 +80,12 @@ export async function placeMarketOrder({ symbol, side, qty, leverage }) {
 }
 
 /**
- * Fecha posição existente enviando ordem oposta
+ * Fecha posiÃ§Ã£o existente enviando ordem oposta
  */
 export async function closePosition({ symbol, side, qty, leverage }) {
   const closeSide = side === 'Buy' ? 'Sell' : 'Buy';
   return placeMarketOrder({ symbol, side: closeSide, qty, leverage });
 }
 
-// Exporta a função genérica de request caso precise de outros endpoints
+// Exporta a funÃ§Ã£o genÃ©rica de request caso precise de outros endpoints
 export { requestV5 as bybitRequest };

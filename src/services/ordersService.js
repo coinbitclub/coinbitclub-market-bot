@@ -5,8 +5,8 @@ import axios from 'axios';
 import crypto from 'crypto';
 
 /**
- * Decide e executa trades para cada usu·rio ativo,
- * diferenciando ambiente de produÁ„o/teste por campo testnet.
+ * Decide e executa trades para cada usu√°rio ativo,
+ * diferenciando ambiente de produ√ß√£o/teste por campo testnet.
  */
 export async function executeTrades(signal) {
   const usersRes = await query(
@@ -19,11 +19,11 @@ export async function executeTrades(signal) {
     try {
       params = user.tradeParams ? JSON.parse(user.tradeParams) : {};
     } catch {
-      logger.error(`executeTrades: tradeParams inv·lido para usu·rio ${user.id}`);
+      logger.error(`executeTrades: tradeParams inv√°lido para usu√°rio ${user.id}`);
       continue;
     }
 
-    // Par‚metros din‚micos conforme ambiente
+    // Par√¢metros din√¢micos conforme ambiente
     const { apiKey, apiSecret } = user;
     if (!apiKey || !apiSecret) {
       logger.warn(`executeTrades: faltando credenciais para ${user.id}`);
@@ -35,13 +35,13 @@ export async function executeTrades(signal) {
       ? process.env.BYBIT_BASE_URL_TEST || 'https://api-testnet.bybit.com'
       : process.env.BYBIT_BASE_URL_REAL || 'https://api.bybit.com';
 
-    // Par‚metros de ordem (default + sobrescritos)
+    // Par√¢metros de ordem (default + sobrescritos)
     const side = params.side || signal.side || 'Buy';
     const qty = params.qty || 1;
     const orderType = params.orderType || 'Market';
 
-    // -- CritÈrios autom·ticos (exemplo, pode expandir aqui)
-    // ... [aqui È o melhor local para lÛgica de validaÁ„o baseada nos sinais recebidos!]
+    // -- Crit√©rios autom√°ticos (exemplo, pode expandir aqui)
+    // ... [aqui √© o melhor local para l√≥gica de valida√ß√£o baseada nos sinais recebidos!]
 
     const ts = Date.now().toString();
     const endpoint = '/v5/order/create';
@@ -60,7 +60,7 @@ export async function executeTrades(signal) {
       });
       logger.info('executeTrades: ordem enviada', { user: user.id, env: user.testnet ? 'TEST' : 'REAL', result: resp.data });
     } catch (err) {
-      logger.error(`executeTrades: falha usu·rio ${user.id} [${user.testnet ? 'TEST' : 'REAL'}]`, err);
+      logger.error(`executeTrades: falha usu√°rio ${user.id} [${user.testnet ? 'TEST' : 'REAL'}]`, err);
     }
   }
 }

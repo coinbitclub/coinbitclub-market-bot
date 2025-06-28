@@ -2,7 +2,7 @@
 import { query } from '../db.js';
 
 /**
- * Conta quantas trades abertas um usuário possui.
+ * Conta quantas trades abertas um usuÃ¡rio possui.
  */
 export async function countOpenTrades(userId) {
   const rows = await query(
@@ -29,7 +29,7 @@ export async function recordTrade({ userId, orderId, symbol, side, qty, entryPri
 }
 
 /**
- * Fecha uma trade existente, marcando status, preço de saída e motivo.
+ * Fecha uma trade existente, marcando status, preÃ§o de saÃ­da e motivo.
  */
 export async function closeTrade(orderId, exitPrice, exitReason) {
   await query(
@@ -44,7 +44,7 @@ export async function closeTrade(orderId, exitPrice, exitReason) {
 }
 
 /**
- * Retorna todas as trades abertas de um usuário.
+ * Retorna todas as trades abertas de um usuÃ¡rio.
  */
 export async function getOpenTrades(userId) {
   return await query(
@@ -57,7 +57,7 @@ export async function getOpenTrades(userId) {
 }
 
 /**
- * Retorna todas as trades fechadas de um usuário.
+ * Retorna todas as trades fechadas de um usuÃ¡rio.
  */
 export async function getClosedTrades(userId) {
   return await query(
@@ -70,7 +70,7 @@ export async function getClosedTrades(userId) {
 }
 
 /**
- * Retorna todas as trades de um usuário (abertas + fechadas).
+ * Retorna todas as trades de um usuÃ¡rio (abertas + fechadas).
  */
 export async function getAllTrades(userId) {
   return await query(

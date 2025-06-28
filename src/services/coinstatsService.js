@@ -19,7 +19,7 @@ export async function fetchAndSaveFearGreed() {
     `;
 
     console.log('Executando query:', sql.trim());
-    console.log('Com parâmetros:', [value, value_classification, captured_at]);
+    console.log('Com parÃ¢metros:', [value, value_classification, captured_at]);
 
     await query(sql, [value, value_classification, captured_at]);
 

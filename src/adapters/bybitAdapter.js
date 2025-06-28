@@ -9,7 +9,7 @@ const BASE_URL    = IS_TESTNET
   ? (process.env.BYBIT_BASE_URL_TEST   || 'https://api-testnet.bybit.com')
   : (process.env.BYBIT_BASE_URL_REAL   || 'https://api.bybit.com');
 
-// Axios instance com baseURL e timeout padrão
+// Axios instance com baseURL e timeout padrÃ£o
 const bybitClient = axios.create({
   baseURL: BASE_URL,
   timeout: 10_000,
@@ -17,7 +17,7 @@ const bybitClient = axios.create({
 });
 
 /**
- * Gera assinatura HMAC-SHA256 para chamadas à API Bybit
+ * Gera assinatura HMAC-SHA256 para chamadas Ã  API Bybit
  * @param {Object} params 
  * @returns {string}
  */
@@ -38,7 +38,7 @@ function sign(params) {
  * @returns {Promise<Object>} resposta da API
  */
 export async function placeOrder({ symbol, side, qty, tp, sl }) {
-  // Se estiver em testnet, simula e não envia de fato
+  // Se estiver em testnet, simula e nÃ£o envia de fato
   if (IS_TESTNET) {
     console.log('[BybitAdapter] TESTNET mode - ordem simulada:', { symbol, side, qty, tp, sl });
     return { test: true };
@@ -75,7 +75,7 @@ export async function placeOrder({ symbol, side, qty, tp, sl }) {
 }
 
 /**
- * Fecha posição existente com ordem oposta de mercado
+ * Fecha posiÃ§Ã£o existente com ordem oposta de mercado
  * @param {{ symbol:string, side:'Buy'|'Sell', qty:number, tp?:number, sl?:number }} opts
  * @returns {Promise<Object>}
  */

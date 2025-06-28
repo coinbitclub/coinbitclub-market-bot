@@ -1,11 +1,11 @@
 // src/strategies/tradingCriteria.js
-// Avalia critérios de entrada e saída e calcula TP/SL
+// Avalia critÃ©rios de entrada e saÃ­da e calcula TP/SL
 
 /**
- * Verifica gatilhos globais e específicos para abrir posição LONG ou SHORT
+ * Verifica gatilhos globais e especÃ­ficos para abrir posiÃ§Ã£o LONG ou SHORT
  * @param {Object} signal - sinal vindo do Pine (JSON do webhook)
  * @param {Object} marketStats - { fearGreed, btcDominanceDiff, atrPct, volPct }
- * @returns {'long'|'short'|null} direção ou null para não operar
+ * @returns {'long'|'short'|null} direÃ§Ã£o ou null para nÃ£o operar
  */
 export function evaluateEntryCriteria(signal, marketStats) {
   const fg = marketStats.fearGreed;
@@ -23,7 +23,7 @@ export function evaluateEntryCriteria(signal, marketStats) {
   // Filtros BTC volatilidade/volume
   if (marketStats.atrPct < 0.2 || marketStats.volPct < 0.7) return null;
 
-  // Cenário LONG
+  // CenÃ¡rio LONG
   if (
     fg < 75 &&
     diff > 0.3 &&
@@ -33,7 +33,7 @@ export function evaluateEntryCriteria(signal, marketStats) {
     mom > 0
   ) return 'long';
 
-  // Cenário SHORT
+  // CenÃ¡rio SHORT
   if (
     fg > 30 &&
     diff < -0.3 &&
@@ -65,7 +65,7 @@ export function calculateTpsl(leverage) {
 }
 
 /**
- * Calcula tamanho de posição: 30% do saldo disponível
+ * Calcula tamanho de posiÃ§Ã£o: 30% do saldo disponÃ­vel
  * @param {number} balance - saldo em USDT
  * @returns {number}
  */

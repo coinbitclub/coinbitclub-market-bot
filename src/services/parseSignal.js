@@ -1,7 +1,7 @@
 export function parseSignal(data) {
   console.log('[parseSignal] Payload recebido:', data);
   return {
-    ticker: data.ticker ?? 'BTCUSDT', // valor padrão para teste
+    ticker: data.ticker ?? 'BTCUSDT', // valor padrÃ£o para teste
     close: Number(data.close ?? 0),
     ema9_30: Number(data.ema9_30 ?? 0),
     rsi_4h: Number(data.rsi_4h ?? 0),

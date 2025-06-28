@@ -16,7 +16,7 @@ export function parseDominance(payload) {
 
   // Cria o objeto dominance
   const dominanceObj = {
-    ticker: payload.ticker ?? 'BTCUSDT', // Valor padrão para teste
+    ticker: payload.ticker ?? 'BTCUSDT', // Valor padrÃ£o para teste
     captured_at,
     dominance_pct: parseFloat(payload.btc_dominance ?? payload.dominance ?? 0),
     ema7: parseFloat(payload.ema_7 ?? payload.ema7 ?? 0),

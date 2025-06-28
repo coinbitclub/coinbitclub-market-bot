@@ -1,7 +1,7 @@
 import { query } from './databaseService.js';
 
 /**
- * Busca usu·rio pelo email
+ * Busca usu√°rio pelo email
  * @param {string} email
  * @returns {Promise<Object>}
  */

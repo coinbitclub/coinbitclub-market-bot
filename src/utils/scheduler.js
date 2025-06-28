@@ -24,21 +24,21 @@ export function setupScheduler() {
          VALUES (NOW(), $1, NULL, NULL, NULL)`,
         [bd.dominance]
       );
-      console.log('✅ Scheduler: CoinStats salvos no DB');
+      console.log('âœ… Scheduler: CoinStats salvos no DB');
     } catch (err) {
-      console.error('🚨 Scheduler error:', err);
+      console.error('ðŸš¨ Scheduler error:', err);
     }
   });
 
-  // Limpeza diária de sinais (>72h)
+  // Limpeza diÃ¡ria de sinais (>72h)
   cron.schedule('0 1 * * *', async () => {
     try {
       await executeQuery(
         `DELETE FROM signals WHERE captured_at < NOW() - INTERVAL '72 hours'`
       );
-      console.log('🗑️ Scheduler: sinais antigos limpos');
+      console.log('ðŸ—‘ï¸ Scheduler: sinais antigos limpos');
     } catch (err) {
-      console.error('🚨 Scheduler cleanup error:', err);
+      console.error('ðŸš¨ Scheduler cleanup error:', err);
     }
   });
 }

@@ -3,7 +3,7 @@ import { getBybitCredentials } from './databaseService.js';
 import { RestClient as BybitRestClient } from 'bybit-api'; // Exemplo de SDK
 
 /**
- * Cria um client Bybit configurado com as credenciais do usuário.
+ * Cria um client Bybit configurado com as credenciais do usuÃ¡rio.
  */
 export async function createBybitClientForUser(userId) {
   const { api_key, api_secret } = await getBybitCredentials(userId);

@@ -7,7 +7,7 @@ export async function cleanupOldRecords() {
   await pool.query("DELETE FROM fear_greed WHERE time < NOW() - INTERVAL '72 hours'");
 }
 
-// Consolida dados diários (salva 1 snapshot por dia)
+// Consolida dados diÃ¡rios (salva 1 snapshot por dia)
 export async function consolidateDailyData() {
   // Signals
   await pool.query(`

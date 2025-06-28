@@ -20,4 +20,4 @@ export async function fetchAndSaveFearGreed() {
   }
 }
 
-// Inclua funções para os outros endpoints seguindo padrão similar
+// Inclua funÃ§Ãµes para os outros endpoints seguindo padrÃ£o similar

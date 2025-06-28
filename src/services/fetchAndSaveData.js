@@ -49,7 +49,7 @@ export async function fetchAndSaveFearGreed(body) {
 }
 
 /**
- * Grava preço de mercado genérico na tabela market.
+ * Grava preÃ§o de mercado genÃ©rico na tabela market.
  * Espera body = { symbol, price, timestamp }.
  */
 export async function fetchAndSaveMarket(body) {

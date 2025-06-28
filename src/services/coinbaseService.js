@@ -2,7 +2,7 @@ import axios from 'axios';
 import { query } from './databaseService.js';
 
 /**
- * Busca as métricas globais (market cap, volume, dominance, etc)
+ * Busca as mÃ©tricas globais (market cap, volume, dominance, etc)
  * @param {string} apiKey sua COINSTATS_API_KEY
  * @returns {Promise<{captured_at: Date, volume_24h: number, market_cap: number, dominance: number, altcoin_season: string, rsi_market: number}>}
  */
@@ -22,7 +22,7 @@ export async function fetchMetrics(apiKey) {
 }
 
 /**
- * Busca o Fear & Greed e a Dominância BTC
+ * Busca o Fear & Greed e a DominÃ¢ncia BTC
  */
 export async function getFearGreedAndDominance(apiKey) {
   const res = await axios.get('https://openapiv1.coinstats.app/insights', {
@@ -35,7 +35,7 @@ export async function getFearGreedAndDominance(apiKey) {
 }
 
 /**
- * Persiste um webhook de dominância (BTC.D)
+ * Persiste um webhook de dominÃ¢ncia (BTC.D)
  */
 export async function saveDominance(payload) {
   const sql = `

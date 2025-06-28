@@ -1,7 +1,7 @@
 import { getUserByEmail } from './userService.js';
 import { executeBybitOrder } from './bybitOrderService.js';
 
-const email = 'erica@seudominio.com'; // troque pelo email que está no seu banco
+const email = 'erica@seudominio.com'; // troque pelo email que estÃ¡ no seu banco
 
 (async () => {
   const user = await getUserByEmail(email);
@@ -11,8 +11,8 @@ const email = 'erica@seudominio.com'; // troque pelo email que está no seu banc
     symbol: 'BTCUSDT',
     side: 'Buy',
     orderType: 'Market',
-    qty: '0.001',               // Adapte para o mínimo da Bybit testnet!
-    // Outros parâmetros se necessário
+    qty: '0.001',               // Adapte para o mÃ­nimo da Bybit testnet!
+    // Outros parÃ¢metros se necessÃ¡rio
   };
 
   try {

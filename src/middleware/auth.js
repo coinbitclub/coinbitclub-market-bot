@@ -14,7 +14,7 @@ export function verifyToken(req, res, next) {
       jwt.verify(token, WEBHOOK_JWT_SECRET);
       return next();
     } catch {
-      return res.status(401).json({ error: 'JWT inválido' });
+      return res.status(401).json({ error: 'JWT invÃ¡lido' });
     }
   }
 

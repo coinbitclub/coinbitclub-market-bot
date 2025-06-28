@@ -47,7 +47,7 @@ export function calcMomentum(closes, period) {
 }
 
 /**
- * Diferença atual vs EMA de mesmo índice.
+ * DiferenÃ§a atual vs EMA de mesmo Ã­ndice.
  * @param {number} current
  * @param {number} emaValue
  * @returns {number}

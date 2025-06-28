@@ -1,14 +1,14 @@
 import axios from 'axios';
 
 /**
- * Executa ordem na Bybit para o usu·rio certo e ambiente certo (real/teste)
- * @param {Object} user - Objeto do usu·rio, vindo do banco
+ * Executa ordem na Bybit para o usu√°rio certo e ambiente certo (real/teste)
+ * @param {Object} user - Objeto do usu√°rio, vindo do banco
  * @param {Object} orderData - Dados da ordem a ser enviada para Bybit
  * @returns {Promise<Object>} - Resposta da Bybit
  */
 export async function executeBybitOrder(user, orderData) {
   if (!user || !user.api_key || !user.api_secret) {
-    throw new Error('Usu·rio sem credenciais configuradas.');
+    throw new Error('Usu√°rio sem credenciais configuradas.');
   }
 
   // Escolhe o endpoint certo (testnet/real)
@@ -20,7 +20,7 @@ export async function executeBybitOrder(user, orderData) {
   const endpoint = '/v5/order/create';
   const url = `${BYBIT_BASE_URL}`;
 
-  // ATEN«√O: Implemente assinatura conforme documentaÁ„o da Bybit v5!
+  // ATEN√á√ÉO: Implemente assinatura conforme documenta√ß√£o da Bybit v5!
   const signedParams = { ...orderData, api_key: user.api_key };
 
   const response = await axios.post(url, signedParams, {

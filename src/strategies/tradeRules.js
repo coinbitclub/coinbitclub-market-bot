@@ -37,7 +37,7 @@ export function canOpenShort({ diff_btc_ema7, cruzou_abaixo_ema9, rsi_4h, rsi_15
   );
 }
 
-// 2) Gestão de risco (máx. 2 trades por user)
+// 2) GestÃ£o de risco (mÃ¡x. 2 trades por user)
 export function riskAllows(openCount) {
   return openCount < MAX_OPEN_TRADES;
 }

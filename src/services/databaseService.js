@@ -1,6 +1,6 @@
 import { pool } from '../database.js';
 
-// Função utilitária para normalizar timestamp
+// FunÃ§Ã£o utilitÃ¡ria para normalizar timestamp
 function normalizeTimestamp(ts) {
   if (typeof ts === 'number') {
     // Unix timestamp (ms)
@@ -8,15 +8,15 @@ function normalizeTimestamp(ts) {
   }
   if (typeof ts === 'string') {
     if (/^\d+$/.test(ts)) {
-      // String só de números, trata como timestamp (ms)
+      // String sÃ³ de nÃºmeros, trata como timestamp (ms)
       return new Date(Number(ts)).toISOString();
     }
     if (!isNaN(Date.parse(ts))) {
-      // String de data válida
+      // String de data vÃ¡lida
       return new Date(ts).toISOString();
     }
   }
-  // Valor inválido: retorna agora
+  // Valor invÃ¡lido: retorna agora
   return new Date().toISOString();
 }
 

@@ -11,14 +11,14 @@ import {
 import { countOpenTrades, recordTrade } from '../db/trades.js';
 
 export async function executeTrade(symbol, signalType, userId) {
-  // 0) risco: no máximo 2 trades abertos
+  // 0) risco: no mÃ¡ximo 2 trades abertos
   const openCount = await countOpenTrades(userId);
   if (!riskAllows(openCount)) return;
 
   // 1) macro-check
   if (!await marketAllows(signalType.toLowerCase())) return;
 
-  // 2) pega sinal e valida critérios específicos
+  // 2) pega sinal e valida critÃ©rios especÃ­ficos
   const signal = await getLatestSignal(symbol);
   if (!signal) return;
   const ok = signalType === 'LONG' ? canOpenLong(signal) : canOpenShort(signal);
@@ -30,7 +30,7 @@ export async function executeTrade(symbol, signalType, userId) {
   const { lastPrice: price } = await getMarketTick(symbol);
   const leverage = 5;
   const qty = Math.floor((balance * 0.3 * leverage) / price);
-  if (qty < 1) return;  // não manda orden muito pequena
+  if (qty < 1) return;  // nÃ£o manda orden muito pequena
 
   // 4) envia ordem
   const side = signalType === 'LONG' ? 'Buy' : 'Sell';
