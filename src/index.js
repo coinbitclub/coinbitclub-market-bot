@@ -15,9 +15,9 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// --- Migrações automáticas ---
+// --- MigraÃ§Ãµes automÃ¡ticas ---
 async function runMigrations() {
-  console.log('▶️  Ajustando schema e aplicando migrações…');
+  console.log('â–¶ï¸  Ajustando schema e aplicando migraÃ§Ãµesâ€¦');
   await pool.query(`
     CREATE TABLE IF NOT EXISTS signals (
       id           SERIAL PRIMARY KEY,
@@ -47,12 +47,12 @@ async function runMigrations() {
       captured_at          TIMESTAMP DEFAULT NOW()
     );
   `);
-  console.log('✅ Migrações concluídas.');
+  console.log('âœ… MigraÃ§Ãµes concluÃ­das.');
 }
 
 // --- MAIN ---
 async function main() {
-  console.log('🔎 ENV KEYS:', Object.keys(process.env));
+  console.log('ðŸ”Ž ENV KEYS:', Object.keys(process.env));
   await runMigrations();
 
   app.use(cors());
@@ -63,7 +63,7 @@ async function main() {
   // Log payloads de webhooks recebidos
   app.use('/webhook', (req, res, next) => {
     if (req.method === 'POST') {
-      console.log('[📥 WEBHOOK]', req.originalUrl, JSON.stringify(req.body, null, 2));
+      console.log('[ðŸ“¥ WEBHOOK]', req.originalUrl, JSON.stringify(req.body, null, 2));
     }
     next();
   });
@@ -73,7 +73,7 @@ async function main() {
   app.use('/fetch',   fetchRouter);
   app.use('/api',     apiRouter);      // <--- AGORA ATIVO!
 
-  app.get('/',        (_, res) => res.send('🚀 CoinbitClub Market Bot ativo!'));
+  app.get('/',        (_, res) => res.send('ðŸš€ CoinbitClub Market Bot ativo!'));
   app.get('/healthz', (_, res) => res.send('OK'));
   app.get('/metrics', async (_, res) => {
     res.set('Content-Type', register.contentType);
@@ -82,16 +82,16 @@ async function main() {
 
   // --- Handler de erro global ---
   app.use((err, req, res, next) => {
-    console.error('❌ ERRO GERAL:', err);
+    console.error('âŒ ERRO GERAL:', err);
     res.status(err.status || 500).json({ error: err.message });
   });
 
   app.listen(port, () => {
-    console.log(`🚀 Server listening on port ${port}`);
+    console.log(`ðŸš€ Server listening on port ${port}`);
   });
 }
 
 main().catch(err => {
-  console.error('❌ Falha ao iniciar:', err);
+  console.error('âŒ Falha ao iniciar:', err);
   process.exit(1);
 });

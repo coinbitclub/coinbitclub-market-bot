@@ -11,7 +11,7 @@ const pool = new Pool({
 });
 
 pool.on('error', err => {
-  console.error('❌ Erro inesperado no pool Postgres:', err);
+  console.error('âŒ Erro inesperado no pool Postgres:', err);
   process.exit(-1);
 });
 

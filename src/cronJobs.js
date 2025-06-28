@@ -7,7 +7,7 @@ import { runAuditAndPurge } from './cron/auditAndPurge.js';
 cron.schedule('*/10 * * * *', async () => {
   try {
     await fetchAndSaveAllSignals();
-    console.log('Atualização de sinais (10 em 10 min) OK.');
+    console.log('AtualizaÃ§Ã£o de sinais (10 em 10 min) OK.');
   } catch (err) {
     console.error('Erro ao atualizar sinais:', err);
   }
@@ -23,7 +23,7 @@ cron.schedule('*/1 * * * *', async () => {
   }
 });
 
-// Rotina de auditoria, limpeza e snapshot diário rodando a cada hora (pode ajustar para rodar às 00h se preferir)
+// Rotina de auditoria, limpeza e snapshot diÃ¡rio rodando a cada hora (pode ajustar para rodar Ã s 00h se preferir)
 cron.schedule('0 * * * *', async () => {
   try {
     await runAuditAndPurge();

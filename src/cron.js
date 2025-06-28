@@ -5,18 +5,18 @@ import { cleanupOldRecords, consolidateDailyData } from './services/cleanupServi
 cron.schedule('0 * * * *', async () => {
   try {
     await cleanupOldRecords();
-    console.log('Limpeza de dados antigos concluída.');
+    console.log('Limpeza de dados antigos concluÃ­da.');
   } catch (err) {
     console.error('Erro na limpeza:', err);
   }
 });
 
-// Consolida dados às 00h (meia-noite)
+// Consolida dados Ã s 00h (meia-noite)
 cron.schedule('0 0 * * *', async () => {
   try {
     await consolidateDailyData();
-    console.log('Consolidação diária concluída.');
+    console.log('ConsolidaÃ§Ã£o diÃ¡ria concluÃ­da.');
   } catch (err) {
-    console.error('Erro na consolidação:', err);
+    console.error('Erro na consolidaÃ§Ã£o:', err);
   }
 });

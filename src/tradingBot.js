@@ -3,7 +3,7 @@ import { handleSignal } from './services/tradingEngine.js';
 import { pool } from './database.js';
 
 async function runMigrations() {
-  console.log('[TradingBot] Migrando schema…');
+  console.log('[TradingBot] Migrando schemaâ€¦');
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS signals (
@@ -29,11 +29,11 @@ async function runMigrations() {
     ALTER TABLE open_trades ADD COLUMN IF NOT EXISTS processed BOOLEAN NOT NULL DEFAULT FALSE;
   `);
 
-  console.log('[TradingBot] Migração concluída.');
+  console.log('[TradingBot] MigraÃ§Ã£o concluÃ­da.');
 }
 
 function startBot() {
-  console.log('🤖 TradingBot iniciado');
+  console.log('ðŸ¤– TradingBot iniciado');
   cron.schedule('* * * * *', async () => {
     try {
       const { rows: signals } = await pool.query(
@@ -61,6 +61,6 @@ function startBot() {
 runMigrations()
   .then(startBot)
   .catch(err => {
-    console.error('[TradingBot] Falha na migração:', err);
+    console.error('[TradingBot] Falha na migraÃ§Ã£o:', err);
     process.exit(1);
   });

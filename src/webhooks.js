@@ -11,8 +11,8 @@ const router = Router();
 // Token validation
 router.use((req, res, next) => {
   if (req.query.token !== process.env.WEBHOOK_TOKEN) {
-    logger.warn('Token inválido no webhook', { token: req.query.token });
-    return res.status(401).json({ error: 'Token inválido' });
+    logger.warn('Token invÃ¡lido no webhook', { token: req.query.token });
+    return res.status(401).json({ error: 'Token invÃ¡lido' });
   }
   next();
 });
@@ -62,7 +62,7 @@ router.post('/dominance', async (req, res) => {
     res.json({ status: 'ok' });
   } catch (err) {
     logger.error('Erro no POST /dominance', err);
-    res.status(500).json({ error: 'Erro ao processar dominância' });
+    res.status(500).json({ error: 'Erro ao processar dominÃ¢ncia' });
   }
 });
 

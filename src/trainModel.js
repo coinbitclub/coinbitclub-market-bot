@@ -1,11 +1,11 @@
 import { pool } from './database.js';
-// Se você usar bibliotecas de ML, importe-as aqui:
+// Se vocÃª usar bibliotecas de ML, importe-as aqui:
 // import * as tf from '@tensorflow/tfjs-node';
 
 export async function trainAndGenerateSignals() {
   console.log('[TrainModel] Iniciando treinamento');
 
-  // 1) Carrega histórico de preços e indicadores
+  // 1) Carrega histÃ³rico de preÃ§os e indicadores
   const { rows: history } = await pool.query(`
     SELECT 
       time,
@@ -17,15 +17,15 @@ export async function trainAndGenerateSignals() {
   `);
 
   // 2) (Opcional) Treina seu modelo ML
-  // Aqui você poderia usar `history` para gerar features e labels
+  // Aqui vocÃª poderia usar `history` para gerar features e labels
   // e treinar um modelo TensorFlow, XGBoost, etc.
 
-  // 3) Gera sinais sintéticos ou previsões
+  // 3) Gera sinais sintÃ©ticos ou previsÃµes
   const syntheticSignals = history.slice(-5).map(row => ({
     ticker: 'BTC',
     price: parseFloat(row.close),
     time: new Date(row.time).toISOString(),
-    // você pode incluir mais dados no objeto JSON, se quiser
+    // vocÃª pode incluir mais dados no objeto JSON, se quiser
   }));
 
   // 4) Insere novos sinais na tabela
@@ -35,10 +35,10 @@ export async function trainAndGenerateSignals() {
          VALUES ($1, $2, $3, $4, NOW())`,
       [sig, sig.ticker, sig.time, sig.price]
     );
-    console.log('[TrainModel] Inserido sinal sintético:', sig);
+    console.log('[TrainModel] Inserido sinal sintÃ©tico:', sig);
   }
 
-  console.log('[TrainModel] Treinamento e inserção de sinais concluídos');
+  console.log('[TrainModel] Treinamento e inserÃ§Ã£o de sinais concluÃ­dos');
 }
 
 if (import.meta.url === `file://${process.cwd()}/src/trainModel.js`) {

@@ -5,7 +5,7 @@ import { pool } from './database.js';
 dotenv.config();
 
 async function migrate() {
-  console.log('▶️  Iniciando migração de banco...');
+  console.log('â–¶ï¸  Iniciando migraÃ§Ã£o de banco...');
   await pool.query(`
     CREATE TABLE IF NOT EXISTS signals (
       id          SERIAL PRIMARY KEY,
@@ -16,11 +16,11 @@ async function migrate() {
       captured_at TIMESTAMP DEFAULT NOW()
     );
   `);
-  console.log('✅ Tabela signals criada (ou já existia).');
+  console.log('âœ… Tabela signals criada (ou jÃ¡ existia).');
   process.exit(0);
 }
 
 migrate().catch(err => {
-  console.error('❌ Erro ao migrar:', err);
+  console.error('âŒ Erro ao migrar:', err);
   process.exit(1);
 });
