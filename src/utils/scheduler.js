@@ -1,9 +1,19 @@
+// src/services/scheduler.js
 import cron from 'node-cron';
-import { fetchMetrics, fetchFearGreed, fetchDominance } from '../services/coinstatsService.js';
-import { executeQuery } from './services/databaseService.js';
+import logger from '../logger.js';
+
+import { fetchMetrics, fetchFearGreed, fetchDominance } from './coinstatsService.js';
+import { pool } from '../database.js';
+import { cleanExpiredTestUsers, cleanOldInactiveUsers } from '../database.js';
+import { monitorUserPositions } from './orderManager.js'; // Se quiser monitoramento de trades
+
+// Função utilitária para query async
+async function executeQuery(sql, params) {
+  return pool.query(sql, params);
+}
 
 export function setupScheduler() {
-  // A cada 2h, coleta e salva no banco
+  // Job: coleta CoinStats a cada 2h
   cron.schedule('0 */2 * * *', async () => {
     try {
       const key = process.env.COINSTATS_API_KEY;
@@ -24,25 +34,48 @@ export function setupScheduler() {
          VALUES (NOW(), $1, NULL, NULL, NULL)`,
         [bd.dominance]
       );
-      console.log('âœ… Scheduler: CoinStats salvos no DB');
+      logger.info('✅ Scheduler: CoinStats salvos no DB');
     } catch (err) {
-      console.error('ðŸš¨ Scheduler error:', err);
+      logger.error('🚨 Scheduler error:', err);
     }
   });
 
-  // Limpeza diÃ¡ria de sinais (>72h)
+  // Limpeza diária de sinais (>72h)
   cron.schedule('0 1 * * *', async () => {
     try {
       await executeQuery(
         `DELETE FROM signals WHERE captured_at < NOW() - INTERVAL '72 hours'`
       );
-      console.log('ðŸ—‘ï¸ Scheduler: sinais antigos limpos');
+      logger.info('🧹 Scheduler: sinais antigos limpos');
     } catch (err) {
-      console.error('ðŸš¨ Scheduler cleanup error:', err);
+      logger.error('🚨 Scheduler cleanup error:', err);
+    }
+  });
+
+  // Limpeza de usuários em teste e usuários inativos
+  cron.schedule('30 1 * * *', async () => {
+    try {
+      await cleanExpiredTestUsers();
+      await cleanOldInactiveUsers();
+      logger.info('🧹 Scheduler: usuários expirados e inativos limpos');
+    } catch (err) {
+      logger.error('🚨 Scheduler user cleanup error:', err);
+    }
+  });
+
+  // (Opcional) Monitoramento automático de posições abertas (exemplo: a cada 10 min)
+  cron.schedule('*/10 * * * *', async () => {
+    try {
+      // Supondo que você tenha uma função para buscar todos usuários ativos
+      const { rows: users } = await executeQuery(
+        `SELECT * FROM users WHERE status = 'ativo'`
+      );
+      for (const user of users) {
+        await monitorUserPositions(user);
+      }
+      logger.info('🔎 Scheduler: monitoramento automático de posições rodado.');
+    } catch (err) {
+      logger.error('🚨 Scheduler monitoramento error:', err);
     }
   });
 }
-
-
-
-

@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import logger from '../utils/logger.js';
 import { parseSignal } from '../parseSignal.js';
-import { saveSignal } from '../services/signalsService.js';
+import { saveSignal } from '../services/signals.js';
 
 const router = Router();
 

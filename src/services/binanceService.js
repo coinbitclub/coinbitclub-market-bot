@@ -1,52 +1,57 @@
 import axios from 'axios';
 import crypto from 'crypto';
 
-const BASE = 'https://api.binance.com';
+// Base por ambiente
+const BASES = {
+  prod: process.env.BINANCE_API_BASE || 'https://api.binance.com',
+  test: process.env.BINANCE_API_BASE_TEST || 'https://testnet.binance.vision'
+};
 
+// Assinatura de requisições privadas
 function sign(query, secret) {
   return crypto.createHmac('sha256', secret).update(query).digest('hex');
 }
 
-export async function placeBinanceOrder({
-  apiKey,
-  apiSecret,
-  symbol,
-  side = 'BUY',
-  qty,
-  price,
-  tpPercent,
-  slPercent
-}) {
+// Função universal de request
+async function binanceRequest({ method, path, params, apiKey, apiSecret, testnet = false }) {
   const ts = Date.now();
-  // Primeiro enviamos ordem de market
-  const orderQuery = `symbol=${symbol}&side=${side}&type=MARKET&quantity=${qty}&timestamp=${ts}`;
-  const signature1 = sign(orderQuery, apiSecret);
-  await axios.post(`${BASE}/api/v3/order?${orderQuery}&signature=${signature1}`, null, {
-    headers: { 'X-MBX-APIKEY': apiKey }
-  });
+  const query = new URLSearchParams({ ...params, timestamp: ts }).toString();
+  const signature = sign(query, apiSecret);
+  const url = `${testnet ? BASES.test : BASES.prod}${path}?${query}&signature=${signature}`;
 
-  // Depois criamos a OCO para TP/SL
-  const tpPrice = (price * (1 + tpPercent / 100)).toFixed(8);
-  const slPrice = (price * (1 - slPercent / 100)).toFixed(8);
-  const ocoQuery = [
-    `symbol=${symbol}`,
-    `side=SELL`,
-    `type=OCO`,
-    `quantity=${qty}`,
-    `price=${tpPrice}`,
-    `stopPrice=${slPrice}`,
-    `stopLimitPrice=${slPrice}`,
-    `stopLimitTimeInForce=GTC`,
-    `timestamp=${Date.now()}`
-  ].join('&');
-  const signature2 = sign(ocoQuery, apiSecret);
-  const { data } = await axios.post(`${BASE}/api/v3/order/oco?${ocoQuery}&signature=${signature2}`, null, {
+  return axios({
+    method,
+    url,
     headers: { 'X-MBX-APIKEY': apiKey }
-  });
-
-  return data;
+  }).then(r => r.data);
 }
 
+// 1. Enviar ordem de mercado
+export async function placeBinanceOrder({ apiKey, apiSecret, symbol, side = 'BUY', qty, testnet = false }) {
+  return binanceRequest({
+    method: 'POST',
+    path: '/api/v3/order',
+    params: { symbol, side, type: 'MARKET', quantity: qty },
+    apiKey, apiSecret, testnet
+  });
+}
 
+// 2. Buscar saldo
+export async function getBinanceBalance({ apiKey, apiSecret, testnet = false }) {
+  return binanceRequest({
+    method: 'GET',
+    path: '/api/v3/account',
+    params: {},
+    apiKey, apiSecret, testnet
+  });
+}
 
-
+// 3. Buscar histórico de ordens
+export async function getBinanceOrderHistory({ apiKey, apiSecret, symbol, testnet = false }) {
+  return binanceRequest({
+    method: 'GET',
+    path: '/api/v3/allOrders',
+    params: { symbol, limit: 50 },
+    apiKey, apiSecret, testnet
+  });
+}
