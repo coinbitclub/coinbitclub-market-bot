@@ -1,62 +1,21 @@
-import { pool } from '../database.js';
+import { insertSignal } from './databaseService.js';
+// Adapte para outras tabelas conforme necessário (dominance, fear/greed...)
 
-/**
- * Grava um signal na tabela signals.
- * Espera body = { ticker, time, price, ... }.
- * Armazena o JSON completo em signal_json.
- */
 export async function saveSignal(body) {
-  const { ticker, time, price } = body;
-  await pool.query(
-    `INSERT INTO signals
-       (signal_json, ticker, price, time, captured_at)
-     VALUES
-       ($1, $2, $3, $4, NOW())`,
-    [body, ticker, price, time]
-  );
+  return insertSignal(body);
 }
 
-/**
- * Grava dominance na tabela dominance.
- * Espera body = { timestamp, btc_dom, eth_dom }.
- */
 export async function fetchAndSaveDominance(body) {
-  const { timestamp, btc_dom, eth_dom } = body;
-  await pool.query(
-    `INSERT INTO dominance
-       (timestamp, btc_dom, eth_dom, created_at)
-     VALUES
-       ($1, $2, $3, NOW())`,
-    [timestamp, btc_dom, eth_dom]
-  );
+  // Exemplo para dominance
+  // return insertDominance(body);
 }
 
-/**
- * Grava Fear & Greed na tabela fear_greed.
- * Espera body = { index_value, value_classification, timestamp }.
- */
 export async function fetchAndSaveFearGreed(body) {
-  const { index_value, value_classification, timestamp } = body;
-  await pool.query(
-    `INSERT INTO fear_greed
-       (index_value, value_classification, timestamp, captured_at)
-     VALUES
-       ($1, $2, $3, NOW())`,
-    [index_value, value_classification, timestamp]
-  );
+  // Exemplo para fear/greed
+  // return insertFearGreed(body);
 }
 
-/**
- * Grava preço de mercado genérico na tabela market.
- * Espera body = { symbol, price, timestamp }.
- */
 export async function fetchAndSaveMarket(body) {
-  const { symbol, price, timestamp } = body;
-  await pool.query(
-    `INSERT INTO market
-       (symbol, price, timestamp, captured_at)
-     VALUES
-       ($1, $2, $3, NOW())`,
-    [symbol, price, timestamp]
-  );
+  // Exemplo para market
+  // return insertMarket(body);
 }

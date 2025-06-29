@@ -1,33 +1,15 @@
 import express from 'express';
-import { fetchRecentSignals } from '../services/signalService.js';
-import { fetchLastDominance } from '../services/dominanceService.js';
-import { fetchLastFearGreed } from '../services/fearGreedWriter.js';
+import { query } from '../services/databaseService.js';
 
 const router = express.Router();
 
-router.get('/signals', async (_req, res, next) => {
+router.get('/signals', async (req, res, next) => {
   try {
-    const rows = await fetchRecentSignals();
-    if (!rows || !Array.isArray(rows) || rows.length === 0)
-      return res.status(404).json({ error: 'No signals found' });
+    const { rows } = await query('SELECT * FROM signals ORDER BY time DESC LIMIT 100');
     res.json(rows);
   } catch (err) { next(err); }
 });
 
-router.get('/dominance', async (_req, res, next) => {
-  try {
-    const row = await fetchLastDominance();
-    if (!row) return res.status(404).json({ error: 'No dominance data available' });
-    res.json(row);
-  } catch (err) { next(err); }
-});
-
-router.get('/fear_greed', async (_req, res, next) => {
-  try {
-    const row = await fetchLastFearGreed();
-    if (!row) return res.status(404).json({ error: 'No fear/greed data available' });
-    res.json(row);
-  } catch (err) { next(err); }
-});
+// Adicione rotas GET para market, dominance, fear_greed conforme estrutura do banco!
 
 export default router;
