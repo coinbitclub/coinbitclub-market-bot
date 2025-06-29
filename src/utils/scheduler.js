@@ -1,38 +1,28 @@
 // src/services/scheduler.js
 import cron from 'node-cron';
 import logger from '../utils/logger.js';
-
 import { fetchMetrics, fetchFearGreed, fetchDominance } from './coinstatsService.js';
-import { pool } from '../database.js';
-import { cleanExpiredTestUsers, cleanOldInactiveUsers } from '../database.js';
-import { monitorUserPositions } from './orderManager.js'; // Se quiser monitoramento de trades
+import { pool, cleanExpiredTestUsers, cleanOldInactiveUsers } from '../database.js';
+import { monitorUserPositions } from './orderManager.js';
 
-// Função utilitária para query async
-async function executeQuery(sql, params) {
-  return pool.query(sql, params);
-}
-
+/**
+ * Inicializa todos os jobs agendados sem encerrar o processo.
+ */
 export function setupScheduler() {
-  // Job: coleta CoinStats a cada 2h
+  logger.info('Scheduler: starting jobs');
+
+  // 1) Coleta e salva métricas da CoinStats a cada 2 horas
   cron.schedule('0 */2 * * *', async () => {
     try {
       const key = process.env.COINSTATS_API_KEY;
-      await fetchFearGreed(key);
-      await executeQuery(
-        `INSERT INTO coinstats_metrics (captured_at, dominance, market_cap, volume_24h, altcoin_season)
-         VALUES (NOW(), NULL, NULL, NULL, NULL);`
-      );
-      const mk = await fetchMetrics(key);
-      await executeQuery(
-        `INSERT INTO coinstats_metrics (captured_at, dominance, market_cap, volume_24h, altcoin_season)
-         VALUES (NOW(), NULL, $1, $2, NULL)`,
-        [mk.totalMarketCap, mk.totalVolume]
-      );
-      const bd = await fetchDominance(key);
-      await executeQuery(
-        `INSERT INTO coinstats_metrics (captured_at, dominance, market_cap, volume_24h, altcoin_season)
-         VALUES (NOW(), $1, NULL, NULL, NULL)`,
-        [bd.dominance]
+      const metrics = await fetchMetrics(key);
+      const dominance = await fetchDominance(key);
+      const fearGreed = await fetchFearGreed(key);
+      await pool.query(
+        `INSERT INTO coinstats_metrics
+         (captured_at, dominance, market_cap, volume_24h, altcoin_season)
+         VALUES (NOW(), $1, $2, $3, $4)`,
+        [dominance.dominance, metrics.totalMarketCap, metrics.totalVolume, fearGreed.season]
       );
       logger.info('✅ Scheduler: CoinStats salvos no DB');
     } catch (err) {
@@ -40,10 +30,10 @@ export function setupScheduler() {
     }
   });
 
-  // Limpeza diária de sinais (>72h)
+  // 2) Limpeza diária de sinais antigos (>72h) às 01:00
   cron.schedule('0 1 * * *', async () => {
     try {
-      await executeQuery(
+      await pool.query(
         `DELETE FROM signals WHERE captured_at < NOW() - INTERVAL '72 hours'`
       );
       logger.info('🧹 Scheduler: sinais antigos limpos');
@@ -52,7 +42,7 @@ export function setupScheduler() {
     }
   });
 
-  // Limpeza de usuários em teste e usuários inativos
+  // 3) Limpeza diária de usuários de teste expirados e inativos às 01:30
   cron.schedule('30 1 * * *', async () => {
     try {
       await cleanExpiredTestUsers();
@@ -63,13 +53,10 @@ export function setupScheduler() {
     }
   });
 
-  // (Opcional) Monitoramento automático de posições abertas (exemplo: a cada 10 min)
+  // 4) Monitoramento de posições abertas a cada 10 minutos
   cron.schedule('*/10 * * * *', async () => {
     try {
-      // Supondo que você tenha uma função para buscar todos usuários ativos
-      const { rows: users } = await executeQuery(
-        `SELECT * FROM users WHERE status = 'ativo'`
-      );
+      const { rows: users } = await pool.query(`SELECT * FROM users WHERE status = 'ativo'`);
       for (const user of users) {
         await monitorUserPositions(user);
       }
