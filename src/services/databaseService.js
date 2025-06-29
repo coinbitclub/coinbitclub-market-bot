@@ -47,9 +47,7 @@ export async function insertFearGreed({ value, captured_at, ...rest }) {
 }
 
 // Adicionado automaticamente em 2025-06-28 22:21:51
-export async function getBybitCredentials(user_id, is_testnet = false) {
   const { rows } = await query(
-    export async function getBybitCredentials(user_id, is_testnet = false) {
   const { rows } = await pool.query(
     'SELECT api_key, api_secret FROM bybit_credentials WHERE user_id =  AND is_testnet =  LIMIT 1',
     [user_id, is_testnet]
@@ -62,10 +60,16 @@ export async function getBybitCredentials(user_id, is_testnet = false) {
 }
 
 // Adicionado automaticamente em 2025-06-28 22:25:04
-export async function getBybitCredentials(user_id, is_testnet = false) {
   const { rows } = await query(
     `SELECT api_key, api_secret FROM bybit_credentials WHERE user_id = $1 AND is_testnet = $2 LIMIT 1`,
     [user_id, is_testnet]
   );
   return rows[0] || null;
+}
+export async function getBybitCredentials(user_id, is_testnet = false) {
+  const { rows } = await pool.query(
+    'SELECT api_key, api_secret FROM bybit_credentials WHERE user_id =  AND is_testnet =  LIMIT 1',
+    [user_id, is_testnet]
+  );
+  return rows[0];
 }
