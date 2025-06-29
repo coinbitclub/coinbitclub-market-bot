@@ -1,23 +1,24 @@
 export function parseSignal(body) {
+  // Garantia de data válida
+  let parsedTime = new Date(body.time);
+  if (!body.time || isNaN(parsedTime)) {
+    parsedTime = new Date();
+  }
+
   return {
-    ticker:          body.ticker,
-    time:            new Date(body.time),
-    close:           parseFloat(body.close),
-    ema9:            parseFloat(body.ema9_30),
-    rsi4h:           parseFloat(body.rsi_4h),
-    rsi15:           parseFloat(body.rsi_15),
-    momentum15:      parseFloat(body.momentum_15),
-    atr30:           parseFloat(body.atr_30),
-    atrPct30:        parseFloat(body.atr_pct_30),
-    vol30:           parseFloat(body.vol_30),
-    volMa30:         parseFloat(body.vol_ma_30),
-    diffBtcEma7:     parseFloat(body.diff_btc_ema7),
-    cruzouAcimaEma9: Boolean(body.cruzou_acima_ema9),
-    cruzouAbaixoEma9:Boolean(body.cruzou_abaixo_ema9),
-    leverage:        parseInt(body.leverage,10)
+    ticker:          body.ticker ?? 'BTCUSDT',
+    time:            parsedTime, // SEMPRE válido
+    close:           body.close != null ? Number(body.close) : null,
+    ema9_30:         body.ema9_30 != null ? Number(body.ema9_30) : null,
+    rsi_4h:          body.rsi_4h != null ? Number(body.rsi_4h) : null,
+    rsi_15:          body.rsi_15 != null ? Number(body.rsi_15) : null,
+    momentum_15:     body.momentum_15 != null ? Number(body.momentum_15) : null,
+    atr_30:          body.atr_30 != null ? Number(body.atr_30) : null,
+    atr_pct_30:      body.atr_pct_30 != null ? Number(body.atr_pct_30) : null,
+    vol_30:          body.vol_30 != null ? Number(body.vol_30) : null,
+    vol_ma_30:       body.vol_ma_30 != null ? Number(body.vol_ma_30) : null,
+    diff_btc_ema7:   body.diff_btc_ema7 != null ? Number(body.diff_btc_ema7) : null,
+    leverage:        body.leverage != null ? Number(body.leverage) : 1,
+    signal_json:     body.signal_json ?? null // ou ajustar conforme uso
   };
 }
-
-
-
-

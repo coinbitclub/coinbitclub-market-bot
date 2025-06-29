@@ -7,16 +7,28 @@ import { pool } from '../database.js';
  * @param {Object} data — { ticker, price, signal_json, time }
  */
 export async function saveSignal(userId, { ticker, price, signal_json, time }) {
-  const q = `
+  // Garante que a data seja válida
+  let when = time ? new Date(time) : new Date();
+  if (isNaN(when)) when = new Date();
+
+  // Não permite salvar valores vazios obrigatórios
+  if (!ticker) throw new Error('Ticker é obrigatório!');
+  // price pode ser null, mas se vier deve ser número válido
+  const _price = (price !== undefined && price !== null) ? Number(price) : null;
+  // signal_json pode ser objeto ou string JSON
+  const _signal_json = signal_json ? (
+    typeof signal_json === 'string' ? signal_json : JSON.stringify(signal_json)
+  ) : null;
+
+  const query = `
     INSERT INTO signals
       (ticker, price, signal_json, time, user_id)
     VALUES ($1, $2, $3, $4, $5)
   `;
-  const when = time ? new Date(time) : new Date();
-  await pool.query(q, [
+  await pool.query(query, [
     ticker,
-    price,
-    signal_json,
+    _price,
+    _signal_json,
     when,
     userId ?? null
   ]);
