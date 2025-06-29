@@ -11,26 +11,26 @@ import { monitorUserPositions } from './orderManager.js';
 export function setupScheduler() {
   logger.info('Scheduler: starting jobs');
 
-  // 1) Coleta métricas da CoinStats a cada 2 horas
+  // 1) Coleta métricas a cada 2h
   cron.schedule('0 */2 * * *', async () => {
     try {
-      const key       = process.env.COINSTATS_API_KEY;
-      const metrics   = await fetchMetrics(key);
-      const dominance = await fetchDominance(key);
-      const fearGreed = await fetchFearGreed(key);
+      const key = process.env.COINSTATS_API_KEY;
+      const metrics    = await fetchMetrics(key);
+      const dominance  = await fetchDominance(key);
+      const fearGreed  = await fetchFearGreed(key);
       await pool.query(
         `INSERT INTO coinstats_metrics
-         (captured_at, dominance, market_cap, volume_24h, altcoin_season)
+           (captured_at, dominance, market_cap, volume_24h, altcoin_season)
          VALUES (NOW(), $1, $2, $3, $4)`,
         [dominance.dominance, metrics.totalMarketCap, metrics.totalVolume, fearGreed.season]
       );
       logger.info('✅ Scheduler: CoinStats salvos no DB');
     } catch (err) {
-      logger.error('🚨 Scheduler error:', err);
+      logger.error('🚨 Scheduler metrics error:', err);
     }
   });
 
-  // 2) Limpeza diária de sinais antigos (>72h) às 01:00
+  // 2) Limpeza de sinais >72h (01:00 am)
   cron.schedule('0 1 * * *', async () => {
     try {
       await pool.query(
@@ -42,7 +42,7 @@ export function setupScheduler() {
     }
   });
 
-  // 3) Limpeza diária de usuários de teste expirados e inativos às 01:30
+  // 3) Limpeza de testes expirados e inativos (01:30 am)
   cron.schedule('30 1 * * *', async () => {
     try {
       await cleanExpiredTestUsers();
@@ -53,16 +53,24 @@ export function setupScheduler() {
     }
   });
 
-  // 4) Monitoramento de posições abertas a cada 10 minutos
+  // 4) Monitoramento de posições a cada 10 minutos
   cron.schedule('*/10 * * * *', async () => {
     try {
-      const { rows: users } = await pool.query(
-        `SELECT * FROM users WHERE status = 'ativo'`
-      );
+      // Seleciona apenas usuários com assinatura ativa e no período corrente
+      const { rows: users } = await pool.query(`
+        SELECT u.*
+        FROM users u
+        JOIN subscriptions s
+          ON u.id = s.user_id
+        WHERE s.status       = 'ativo'
+          AND s.data_inicio <= NOW()
+          AND s.data_fim    >= NOW()
+      `);
+
       for (const user of users) {
         await monitorUserPositions(user);
       }
-      logger.info('🔎 Scheduler: monitoramento de posições rodado');
+      logger.info('🔎 Scheduler: monitoramento de posições rodou com %d usuários.', users.length);
     } catch (err) {
       logger.error('🚨 Scheduler monitoramento error:', err);
     }
