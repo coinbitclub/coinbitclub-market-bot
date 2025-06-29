@@ -1,4 +1,20 @@
+// src/parseSignal.js
+
 export function parseSignal(data) {
+  let signal_time = data.signal_time;
+  // Se não veio, usa agora
+  if (!signal_time) {
+    signal_time = new Date().toISOString();
+  } else {
+    // Se veio number, converte
+    if (typeof signal_time === 'number') {
+      signal_time = new Date(signal_time).toISOString();
+    } else if (typeof signal_time === 'string') {
+      // Se for string, tenta normalizar para ISO, se não der, pega agora
+      const dateTest = Date.parse(signal_time);
+      signal_time = isNaN(dateTest) ? new Date().toISOString() : new Date(signal_time).toISOString();
+    }
+  }
   return {
     ticker: data.ticker ?? 'BTCUSDT',
     close: Number(data.close ?? 0),
@@ -12,6 +28,6 @@ export function parseSignal(data) {
     vol_ma_30: Number(data.vol_ma_30 ?? 0),
     diff_btc_ema7: Number(data.diff_btc_ema7 ?? 0),
     leverage: Number(data.leverage ?? 1),
-    signal_time: data.signal_time ?? new Date().toISOString()
+    signal_time
   };
 }
