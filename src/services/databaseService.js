@@ -89,3 +89,20 @@ export async function getBybitCredentials(user_id, is_testnet = false) {
   const { rows } = await pool.query(queryText, [user_id, is_testnet]);
   return rows[0] || null;
 }
+
+/**
+ * Busca credenciais da API Binance para um usuário.
+ * @param {string} user_id - ID do usuário.
+ * @param {boolean} is_testnet - indica se é testnet.
+ * @returns {Promise<Object|null>} credenciais ou null.
+ */
+export async function getBinanceCredentials(user_id, is_testnet = false) {
+  const queryText = `
+    SELECT api_key, api_secret
+    FROM binance_credentials
+    WHERE user_id = $1 AND is_testnet = $2
+    LIMIT 1;
+  `;
+  const { rows } = await pool.query(queryText, [user_id, is_testnet]);
+  return rows[0] || null;
+}
