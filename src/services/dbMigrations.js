@@ -1,15 +1,28 @@
 // src/services/dbMigrations.js
 import { pool } from '../database.js';
 
+// Sinais detalhados com campos flexíveis para expansão
 export async function ensureSignalsTable() {
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS signals (
         id SERIAL PRIMARY KEY,
         ticker VARCHAR(24) NOT NULL,
-        price NUMERIC NOT NULL,
-        signal_json JSONB NOT NULL,
-        time TIMESTAMP NOT NULL DEFAULT NOW(),
+        price NUMERIC,
+        close NUMERIC,
+        ema9_30 NUMERIC,
+        rsi_4h NUMERIC,
+        rsi_15 NUMERIC,
+        momentum_15 NUMERIC,
+        atr_30 NUMERIC,
+        atr_pct_30 NUMERIC,
+        vol_30 NUMERIC,
+        vol_ma_30 NUMERIC,
+        diff_btc_ema7 NUMERIC,
+        leverage NUMERIC,
+        signal_time TIMESTAMP,
+        signal_json JSONB,
+        time TIMESTAMP DEFAULT NOW(),
         user_id VARCHAR(128),
         created_at TIMESTAMP DEFAULT NOW()
       )
