@@ -1,17 +1,17 @@
 // src/routes/webhookRoutes.js
 import express from 'express';
 import { verifyToken } from '../middleware/auth.js';
-import signalRouter     from './signal.js';
-import dominanceRouter  from './dominance.js';
-import fearGreedRouter   from './fearGreed.js';
-import marketRouter      from './market.js';
+import signalRouter    from './signal.js';
+import dominanceRouter from './dominance.js';
+import fearGreedRouter  from './fearGreed.js';
+import marketRouter     from './market.js';
 
 const router = express.Router();
 
-// Protege todas as rotas de webhook com ?token=…
+// Aplica autenticação em todos os webhooks
 router.use(verifyToken);
 
-// Sub-rotas de cada tipo de webhook
+// Sub-rotas para cada tipo de webhook
 router.use('/signal',     signalRouter);
 router.use('/dominance',  dominanceRouter);
 router.use('/fear-greed', fearGreedRouter);
