@@ -12,9 +12,9 @@ import {
   ensureMarketTable
 } from './services/dbMigrations.js';
 import { setupScheduler } from './services/scheduler.js';
-import webhookRouter from './routes/webhookRoutes.js';
-import fetchRouter    from './routes/fetch.js';
-import tradingRouter  from './routes/trading.js';
+import webhookRouter   from './routes/webhookRoutes.js';
+import fetchRouter     from './routes/fetch.js';
+import tradingRouter   from './routes/trading.js';
 import dashboardRouter from './routes/dashboard.js';
 
 dotenv.config();
@@ -22,19 +22,19 @@ const app  = express();
 const port = process.env.PORT || 8080;
 
 (async () => {
-  // 1) Migrações
+  // 1) Migrações de banco
   await ensureSignalsTable();
   await ensureDominanceTable();
   await ensureFearGreedTable();
   await ensureMarketTable();
 
-  // 2) Middlewares
+  // 2) Middlewares globais
   app.use(cors());
   app.use(morgan('combined'));
   app.use(express.json({ limit: '200kb' }));
 
   // 3) Health checks
-  app.get('/',    (_req, res) => res.send('🚀 Bot ativo!'));
+  app.get('/',      (_req, res) => res.send('🚀 Bot ativo!'));
   app.get('/healthz', (_req, res) => res.send('OK'));
 
   // 4) Rotas principais
@@ -42,7 +42,7 @@ const port = process.env.PORT || 8080;
   app.use('/api',     fetchRouter);
   app.use('/trading', tradingRouter);
 
-  // 5) Dashboard
+  // 5) Dashboard protegido por Basic Auth
   app.use(
     '/dashboard',
     basicAuth({
@@ -52,15 +52,15 @@ const port = process.env.PORT || 8080;
     dashboardRouter
   );
 
-  // 6) Error handler
+  // 6) Handler de erros centralizado
   app.use((err, _req, res, _next) => {
     console.error('❌ ERRO GERAL:', err);
     res.status(err.status || 500).json({ error: err.message });
   });
 
-  // 7) Start server + scheduler
+  // 7) Inicia servidor e dispara scheduler
   app.listen(port, () => {
     console.log(`🚀 Server listening on port ${port}`);
-    setupScheduler();  // ← chama o seu scheduler aqui
+    setupScheduler();
   });
 })();
