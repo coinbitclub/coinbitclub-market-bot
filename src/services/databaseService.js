@@ -15,10 +15,10 @@ function normalizeTimestamp(ts) {
   }
   return new Date().toISOString();
 
-export const query = (text, params) => pool.query(text, params);
+module.exports.query = (text, params) => pool.query(text, params);
 
 // Insere novo sinal na tabela signals
-export async function insertSignal({ symbol, price, timestamp, ...rest }) {
+module.exports.insertSignal = async function({ symbol, price, timestamp, ...rest }) {
   const ts = normalizeTimestamp(timestamp);
   const text = `
     INSERT INTO signals(symbol, price, timestamp, captured_at, raw_payload)
@@ -27,7 +27,7 @@ export async function insertSignal({ symbol, price, timestamp, ...rest }) {
   return pool.query(text, [symbol, price, ts, rest]);
 
 // Insere novo dominance
-export async function insertDominance({ value, captured_at, ...rest }) {
+module.exports.insertDominance = async function({ value, captured_at, ...rest }) {
   const text = `
     INSERT INTO dominance(value, captured_at, created_at, raw_payload)
     VALUES($1, $2, NOW(), $3);
@@ -35,7 +35,7 @@ export async function insertDominance({ value, captured_at, ...rest }) {
   return pool.query(text, [value, captured_at, rest]);
 
 // Insere novo Fear & Greed
-export async function insertFearGreed({ value, captured_at, ...rest }) {
+module.exports.insertFearGreed = async function({ value, captured_at, ...rest }) {
   const text = `
     INSERT INTO fear_greed(value, captured_at, created_at, raw_payload)
     VALUES($1, $2, NOW(), $3);
@@ -69,7 +69,7 @@ export async function insertFearGreed({ value, captured_at, ...rest }) {
     'SELECT api_key, api_secret FROM bybit_credentials WHERE user_id =  AND is_testnet =  LIMIT 1',
     [user_id, is_testnet]
   );
-export async function getBybitCredentials(user_id, is_testnet = false) {
+module.exports.getBybitCredentials = async function(user_id, is_testnet = false) {
   const { rows } = await pool.query(
     'SELECT api_key, api_secret FROM bybit_credentials WHERE user_id =  AND is_testnet =  LIMIT 1',
     [user_id, is_testnet]
