@@ -1,30 +1,44 @@
+// src/services/coinstatsService.js
 import axios from 'axios';
-import { pool } from '../database.js';
 
-const API_KEY = process.env.COINSTATS_API_KEY;
-const BASE = 'https://openapiv1.coinstats.app';
+/**
+ * Busca métricas gerais (market cap, volume) da CoinStats.
+ */
+export async function fetchMetrics(apiKey) {
+  const { data } = await axios.get(
+    'https://api.coinstats.app/public/v1/markets?skip=0&limit=1',
+    { headers: { 'X-API-KEY': apiKey } }
+  );
+  // Ajuste conforme o formato real da resposta:
+  return {
+    totalMarketCap: data[0]?.marketCap || 0,
+    totalVolume:    data[0]?.volume || 0
+  };
+}
 
-// Busca e salva dados do Fear & Greed
-export async function fetchAndSaveFearGreed() {
-  try {
-    const res = await axios.get(`${BASE}/insights/fear-and-greed`, {
-      headers: { 'X-API-KEY': API_KEY }
-    });
+/**
+ * Busca índice Fear & Greed da CoinStats.
+ */
+export async function fetchFearGreed(apiKey) {
+  const { data } = await axios.get(
+    'https://openapiv1.coinstats.app/insights/fear-and-greed',
+    { headers: { 'X-API-KEY': apiKey } }
+  );
+  return {
+    value:           data.value,
+    season:          data.value_classification,  // ou ajuste conforme campo correto
+  };
+}
 
-    const { value, value_classification, timestamp } = res.data.now;
-    const captured_at = new Date(timestamp * 1000).toISOString();
-
-    const sql = `
-      INSERT INTO public.fear_greed (value, value_classification, captured_at, created_at)
-      VALUES ($1, $2, $3, NOW())
-    `;
-
-    console.log('[FearGreed] Executando query:', sql.trim(), 'com parâmetros:', [value, value_classification, captured_at]);
-
-    await pool.query(sql, [value, value_classification, captured_at]);
-
-    console.log('[FearGreed] Dados inseridos com sucesso');
-  } catch (err) {
-    console.error('[FearGreed] Erro ao inserir:', err.response?.data || err.message);
-  }
+/**
+ * Busca dominância de BTC na CoinStats.
+ */
+export async function fetchDominance(apiKey) {
+  const { data } = await axios.get(
+    'https://openapiv1.coinstats.app/insights/btc-dominance?type=24h',
+    { headers: { 'X-API-KEY': apiKey } }
+  );
+  return {
+    dominance: data.btc_dominance  // ajuste conforme campo retornado
+  };
 }
