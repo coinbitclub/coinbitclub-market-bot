@@ -1,41 +1,59 @@
-import {
-  saveSignal,
-  fetchAndSaveDominance as saveDominance,
-  fetchAndSaveFearGreed as saveFearGreed,
-  fetchAndSaveMarket as saveMarketPrice
-} from '../services/fetchAndSaveData.js';
-
+// src/routes/webhookRoutes.js
 import express from 'express';
 import { verifyToken } from '../middleware/auth.js';
+import { parseSignal } from '../services/parseSignal.js';
+import { saveSignal } from '../services/signalService.js';
+import { saveDominance } from '../services/dominanceService.js';
+import { saveFearGreed } from '../services/fearGreedService.js';
+import { saveMarketPrice } from '../services/marketService.js';
 
 const router = express.Router();
 
-router.post('/signal', verifyToken, async (req, res, next) => {
+// todas as rotas protegidas
+router.use(verifyToken);
+
+// POST /webhook/signal
+router.post('/signal', async (req, res, next) => {
   try {
-    await saveSignal(req.body);
+    const signal = parseSignal(req.body);
+    await saveSignal(req.userId || null, signal);
     res.json({ status: 'ok' });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.post('/dominance', verifyToken, async (req, res, next) => {
+// POST /webhook/dominance
+router.post('/dominance', async (req, res, next) => {
   try {
-    await saveDominance(req.body);
+    const { timestamp, btc_dom, ema7 } = req.body;
+    await saveDominance({ timestamp, btc_dom, ema7 });
     res.json({ status: 'ok' });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.post('/fear-greed', verifyToken, async (req, res, next) => {
+// POST /webhook/fear-greed
+router.post('/fear-greed', async (req, res, next) => {
   try {
-    await saveFearGreed(req.body);
+    const { timestamp, index_value, value_classification } = req.body;
+    await saveFearGreed({ timestamp, index_value, value_classification });
     res.json({ status: 'ok' });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.post('/market', verifyToken, async (req, res, next) => {
+// POST /webhook/market
+router.post('/market', async (req, res, next) => {
   try {
-    await saveMarketPrice(req.body);
+    const { timestamp, symbol, price } = req.body;
+    await saveMarketPrice({ timestamp, symbol, price });
     res.json({ status: 'ok' });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default router;
