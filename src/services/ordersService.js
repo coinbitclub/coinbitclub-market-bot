@@ -1,5 +1,5 @@
 import { query } from './databaseService.js';
-import { logger } from '../logger.js';
+import logger from '../utils/logger.js';
 import { placeBybitOrder } from './bybitAdapter.js';
 import { placeBinanceOrder } from './binanceAdapter.js';
 

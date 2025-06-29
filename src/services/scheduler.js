@@ -1,8 +1,8 @@
 import { CronJob } from "cron";
-import logger from "../utils/logger.js";
+import logger from '../utils/logger.js';
 import { fetchAndSaveDominance } from "./dominanceService.js";
 import { fetchAndSaveFearGreed } from "./fearGreedService.js";
-import { fetchAndSaveMarkets } from "./marketsService.js";
+import { fetchAndSaveMarkets } from "./marketsWriter.js";
 
 // Centraliza todos os agendamentos do sistema
 export function setupScheduler() {

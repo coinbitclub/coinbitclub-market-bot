@@ -1,5 +1,3 @@
-console.log("===== INÍCIO DO INDEX.JS ATUAL =====");
-
 import express from 'express';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
@@ -12,6 +10,7 @@ import { pool, getBybitCredentials, hasActiveSubscription } from './database.js'
 // Rotas principais
 import webhookRouter from './routes/webhook.js';
 import signalRouter from './routes/signals.js';
+import apiRouter from './routes/apiRoutes.js';
 import dashboardRouter from './routes/dashboard.js';
 import fetchRouter from './routes/fetch.js'; // Para buscar sinais/dominance/fear_greed
 import tradingRouter from './routes/trading.js';
@@ -39,7 +38,7 @@ app.use('/webhook/dominance', webhookRouter);  // POST dominance
 app.use('/webhook', webhookRoutesRouter);      // Protegido por token/JWT para sinais/dominance/market
 
 // --- API REST público (dados de mercado, operações, etc) ---
-app.use('/api', fetchRouter);                    // GET market, dominance, fear_greed etc.
+app.use('/api', apiRouter);                    // GET market, dominance, fear_greed etc.
 app.use('/fetch', fetchRouter);                // GET signals/dominance/fear_greed
 
 // --- Trading (execução de ordem de teste/real) ---

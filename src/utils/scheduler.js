@@ -1,6 +1,6 @@
 // src/services/scheduler.js
 import cron from 'node-cron';
-import logger from '../logger.js';
+import logger from '../utils/logger.js';
 
 import { fetchMetrics, fetchFearGreed, fetchDominance } from './coinstatsService.js';
 import { pool } from '../database.js';

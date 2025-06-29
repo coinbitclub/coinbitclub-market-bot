@@ -1,5 +1,5 @@
 import { getFearGreedAndDominance } from './coinstatsService.js';
-import { logger } from '../logger.js';
+import logger from '../utils/logger.js';
 import { fetchOpenPositions, closePosition } from './exchangeService.js';
 
 // Exemplo de rotina de retreinamento diário (usando IA)

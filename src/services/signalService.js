@@ -1,6 +1,6 @@
 // src/services/signalService.js
 import { pool } from '../database.js';
-import logger from '../logger.js';
+import logger from '../utils/logger.js';
 
 /**
  * Salva um sinal recebido no padrão da tabela signals.

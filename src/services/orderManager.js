@@ -1,7 +1,7 @@
 import { getUserOperations } from '../database.js';
 import { placeBybitOrder, closeBybitPosition } from './bybitAdapter.js';
 import { placeBinanceOrder } from './binanceAdapter.js';
-import { logger } from '../logger.js';
+import logger from '../utils/logger.js';
 
 /**
  * Monitora posições abertas do usuário e fecha se atingir TP/SL

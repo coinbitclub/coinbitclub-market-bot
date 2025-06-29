@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { query } from './databaseService.js';
 import { trainAndSerialize } from './mlPipeline.js';
-import { logger } from '../logger.js';
+import logger from '../utils/logger.js';
 
 (async () => {
   try {
