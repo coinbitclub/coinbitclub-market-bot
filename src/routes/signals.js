@@ -6,10 +6,9 @@ import { saveSignal } from '../services/signalService.js';
 const router = Router();
 
 router.post('/', async (req, res) => {
-  const raw = req.body.trim();
   try {
-    logger.info('[raw webhook/signal]', raw);
-    const signal = parseSignal(raw);
+    logger.info('[raw webhook/signal]', req.body);
+    const signal = parseSignal(req.body); // já é objeto
     const userId = req.userId || null;
     await saveSignal(userId, signal);
     return res.json({ status: 'ok' });
