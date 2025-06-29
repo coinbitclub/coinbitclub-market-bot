@@ -1,6 +1,11 @@
+// src/services/signalService.js
 import { insertSignal } from './databaseService.js';
 
-export async function saveSignal(userId, signal) {
-  // Você pode adicionar validações adicionais aqui, se necessário
+/**
+ * Persiste o sinal recebido via webhook.
+ * @param {Object} signal - { ticker, price, signal_json, time, ... }
+ */
+export async function saveSignal(signal) {
+  // opcional: validações, sanitizações, enrichments aqui
   return insertSignal(signal);
 }
