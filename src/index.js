@@ -20,69 +20,83 @@ import webhookRoutesRouter from './routes/webhookRoutes.js';
 // Agendador de jobs automáticos
 import { setupScheduler } from './services/scheduler.js';
 
+// Auto-migrations das tabelas essenciais (adapte conforme o nome do arquivo)
+import { 
+  ensureSignalsTable, 
+  ensureDominanceTable, 
+  ensureFearGreedTable 
+} from './services/dbMigrations.js';
+
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 8080;
 
-// --- Middlewares globais ---
-app.use(cors());
-app.use(morgan('combined'));
-app.use(bodyParser.json({ limit: '200kb' }));
+// --- Auto-criação/ajuste das tabelas essenciais ---
+(async () => {
+  await ensureSignalsTable();
+  await ensureDominanceTable();
+  await ensureFearGreedTable();
 
-// --- Health checks ---
-app.get('/', (_req, res) => res.send('🚀 CoinbitClub Market Bot ativo!'));
-app.get('/healthz', (_req, res) => res.send('OK'));
+  // --- Middlewares globais ---
+  app.use(cors());
+  app.use(morgan('combined'));
+  app.use(bodyParser.json({ limit: '200kb' }));
 
-// --- Rotas de integração TradingView, CoinStats, etc ---
-app.use('/webhook/signal', signalRouter);      // POST sinal TradingView
-app.use('/webhook/dominance', webhookRouter);  // POST dominance
-app.use('/webhook', webhookRoutesRouter);      // Protegido por token/JWT para sinais/dominance/market
+  // --- Health checks ---
+  app.get('/', (_req, res) => res.send('🚀 CoinbitClub Market Bot ativo!'));
+  app.get('/healthz', (_req, res) => res.send('OK'));
 
-// --- API REST público (dados de mercado, operações, etc) ---
-app.use('/api', fetchRouter);                    // GET market, dominance, fear_greed etc.
-app.use('/fetch', fetchRouter);                // GET signals/dominance/fear_greed
+  // --- Rotas de integração TradingView, CoinStats, etc ---
+  app.use('/webhook/signal', signalRouter);      // POST sinal TradingView
+  app.use('/webhook/dominance', webhookRouter);  // POST dominance
+  app.use('/webhook', webhookRoutesRouter);      // Protegido por token/JWT para sinais/dominance/market
 
-// --- Trading (execução de ordem de teste/real) ---
-app.use('/trading', tradingRouter);
+  // --- API REST público (dados de mercado, operações, etc) ---
+  app.use('/api', fetchRouter);                    // GET market, dominance, fear_greed etc.
+  app.use('/fetch', fetchRouter);                // GET signals/dominance/fear_greed
 
-// --- Painel restrito (dashboard central) ---
-app.use('/dashboard', basicAuth({
-  users: { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS },
-  challenge: true
-}), dashboardRouter);
+  // --- Trading (execução de ordem de teste/real) ---
+  app.use('/trading', tradingRouter);
 
-// --- IA (stub para futura automação) ---
-app.post('/ia/analyze', async (req, res) => {
-  res.json({ result: 'Análise de IA em construção...' });
-});
+  // --- Painel restrito (dashboard central) ---
+  app.use('/dashboard', basicAuth({
+    users: { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS },
+    challenge: true
+  }), dashboardRouter);
 
-// --- Ordem Bybit modo produção/teste (exemplo) ---
-app.post('/bybit/order', async (req, res) => {
-  const { user_id, symbol, qty, side, test } = req.body;
+  // --- IA (stub para futura automação) ---
+  app.post('/ia/analyze', async (req, res) => {
+    res.json({ result: 'Análise de IA em construção...' });
+  });
 
-  if (!(await hasActiveSubscription(user_id))) {
-    return res.status(403).json({ error: 'Usuário sem assinatura ativa' });
-  }
+  // --- Ordem Bybit modo produção/teste (exemplo) ---
+  app.post('/bybit/order', async (req, res) => {
+    const { user_id, symbol, qty, side, test } = req.body;
 
-  const creds = await getBybitCredentials(user_id, !!test);
-  if (!creds) {
-    return res.status(404).json({ error: 'Credenciais não encontradas para esse usuário' });
-  }
+    if (!(await hasActiveSubscription(user_id))) {
+      return res.status(403).json({ error: 'Usuário sem assinatura ativa' });
+    }
 
-  // Chame a execução real de ordem (via service)
-  res.json({ status: 'ok', mode: test ? 'testnet' : 'production', symbol, qty, side });
-});
+    const creds = await getBybitCredentials(user_id, !!test);
+    if (!creds) {
+      return res.status(404).json({ error: 'Credenciais não encontradas para esse usuário' });
+    }
 
-// --- Handler de erro global ---
-app.use((err, req, res, next) => {
-  console.error('❌ ERRO GERAL:', err);
-  res.status(err.status || 500).json({ error: err.message });
-});
+    // Chame a execução real de ordem (via service)
+    res.json({ status: 'ok', mode: test ? 'testnet' : 'production', symbol, qty, side });
+  });
 
-// --- Inicialização dos jobs e servidor ---
-app.listen(port, () => {
-  console.log(`🚀 Server listening on port ${port}`);
-  setupScheduler && setupScheduler();
-});
+  // --- Handler de erro global ---
+  app.use((err, req, res, next) => {
+    console.error('❌ ERRO GERAL:', err);
+    res.status(err.status || 500).json({ error: err.message });
+  });
+
+  // --- Inicialização dos jobs e servidor ---
+  app.listen(port, () => {
+    console.log(`🚀 Server listening on port ${port}`);
+    setupScheduler && setupScheduler();
+  });
+})();
 
 export default app;

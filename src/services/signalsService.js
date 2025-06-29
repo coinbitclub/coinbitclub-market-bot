@@ -1,5 +1,8 @@
-// Centraliza pós-processamento de sinais
-export async function processSignal(signal) {
-  // Lógica adicional: pode chamar IA, validar duplicidade, disparar execução, etc.
-  return { status: 'ok', signal };
+import { insertSignal } from './databaseService.js';
+
+// userId pode ser null, ok
+export async function saveSignal(userId, signal) {
+  // Se precisar vincular userId no objeto signal, faça:
+  // signal.userId = userId;
+  return insertSignal(signal);
 }

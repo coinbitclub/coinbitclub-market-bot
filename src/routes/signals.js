@@ -1,20 +1,19 @@
-import { Router } from 'express';
-import logger from '../utils/logger.js';
+import express from 'express';
 import { parseSignal } from '../parseSignal.js';
 import { saveSignal } from '../services/signalService.js';
 
-const router = Router();
+const router = express.Router();
 
-router.post('/', async (req, res) => {
+router.post('/', async (req, res, next) => {
   try {
-    logger.info('[raw webhook/signal]', req.body);
-    const signal = parseSignal(req.body); // já é objeto
+    // Recebe já como objeto JSON
+    const signal = parseSignal(req.body);
+    // userId pode não existir (envio público), então aceita null
     const userId = req.userId || null;
     await saveSignal(userId, signal);
-    return res.json({ status: 'ok' });
+    res.json({ status: 'ok' });
   } catch (err) {
-    logger.error('Signal handler error', err);
-    return res.status(500).json({ error: 'Signal processing failed' });
+    next(err);
   }
 });
 
