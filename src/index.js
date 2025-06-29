@@ -41,7 +41,7 @@ const port = process.env.PORT || 8080;
   // 4) Rotas principais
   app.use('/webhook', webhookRouter);
   app.use('/api',     fetchRouter);
-  app.use('/api/user', userRouter); // <-- AQUI ESTÁ O NOVO ENDPOINT!
+  app.use('/api/user', userRouter); // <-- GARANTE O /api/user/register FUNCIONANDO
   app.use('/trading', tradingRouter);
 
   // 5) Dashboard protegido por Basic Auth
