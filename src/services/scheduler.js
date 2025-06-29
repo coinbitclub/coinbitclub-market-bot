@@ -58,14 +58,15 @@ export function setupScheduler() {
     try {
       // Seleciona apenas usuários com assinatura ativa e no período corrente
       const { rows: users } = await pool.query(`
-        SELECT u.*
-        FROM users u
-        JOIN subscriptions s
-          ON u.id = s.user_id
-        WHERE s.status       = 'ativo'
-          AND s.data_inicio <= NOW()
-          AND s.data_fim    >= NOW()
-      `);
+  SELECT u.*, s.tipo_plano, s.valor_pago, s.metodo_pagamento, s.data_inicio, s.data_fim
+  FROM users u
+  JOIN user_subscriptions s
+    ON u.id = s.user_id
+  WHERE s.status       = 'ativo'
+    AND s.data_inicio <= NOW()
+    AND s.data_fim    >= NOW()
+`);
+
 
       for (const user of users) {
         await monitorUserPositions(user);
