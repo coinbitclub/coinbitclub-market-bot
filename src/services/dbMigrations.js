@@ -8,25 +8,24 @@ export async function ensureSignalsTable() {
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS signals (
-        id SERIAL PRIMARY KEY,
-        ticker VARCHAR(24) NOT NULL,
-        price NUMERIC,
-        close NUMERIC,
-        ema9_30 NUMERIC,
-        rsi_4h NUMERIC,
-        rsi_15 NUMERIC,
-        momentum_15 NUMERIC,
-        atr_30 NUMERIC,
-        atr_pct_30 NUMERIC,
-        vol_30 NUMERIC,
-        vol_ma_30 NUMERIC,
+        id            SERIAL       PRIMARY KEY,
+        ticker        VARCHAR(24)  NOT NULL,
+        price         NUMERIC,
+        close         NUMERIC,
+        ema9_30       NUMERIC,
+        rsi_4h        NUMERIC,
+        rsi_15        NUMERIC,
+        momentum_15   NUMERIC,
+        atr_30        NUMERIC,
+        atr_pct_30    NUMERIC,
+        vol_30        NUMERIC,
+        vol_ma_30     NUMERIC,
         diff_btc_ema7 NUMERIC,
-        leverage NUMERIC,
-        signal_time TIMESTAMP,
-        signal_json JSONB,
-        time TIMESTAMP DEFAULT NOW(),
-        user_id VARCHAR(128),
-        created_at TIMESTAMP DEFAULT NOW()
+        leverage      NUMERIC,
+        signal_json   JSONB        NOT NULL,
+        time          TIMESTAMP    NOT NULL DEFAULT NOW(),
+        user_id       VARCHAR(128),
+        created_at    TIMESTAMP    NOT NULL DEFAULT NOW()
       );
     `);
     console.log('Tabela signals verificada/ajustada!');
@@ -43,10 +42,10 @@ export async function ensureDominanceTable() {
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS btc_dominance (
-        id SERIAL PRIMARY KEY,
-        btc_dom NUMERIC,
-        eth_dom NUMERIC,
-        captured_at TIMESTAMP DEFAULT NOW()
+        id          SERIAL    PRIMARY KEY,
+        btc_dom     NUMERIC,
+        eth_dom     NUMERIC,
+        captured_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
     console.log('Tabela btc_dominance verificada/ajustada!');
@@ -63,11 +62,11 @@ export async function ensureFearGreedTable() {
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS fear_greed (
-        id SERIAL PRIMARY KEY,
-        value NUMERIC,
-        index_value INTEGER,
+        id                   SERIAL    PRIMARY KEY,
+        value                NUMERIC,
+        index_value          INTEGER,
         value_classification VARCHAR(32),
-        captured_at TIMESTAMP DEFAULT NOW()
+        captured_at          TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
     console.log('Tabela fear_greed verificada/ajustada!');
@@ -84,11 +83,11 @@ export async function ensureMarketTable() {
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS market (
-        id SERIAL PRIMARY KEY,
-        symbol VARCHAR(24) NOT NULL,
-        price NUMERIC NOT NULL,
-        "timestamp" TIMESTAMP NOT NULL,
-        captured_at TIMESTAMP DEFAULT NOW()
+        id          SERIAL    PRIMARY KEY,
+        symbol      VARCHAR(24) NOT NULL,
+        price       NUMERIC    NOT NULL,
+        "timestamp" TIMESTAMP  NOT NULL,
+        captured_at TIMESTAMP  NOT NULL DEFAULT NOW()
       );
     `);
     console.log('Tabela market verificada/ajustada!');
