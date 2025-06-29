@@ -58,9 +58,10 @@ const port = process.env.PORT || 8080;
     res.status(err.status || 500).json({ error: err.message });
   });
 
-  // 7) Start server + scheduler
+  // 7) Start server
   app.listen(port, () => {
     console.log(`🚀 Server listening on port ${port}`);
+    // Inicia o scheduler após o servidor estar de pé
     setupScheduler();
   });
 })();

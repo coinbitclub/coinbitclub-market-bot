@@ -11,13 +11,13 @@ import { monitorUserPositions } from './orderManager.js';
 export function setupScheduler() {
   logger.info('Scheduler: starting jobs');
 
-  // 1) Coleta e salva métricas da CoinStats a cada 2 horas
+  // 1) Coleta métricas a cada 2h
   cron.schedule('0 */2 * * *', async () => {
     try {
       const key = process.env.COINSTATS_API_KEY;
-      const metrics = await fetchMetrics(key);
-      const dominance = await fetchDominance(key);
-      const fearGreed = await fetchFearGreed(key);
+      const metrics    = await fetchMetrics(key);
+      const dominance  = await fetchDominance(key);
+      const fearGreed  = await fetchFearGreed(key);
       await pool.query(
         `INSERT INTO coinstats_metrics
          (captured_at, dominance, market_cap, volume_24h, altcoin_season)
@@ -30,7 +30,7 @@ export function setupScheduler() {
     }
   });
 
-  // 2) Limpeza diária de sinais antigos (>72h) às 01:00
+  // 2) Limpeza de sinais >72h (01:00 am)
   cron.schedule('0 1 * * *', async () => {
     try {
       await pool.query(
@@ -42,25 +42,27 @@ export function setupScheduler() {
     }
   });
 
-  // 3) Limpeza diária de usuários de teste expirados e inativos às 01:30
+  // 3) Limpeza de testes expirados e inativos (01:30 am)
   cron.schedule('30 1 * * *', async () => {
     try {
       await cleanExpiredTestUsers();
       await cleanOldInactiveUsers();
-      logger.info('🧹 Scheduler: usuários expirados e inativos limpos');
+      logger.info('🧹 Scheduler: usuários expirados/inativos limpos');
     } catch (err) {
       logger.error('🚨 Scheduler user cleanup error:', err);
     }
   });
 
-  // 4) Monitoramento de posições abertas a cada 10 minutos
+  // 4) Monitoramento de posições a cada 10 minutos
   cron.schedule('*/10 * * * *', async () => {
     try {
-      const { rows: users } = await pool.query(`SELECT * FROM users WHERE status = 'ativo'`);
+      const { rows: users } = await pool.query(
+        `SELECT * FROM users WHERE status = 'ativo'`
+      );
       for (const user of users) {
         await monitorUserPositions(user);
       }
-      logger.info('🔎 Scheduler: monitoramento automático de posições rodado.');
+      logger.info('🔎 Scheduler: monitoramento de posições rodado.');
     } catch (err) {
       logger.error('🚨 Scheduler monitoramento error:', err);
     }
