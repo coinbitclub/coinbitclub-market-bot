@@ -25,29 +25,29 @@ router.post("/register", async (req, res) => {
       return res.status(409).json({ error: "E-mail já cadastrado" });
     }
 
-    // Cria usuário
+    // Cria usuário (ajuste: inclua o nome no INSERT e na tabela)
     const userResult = await pool.query(
-      `INSERT INTO users (email, password_hash, created_at)
-       VALUES ($1, $2, NOW()) RETURNING id`,
-      [email, "HASHFAKE"] // Troque por hash real se quiser!
+      `INSERT INTO users (email, password_hash, created_at, nome)
+       VALUES ($1, $2, NOW(), $3) RETURNING id`,
+      [email, "HASHFAKE", nome]
     );
     const user_id = userResult.rows[0].id;
 
-    // Grava credenciais Bybit se vieram
+    // Credenciais Bybit
     if (bybit_api_key && bybit_api_secret) {
       await pool.query(
-        `INSERT INTO user_bybit_credentials (user_id, api_key, api_secret, is_testnet, criado_em, atualizado_em)
-         VALUES ($1, $2, $3, true, NOW(), NOW())`,
-        [user_id, bybit_api_key, bybit_api_secret]
+        `INSERT INTO user_credentials (user_id, exchange, api_key, api_secret, settings)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [user_id, 'bybit', bybit_api_key, bybit_api_secret, JSON.stringify({ testnet: true })]
       );
     }
 
-    // Grava credenciais Binance se vieram
+    // Credenciais Binance
     if (binance_api_key && binance_api_secret) {
       await pool.query(
-        `INSERT INTO user_binance_credentials (user_id, api_key, api_secret, criado_em, atualizado_em)
-         VALUES ($1, $2, $3, NOW(), NOW())`,
-        [user_id, binance_api_key, binance_api_secret]
+        `INSERT INTO user_credentials (user_id, exchange, api_key, api_secret, settings)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [user_id, 'binance', binance_api_key, binance_api_secret, JSON.stringify({ testnet: true })]
       );
     }
 

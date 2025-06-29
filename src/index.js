@@ -16,14 +16,14 @@ import webhookRouter   from './routes/webhookRoutes.js';
 import fetchRouter     from './routes/fetch.js';
 import tradingRouter   from './routes/trading.js';
 import dashboardRouter from './routes/dashboard.js';
-import userRouter      from './routes/user.js'; // <-- IMPORTAÇÃO ADICIONADA
+import userRouter      from './routes/user.js';
 
 dotenv.config();
 const app  = express();
 const port = process.env.PORT || 8080;
 
 (async () => {
-  // 1) Migrações de banco
+  // 1) Migrações de banco (se quiser, adicione a ensureUserCredentialsTable)
   await ensureSignalsTable();
   await ensureDominanceTable();
   await ensureFearGreedTable();
@@ -41,10 +41,10 @@ const port = process.env.PORT || 8080;
   // 4) Rotas principais
   app.use('/webhook', webhookRouter);
   app.use('/api',     fetchRouter);
-  app.use('/api/user', userRouter); // <-- GARANTE O /api/user/register FUNCIONANDO
+  app.use('/api/user', userRouter);
   app.use('/trading', tradingRouter);
 
-  // 5) Dashboard protegido por Basic Auth
+  // 5) Dashboard protegido
   app.use(
     '/dashboard',
     basicAuth({
