@@ -1,18 +1,70 @@
-import { CronJob } from "cron";
+// src/services/scheduler.js
+import cron from 'node-cron';
 import logger from '../utils/logger.js';
-import { fetchAndSaveDominance } from "./fetchAndSaveData.js";
-import { fetchAndSaveFearGreed } from "./coinstatsService.js";
-import { fetchAndSaveMarket } from "./fetchAndSaveData.js";
+import { fetchMetrics, fetchFearGreed, fetchDominance } from './coinstatsService.js';
+import { pool, cleanExpiredTestUsers, cleanOldInactiveUsers } from '../database.js';
+import { monitorUserPositions } from './orderManager.js';
 
-// Centraliza todos os agendamentos do sistema
+/**
+ * Inicializa todos os jobs agendados sem encerrar o processo.
+ */
 export function setupScheduler() {
-  logger.info("Scheduler: starting jobs");
-  new CronJob(
-    "0 0 * * *", async () => {
-      try { await fetchAndSaveDominance();   logger.info("Dominance job OK"); } catch(e){logger.error("Dominance job failed",e);}
-      try { await fetchAndSaveFearGreed();   logger.info("FearGreed job OK"); } catch(e){logger.error("FearGreed job failed",e);}
-      try { await fetchAndSaveMarkets();     logger.info("Markets job OK"); } catch(e){logger.error("Markets job failed",e);}
-    },
-    null, true, "UTC"
-  );
+  logger.info('Scheduler: starting jobs');
+
+  // 1) Coleta métricas da CoinStats a cada 2 horas
+  cron.schedule('0 */2 * * *', async () => {
+    try {
+      const key       = process.env.COINSTATS_API_KEY;
+      const metrics   = await fetchMetrics(key);
+      const dominance = await fetchDominance(key);
+      const fearGreed = await fetchFearGreed(key);
+      await pool.query(
+        `INSERT INTO coinstats_metrics
+         (captured_at, dominance, market_cap, volume_24h, altcoin_season)
+         VALUES (NOW(), $1, $2, $3, $4)`,
+        [dominance.dominance, metrics.totalMarketCap, metrics.totalVolume, fearGreed.season]
+      );
+      logger.info('✅ Scheduler: CoinStats salvos no DB');
+    } catch (err) {
+      logger.error('🚨 Scheduler error:', err);
+    }
+  });
+
+  // 2) Limpeza diária de sinais antigos (>72h) às 01:00
+  cron.schedule('0 1 * * *', async () => {
+    try {
+      await pool.query(
+        `DELETE FROM signals WHERE captured_at < NOW() - INTERVAL '72 hours'`
+      );
+      logger.info('🧹 Scheduler: sinais antigos limpos');
+    } catch (err) {
+      logger.error('🚨 Scheduler cleanup error:', err);
+    }
+  });
+
+  // 3) Limpeza diária de usuários de teste expirados e inativos às 01:30
+  cron.schedule('30 1 * * *', async () => {
+    try {
+      await cleanExpiredTestUsers();
+      await cleanOldInactiveUsers();
+      logger.info('🧹 Scheduler: usuários expirados/inativos limpos');
+    } catch (err) {
+      logger.error('🚨 Scheduler user cleanup error:', err);
+    }
+  });
+
+  // 4) Monitoramento de posições abertas a cada 10 minutos
+  cron.schedule('*/10 * * * *', async () => {
+    try {
+      const { rows: users } = await pool.query(
+        `SELECT * FROM users WHERE status = 'ativo'`
+      );
+      for (const user of users) {
+        await monitorUserPositions(user);
+      }
+      logger.info('🔎 Scheduler: monitoramento de posições rodado');
+    } catch (err) {
+      logger.error('🚨 Scheduler monitoramento error:', err);
+    }
+  });
 }
