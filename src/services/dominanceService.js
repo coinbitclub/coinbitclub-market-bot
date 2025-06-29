@@ -13,7 +13,7 @@ export async function saveDominance({ btc_dom, ema7, timestamp }) {
 }
 
 /**
- * Busca o Ãºltimo valor de dominance
+ * Busca o último valor de dominance
  */
 export async function fetchLastDominance() {
   const { rows } = await pool.query(
@@ -21,7 +21,3 @@ export async function fetchLastDominance() {
   );
   return rows[0] || null;
 }
-
-
-
-

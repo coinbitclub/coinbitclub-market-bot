@@ -1,4 +1,3 @@
-// src/services/binanceAdapter.js
 import axios from 'axios';
 import crypto from 'crypto';
 
@@ -21,13 +20,13 @@ function getBinanceClient(isTestnet) {
 export async function placeBinanceOrder({ apiKey, apiSecret, isTestnet, symbol, side, qty }) {
   const ts = Date.now();
   const params = { symbol, side, type: 'MARKET', quantity: qty, timestamp: ts };
-  const query = new URLSearchParams(params).toString();
-  const signature = sign(query, apiSecret);
+  const queryString = new URLSearchParams(params).toString();
+  const signature = sign(queryString, apiSecret);
 
   const client = getBinanceClient(isTestnet);
 
   const { data } = await client.post(
-    `/api/v3/order?${query}&signature=${signature}`,
+    `/api/v3/order?${queryString}&signature=${signature}`,
     null,
     { headers: { 'X-MBX-APIKEY': apiKey } }
   );
@@ -44,13 +43,13 @@ export async function placeBinanceOrder({ apiKey, apiSecret, isTestnet, symbol, 
 export async function getBinanceBalance({ apiKey, apiSecret, isTestnet }) {
   const ts = Date.now();
   const params = { timestamp: ts };
-  const query = new URLSearchParams(params).toString();
-  const signature = sign(query, apiSecret);
+  const queryString = new URLSearchParams(params).toString();
+  const signature = sign(queryString, apiSecret);
 
   const client = getBinanceClient(isTestnet);
 
   const { data } = await client.get(
-    `/api/v3/account?${query}&signature=${signature}`,
+    `/api/v3/account?${queryString}&signature=${signature}`,
     { headers: { 'X-MBX-APIKEY': apiKey } }
   );
   return data;

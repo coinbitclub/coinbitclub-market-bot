@@ -1,4 +1,3 @@
-// src/routes/signals.js
 import { Router } from 'express';
 import logger from '../utils/logger.js';
 import { parseSignal } from '../parseSignal.js';
@@ -21,7 +20,3 @@ router.post('/', async (req, res) => {
 });
 
 export default router;
-
-
-
-

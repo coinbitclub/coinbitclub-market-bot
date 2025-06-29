@@ -1,57 +1,61 @@
 import axios from 'axios';
 import crypto from 'crypto';
 
-// Base por ambiente
-const BASES = {
-  prod: process.env.BINANCE_API_BASE || 'https://api.binance.com',
-  test: process.env.BINANCE_API_BASE_TEST || 'https://testnet.binance.vision'
-};
+// URL base por ambiente
+const BYBIT_BASE_REAL = process.env.BYBIT_BASE_URL_REAL;
+const BYBIT_BASE_TEST = process.env.BYBIT_BASE_URL_TEST;
 
-// Assinatura de requisições privadas
-function sign(query, secret) {
-  return crypto.createHmac('sha256', secret).update(query).digest('hex');
+// Gera assinatura para Bybit v5
+function signParams(params, apiSecret) {
+  const ordered = Object.keys(params).sort().map(key => `${key}=${params[key]}`).join('&');
+  return crypto.createHmac('sha256', apiSecret).update(ordered).digest('hex');
 }
 
-// Função universal de request
-async function binanceRequest({ method, path, params, apiKey, apiSecret, testnet = false }) {
-  const ts = Date.now();
-  const query = new URLSearchParams({ ...params, timestamp: ts }).toString();
-  const signature = sign(query, apiSecret);
-  const url = `${testnet ? BASES.test : BASES.prod}${path}?${query}&signature=${signature}`;
+// Envia ordem
+export async function placeBybitOrder({ apiKey, apiSecret, isTestnet, category = 'linear', symbol, side, qty, orderType = 'Market' }) {
+  const url = `${isTestnet ? BYBIT_BASE_TEST : BYBIT_BASE_REAL}/v5/order/create`;
 
-  return axios({
-    method,
-    url,
-    headers: { 'X-MBX-APIKEY': apiKey }
-  }).then(r => r.data);
+  const params = {
+    category, // 'linear' para futuros perpétuos
+    symbol,
+    side,
+    orderType,
+    qty,
+    timestamp: Date.now().toString(),
+    apiKey
+  };
+  params.sign = signParams(params, apiSecret);
+
+  const { data } = await axios.post(url, params, { headers: { 'Content-Type': 'application/json' } });
+  return data;
 }
 
-// 1. Enviar ordem de mercado
-export async function placeBinanceOrder({ apiKey, apiSecret, symbol, side = 'BUY', qty, testnet = false }) {
-  return binanceRequest({
-    method: 'POST',
-    path: '/api/v3/order',
-    params: { symbol, side, type: 'MARKET', quantity: qty },
-    apiKey, apiSecret, testnet
-  });
+// Buscar saldo (Wallet)
+export async function getBybitBalance({ apiKey, apiSecret, isTestnet, coin = 'USDT', accountType = 'UNIFIED' }) {
+  const url = `${isTestnet ? BYBIT_BASE_TEST : BYBIT_BASE_REAL}/v5/account/wallet-balance`;
+  const params = {
+    accountType,
+    coin,
+    timestamp: Date.now().toString(),
+    apiKey
+  };
+  params.sign = signParams(params, apiSecret);
+
+  const { data } = await axios.get(url, { params });
+  return data;
 }
 
-// 2. Buscar saldo
-export async function getBinanceBalance({ apiKey, apiSecret, testnet = false }) {
-  return binanceRequest({
-    method: 'GET',
-    path: '/api/v3/account',
-    params: {},
-    apiKey, apiSecret, testnet
-  });
-}
+// Histórico de ordens
+export async function getBybitOrderHistory({ apiKey, apiSecret, isTestnet, symbol, category = 'linear' }) {
+  const url = `${isTestnet ? BYBIT_BASE_TEST : BYBIT_BASE_REAL}/v5/order/history`;
+  const params = {
+    category,
+    symbol,
+    timestamp: Date.now().toString(),
+    apiKey
+  };
+  params.sign = signParams(params, apiSecret);
 
-// 3. Buscar histórico de ordens
-export async function getBinanceOrderHistory({ apiKey, apiSecret, symbol, testnet = false }) {
-  return binanceRequest({
-    method: 'GET',
-    path: '/api/v3/allOrders',
-    params: { symbol, limit: 50 },
-    apiKey, apiSecret, testnet
-  });
+  const { data } = await axios.get(url, { params });
+  return data;
 }

@@ -1,8 +1,6 @@
 export async function fetchAndSaveMarketSignals() {
-  // Adicione a lógica para coletar e salvar sinais do TradingView/externos.
+  // Adicione aqui a lógica para coletar e salvar sinais de TradingView ou outras fontes externas.
+  // Exemplo: await fetchSignalsFromTradingView();
+  // Exemplo: await saveSignal(signal);
   console.log('fetchAndSaveMarketSignals: stub executado.');
 }
-
-
-
-

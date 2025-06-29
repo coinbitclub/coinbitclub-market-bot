@@ -1,12 +1,10 @@
-// src/services/ordersService.js
 import { query } from './databaseService.js';
 import { logger } from '../logger.js';
 import { placeBybitOrder } from './bybitAdapter.js';
 import { placeBinanceOrder } from './binanceAdapter.js';
 
 /**
- * Decide e executa trades para cada usuário ativo,
- * diferenciando ambiente de produção/teste e exchange.
+ * Executa trades para todos os usuários ativos de acordo com os sinais recebidos
  */
 export async function executeTrades(signal) {
   const usersRes = await query(

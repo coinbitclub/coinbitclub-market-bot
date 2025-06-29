@@ -1,4 +1,4 @@
-// src/services/signalsService.js
+// src/services/signalService.js
 import { pool } from '../database.js';
 import logger from '../logger.js';
 
@@ -8,7 +8,6 @@ import logger from '../logger.js';
  * @param {Object} params - { ticker/symbol, price, signal_json, time, user_id, side, ... }
  */
 export async function saveSignal(params) {
-  // Flexibilidade para múltiplos nomes de campos
   const ticker = params.ticker || params.symbol;
   const price = Number(params.price);
   const signal_json = params.signal_json || params;
@@ -19,7 +18,6 @@ export async function saveSignal(params) {
     throw new Error('Campos obrigatórios ausentes ou inválidos: ticker, price, signal_json, time');
   }
 
-  // Protege tipo dos dados antes de inserir
   const _signal_json = typeof signal_json === 'string'
     ? signal_json
     : JSON.stringify(signal_json);

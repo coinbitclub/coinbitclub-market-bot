@@ -49,7 +49,3 @@ import { logger } from '../logger.js';
     process.exit(1);
   }
 })();
-
-
-
-

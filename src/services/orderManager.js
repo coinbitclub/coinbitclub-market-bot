@@ -1,27 +1,20 @@
-// src/services/orderManager.js
-
 import { getUserOperations } from '../database.js';
 import { placeBybitOrder, closeBybitPosition } from './bybitAdapter.js';
 import { placeBinanceOrder } from './binanceAdapter.js';
 import { logger } from '../logger.js';
 
 /**
- * Gerencia posições do usuário (ex: fechamento automático por TP/SL)
- * - Para cada operação aberta, avalia se é hora de fechar/ajustar
+ * Monitora posições abertas do usuário e fecha se atingir TP/SL
  */
 export async function monitorUserPositions(user) {
-  // Pega as operações abertas do usuário
   const operations = await getUserOperations(user.id);
 
   for (const op of operations) {
     try {
-      // Exemplo de lógica: fecha posição se atingir TP/SL
       if (op.status === 'aberta' && op.pnl !== undefined) {
-        // Fechamento por Take Profit (TP)
         if (user.tp && op.pnl >= user.tp) {
           await fecharPosicao(user, op, 'TP atingido');
         }
-        // Fechamento por Stop Loss (SL)
         if (user.sl && op.pnl <= -Math.abs(user.sl)) {
           await fecharPosicao(user, op, 'SL atingido');
         }
@@ -32,9 +25,6 @@ export async function monitorUserPositions(user) {
   }
 }
 
-/**
- * Fecha uma posição do usuário, usando a exchange correta
- */
 export async function fecharPosicao(user, op, motivo = '') {
   try {
     let result;
@@ -48,7 +38,6 @@ export async function fecharPosicao(user, op, motivo = '') {
         qty: op.qty
       });
     } else if (user.exchange === 'binance') {
-      // Binance: apenas inverte o lado e executa ordem
       const closeSide = op.side === 'Buy' ? 'Sell' : 'Buy';
       result = await placeBinanceOrder({
         apiKey: user.api_key,
@@ -62,10 +51,8 @@ export async function fecharPosicao(user, op, motivo = '') {
       throw new Error('Exchange desconhecida');
     }
 
-    // Aqui você pode marcar a operação como fechada no banco, se quiser!
     logger.info(`[OrderManager] Fechada posição usuário ${user.id} op ${op.id} motivo: ${motivo}`, result);
-    // Exemplo: await markOperationClosed(op.id);
-
+    // Aqui marque como fechada se desejar (ex: await markOperationClosed(op.id);)
     return result;
   } catch (err) {
     logger.error(`[OrderManager] Erro ao fechar posição usuário ${user.id} op ${op.id}:`, err);

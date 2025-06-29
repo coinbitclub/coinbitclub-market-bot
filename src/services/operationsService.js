@@ -1,11 +1,10 @@
-// src/services/operationsService.js
-import { executeQuery } from './databaseService.js';
+import { query } from './databaseService.js';
 
 export async function saveOperation({
   user_id, exchange, operation_type, symbol, order_id,
   qty, price, leverage, pnl, status, opened_at, closed_at
 }) {
-  const query = `
+  const sql = `
     INSERT INTO operations (
       user_id, exchange, operation_type, symbol, order_id,
       qty, price, leverage, pnl, status, opened_at, closed_at
@@ -16,16 +15,12 @@ export async function saveOperation({
     user_id, exchange, operation_type, symbol, order_id,
     qty, price, leverage, pnl, status, opened_at, closed_at
   ];
-  return await executeQuery(query, params);
+  return await query(sql, params);
 }
 
 export async function getOperationsByUser(user_id, limit = 50) {
-  const query = `
+  const sql = `
     SELECT * FROM operations WHERE user_id = $1 ORDER BY opened_at DESC LIMIT $2;
   `;
-  return await executeQuery(query, [user_id, limit]);
+  return await query(sql, [user_id, limit]);
 }
-
-
-
-

@@ -1,9 +1,10 @@
 import axios from 'axios';
-import { query } from './databaseService.js';
+import { pool } from '../database.js';
 
 const API_KEY = process.env.COINSTATS_API_KEY;
 const BASE = 'https://openapiv1.coinstats.app';
 
+// Busca e salva dados do Fear & Greed
 export async function fetchAndSaveFearGreed() {
   try {
     const res = await axios.get(`${BASE}/insights/fear-and-greed`, {
@@ -18,17 +19,12 @@ export async function fetchAndSaveFearGreed() {
       VALUES ($1, $2, $3, NOW())
     `;
 
-    console.log('Executando query:', sql.trim());
-    console.log('Com parÃ¢metros:', [value, value_classification, captured_at]);
+    console.log('[FearGreed] Executando query:', sql.trim(), 'com parâmetros:', [value, value_classification, captured_at]);
 
-    await query(sql, [value, value_classification, captured_at]);
+    await pool.query(sql, [value, value_classification, captured_at]);
 
     console.log('[FearGreed] Dados inseridos com sucesso');
   } catch (err) {
     console.error('[FearGreed] Erro ao inserir:', err.response?.data || err.message);
   }
 }
-
-
-
-

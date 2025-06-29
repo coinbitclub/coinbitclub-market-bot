@@ -1,7 +1,7 @@
 import { pool } from '../database.js';
 
 /**
- * Salva um novo valor do Ã­ndice Fear & Greed
+ * Salva um novo valor do índice Fear & Greed
  * @param {Object} params - { index_value, value_classification, timestamp }
  */
 export async function saveFearGreed({ index_value, value_classification, timestamp }) {
@@ -13,7 +13,7 @@ export async function saveFearGreed({ index_value, value_classification, timesta
 }
 
 /**
- * Busca o Ãºltimo valor Fear & Greed
+ * Busca o último valor Fear & Greed
  */
 export async function fetchLastFearGreed() {
   const { rows } = await pool.query(
@@ -21,7 +21,3 @@ export async function fetchLastFearGreed() {
   );
   return rows[0] || null;
 }
-
-
-
-

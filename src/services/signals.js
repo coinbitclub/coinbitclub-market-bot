@@ -1,3 +1,4 @@
+// Função pura para parsear signal do payload
 export function parseSignal(payload) {
   return {
     ticker:             payload.ticker,
@@ -17,7 +18,3 @@ export function parseSignal(payload) {
     leverage:           payload.leverage ? parseInt(payload.leverage) : 6
   };
 }
-
-
-
-

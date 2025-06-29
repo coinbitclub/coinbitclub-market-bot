@@ -1,5 +1,6 @@
-import { query } from '../db.js';
+import { pool } from '../database.js';
 
+// Calcula média móvel do ATR-30 das últimas N candles
 export async function getMovingAverageATR(windowSize = 7) {
   const sql = `
     SELECT AVG(atr_30) as moving_average_atr
@@ -11,10 +12,6 @@ export async function getMovingAverageATR(windowSize = 7) {
     ) sub;
   `;
 
-  const result = await query(sql, [windowSize]);
-  return result[0]?.moving_average_atr || null;
+  const { rows } = await pool.query(sql, [windowSize]);
+  return rows[0]?.moving_average_atr || null;
 }
-
-
-
-

@@ -2,8 +2,8 @@ import axios from 'axios';
 
 /**
  * Executa ordem na Bybit para o usuário certo e ambiente certo (real/teste)
- * @param {Object} user - Objeto do usuário, vindo do banco
- * @param {Object} orderData - Dados da ordem a ser enviada para Bybit
+ * @param {Object} user - Objeto do usuário, vindo do banco (deve conter api_key, api_secret, testnet)
+ * @param {Object} orderData - Dados da ordem (symbol, side, qty, orderType, etc.)
  * @returns {Promise<Object>} - Resposta da Bybit
  */
 export async function executeBybitOrder(user, orderData) {
@@ -18,9 +18,9 @@ export async function executeBybitOrder(user, orderData) {
 
   // Endpoint da Bybit v5 para criar ordem
   const endpoint = '/v5/order/create';
-  const url = `${BYBIT_BASE_URL}`;
+  const url = `${BYBIT_BASE_URL}${endpoint}`;
 
-  // ATENÇÃO: Implemente assinatura conforme documentação da Bybit v5!
+  // ATENÇÃO: Adapte assinatura segundo a versão correta da Bybit se necessário!
   const signedParams = { ...orderData, api_key: user.api_key };
 
   const response = await axios.post(url, signedParams, {
@@ -29,7 +29,3 @@ export async function executeBybitOrder(user, orderData) {
 
   return response.data;
 }
-
-
-
-

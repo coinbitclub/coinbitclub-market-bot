@@ -1,19 +1,23 @@
-// src/index.js - versão consolidada e ajustada
 import express from 'express';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import basicAuth from 'express-basic-auth';
 
 import { pool, getBybitCredentials, hasActiveSubscription } from './database.js';
 
-// Rotas já existentes/importadas
-import webhookRouter from './routes/webhook.js';         // Dominance e webhooks
-import signalRouter from './routes/signals.js';          // Sinais TradingView
-import apiRouter    from './routes/apiRoutes.js';        // API REST principal
-import dashboardRouter from './routes/dashboard.js';     // Painel de controle/admin
+// Rotas principais
+import webhookRouter from './routes/webhook.js';
+import signalRouter from './routes/signals.js';
+import apiRouter from './routes/apiRoutes.js';
+import dashboardRouter from './routes/dashboard.js';
+import fetchRouter from './routes/fetch.js'; // Para buscar sinais/dominance/fear_greed
+import tradingRouter from './routes/trading.js';
+import webhookRoutesRouter from './routes/webhookRoutes.js';
 
-import { setupScheduler } from './services/scheduler.js'; // Jobs agendados
+// Agendador de jobs automáticos
+import { setupScheduler } from './services/scheduler.js';
 
 dotenv.config();
 const app = express();
@@ -28,43 +32,43 @@ app.use(bodyParser.json({ limit: '200kb' }));
 app.get('/', (_req, res) => res.send('🚀 CoinbitClub Market Bot ativo!'));
 app.get('/healthz', (_req, res) => res.send('OK'));
 
-// --- Webhooks e integrações externas ---
+// --- Rotas de integração TradingView, CoinStats, etc ---
 app.use('/webhook/signal', signalRouter);      // POST sinal TradingView
-app.use('/webhook/dominance', webhookRouter);  // POST dominance CoinStats
+app.use('/webhook/dominance', webhookRouter);  // POST dominance
+app.use('/webhook', webhookRoutesRouter);      // Protegido por token/JWT para sinais/dominance/market
 
 // --- API REST público (dados de mercado, operações, etc) ---
 app.use('/api', apiRouter);                    // GET market, dominance, fear_greed etc.
+app.use('/fetch', fetchRouter);                // GET signals/dominance/fear_greed
+
+// --- Trading (execução de ordem de teste/real) ---
+app.use('/trading', tradingRouter);
 
 // --- Painel restrito (dashboard central) ---
-// Aqui, autenticação básica com usuário/senha do painel
-import basicAuth from 'express-basic-auth';
 app.use('/dashboard', basicAuth({
   users: { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS },
   challenge: true
 }), dashboardRouter);
 
-// --- Rotas para IA (stub, para futura automação) ---
+// --- IA (stub para futura automação) ---
 app.post('/ia/analyze', async (req, res) => {
   res.json({ result: 'Análise de IA em construção...' });
 });
 
-// --- Modo produção/teste Bybit: Rota de ordem ---
+// --- Ordem Bybit modo produção/teste (exemplo) ---
 app.post('/bybit/order', async (req, res) => {
   const { user_id, symbol, qty, side, test } = req.body;
 
-  // Checa assinatura ativa ANTES de operar
   if (!(await hasActiveSubscription(user_id))) {
     return res.status(403).json({ error: 'Usuário sem assinatura ativa' });
   }
 
-  // Busca credenciais Bybit corretas do banco (real ou testnet)
   const creds = await getBybitCredentials(user_id, !!test);
   if (!creds) {
     return res.status(404).json({ error: 'Credenciais não encontradas para esse usuário' });
   }
 
-  // Aqui: chamar lógica real da Bybit (com as credenciais buscadas do banco)
-  // Exemplo stub:
+  // Chame a execução real de ordem (via service)
   res.json({ status: 'ok', mode: test ? 'testnet' : 'production', symbol, qty, side });
 });
 

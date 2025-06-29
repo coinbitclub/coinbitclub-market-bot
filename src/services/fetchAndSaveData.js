@@ -1,5 +1,3 @@
-// src/services/fetchAndSaveData.js
-
 import { pool } from '../database.js';
 
 /**
@@ -49,7 +47,7 @@ export async function fetchAndSaveFearGreed(body) {
 }
 
 /**
- * Grava preÃ§o de mercado genÃ©rico na tabela market.
+ * Grava preço de mercado genérico na tabela market.
  * Espera body = { symbol, price, timestamp }.
  */
 export async function fetchAndSaveMarket(body) {
@@ -62,7 +60,3 @@ export async function fetchAndSaveMarket(body) {
     [symbol, price, timestamp]
   );
 }
-
-
-
-

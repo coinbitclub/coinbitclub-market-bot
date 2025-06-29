@@ -1,8 +1,9 @@
 import axios from 'axios';
-import { query } from './databaseService.js';
+import { pool } from '../database.js';
 
 const API_KEY = process.env.COINSTATS_API_KEY;
 
+// Salva dados do índice Fear & Greed
 export async function fetchAndSaveFearGreed() {
   try {
     const url = 'https://openapiv1.coinstats.app/insights/fear-and-greed';
@@ -13,15 +14,13 @@ export async function fetchAndSaveFearGreed() {
 
     const sql = `INSERT INTO public.fear_greed (value, value_classification, captured_at, created_at)
                  VALUES ($1, $2, $3, NOW())`;
-    await query(sql, [value, value_classification, captured_at]);
+    await pool.query(sql, [value, value_classification, captured_at]);
     console.log('[FearGreed] Dados inseridos com sucesso');
   } catch (err) {
     console.error('[FearGreed] Erro ao inserir:', err.message || err);
   }
 }
 
-// Inclua funÃ§Ãµes para os outros endpoints seguindo padrÃ£o similar
-
-
-
-
+// Adicione funções para outros endpoints CoinStats seguindo o mesmo padrão:
+// - fetchAndSaveBtcDominance()
+// - fetchAndSaveMarkets()

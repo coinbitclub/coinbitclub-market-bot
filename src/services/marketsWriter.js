@@ -1,9 +1,12 @@
-/* src/services/marketsWriter.js */
-import db from '../db.js';
+import { pool } from '../database.js';
 
+/**
+ * Salva (ou atualiza) mercado no banco de dados.
+ * Recebe array de mercados [{ symbol, price, change, volume }]
+ */
 export async function saveMarkets(markets) {
   for (const m of markets) {
-    await db.query(
+    await pool.query(
       `INSERT INTO markets (symbol, price, change, volume)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (symbol) DO UPDATE
@@ -14,7 +17,3 @@ export async function saveMarkets(markets) {
     );
   }
 }
-
-
-
-

@@ -1,8 +1,7 @@
+// Chame aqui as funções reais de coleta/salvamento de sinais de várias fontes.
 export async function fetchAndSaveAllSignals() {
-  // Chame as funções reais de coleta/salvamento aqui se já existirem
+  // Exemplo: await fetchAndSaveDataFromTradingView();
+  // Exemplo: await fetchAndSaveDataFromCoinStats();
+  // ...adicione fontes conforme sua arquitetura
   console.log('fetchAndSaveAllSignals: stub executado.');
 }
-
-
-
-

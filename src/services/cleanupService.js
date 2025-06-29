@@ -1,4 +1,4 @@
-import pool from '../db.js';
+import { pool } from '../database.js';
 
 // Limpa sinais/dados mais antigos que 72h
 export async function cleanupOldRecords() {
@@ -7,7 +7,7 @@ export async function cleanupOldRecords() {
   await pool.query("DELETE FROM fear_greed WHERE time < NOW() - INTERVAL '72 hours'");
 }
 
-// Consolida dados diÃ¡rios (salva 1 snapshot por dia)
+// Consolida dados diários (salva 1 snapshot por dia)
 export async function consolidateDailyData() {
   // Signals
   await pool.query(`
@@ -52,7 +52,3 @@ export async function consolidateDailyData() {
     ON CONFLICT (date) DO NOTHING
   `);
 }
-
-
-
-

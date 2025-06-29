@@ -122,7 +122,6 @@ export async function updateUser(user_id, fields) {
   return rows[0];
 }
 
-
 /**
  * Remove dados dos usuários cuja última assinatura terminou há mais de 60 dias.
  * Mantém apenas registros de usuários que ainda têm assinatura vigente ou expirou há menos de 60 dias.
@@ -145,4 +144,7 @@ export async function cleanOldInactiveUsers() {
     );
   `);
 }
+
+// ========== PREPARE PARA INTEGRAÇÃO IA ==========
+// Você pode adicionar aqui, ou em um arquivo separado, as funções para gerenciar relatórios IA e logs (veja a especificação consolidada enviada antes).
 

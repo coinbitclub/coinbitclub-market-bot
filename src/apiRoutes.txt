@@ -1,11 +1,10 @@
-// src/routes/api.js
 import express from 'express';
-import axios   from 'axios';
+import axios from 'axios';
 
 const router = express.Router();
-const KEY    = process.env.COINSTATS_API_KEY;
+const KEY = process.env.COINSTATS_API_KEY;
 
-// --- ProteÃ§Ã£o de todas as rotas externas ---
+// --- Proxy para CoinStats ---
 async function fetchFromCoinStats(url, res) {
   try {
     const { data } = await axios.get(url, {
@@ -47,7 +46,3 @@ router.get('/market', async (_req, res) => {
 });
 
 export default router;
-
-
-
-
