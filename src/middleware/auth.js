@@ -42,8 +42,7 @@ export function isUser(req, res, next) {
 }
 
 /**
- * Autenticação de admin (precisa role=admin no banco)
- * Com lista fixa temporária para facilitar testes
+ * Autenticação de admin (aceita lista temporária de e-mails/ids para DEV)
  */
 export async function isAdmin(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -52,16 +51,16 @@ export async function isAdmin(req, res, next) {
     try {
       const payload = jwt.verify(token, JWT_SECRET || 'segredo123');
 
-      // -------- LIBERAÇÃO TEMPORÁRIA PARA TESTES -----------
-      const adminsTest = [14, 1]; // IDs liberados
+      // LISTA TEMPORÁRIA para DEV/teste (ajuste conforme necessário)
+      const adminsTest = [14, 1];
       const emailsTest = ['erica.andrade.santos@hotmail.com'];
+
       if (adminsTest.includes(payload.id) || emailsTest.includes(payload.email)) {
         req.admin = payload;
         return next();
       }
-      // -------- FIM DA LIBERAÇÃO TEMPORÁRIA ---------------
 
-      // Validação padrão: role=admin no banco
+      // Produção: checa role no banco
       const { rows } = await pool.query('SELECT role FROM users WHERE id = $1', [payload.id]);
       if (rows[0]?.role !== 'admin') {
         return res.status(403).json({ error: 'Acesso restrito ao admin' });
