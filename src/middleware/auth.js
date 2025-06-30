@@ -43,6 +43,7 @@ export function isUser(req, res, next) {
 
 /**
  * Autenticação de admin (precisa role=admin no banco)
+ * Com lista fixa temporária para facilitar testes
  */
 export async function isAdmin(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -50,17 +51,27 @@ export async function isAdmin(req, res, next) {
     const token = authHeader.split(' ')[1];
     try {
       const payload = jwt.verify(token, JWT_SECRET || 'segredo123');
-      console.log('Payload do token:', payload);  // <-- DEBUG
-      // Confirma role direto do banco (evita token fake de admin)
+      console.log('Payload do token:', payload);  // Debug
+
+      // Lista fixa de admins para testes temporários (IDs ou emails)
+      const adminsTest = [14, 1]; // IDs liberados temporariamente
+      const emailsTest = ['erica.andrade.santos@hotmail.com'];
+
+      if (adminsTest.includes(payload.id) || emailsTest.includes(payload.email)) {
+        req.admin = payload;
+        return next();
+      }
+
+      // Confirma role direto no banco para produção
       const { rows } = await pool.query('SELECT role FROM users WHERE id = $1', [payload.id]);
-      console.log('Role no banco:', rows[0]?.role);  // <-- DEBUG
+      console.log('Role no banco:', rows[0]?.role);  // Debug
       if (rows[0]?.role !== 'admin') {
         return res.status(403).json({ error: 'Acesso restrito ao admin' });
       }
       req.admin = payload;
       return next();
     } catch (err) {
-      console.error('Erro no isAdmin:', err);  // <-- DEBUG
+      console.error('Erro no isAdmin:', err);
       return res.status(401).json({ error: 'JWT inválido' });
     }
   }
