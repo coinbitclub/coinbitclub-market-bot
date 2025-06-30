@@ -4,7 +4,7 @@ import { pool } from '../database.js';
 const { WEBHOOK_TOKEN, WEBHOOK_JWT_SECRET, JWT_SECRET } = process.env;
 
 /**
- * Autentica via Bearer JWT ou ?token= na query string
+ * Autentica via Bearer JWT ou ?token= na query string (para webhooks)
  */
 export function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -42,7 +42,7 @@ export function isUser(req, res, next) {
 }
 
 /**
- * Autenticação de admin (precisa role=admin)
+ * Autenticação de admin (precisa role=admin no banco)
  */
 export async function isAdmin(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -50,9 +50,11 @@ export async function isAdmin(req, res, next) {
     const token = authHeader.split(' ')[1];
     try {
       const payload = jwt.verify(token, JWT_SECRET || 'segredo123');
-      // Confirma role direto do banco
+      // Confirma role direto do banco (evita token fake de admin)
       const { rows } = await pool.query('SELECT role FROM users WHERE id = $1', [payload.id]);
-      if (rows[0]?.role !== 'admin') return res.status(403).json({ error: 'Acesso restrito ao admin' });
+      if (rows[0]?.role !== 'admin') {
+        return res.status(403).json({ error: 'Acesso restrito ao admin' });
+      }
       req.admin = payload;
       return next();
     } catch {

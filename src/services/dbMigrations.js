@@ -41,95 +41,71 @@
 
 import { pool } from '../database.js';
 
-
-
 export async function ensureSignalsTable() {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS signals (
-        id            SERIAL       PRIMARY KEY,
-        ticker        VARCHAR(24)  NOT NULL,
-        price         NUMERIC,
-        close         NUMERIC,
-        ema9_30       NUMERIC,
-        rsi_4h        NUMERIC,
-        rsi_15        NUMERIC,
-        momentum_15   NUMERIC,
-        atr_30        NUMERIC,
-        atr_pct_30    NUMERIC,
-        vol_30        NUMERIC,
-        vol_ma_30     NUMERIC,
-        diff_btc_ema7 NUMERIC,
-        leverage      NUMERIC,
-        signal_json   JSONB        NOT NULL,
-        time          TIMESTAMP    NOT NULL DEFAULT NOW(),
-        user_id       VARCHAR(128),
-        created_at    TIMESTAMP    NOT NULL DEFAULT NOW()
-      );
-    `);
-    console.log('Tabela signals verificada/ajustada!');
-  } catch (err) {
-    console.error('Erro na migration signals:', err);
-    throw err;
-  }
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS signals (
+      id            SERIAL       PRIMARY KEY,
+      ticker        VARCHAR(24)  NOT NULL,
+      price         NUMERIC,
+      close         NUMERIC,
+      ema9_30       NUMERIC,
+      rsi_4h        NUMERIC,
+      rsi_15        NUMERIC,
+      momentum_15   NUMERIC,
+      atr_30        NUMERIC,
+      atr_pct_30    NUMERIC,
+      vol_30        NUMERIC,
+      vol_ma_30     NUMERIC,
+      diff_btc_ema7 NUMERIC,
+      leverage      NUMERIC,
+      signal_json   JSONB        NOT NULL,
+      time          TIMESTAMP    NOT NULL DEFAULT NOW(),
+      user_id       VARCHAR(128),
+      created_at    TIMESTAMP    NOT NULL DEFAULT NOW()
+    );
+  `);
+  console.log('Tabela signals verificada/ajustada!');
 }
 
 export async function ensureDominanceTable() {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS btc_dominance (
-        id          SERIAL    PRIMARY KEY,
-        btc_dom     NUMERIC,
-        eth_dom     NUMERIC,
-        captured_at TIMESTAMP NOT NULL DEFAULT NOW()
-      );
-    `);
-    console.log('Tabela btc_dominance verificada/ajustada!');
-  } catch (err) {
-    console.error('Erro na migration dominance:', err);
-    throw err;
-  }
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS btc_dominance (
+      id          SERIAL    PRIMARY KEY,
+      btc_dom     NUMERIC,
+      eth_dom     NUMERIC,
+      captured_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+  console.log('Tabela btc_dominance verificada/ajustada!');
 }
 
 export async function ensureFearGreedTable() {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS fear_greed (
-        id                   SERIAL    PRIMARY KEY,
-        value                NUMERIC,
-        index_value          INTEGER,
-        value_classification VARCHAR(32),
-        captured_at          TIMESTAMP NOT NULL DEFAULT NOW()
-      );
-    `);
-    console.log('Tabela fear_greed verificada/ajustada!');
-  } catch (err) {
-    console.error('Erro na migration fear_greed:', err);
-    throw err;
-  }
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS fear_greed (
+      id                   SERIAL    PRIMARY KEY,
+      value                NUMERIC,
+      index_value          INTEGER,
+      value_classification VARCHAR(32),
+      captured_at          TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+  console.log('Tabela fear_greed verificada/ajustada!');
 }
 
 export async function ensureMarketTable() {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS market (
-        id          SERIAL    PRIMARY KEY,
-        symbol      VARCHAR(24) NOT NULL,
-        price       NUMERIC    NOT NULL,
-        "timestamp" TIMESTAMP  NOT NULL,
-        captured_at TIMESTAMP  NOT NULL DEFAULT NOW()
-      );
-    `);
-    console.log('Tabela market verificada/ajustada!');
-  } catch (err) {
-    console.error('Erro na migration market:', err);
-    throw err;
-  }
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS market (
+      id          SERIAL    PRIMARY KEY,
+      symbol      VARCHAR(24) NOT NULL,
+      price       NUMERIC    NOT NULL,
+      "timestamp" TIMESTAMP  NOT NULL,
+      captured_at TIMESTAMP  NOT NULL DEFAULT NOW()
+    );
+  `);
+  console.log('Tabela market verificada/ajustada!');
 }
 
-/**
- * NOVAS TABELAS (usuários, admin, bot, integração, trades, etc)
- */
+// NOVAS TABELAS (usuários, admin, bot, integração, trades, etc)
 
 export async function ensureUsersTable() {
   await pool.query(`
@@ -155,6 +131,7 @@ export async function ensureUserCredentialsTable() {
       exchange VARCHAR(20) NOT NULL,
       api_key VARCHAR(120),
       api_secret VARCHAR(120),
+      is_testnet BOOLEAN DEFAULT FALSE,
       settings JSONB DEFAULT '{}',
       status VARCHAR(20) DEFAULT 'ativo'
     );
@@ -169,6 +146,8 @@ export async function ensureUserSubscriptionsTable() {
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       plano VARCHAR(60) NOT NULL,
       status VARCHAR(20) NOT NULL,
+      is_trial BOOLEAN DEFAULT FALSE,
+      is_active BOOLEAN DEFAULT TRUE,
       data_inicio TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
       data_fim TIMESTAMP WITH TIME ZONE,
       valor_pago NUMERIC(14,2),

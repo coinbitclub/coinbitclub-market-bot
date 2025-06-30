@@ -7,7 +7,10 @@ import { isUser, isAdmin } from "../middleware/auth.js";
 const router = express.Router();
 const SECRET = process.env.JWT_SECRET || "segredo123";
 
-// CADASTRO DE USUÁRIO
+/**
+ * Cadastro de usuário normal (modo trial por padrão, credenciais em testnet)
+ * Quando migrar para produção, um novo registro de credencial com testnet: false será criado!
+ */
 router.post("/register", async (req, res) => {
   const {
     nome,
@@ -35,7 +38,7 @@ router.post("/register", async (req, res) => {
     // Hash seguro
     const password_hash = await bcrypt.hash(password, 10);
 
-    // Cria usuário com role='user'
+    // Cria usuário
     const userResult = await pool.query(
       `INSERT INTO users (email, password_hash, created_at, nome, sobrenome, telefone, role)
        VALUES ($1, $2, NOW(), $3, $4, $5, $6) RETURNING id`,
@@ -43,27 +46,29 @@ router.post("/register", async (req, res) => {
     );
     const user_id = userResult.rows[0].id;
 
-    // Credenciais Bybit/Binance (igual ao seu)
+    // Credenciais Testnet (trial)
     if (bybit_api_key && bybit_api_secret) {
       await pool.query(
-        `INSERT INTO user_credentials (user_id, exchange, api_key, api_secret, settings)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [user_id, 'bybit', bybit_api_key, bybit_api_secret, JSON.stringify({ testnet: true })]
+        `INSERT INTO user_credentials (user_id, exchange, api_key, api_secret, is_testnet, settings)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [user_id, 'bybit', bybit_api_key, bybit_api_secret, true, JSON.stringify({})]
       );
     }
     if (binance_api_key && binance_api_secret) {
       await pool.query(
-        `INSERT INTO user_credentials (user_id, exchange, api_key, api_secret, settings)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [user_id, 'binance', binance_api_key, binance_api_secret, JSON.stringify({ testnet: true })]
+        `INSERT INTO user_credentials (user_id, exchange, api_key, api_secret, is_testnet, settings)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [user_id, 'binance', binance_api_key, binance_api_secret, true, JSON.stringify({})]
       );
     }
-    // Assinatura teste
+
+    // Assinatura trial
     await pool.query(
-      `INSERT INTO user_subscriptions (user_id, plano, status, data_inicio, data_fim, valor_pago, metodo)
-       VALUES ($1, 'teste', 'ativo', NOW(), NOW() + INTERVAL '7 days', 0, 'teste')`,
+      `INSERT INTO user_subscriptions (user_id, plano, status, is_trial, is_active, data_inicio, data_fim, valor_pago, metodo)
+       VALUES ($1, 'trial', 'ativo', true, true, NOW(), NOW() + INTERVAL '7 days', 0, 'trial')`,
       [user_id]
     );
+
     res.json({ status: "ok" });
   } catch (err) {
     console.error(err);
@@ -71,7 +76,55 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// CADASTRO DE ADMIN (só pode admin existente criar)
+/**
+ * Upgrade para plano de produção (após trial ou a qualquer momento)
+ * Permite fornecer chaves mainnet e ativa novo plano/assinatura.
+ */
+router.post("/upgrade-plan", isUser, async (req, res) => {
+  const { plano, bybit_api_key, bybit_api_secret, binance_api_key, binance_api_secret } = req.body;
+  const user_id = req.user.id;
+  if (!plano) return res.status(400).json({ error: "Plano obrigatório" });
+
+  try {
+    // Atualiza (encerra) trial se existir
+    await pool.query(
+      `UPDATE user_subscriptions SET status='encerrado', is_active=false, data_fim=NOW() WHERE user_id=$1 AND is_trial=true AND is_active=true`,
+      [user_id]
+    );
+
+    // Ativa nova assinatura
+    await pool.query(
+      `INSERT INTO user_subscriptions (user_id, plano, status, is_trial, is_active, data_inicio)
+       VALUES ($1, $2, 'ativo', false, true, NOW())`,
+      [user_id, plano]
+    );
+
+    // Salva credenciais mainnet (produção)
+    if (bybit_api_key && bybit_api_secret) {
+      await pool.query(
+        `INSERT INTO user_credentials (user_id, exchange, api_key, api_secret, is_testnet, settings)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [user_id, 'bybit', bybit_api_key, bybit_api_secret, false, JSON.stringify({})]
+      );
+    }
+    if (binance_api_key && binance_api_secret) {
+      await pool.query(
+        `INSERT INTO user_credentials (user_id, exchange, api_key, api_secret, is_testnet, settings)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [user_id, 'binance', binance_api_key, binance_api_secret, false, JSON.stringify({})]
+      );
+    }
+
+    res.json({ status: "Plano atualizado e credenciais cadastradas!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao atualizar plano", details: err.message });
+  }
+});
+
+/**
+ * Cadastro de ADMIN (apenas por outro admin)
+ */
 router.post("/register-admin", isAdmin, async (req, res) => {
   const { nome, sobrenome, email, telefone, password } = req.body;
   if (!nome || !email || !telefone || !password)
@@ -93,7 +146,9 @@ router.post("/register-admin", isAdmin, async (req, res) => {
   }
 });
 
-// LOGIN (para ambos)
+/**
+ * LOGIN (ambos)
+ */
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -104,8 +159,23 @@ router.post("/login", async (req, res) => {
   res.json({ token, user: { id: user.id, nome: user.nome, sobrenome: user.sobrenome, email: user.email, role: user.role } });
 });
 
-// Rotas protegidas (exemplo)
-// router.get("/me", isUser, ...);
-// router.get("/users", isAdmin, ...);
+/**
+ * Rota protegida - dados do usuário logado (ajustar para retornar plano/assinaturas/credenciais)
+ */
+router.get("/me", isUser, async (req, res) => {
+  const user_id = req.user.id;
+  try {
+    const userData = await pool.query('SELECT id, nome, sobrenome, email, telefone, role, created_at FROM users WHERE id = $1', [user_id]);
+    const subscriptions = await pool.query('SELECT * FROM user_subscriptions WHERE user_id = $1 ORDER BY data_inicio DESC', [user_id]);
+    const credentials = await pool.query('SELECT * FROM user_credentials WHERE user_id = $1', [user_id]);
+    res.json({
+      user: userData.rows[0],
+      subscriptions: subscriptions.rows,
+      credentials: credentials.rows
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao buscar dados do usuário", details: err.message });
+  }
+});
 
 export default router;
