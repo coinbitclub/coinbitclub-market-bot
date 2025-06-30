@@ -1,5 +1,9 @@
-// src/services/dbMigrations.js
-
+/**
+ * ATENÇÃO/LEMBRETE DE USO:
+ *
+ * Importe todas as funções ensure* deste arquivo no seu src/index.js e chame todas (em ordem) antes de subir o servidor.
+ * Exemplo:
+ *
  * import {
  *   ensureSignalsTable,
  *   ensureDominanceTable,
@@ -33,9 +37,11 @@
  * await ensureOpenTradesTable();
  * await ensurePositionsTable();
  * await ensureIndicatorsTable();
- *
+ */
 
 import { pool } from '../database.js';
+
+
 
 export async function ensureSignalsTable() {
   try {
