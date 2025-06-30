@@ -1,5 +1,5 @@
 import { pool } from '../database.js';
-import { placeMarketOrder as placeOrder } from './bybitService.js';
+import { placeBybitOrder as placeOrder } from './bybitService.js'; // AJUSTE DO NOME DA FUNÇÃO
 
 /**
  * Avalia um sinal e, se atender critérios, envia ordem LONG/SHORT e registra posição.
@@ -59,8 +59,13 @@ export async function handleSignal(signal) {
       symbol: `${ticker}USDT`,
       side,
       qty,
-      tp: isLong ? price * 1.01 : undefined,
-      sl: isLong ? price * 0.99 : undefined
+      // Bybit v5: se quiser passar tp/sl, precisa adaptar sua função bybit!
+      // tp: isLong ? price * 1.01 : undefined,
+      // sl: isLong ? price * 0.99 : undefined,
+      // Outros parâmetros obrigatórios:
+      apiKey: process.env.BYBIT_API_KEY,
+      apiSecret: process.env.BYBIT_API_SECRET,
+      isTestnet: process.env.BYBIT_ENV === 'test'
     });
     console.log('[Engine] Ordem enviada para Bybit:', result);
   } catch (err) {
