@@ -3,20 +3,13 @@ import { pool } from '../database.js';
 import jwt from 'jsonwebtoken';
 
 const router = express.Router();
-
 const JWT_SECRET = process.env.JWT_SECRET || 'sua_senha_secreta';
 
 // LOGIN ADMIN
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-
-  // Validação básica
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email e senha obrigatórios' });
-  }
-
+  if (!email || !password) return res.status(400).json({ error: 'Email e senha obrigatórios' });
   try {
-    // Busca o admin (troque para sua lógica real de admin)
     const { rows } = await pool.query(
       'SELECT id, email, senha FROM admins WHERE email = $1 LIMIT 1',
       [email]
@@ -25,14 +18,11 @@ router.post('/login', async (req, res) => {
     if (!admin || admin.senha !== password) {
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
-
-    // Gera token
     const token = jwt.sign(
       { userId: admin.id, role: 'admin', email: admin.email },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
-
     res.json({ token, email: admin.email });
   } catch (err) {
     res.status(500).json({ error: 'Erro no login', details: err.message });
@@ -47,7 +37,7 @@ router.get('/users', async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: "Erro ao carregar usuários", details: err.message });
+    res.status(500).json({ error: 'Erro ao carregar usuários', details: err.message });
   }
 });
 

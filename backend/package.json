@@ -1,8 +1,8 @@
 {
   "type": "module",
-  "name": "coinbitclub-market-bot",
+  "name": "coinbitclub-market-bot-backend",
   "version": "1.0.0",
-  "description": "Market data collector and webhook receiver",
+  "description": "Backend do CoinbitClub Market Bot — API Express, banco PostgreSQL, agendamento e integração com Webhooks",
   "main": "src/index.js",
   "scripts": {
     "prestart": "npx kill-port 3000 3001",
