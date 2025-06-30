@@ -37,6 +37,16 @@ console.log("JWT_SECRET:", process.env.JWT_SECRET);
 console.log("WEBHOOK_TOKEN:", process.env.WEBHOOK_TOKEN);
 
 const app  = express();
+
+ app.use(
+   cors({
+     origin: "*",
+     methods: ["GET","POST","PUT","DELETE","OPTIONS"]
+   })
+ );
+ app.options("*", cors());
+
+
 const port = process.env.PORT || 8080;
 
 (async () => {
