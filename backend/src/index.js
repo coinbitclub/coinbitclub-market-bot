@@ -32,7 +32,7 @@ import adminRouter     from "./routes/admin.js";
 
 dotenv.config();
 
-// Garante variáveis de ambiente mínimas
+// fallback para variáveis críticas
 const JWT_SECRET    = process.env.JWT_SECRET    || "VictoreLais2025";
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN || "210406";
 console.log("JWT_SECRET:", JWT_SECRET);
@@ -42,8 +42,9 @@ const app  = express();
 const port = process.env.PORT || 8080;
 
 // ───── Middlewares globais ────────────────────────────────────────
-// Logger de requisições
+// log de requisições
 app.use(morgan("combined"));
+
 // CORS universal + preflight
 app.use(cors({
   origin: "*",
@@ -51,13 +52,14 @@ app.use(cors({
   allowedHeaders: ["Content-Type","Authorization"]
 }));
 app.options("*", cors());
-// Body parser
+
+// body parser
 app.use(express.json({ limit: "200kb" }));
 
-// ───── Inicia migrações e rotas ───────────────────────────────────
+// ───── Migrações e rotas ─────────────────────────────────────────
 (async () => {
   try {
-    // Cria/ajusta todas as tabelas
+    // cria/atualiza todas as tabelas
     await ensureSignalsTable();
     await ensureDominanceTable();
     await ensureFearGreedTable();
@@ -74,18 +76,18 @@ app.use(express.json({ limit: "200kb" }));
     await ensurePositionsTable();
     await ensureIndicatorsTable();
 
-    // Rotas de healthcheck
-    app.get("/",      (_req, res) => res.send("🚀 Bot ativo!"));
-    app.get("/healthz", (_req, res) => res.send("OK"));
+    // healthchecks
+    app.get("/",       (_req, res) => res.send("🚀 Bot ativo!"));
+    app.get("/healthz",(_req, res) => res.send("OK"));
 
-    // Webhook, fetch de dados e trading
-    app.use("/webhook",    webhookRouter);
-    app.use("/api",        fetchRouter);
-    app.use("/api/user",   userRouter);
-    app.use("/api/admin",  adminRouter);
-    app.use("/trading",    tradingRouter);
+    // principais rotas
+    app.use("/webhook",     webhookRouter);
+    app.use("/api",         fetchRouter);
+    app.use("/api/user",    userRouter);
+    app.use("/api/admin",   adminRouter);
+    app.use("/trading",     tradingRouter);
 
-    // Dashboard protegido com basic auth
+    // dashboard protegido
     app.use(
       "/dashboard",
       basicAuth({
@@ -95,13 +97,13 @@ app.use(express.json({ limit: "200kb" }));
       dashboardRouter
     );
 
-    // Handler genérico de erros
+    // handler de erros genérico
     app.use((err, _req, res, _next) => {
       console.error("❌ ERRO GERAL:", err);
       res.status(err.status || 500).json({ error: err.message });
     });
 
-    // Inicia o servidor + scheduler
+    // inicia servidor + agendador
     app.listen(port, () => {
       console.log(`🚀 Server listening on port ${port}`);
       setupScheduler();
