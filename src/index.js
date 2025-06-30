@@ -32,6 +32,14 @@ import userRouter      from './routes/user.js';
 import adminRouter     from './routes/admin.js';
 
 dotenv.config();
+
+// Define variáveis de ambiente manualmente caso não estejam definidas
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'VictoreLais2025';
+process.env.WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN || '210406';
+
+console.log('JWT_SECRET:', process.env.JWT_SECRET);
+console.log('WEBHOOK_TOKEN:', process.env.WEBHOOK_TOKEN);
+
 const app  = express();
 const port = process.env.PORT || 8080;
 
