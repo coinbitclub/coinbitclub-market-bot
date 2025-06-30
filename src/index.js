@@ -1,5 +1,3 @@
-// src/index.js
-
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -11,14 +9,17 @@ import {
   ensureDominanceTable,
   ensureFearGreedTable,
   ensureMarketTable,
-  ensureUsersTable,          // NOVA: garantir tabela de usuários
-  ensureUserCredentialsTable,// NOVA: garantir tabela de credenciais
-  ensureUserSubscriptionsTable, // NOVA: garantir tabela de assinaturas
-  ensureTradesTable,            // NOVA: garantir tabela de trades
-  ensureIntegrationsTable,      // NOVA: garantir tabela de integrações
-  ensureAffiliatesTable,        // NOVA: garantir tabela de afiliados
-  ensureNotificationsTable,     // NOVA: garantir tabela de notificações
-  ensureBotLogsTable            // NOVA: garantir tabela de logs
+  ensureUsersTable,
+  ensureUserCredentialsTable,
+  ensureUserSubscriptionsTable,
+  ensureTradesTable,
+  ensureIntegrationsTable,
+  ensureAffiliatesTable,
+  ensureNotificationsTable,
+  ensureBotLogsTable,
+  ensureOpenTradesTable,
+  ensurePositionsTable,
+  ensureIndicatorsTable
 } from './services/dbMigrations.js';
 
 import { setupScheduler } from './services/scheduler.js';
@@ -48,6 +49,9 @@ const port = process.env.PORT || 8080;
   await ensureAffiliatesTable();
   await ensureNotificationsTable();
   await ensureBotLogsTable();
+  await ensureOpenTradesTable();
+  await ensurePositionsTable();
+  await ensureIndicatorsTable();
 
   // 2) Middlewares globais
   app.use(cors());
