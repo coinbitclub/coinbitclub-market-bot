@@ -31,85 +31,78 @@ import userRouter      from "./routes/user.js";
 import adminRouter     from "./routes/admin.js";
 
 dotenv.config();
-
-// fallback para variáveis críticas
-const JWT_SECRET    = process.env.JWT_SECRET    || "VictoreLais2025";
-const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN || "210406";
-console.log("JWT_SECRET:", JWT_SECRET);
-console.log("WEBHOOK_TOKEN:", WEBHOOK_TOKEN);
+// valores padrão caso não venha do .env
+process.env.JWT_SECRET    ||= "VictoreLais2025";
+process.env.WEBHOOK_TOKEN ||= "210406";
 
 const app  = express();
 const port = process.env.PORT || 8080;
 
-// ───── Middlewares globais ────────────────────────────────────────
-// log de requisições
-app.use(morgan("combined"));
-
-// CORS universal + preflight
-app.use(cors({
-  origin: "*",
-  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"]
-}));
+// 1) CORS universal em **todas** as rotas, incluindo preflight
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+    allowedHeaders: ["Content-Type","Authorization"]
+  })
+);
 app.options("*", cors());
 
-// body parser
+// 2) logging e body-parser
+app.use(morgan("combined"));
 app.use(express.json({ limit: "200kb" }));
 
-// ───── Migrações e rotas ─────────────────────────────────────────
+// 3) health checks
+app.get("/",     (_req, res) => res.send("🚀 Bot ativo!"));
+app.get("/healthz", (_req, res) => res.send("OK"));
+
+// 4) migrations e scheduler
 (async () => {
-  try {
-    // cria/atualiza todas as tabelas
-    await ensureSignalsTable();
-    await ensureDominanceTable();
-    await ensureFearGreedTable();
-    await ensureMarketTable();
-    await ensureUsersTable();
-    await ensureUserCredentialsTable();
-    await ensureUserSubscriptionsTable();
-    await ensureTradesTable();
-    await ensureIntegrationsTable();
-    await ensureAffiliatesTable();
-    await ensureNotificationsTable();
-    await ensureBotLogsTable();
-    await ensureOpenTradesTable();
-    await ensurePositionsTable();
-    await ensureIndicatorsTable();
+  await ensureSignalsTable();
+  await ensureDominanceTable();
+  await ensureFearGreedTable();
+  await ensureMarketTable();
+  await ensureUsersTable();
+  await ensureUserCredentialsTable();
+  await ensureUserSubscriptionsTable();
+  await ensureTradesTable();
+  await ensureIntegrationsTable();
+  await ensureAffiliatesTable();
+  await ensureNotificationsTable();
+  await ensureBotLogsTable();
+  await ensureOpenTradesTable();
+  await ensurePositionsTable();
+  await ensureIndicatorsTable();
 
-    // healthchecks
-    app.get("/",       (_req, res) => res.send("🚀 Bot ativo!"));
-    app.get("/healthz",(_req, res) => res.send("OK"));
+  // 5) rotas da API, na ordem certa:
+  app.use("/webhook", webhookRouter);
 
-    // principais rotas
-    app.use("/webhook",     webhookRouter);
-    app.use("/api",         fetchRouter);
-    app.use("/api/user",    userRouter);
-    app.use("/api/admin",   adminRouter);
-    app.use("/trading",     tradingRouter);
+  // **adminRouter deve vir antes de fetchRouter!**
+  app.use("/api/admin", adminRouter);
+  app.use("/api/user",  userRouter);
+  app.use("/api",       fetchRouter);
 
-    // dashboard protegido
-    app.use(
-      "/dashboard",
-      basicAuth({
-        users: { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS },
-        challenge: true
-      }),
-      dashboardRouter
-    );
+  app.use("/trading", tradingRouter);
 
-    // handler de erros genérico
-    app.use((err, _req, res, _next) => {
-      console.error("❌ ERRO GERAL:", err);
-      res.status(err.status || 500).json({ error: err.message });
-    });
+  // dashboard protegido por basic-auth
+  app.use(
+    "/dashboard",
+    basicAuth({
+      users: { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS },
+      challenge: true
+    }),
+    dashboardRouter
+  );
 
-    // inicia servidor + agendador
-    app.listen(port, () => {
-      console.log(`🚀 Server listening on port ${port}`);
-      setupScheduler();
-    });
-  } catch (err) {
-    console.error("❌ Erro durante migrações:", err);
-    process.exit(1);
-  }
+  // 6) error handler genérico
+  app.use((err, _req, res, _next) => {
+    console.error("❌ ERRO GERAL:", err);
+    res.status(err.status || 500).json({ error: err.message });
+  });
+
+  // 7) start
+  app.listen(port, () => {
+    console.log(`🚀 Server listening on port ${port}`);
+    setupScheduler();
+  });
 })();
