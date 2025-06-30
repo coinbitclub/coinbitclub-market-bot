@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { pool } from '../database.js';
 
-const { WEBHOOK_TOKEN, JWT_SECRET, JWT_SECRET } = process.env;
+const { WEBHOOK_TOKEN, JWT_SECRET } = process.env;
 
 /**
  * Autentica via Bearer JWT ou ?token= na query string (para webhooks)
