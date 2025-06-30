@@ -2,36 +2,27 @@ import express from 'express';
 import { pool } from '../database.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { isAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 const SECRET = process.env.JWT_SECRET || "segredo123";
 
-// Middleware: só admins
-async function isAdmin(req, res, next) {
-  try {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ error: 'Token obrigatório' });
-    const payload = jwt.verify(token, SECRET);
-    if (!payload.email.endsWith('@coinbitclub.vip')) return res.status(403).json({ error: 'Acesso negado' });
-    req.admin = payload;
-    next();
-  } catch {
-    res.status(401).json({ error: 'Token inválido' });
-  }
-}
-
-// LOGIN
+/**
+ * LOGIN ADMIN
+ */
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
   const user = result.rows[0];
   if (!user) return res.status(401).json({ error: 'Usuário não encontrado' });
   if (!(await bcrypt.compare(password, user.password_hash))) return res.status(401).json({ error: 'Senha inválida' });
-  const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '1d' });
-  res.json({ token, user: { id: user.id, nome: user.nome, sobrenome: user.sobrenome, email: user.email } });
+  const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, SECRET, { expiresIn: '1d' });
+  res.json({ token, user: { id: user.id, nome: user.nome, sobrenome: user.sobrenome, email: user.email, role: user.role } });
 });
 
-// KPIS
+/**
+ * KPIs do sistema
+ */
 router.get('/kpis', isAdmin, async (req, res) => {
   const [{ count: total_users }] = (await pool.query('SELECT COUNT(*) FROM users')).rows;
   const [{ count: active_plans }] = (await pool.query("SELECT COUNT(*) FROM user_subscriptions WHERE status='ativo'")).rows;
@@ -40,7 +31,9 @@ router.get('/kpis', isAdmin, async (req, res) => {
   res.json({ total_users, active_plans, total_revenue, assertiveness, robot_status: 'ativo' });
 });
 
-// USUÁRIOS
+/**
+ * Listar usuários
+ */
 router.get('/users', isAdmin, async (req, res) => {
   const { rows } = await pool.query('SELECT id, nome, sobrenome, email, created_at, false as bloqueado FROM users ORDER BY id DESC');
   res.json(rows);
@@ -51,12 +44,16 @@ router.get('/user/:id', isAdmin, async (req, res) => {
   res.json(rows[0]);
 });
 
-// BLOQUEAR/DESBLOQUEAR (exemplo)
+/**
+ * Bloquear/desbloquear usuário (mock)
+ */
 router.post('/user/:id/block', isAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
-// RESETAR SENHA
+/**
+ * Resetar senha
+ */
 router.post('/user/:id/resetpw', isAdmin, async (req, res) => {
   const novaSenha = 'NovaSenha#2024';
   const hash = await bcrypt.hash(novaSenha, 10);
@@ -64,20 +61,26 @@ router.post('/user/:id/resetpw', isAdmin, async (req, res) => {
   res.json({ ok: true, novaSenha });
 });
 
-// EDITAR DADOS
+/**
+ * Editar dados do usuário
+ */
 router.post('/user/:id/edit', isAdmin, async (req, res) => {
   const { nome, sobrenome, email } = req.body;
   await pool.query('UPDATE users SET nome=$1, sobrenome=$2, email=$3 WHERE id=$4', [nome, sobrenome, email, req.params.id]);
   res.json({ ok: true });
 });
 
-// OPERAÇÕES
+/**
+ * Operações (trades)
+ */
 router.get('/operations', isAdmin, async (req, res) => {
   const { rows } = await pool.query('SELECT * FROM trades ORDER BY executed_at DESC LIMIT 100');
   res.json(rows);
 });
 
-// KPIS PARA GRÁFICOS AVANÇADOS
+/**
+ * KPIs para gráficos avançados
+ */
 router.get('/graphs/performance', isAdmin, async (req, res) => {
   res.json({
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
@@ -93,7 +96,9 @@ router.get('/graphs/operations-per-day', isAdmin, async (req, res) => {
   });
 });
 
-// INTEGRAÇÕES
+/**
+ * Integrações
+ */
 router.get('/integrations', isAdmin, async (req, res) => {
   res.json([
     { id: 1, name: 'Bybit', status: 'ok' },
@@ -102,7 +107,9 @@ router.get('/integrations', isAdmin, async (req, res) => {
   ]);
 });
 
-// LOGS DO ROBÔ
+/**
+ * Logs do robô (mock)
+ */
 router.get('/logs', isAdmin, async (req, res) => {
   res.json([
     { timestamp: "2024-07-01 12:10", level: "info", message: "Ordem BUY executada BTCUSDT" },

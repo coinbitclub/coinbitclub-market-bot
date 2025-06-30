@@ -9,7 +9,6 @@ const SECRET = process.env.JWT_SECRET || "segredo123";
 
 /**
  * Cadastro de usuário normal (modo trial por padrão, credenciais em testnet)
- * Quando migrar para produção, um novo registro de credencial com testnet: false será criado!
  */
 router.post("/register", async (req, res) => {
   const {
@@ -71,14 +70,12 @@ router.post("/register", async (req, res) => {
 
     res.json({ status: "ok" });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Erro ao cadastrar usuário", details: err.message });
   }
 });
 
 /**
  * Upgrade para plano de produção (após trial ou a qualquer momento)
- * Permite fornecer chaves mainnet e ativa novo plano/assinatura.
  */
 router.post("/upgrade-plan", isUser, async (req, res) => {
   const { plano, bybit_api_key, bybit_api_secret, binance_api_key, binance_api_secret } = req.body;
@@ -86,20 +83,17 @@ router.post("/upgrade-plan", isUser, async (req, res) => {
   if (!plano) return res.status(400).json({ error: "Plano obrigatório" });
 
   try {
-    // Atualiza (encerra) trial se existir
     await pool.query(
       `UPDATE user_subscriptions SET status='encerrado', is_active=false, data_fim=NOW() WHERE user_id=$1 AND is_trial=true AND is_active=true`,
       [user_id]
     );
 
-    // Ativa nova assinatura
     await pool.query(
       `INSERT INTO user_subscriptions (user_id, plano, status, is_trial, is_active, data_inicio)
        VALUES ($1, $2, 'ativo', false, true, NOW())`,
       [user_id, plano]
     );
 
-    // Salva credenciais mainnet (produção)
     if (bybit_api_key && bybit_api_secret) {
       await pool.query(
         `INSERT INTO user_credentials (user_id, exchange, api_key, api_secret, is_testnet, settings)
@@ -117,7 +111,6 @@ router.post("/upgrade-plan", isUser, async (req, res) => {
 
     res.json({ status: "Plano atualizado e credenciais cadastradas!" });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Erro ao atualizar plano", details: err.message });
   }
 });
@@ -141,7 +134,6 @@ router.post("/register-admin", isAdmin, async (req, res) => {
     );
     res.json({ status: "ok" });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Erro ao cadastrar admin", details: err.message });
   }
 });
@@ -160,7 +152,7 @@ router.post("/login", async (req, res) => {
 });
 
 /**
- * Rota protegida - dados do usuário logado (ajustar para retornar plano/assinaturas/credenciais)
+ * Rota protegida - dados do usuário logado
  */
 router.get("/me", isUser, async (req, res) => {
   const user_id = req.user.id;
