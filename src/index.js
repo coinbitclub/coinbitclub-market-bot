@@ -1,4 +1,5 @@
 // src/index.js
+
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -9,25 +10,44 @@ import {
   ensureSignalsTable,
   ensureDominanceTable,
   ensureFearGreedTable,
-  ensureMarketTable
+  ensureMarketTable,
+  ensureUsersTable,          // NOVA: garantir tabela de usuários
+  ensureUserCredentialsTable,// NOVA: garantir tabela de credenciais
+  ensureUserSubscriptionsTable, // NOVA: garantir tabela de assinaturas
+  ensureTradesTable,            // NOVA: garantir tabela de trades
+  ensureIntegrationsTable,      // NOVA: garantir tabela de integrações
+  ensureAffiliatesTable,        // NOVA: garantir tabela de afiliados
+  ensureNotificationsTable,     // NOVA: garantir tabela de notificações
+  ensureBotLogsTable            // NOVA: garantir tabela de logs
 } from './services/dbMigrations.js';
+
 import { setupScheduler } from './services/scheduler.js';
 import webhookRouter   from './routes/webhookRoutes.js';
 import fetchRouter     from './routes/fetch.js';
 import tradingRouter   from './routes/trading.js';
 import dashboardRouter from './routes/dashboard.js';
+
 import userRouter      from './routes/user.js';
+import adminRouter     from './routes/admin.js';
 
 dotenv.config();
 const app  = express();
 const port = process.env.PORT || 8080;
 
 (async () => {
-  // 1) Migrações de banco (se quiser, adicione a ensureUserCredentialsTable)
+  // 1) Migrações de banco (garante todas as tabelas principais, sem erro se já existirem)
   await ensureSignalsTable();
   await ensureDominanceTable();
   await ensureFearGreedTable();
   await ensureMarketTable();
+  await ensureUsersTable();
+  await ensureUserCredentialsTable();
+  await ensureUserSubscriptionsTable();
+  await ensureTradesTable();
+  await ensureIntegrationsTable();
+  await ensureAffiliatesTable();
+  await ensureNotificationsTable();
+  await ensureBotLogsTable();
 
   // 2) Middlewares globais
   app.use(cors());
@@ -42,9 +62,10 @@ const port = process.env.PORT || 8080;
   app.use('/webhook', webhookRouter);
   app.use('/api',     fetchRouter);
   app.use('/api/user', userRouter);
+  app.use('/api/admin', adminRouter); // área admin
   app.use('/trading', tradingRouter);
 
-  // 5) Dashboard protegido
+  // 5) Dashboard protegido por basicAuth
   app.use(
     '/dashboard',
     basicAuth({
