@@ -1,4 +1,4 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 
 const baseURL = 'http://localhost:3000';
 
@@ -21,7 +21,7 @@ async function testPOST(path, payload) {
 }
 
 async function main() {
-  console.log('--- Testando rotas GET públicas ---');
+  console.log('--- Testando rotas GET p�blicas ---');
   await testGET('/api/market');
   await testGET('/api/dominance');
   await testGET('/api/feargreed');

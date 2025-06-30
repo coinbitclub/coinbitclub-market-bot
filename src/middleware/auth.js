@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { pool } from '../database.js';
 
-const { WEBHOOK_TOKEN, WEBHOOK_JWT_SECRET, JWT_SECRET } = process.env;
+const { WEBHOOK_TOKEN, JWT_SECRET, JWT_SECRET } = process.env;
 
 /**
  * Autentica via Bearer JWT ou ?token= na query string (para webhooks)
@@ -11,7 +11,7 @@ export function verifyToken(req, res, next) {
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
     try {
-      jwt.verify(token, WEBHOOK_JWT_SECRET);
+      jwt.verify(token, JWT_SECRET);
       return next();
     } catch {
       return res.status(401).json({ error: 'JWT inválido' });

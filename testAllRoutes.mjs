@@ -1,4 +1,4 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 
 const baseURL = 'http://localhost:3000';
 const token = '210406'; // ajuste se seu token for diferente
@@ -55,7 +55,7 @@ async function testPostWebhook(route, data) {
 }
 
 (async () => {
-  console.log('--- Testando rotas GET públicas ---');
+  console.log('--- Testando rotas GET p�blicas ---');
   await testGetRoute('/api/marketcap');
   await testGetRoute('/api/dominance');
   await testGetRoute('/api/feargreed');
