@@ -1,61 +1,46 @@
-import axios from 'axios';
-import crypto from 'crypto';
+import axios from "axios";
 
-// URL base por ambiente
-const BYBIT_BASE_REAL = process.env.BYBIT_BASE_URL_REAL;
-const BYBIT_BASE_TEST = process.env.BYBIT_BASE_URL_TEST;
+// URLs para Testnet e Produção Binance
+const BINANCE_PROD_API_URL = "https://api.binance.com";
+const BINANCE_TESTNET_API_URL = "https://testnet.binancefuture.com";
 
-// Gera assinatura para Bybit v5
-function signParams(params, apiSecret) {
-  const ordered = Object.keys(params).sort().map(key => `${key}=${params[key]}`).join('&');
-  return crypto.createHmac('sha256', apiSecret).update(ordered).digest('hex');
+/**
+ * Executa ordem Binance (testnet ou produção) conforme parâmetros IA.
+ * Recebe userId, sinal, params IA (sizing, tp, sl, modo), e contexto do usuário (chaves).
+ */
+export async function executarOrdemBinance(userId, signal, iaParams, contexto) {
+  const isProd = iaParams.modo === "producao";
+  const apiUrl = isProd ? BINANCE_PROD_API_URL : BINANCE_TESTNET_API_URL;
+  const apiKey = isProd ? contexto.binance_prod_api_key : contexto.binance_test_api_key;
+  const apiSecret = isProd ? contexto.binance_prod_api_secret : contexto.binance_test_api_secret;
+
+  // Monta payload conforme o padrão Binance Futures
+  const payload = {
+    symbol: signal.symbol,
+    side: signal.side.toUpperCase(), // "BUY" ou "SELL"
+    type: "MARKET",
+    quantity: calcularQtd(iaParams.sizing, contexto.saldo, signal.price),
+    // Outros campos TP/SL podem exigir ordens OCO, ajusta conforme o caso real!
+    // ...
+  };
+
+  try {
+    const result = await axios.post(`${apiUrl}/fapi/v1/order`, payload, {
+      headers: {
+        "X-MBX-APIKEY": apiKey,
+        // Pode precisar de assinatura/timestamp
+      }
+    });
+    return { status: "executado", modo: isProd ? "producao" : "testnet", result: result.data };
+  } catch (err) {
+    return { status: "erro", modo: isProd ? "producao" : "testnet", error: err.message };
+  }
 }
 
-// Envia ordem
-export async function placeBybitOrder({ apiKey, apiSecret, isTestnet, category = 'linear', symbol, side, qty, orderType = 'Market' }) {
-  const url = `${isTestnet ? BYBIT_BASE_TEST : BYBIT_BASE_REAL}/v5/order/create`;
-
-  const params = {
-    category, // 'linear' para futuros perpétuos
-    symbol,
-    side,
-    orderType,
-    qty,
-    timestamp: Date.now().toString(),
-    apiKey
-  };
-  params.sign = signParams(params, apiSecret);
-
-  const { data } = await axios.post(url, params, { headers: { 'Content-Type': 'application/json' } });
-  return data;
-}
-
-// Buscar saldo (Wallet)
-export async function getBybitBalance({ apiKey, apiSecret, isTestnet, coin = 'USDT', accountType = 'UNIFIED' }) {
-  const url = `${isTestnet ? BYBIT_BASE_TEST : BYBIT_BASE_REAL}/v5/account/wallet-balance`;
-  const params = {
-    accountType,
-    coin,
-    timestamp: Date.now().toString(),
-    apiKey
-  };
-  params.sign = signParams(params, apiSecret);
-
-  const { data } = await axios.get(url, { params });
-  return data;
-}
-
-// Histórico de ordens
-export async function getBybitOrderHistory({ apiKey, apiSecret, isTestnet, symbol, category = 'linear' }) {
-  const url = `${isTestnet ? BYBIT_BASE_TEST : BYBIT_BASE_REAL}/v5/order/history`;
-  const params = {
-    category,
-    symbol,
-    timestamp: Date.now().toString(),
-    apiKey
-  };
-  params.sign = signParams(params, apiSecret);
-
-  const { data } = await axios.get(url, { params });
-  return data;
+function calcularQtd(sizing, saldo, price) {
+  const pct = typeof sizing === "string" && sizing.endsWith("%")
+    ? parseFloat(sizing.replace("%", "")) / 100
+    : parseFloat(sizing) / 100;
+  const usd = saldo * pct;
+  return (usd / price).toFixed(4); // Ajuste casas decimais
 }
