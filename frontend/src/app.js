@@ -1,22 +1,20 @@
-import express from 'express';
-import cors from 'cors';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-import adminRoutes from './routes/admin.js';
-import kpiRoutes from './routes/kpi.js';
-import logsRoutes from './routes/logs.js';
-import marketRoutes from './routes/market.js';
-import signalsRoutes from './routes/signals.js';
-import tradesRoutes from './routes/trades.js';
+import AdminAffiliates from './pages/AdminAffiliates';
+import UserDashboard from './pages/UserDashboard';
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/admin/affiliates" element={<AdminAffiliates />} />
+        <Route path="/dashboard" element={<UserDashboard />} />
+        {/* Outras rotas que quiser adicionar */}
+        <Route path="*" element={<div>Página não encontrada</div>} />
+      </Routes>
+    </Router>
+  );
+}
 
-app.use('/api/admin', adminRoutes);
-app.use('/api/admin/kpis', kpiRoutes);
-app.use('/api/admin/logs', logsRoutes);
-app.use('/api/admin/market', marketRoutes);
-app.use('/api/admin/signals', signalsRoutes);
-app.use('/api/admin/trades', tradesRoutes);
-
-export default app;
+export default App;
