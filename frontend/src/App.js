@@ -1,8 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-import AdminAffiliates from './pages/AdminAffiliates';
-import UserDashboard from './pages/UserDashboard';
+import AdminAffiliates from './AdminAffiliates';
+import UserDashboard from './UserDashboard';
 
 function App() {
   return (
