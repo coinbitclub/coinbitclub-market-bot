@@ -10,7 +10,6 @@ function App() {
       <Routes>
         <Route path="/admin/affiliates" element={<AdminAffiliates />} />
         <Route path="/dashboard" element={<UserDashboard />} />
-        {/* Outras rotas que quiser adicionar */}
         <Route path="*" element={<div>Página não encontrada</div>} />
       </Routes>
     </Router>
