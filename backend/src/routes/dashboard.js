@@ -1,4 +1,3 @@
-// src/routes/dashboard.js
 import express from 'express';
 import {
   pool,
@@ -22,15 +21,12 @@ router.post('/notificar-fim-degustacao/:user_id', async (req, res, next) => {
     const userId = req.params.user_id;
     const user = await getUserById(userId);
     if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
-
     const dtFim = user.data_fim_teste
       ? new Date(user.data_fim_teste).toLocaleDateString('pt-BR')
       : 'desconhecida';
     const msg = `Olá ${user.nome}, seu período de degustação terminou em ${dtFim}. Quer assinar nosso serviço?`;
-
     await sendWhatsApp(user.telefone_whatsapp, msg);
     await addUserMessage(user.id, 'notificacao_fim_degustacao', msg);
-
     res.json({ status: 'ok' });
   } catch (err) {
     next(err);
@@ -52,7 +48,7 @@ router.get('/mensagens/:user_id', async (req, res, next) => {
   }
 });
 
-// 3) Todas as últimas 100 mensagens
+// 3) Últimas 100 mensagens
 router.get('/mensagens', async (_req, res, next) => {
   try {
     const { rows } = await pool.query(
@@ -162,17 +158,16 @@ router.put('/usuarios/:user_id/credenciais/binance', async (req, res, next) => {
   }
 });
 
-// 12) Relatório geral (contagens)
+// 12) Relatório geral
 router.get('/relatorio', async (_req, res, next) => {
   try {
     const [{ count: totalUsers }]    = (await pool.query(`SELECT COUNT(*) FROM users`)).rows;
     const [{ count: totalSubs }]     = (await pool.query(`SELECT COUNT(*) FROM user_subscriptions WHERE status='ativo'`)).rows;
     const [{ count: totalOps }]      = (await pool.query(`SELECT COUNT(*) FROM user_operations`)).rows;
     const [{ count: totalMessages }] = (await pool.query(`SELECT COUNT(*) FROM user_messages`)).rows;
-
     res.json({
-      totalUsers:    +totalUsers,
-      activeSubs:    +totalSubs,
+      totalUsers: +totalUsers,
+      activeSubs: +totalSubs,
       totalOperations: +totalOps,
       totalMessages: +totalMessages
     });
@@ -181,9 +176,7 @@ router.get('/relatorio', async (_req, res, next) => {
   }
 });
 
-// 13) Health-check do painel
-router.get('/', (_req, res) => {
-  res.send('Painel CoinbitClub – API REST pronta!');
-});
+// 13) Health-check
+router.get('/', (_req, res) => res.send('Painel CoinbitClub – API REST pronta!'));
 
 export default router;

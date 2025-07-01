@@ -3,10 +3,30 @@ import { placeBybitOrder as placeOrder } from './bybitService.js'; // AJUSTE DO 
 
 /**
  * Avalia um sinal e, se atender critérios, envia ordem LONG/SHORT e registra posição.
- * @param {{ ticker:string, price:number, time:string, signal_json?:object }} signal
+ * @param {{ ticker:string, price:number, time:string, signal_json?:object, user_id?:number }} signal
  */
 export async function handleSignal(signal) {
-  const { ticker, price, signal_json } = signal;
+  const { ticker, price, signal_json, user_id } = signal;
+
+  // [AJUSTE NOVO] Checagem de status do usuário ANTES de operar
+  if (user_id) {
+    const { rows: userRows } = await pool.query(
+      "SELECT status FROM users WHERE id = $1",
+      [user_id]
+    );
+    if (!userRows.length || userRows[0].status !== "ativo") {
+      console.log(`[Engine] Trade bloqueada: usuário ${user_id} com status ${userRows[0]?.status || 'não encontrado'}`);
+      await pool.query(
+        `INSERT INTO bot_logs (created_at, severity, message, context)
+         VALUES (NOW(), 'WARN', $1, $2)`,
+        [
+          `Trade bloqueada: usuário ${user_id} com status ${userRows[0]?.status || 'não encontrado'}`,
+          JSON.stringify({ user_id, ticker })
+        ]
+      );
+      return null; // Não executa trade!
+    }
+  }
 
   // 1) Último Fear & Greed
   const { rows: fgRows } = await pool.query(
@@ -59,10 +79,6 @@ export async function handleSignal(signal) {
       symbol: `${ticker}USDT`,
       side,
       qty,
-      // Bybit v5: se quiser passar tp/sl, precisa adaptar sua função bybit!
-      // tp: isLong ? price * 1.01 : undefined,
-      // sl: isLong ? price * 0.99 : undefined,
-      // Outros parâmetros obrigatórios:
       apiKey: process.env.BYBIT_API_KEY,
       apiSecret: process.env.BYBIT_API_SECRET,
       isTestnet: process.env.BYBIT_ENV === 'test'
@@ -76,9 +92,9 @@ export async function handleSignal(signal) {
   // 6) Salvar posição aberta
   try {
     await pool.query(
-      `INSERT INTO positions (symbol, side, qty, entry_price, status, created_at)
-       VALUES ($1, $2, $3, $4, 'open', NOW())`,
-      [ticker, side, qty, price]
+      `INSERT INTO positions (symbol, side, qty, entry_price, status, created_at, user_id)
+       VALUES ($1, $2, $3, $4, 'open', NOW(), $5)`,
+      [ticker, side, qty, price, user_id || null]
     );
     console.log('[Engine] Posição registrada em DB');
   } catch (err) {

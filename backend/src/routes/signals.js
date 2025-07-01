@@ -1,20 +1,22 @@
-import express from 'express';
-import { parseSignal } from '../parseSignal.js';
-import { saveSignal } from '../services/signalService.js';
+import express from "express";
+import * as signalService from "../services/signalService.js";
 
 const router = express.Router();
 
-router.post('/', async (req, res, next) => {
+// Lista de sinais recentes
+router.get("/", async (req, res, next) => {
   try {
-    // Recebe já como objeto JSON
-    const signal = parseSignal(req.body);
-    // userId pode não existir (envio público), então aceita null
-    const userId = req.userId || null;
-    await saveSignal(userId, signal);
-    res.json({ status: 'ok' });
-  } catch (err) {
-    next(err);
-  }
+    const signals = await signalService.getRecentSignals();
+    res.json(signals);
+  } catch (err) { next(err); }
+});
+
+// Lista de indicadores recentes
+router.get("/indicators", async (req, res, next) => {
+  try {
+    const indicators = await signalService.getRecentIndicators();
+    res.json(indicators);
+  } catch (err) { next(err); }
 });
 
 export default router;

@@ -1,18 +1,27 @@
 import express from 'express';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const router = express.Router();
 
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  if (email !== process.env.ADMIN_EMAIL) {
-    return res.status(403).json({ error: 'Usuário não autorizado' });
-  }
-  const match = await bcrypt.compare(password, process.env.ADMIN_PASSWORD_HASH);
-  if (!match) return res.status(403).json({ error: 'Senha inválida' });
+// Valores do admin definidos em variáveis de ambiente
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASS = process.env.ADMIN_PASS;
+const JWT_SECRET = process.env.JWT_SECRET;
 
-  const token = jwt.sign({ admin: email }, process.env.JWT_SECRET, { expiresIn: '12h' });
+// Rota de login do admin
+router.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  // Verifica credenciais
+  if (email !== ADMIN_EMAIL || password !== ADMIN_PASS) {
+    return res.status(401).json({ error: 'Credenciais inválidas' });
+  }
+
+  // Gera token JWT
+  const token = jwt.sign({ role: 'admin', email }, JWT_SECRET, { expiresIn: '8h' });
   res.json({ token });
 });
 

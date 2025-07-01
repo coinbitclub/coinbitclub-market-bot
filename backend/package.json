@@ -1,13 +1,14 @@
 {
   "type": "module",
-  "name": "coinbitclub-market-bot",
+  "name": "coinbitclub-market-bot-backend",
   "version": "1.0.0",
-  "description": "Market data collector and webhook receiver",
+  "description": "Backend do CoinbitClub Market Bot — API Express, banco PostgreSQL, Stripe, agendamento e integração com Webhooks",
   "main": "src/index.js",
   "scripts": {
-    "prestart": "npx kill-port 3000 3001",
+    "prestart": "npx kill-port 3000 3001 8080 8090",
     "start": "node -r dotenv/config src/index.js",
-    "dev": "npx kill-port 3000 3001 && nodemon --exec \"node -r dotenv/config\" src/index.js",
+    "dev": "npx kill-port 3000 3001 8080 8090 && nodemon --exec \"node -r dotenv/config\" src/index.js",
+    "start:dev": "npx kill-port 3000 3001 8080 8090 && nodemon --exec \"node -r dotenv/config\" src/index.js",
     "start:test": "npx kill-port 3000 3001 && node -r dotenv/config src/index.js --env=test",
     "start:prod": "npx kill-port 3000 3001 && node -r dotenv/config src/index.js --env=production",
     "bot": "node -r dotenv/config src/tradingBot.js",
@@ -32,6 +33,7 @@
     "pino": "^8.21.0",
     "pino-pretty": "^8.1.0",
     "prom-client": "^15.1.3",
+    "stripe": "^13.18.0",
     "technicalindicators": "^3.1.0"
   },
   "devDependencies": {

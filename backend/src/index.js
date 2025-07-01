@@ -20,13 +20,12 @@ import {
   ensureOpenTradesTable,
   ensurePositionsTable,
   ensureIndicatorsTable,
-  // Novas tabelas essenciais (billing/saldo/stripe/afiliados)
   ensureUserBalanceTable,
   ensureStripeUsersTable,
   ensureUserFinancialTable,
   ensureUserBalanceEventsTable,
   ensurePlansTable,
-  ensureAffiliatesExtractTable // Inclua caso crie a tabela de extrato de afiliados
+  ensureAffiliatesExtractTable
 } from "./services/dbMigrations.js";
 
 import { setupScheduler } from "./services/scheduler.js";
@@ -37,11 +36,12 @@ import dashboardRouter from "./routes/dashboard.js";
 import userRouter from "./routes/user.js";
 import adminRouter from "./routes/admin.js";
 import stripeRoutes from "./routes/stripeRoutes.js";
-import affiliateRouter from "./routes/affiliate.js"; // NOVA: rotas de afiliado
+import affiliateRouter from "./routes/affiliate.js";
 
 dotenv.config();
 
-process.env.JWT_SECRET ||= "VictoreLais2025";
+// Defaults
+process.env.JWT_SECRET    ||= "VictoreLais2025";
 process.env.WEBHOOK_TOKEN ||= "210406";
 
 // Checagem essencial
@@ -63,8 +63,28 @@ if (!process.env.DASHBOARD_USER || !process.env.DASHBOARD_PASS) {
 console.log("JWT_SECRET:", process.env.JWT_SECRET);
 console.log("WEBHOOK_TOKEN:", process.env.WEBHOOK_TOKEN);
 
-async function createApp() {
-  // Migrações das tabelas (garante que tudo exista)
+const app  = express();
+const port = process.env.PORT || 8080;
+
+// CORS universal
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+    allowedHeaders: ["Content-Type","Authorization"]
+  })
+);
+app.options("*", cors());
+
+app.use(morgan("combined"));
+app.use(express.json({ limit: "500kb" }));
+
+// Health checks
+app.get("/",      (_req, res) => res.send("🚀 Bot ativo!"));
+app.get("/healthz", (_req, res) => res.send("OK"));
+
+// Run DB migrations & scheduler, then mount routes
+(async () => {
   await ensureSignalsTable();
   await ensureDominanceTable();
   await ensureFearGreedTable();
@@ -87,34 +107,16 @@ async function createApp() {
   await ensurePlansTable();
   if (typeof ensureAffiliatesExtractTable === "function") await ensureAffiliatesExtractTable();
 
-  const app = express();
-
-  // CORS liberado para todos (ajuste origin se necessário)
-  app.use(
-    cors({
-      origin: "*",
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    })
-  );
-  app.options("*", cors());
-
-  app.use(morgan("combined"));
-  app.use(express.json({ limit: "500kb" }));
-
-  // Rotas públicas
-  app.get("/", (_req, res) => res.send("🚀 Bot ativo!"));
-  app.get("/healthz", (_req, res) => res.send("OK"));
-
-  // Rotas funcionais
-  app.use("/webhook", webhookRouter);
-  app.use("/api", fetchRouter);
-  app.use("/api/user", userRouter);
-  app.use("/api/admin", adminRouter);
-  app.use("/api/stripe", stripeRoutes);
+  // Rotas principais
+  app.use("/webhook",      webhookRouter);
+  app.use("/api",          fetchRouter);
+  app.use("/api/user",     userRouter);
+  app.use("/api/admin",    adminRouter);
+  app.use("/api/stripe",   stripeRoutes);
   app.use("/api/affiliate", affiliateRouter);
-  app.use("/trading", tradingRouter);
+  app.use("/trading",      tradingRouter);
 
-  // Painel dashboard protegido por basic auth
+  // Dashboard (protegido)
   app.use(
     "/dashboard",
     basicAuth({
@@ -124,19 +126,11 @@ async function createApp() {
     dashboardRouter
   );
 
-  // Middleware de tratamento de erro
+  // Handler de erro global
   app.use((err, _req, res, _next) => {
     console.error("❌ ERRO GERAL:", err);
     res.status(err.status || 500).json({ error: err.message });
   });
-
-  return app;
-}
-
-// Inicialização do app/servidor principal
-(async () => {
-  const app = await createApp();
-  const port = process.env.PORT || 8080;
 
   app.listen(port, () => {
     console.log(`🚀 Server listening on port ${port}`);

@@ -1,61 +1,49 @@
-import axios from 'axios';
-import crypto from 'crypto';
+import axios from "axios";
+import crypto from "crypto";
 
-// URL base por ambiente
-const BYBIT_BASE_REAL = process.env.BYBIT_BASE_URL_REAL;
-const BYBIT_BASE_TEST = process.env.BYBIT_BASE_URL_TEST;
+const BYBIT_PROD_API_URL = "https://api.bybit.com";
+const BYBIT_TESTNET_API_URL = "https://api-testnet.bybit.com";
 
-// Gera assinatura para Bybit v5
-function signParams(params, apiSecret) {
-  const ordered = Object.keys(params).sort().map(key => `${key}=${params[key]}`).join('&');
-  return crypto.createHmac('sha256', apiSecret).update(ordered).digest('hex');
+// Função auxiliar para assinatura Bybit v5 (HMAC SHA256)
+function signBybitRequest(apiSecret, params = {}) {
+  // Bybit exige string query em ordem alfabética dos campos + timestamp, recvWindow
+  const sorted = Object.keys(params).sort().map(k => `${k}=${params[k]}`).join('&');
+  return crypto.createHmac("sha256", apiSecret).update(sorted).digest("hex");
 }
 
-// Envia ordem
-export async function placeBybitOrder({ apiKey, apiSecret, isTestnet, category = 'linear', symbol, side, qty, orderType = 'Market' }) {
-  const url = `${isTestnet ? BYBIT_BASE_TEST : BYBIT_BASE_REAL}/v5/order/create`;
-
+// FECHAR POSIÇÃO BYBIT (GLOBAL ADMIN)
+export async function closeBybitOrder({ apiKey, apiSecret, isTestnet, symbol, side, qty }) {
+  const apiUrl = isTestnet ? BYBIT_TESTNET_API_URL : BYBIT_PROD_API_URL;
+  const closeSide = side === "Buy" ? "Sell" : "Buy";
+  const timestamp = Date.now();
   const params = {
-    category, // 'linear' para futuros perpétuos
+    category: "linear",              // Linear perpetual (ajuste se for inverse)
     symbol,
-    side,
-    orderType,
+    side: closeSide,
+    orderType: "Market",
     qty,
-    timestamp: Date.now().toString(),
-    apiKey
+    reduceOnly: true,
+    timeInForce: "GoodTillCancel",
+    closeOnTrigger: false,
+    recvWindow: 5000,
+    timestamp
   };
-  params.sign = signParams(params, apiSecret);
 
-  const { data } = await axios.post(url, params, { headers: { 'Content-Type': 'application/json' } });
-  return data;
-}
+  // Gera a assinatura
+  const sign = signBybitRequest(apiSecret, params);
 
-// Buscar saldo (Wallet)
-export async function getBybitBalance({ apiKey, apiSecret, isTestnet, coin = 'USDT', accountType = 'UNIFIED' }) {
-  const url = `${isTestnet ? BYBIT_BASE_TEST : BYBIT_BASE_REAL}/v5/account/wallet-balance`;
-  const params = {
-    accountType,
-    coin,
-    timestamp: Date.now().toString(),
-    apiKey
-  };
-  params.sign = signParams(params, apiSecret);
-
-  const { data } = await axios.get(url, { params });
-  return data;
-}
-
-// Histórico de ordens
-export async function getBybitOrderHistory({ apiKey, apiSecret, isTestnet, symbol, category = 'linear' }) {
-  const url = `${isTestnet ? BYBIT_BASE_TEST : BYBIT_BASE_REAL}/v5/order/history`;
-  const params = {
-    category,
-    symbol,
-    timestamp: Date.now().toString(),
-    apiKey
-  };
-  params.sign = signParams(params, apiSecret);
-
-  const { data } = await axios.get(url, { params });
-  return data;
+  try {
+    const result = await axios.post(`${apiUrl}/v5/order/create`, params, {
+      headers: {
+        "X-BAPI-API-KEY": apiKey,
+        "X-BAPI-SIGN": sign,
+        "X-BAPI-TIMESTAMP": timestamp,
+        "X-BAPI-RECV-WINDOW": "5000",
+        "Content-Type": "application/json"
+      }
+    });
+    return { status: "executado", result: result.data };
+  } catch (err) {
+    return { status: "erro", error: err.response?.data || err.message };
+  }
 }

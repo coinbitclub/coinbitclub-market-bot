@@ -1,150 +1,257 @@
 // src/database.js
+// Versão: 2025-07-01 — Banco unificado: Stripe, Planos, Saldos, Usuários, Exchanges
+
 import pkg from 'pg';
 const { Pool } = pkg;
 
-// Pool global
+// Configuração do pool (atenção para SSL!)
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
 });
 
-// ========== USUÁRIO ==========
+// ----------- USUÁRIO -----------
 export async function getUserByEmail(email) {
-  const { rows } = await pool.query('SELECT * FROM users WHERE email = $1 LIMIT 1', [email]);
+  const { rows } = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
   return rows[0];
 }
-
-export async function getUserById(id) {
-  const { rows } = await pool.query('SELECT * FROM users WHERE id = $1 LIMIT 1', [id]);
+export async function getUserById(userId) {
+  const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
   return rows[0];
 }
-
-export async function createUser({ nome, email, telefone_whatsapp, cpf, data_nascimento, senha_hash, is_teste, data_inicio_teste, data_fim_teste }) {
-  const { rows } = await pool.query(
-    `INSERT INTO users (nome, email, telefone_whatsapp, cpf, data_nascimento, senha_hash, is_teste, data_inicio_teste, data_fim_teste)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
-    [nome, email, telefone_whatsapp, cpf, data_nascimento, senha_hash, is_teste, data_inicio_teste, data_fim_teste]
-  );
+export async function updateUser(userId, data) {
+  const fields = [];
+  const values = [];
+  let idx = 1;
+  for (const [key, value] of Object.entries(data)) {
+    fields.push(`${key} = $${idx}`);
+    values.push(value);
+    idx++;
+  }
+  values.push(userId);
+  const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`;
+  const { rows } = await pool.query(query, values);
   return rows[0];
 }
-
-// ========== BYBIT ==========
-export async function saveBybitCredentials({ user_id, api_key, api_secret, is_testnet }) {
-  // Faz upsert (atualiza se já existir para esse user+testnet)
-  const { rows } = await pool.query(
-    `INSERT INTO user_bybit_credentials (user_id, api_key, api_secret, is_testnet)
-     VALUES ($1, $2, $3, $4)
-     ON CONFLICT (user_id, is_testnet) DO UPDATE
-     SET api_key = $2, api_secret = $3, atualizado_em = NOW()
-     RETURNING *`,
-    [user_id, api_key, api_secret, is_testnet]
-  );
-  return rows[0];
-}
-
-export async function getBybitCredentials(user_id, is_testnet = false) {
-  const { rows } = await pool.query(
-    `SELECT api_key, api_secret FROM user_bybit_credentials WHERE user_id = $1 AND is_testnet = $2 LIMIT 1`,
-    [user_id, is_testnet]
-  );
-  return rows[0];
-}
-
-// ========== BINANCE ==========
-export async function saveBinanceCredentials({ user_id, api_key, api_secret }) {
-  const { rows } = await pool.query(
-    `INSERT INTO user_binance_credentials (user_id, api_key, api_secret)
-     VALUES ($1, $2, $3)
-     ON CONFLICT (user_id) DO UPDATE
-     SET api_key = $2, api_secret = $3, atualizado_em = NOW()
-     RETURNING *`,
-    [user_id, api_key, api_secret]
-  );
-  return rows[0];
-}
-
-export async function getBinanceCredentials(user_id) {
-  const { rows } = await pool.query(
-    `SELECT api_key, api_secret FROM user_binance_credentials WHERE user_id = $1 LIMIT 1`,
-    [user_id]
-  );
-  return rows[0];
-}
-
-// ========== ASSINATURAS ==========
-export async function hasActiveSubscription(user_id) {
-  const { rows } = await pool.query(
-    `SELECT 1 FROM user_subscriptions
-     WHERE user_id = $1 AND status = 'ativo'
-     AND data_inicio <= NOW() AND data_fim >= NOW()`,
-    [user_id]
-  );
-  return !!rows.length;
-}
-
-// ========== OPERAÇÕES ==========
-export async function getUserOperations(user_id) {
-  const { rows } = await pool.query(
-    `SELECT * FROM user_operations WHERE user_id = $1 ORDER BY opened_at DESC LIMIT 50`,
-    [user_id]
-  );
-  return rows;
-}
-
-// ========== MENSAGENS ==========
-export async function addUserMessage(user_id, tipo_mensagem, mensagem) {
-  await pool.query(
-    `INSERT INTO user_messages (user_id, tipo_mensagem, mensagem)
-     VALUES ($1, $2, $3)`,
-    [user_id, tipo_mensagem, mensagem]
+export async function addUserMessage(userId, tipo, mensagem) {
+  return await pool.query(
+    'INSERT INTO user_messages (user_id, tipo_mensagem, mensagem, enviado_em) VALUES ($1, $2, $3, NOW())',
+    [userId, tipo, mensagem]
   );
 }
 
-// ========== LIMPEZA TESTE ==========
+// ----------- LIMPEZA -----------
 export async function cleanExpiredTestUsers() {
-  await pool.query(
-    `DELETE FROM users WHERE is_teste = TRUE AND data_fim_teste < NOW() - INTERVAL '1 day'`
-  );
+  await pool.query(`
+    DELETE FROM users
+    WHERE test_expiration IS NOT NULL
+      AND test_expiration < NOW()
+      AND is_test = true
+  `);
 }
-
-export async function updateUser(user_id, fields) {
-  const allowed = ['nome', 'email', 'telefone_whatsapp', 'cpf', 'data_nascimento', 'senha_hash'];
-  const keys = Object.keys(fields).filter(k => allowed.includes(k));
-  if (!keys.length) return null;
-
-  const sets = keys.map((k, i) => `${k} = $${i + 2}`).join(', ');
-  const values = [user_id, ...keys.map(k => fields[k])];
-
-  const { rows } = await pool.query(
-    `UPDATE users SET ${sets}, atualizado_em = NOW() WHERE id = $1 RETURNING *`,
-    values
-  );
-  return rows[0];
-}
-
-/**
- * Remove dados dos usuários cuja última assinatura terminou há mais de 60 dias.
- * Mantém apenas registros de usuários que ainda têm assinatura vigente ou expirou há menos de 60 dias.
- */
 export async function cleanOldInactiveUsers() {
   await pool.query(`
     DELETE FROM users
-    WHERE id IN (
-      SELECT u.id
-      FROM users u
-      LEFT JOIN user_subscriptions s ON u.id = s.user_id
-      WHERE (
-        -- Nunca assinou ou todas as assinaturas já expiraram há mais de 60 dias
-        (
-          SELECT COALESCE(MAX(s2.data_fim), u.criado_em)
-          FROM user_subscriptions s2
-          WHERE s2.user_id = u.id
-        ) < NOW() - INTERVAL '60 days'
-      )
-    );
+    WHERE last_login IS NOT NULL
+      AND last_login < NOW() - INTERVAL '180 days'
+      AND is_test = false
   `);
 }
 
-// ========== PREPARE PARA INTEGRAÇÃO IA ==========
-// Você pode adicionar aqui, ou em um arquivo separado, as funções para gerenciar relatórios IA e logs (veja a especificação consolidada enviada antes).
+// ----------- CREDENCIAIS EXCHANGES -----------
+export async function getBinanceCredentials(userId, modo = 'testnet') {
+  const res = await pool.query(`
+    SELECT binance_api_key, binance_api_secret
+    FROM user_credentials
+    WHERE user_id = $1 AND modo = $2
+    LIMIT 1
+  `, [userId, modo]);
+  return res.rows[0];
+}
+export async function saveBinanceCredentials({ user_id, api_key, api_secret, modo = "testnet" }) {
+  const res = await pool.query(`
+    INSERT INTO user_credentials (user_id, modo, binance_api_key, binance_api_secret)
+    VALUES ($1, $2, $3, $4)
+    ON CONFLICT (user_id, modo) DO UPDATE
+    SET binance_api_key = $3, binance_api_secret = $4
+    RETURNING *
+  `, [user_id, modo, api_key, api_secret]);
+  return res.rows[0];
+}
+export async function getBybitCredentials(userId, modo = 'testnet') {
+  const res = await pool.query(`
+    SELECT bybit_api_key, bybit_api_secret
+    FROM user_credentials
+    WHERE user_id = $1 AND modo = $2
+    LIMIT 1
+  `, [userId, modo]);
+  return res.rows[0];
+}
+export async function saveBybitCredentials({ user_id, api_key, api_secret, is_testnet }) {
+  const modo = is_testnet ? 'testnet' : 'production';
+  const res = await pool.query(`
+    INSERT INTO user_credentials (user_id, modo, bybit_api_key, bybit_api_secret)
+    VALUES ($1, $2, $3, $4)
+    ON CONFLICT (user_id, modo) DO UPDATE
+    SET bybit_api_key = $3, bybit_api_secret = $4
+    RETURNING *
+  `, [user_id, modo, api_key, api_secret]);
+  return res.rows[0];
+}
 
+// ----------- ASSINATURA, PLANOS E STRIPE -----------
+export async function hasActiveSubscription(userId) {
+  const res = await pool.query(`
+    SELECT EXISTS (
+      SELECT 1 FROM user_subscriptions
+      WHERE user_id = $1 AND status = 'ativo'
+    ) AS active
+  `, [userId]);
+  return res.rows[0]?.active || false;
+}
+export async function getUserPlan(userId) {
+  const res = await pool.query(`
+    SELECT s.*, p.nome as plano_nome, p.valor_mensalidade, p.percentual_comissao, p.saldo_minimo, p.moeda
+    FROM user_subscriptions s
+    LEFT JOIN plans p ON s.plan_id = p.id
+    WHERE s.user_id = $1 AND s.is_active = true
+    ORDER BY s.criado_em DESC LIMIT 1
+  `, [userId]);
+  return res.rows[0];
+}
+export async function getActivePlans() {
+  const { rows } = await pool.query(`
+    SELECT * FROM plans WHERE ativo = true
+  `);
+  return rows;
+}
+// NOVO: Busca price_id/Stripe de um plano
+export async function getPlanPriceId(plan_id) {
+  const { rows } = await pool.query(
+    `SELECT stripe_price_id FROM plans WHERE id = $1`,
+    [plan_id]
+  );
+  return rows[0]?.stripe_price_id || null;
+}
+export async function getPlanStripeIds(plan_id) {
+  const { rows } = await pool.query(
+    `SELECT stripe_product_id, stripe_price_id FROM plans WHERE id = $1`,
+    [plan_id]
+  );
+  return rows[0] || null;
+}
+export async function getStripeUser(userId) {
+  const { rows } = await pool.query(
+    `SELECT * FROM stripe_users WHERE user_id = $1 ORDER BY criado_em DESC LIMIT 1`, [userId]
+  );
+  return rows[0];
+}
+export async function saveStripeUser({ user_id, stripe_customer_id, stripe_connect_id }) {
+  const { rows } = await pool.query(`
+    INSERT INTO stripe_users (user_id, stripe_customer_id, stripe_connect_id)
+    VALUES ($1, $2, $3)
+    ON CONFLICT (user_id) DO UPDATE
+    SET stripe_customer_id = $2, stripe_connect_id = $3
+    RETURNING *
+  `, [user_id, stripe_customer_id, stripe_connect_id]);
+  return rows[0];
+}
+
+// ----------- SALDO E MOVIMENTAÇÃO -----------
+export async function getUserBalance(userId) {
+  const { rows } = await pool.query(
+    `SELECT saldo, saldo_bloqueado, moeda FROM user_balance WHERE user_id = $1`, [userId]
+  );
+  return rows[0];
+}
+export async function updateUserBalance(userId, saldo, saldo_bloqueado) {
+  const { rows } = await pool.query(`
+    UPDATE user_balance SET saldo = $2, saldo_bloqueado = $3, atualizado_em = NOW() WHERE user_id = $1 RETURNING *
+  `, [userId, saldo, saldo_bloqueado]);
+  return rows[0];
+}
+export async function addUserBalanceEvent(userId, evento, descricao, saldo_anterior, saldo_minimo) {
+  await pool.query(`
+    INSERT INTO user_balance_events (user_id, evento, descricao, saldo_anterior, saldo_minimo, criado_em)
+    VALUES ($1, $2, $3, $4, $5, NOW())
+  `, [userId, evento, descricao, saldo_anterior, saldo_minimo]);
+}
+export async function addFinancialMovement({
+  user_id, tipo_movimento, valor, descricao, saldo_apos, origem, status = 'efetivado', stripe_payment_id, tipo_comissao, plano_id
+}) {
+  await pool.query(`
+    INSERT INTO user_financial
+    (user_id, tipo_movimento, valor, descricao, saldo_apos, origem, status, stripe_payment_id, tipo_comissao, plano_id, data)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+  `, [user_id, tipo_movimento, valor, descricao, saldo_apos, origem, status, stripe_payment_id, tipo_comissao, plano_id]);
+}
+export async function getUserFinance(userId, limit = 40) {
+  const { rows } = await pool.query(`
+    SELECT * FROM user_financial WHERE user_id = $1 ORDER BY data DESC LIMIT $2
+  `, [userId, limit]);
+  return rows;
+}
+
+// ----------- STATUS/OPERAÇÃO -----------
+export async function setUserStatus(userId, status) {
+  await pool.query(`UPDATE users SET status = $1 WHERE id = $2`, [status, userId]);
+}
+export async function getUserStatus(userId) {
+  const { rows } = await pool.query(`SELECT status FROM users WHERE id = $1`, [userId]);
+  return rows.length ? rows[0].status : null;
+}
+
+// ----------- OPERAÇÕES & LOGS -----------
+export async function getUserOperations(userId) {
+  const { rows } = await pool.query(`
+    SELECT * FROM user_operations
+    WHERE user_id = $1
+    ORDER BY created_at DESC
+    LIMIT 50
+  `, [userId]);
+  return rows;
+}
+export async function logEvent({ user_id, acao, detalhe }) {
+  await pool.query(`
+    INSERT INTO event_logs (user_id, acao, detalhe, data)
+    VALUES ($1, $2, $3, NOW())
+  `, [user_id, acao, detalhe]);
+}
+export async function logBot({ severity, message, context }) {
+  await pool.query(`
+    INSERT INTO bot_logs (created_at, severity, message, context)
+    VALUES (NOW(), $1, $2, $3)
+  `, [severity, message, JSON.stringify(context)]);
+}
+
+// ----------- EXPORTA TUDO -----------
+export default {
+  pool,
+  getUserByEmail,
+  getUserById,
+  updateUser,
+  addUserMessage,
+  cleanExpiredTestUsers,
+  cleanOldInactiveUsers,
+  getBinanceCredentials,
+  saveBinanceCredentials,
+  getBybitCredentials,
+  saveBybitCredentials,
+  hasActiveSubscription,
+  getUserPlan,
+  getActivePlans,
+  getPlanPriceId,
+  getPlanStripeIds,
+  getStripeUser,
+  saveStripeUser,
+  getUserBalance,
+  updateUserBalance,
+  addUserBalanceEvent,
+  addFinancialMovement,
+  getUserFinance,
+  setUserStatus,
+  getUserStatus,
+  getUserOperations,
+  logEvent,
+  logBot,
+};
