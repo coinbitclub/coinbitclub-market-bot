@@ -71,4 +71,31 @@ router.get("/finance/:userId", adminService.jwtMiddleware, async (req, res, next
   } catch (err) { next(err); }
 });
 
+// PAUSAR TODOS OS ROBÔS (admin)
+router.post("/pause-all-bots", adminService.jwtMiddleware, async (req, res, next) => {
+  try {
+    const { motivo } = req.body;
+    await adminService.pauseAllBots(motivo || "Pausa global por admin");
+    res.json({ status: "Todos os robôs pausados" });
+  } catch (err) { next(err); }
+});
+
+// REATIVAR TODOS OS ROBÔS (admin)
+router.post("/reactivate-all-bots", adminService.jwtMiddleware, async (req, res, next) => {
+  try {
+    const { motivo } = req.body;
+    await adminService.reactivateAllBots(motivo || "Reativação global por admin");
+    res.json({ status: "Todos os robôs reativados" });
+  } catch (err) { next(err); }
+});
+
+// FECHAR TODAS AS OPERAÇÕES ABERTAS (Bybit/Binance/BD)
+router.post("/close-all-trades", adminService.jwtMiddleware, async (req, res, next) => {
+  try {
+    const { motivo } = req.body;
+    const totalClosed = await adminService.closeAllOpenTrades(motivo || "Ordem admin global");
+    res.json({ status: "OK", total_closed: totalClosed });
+  } catch (err) { next(err); }
+});
+
 export default router;

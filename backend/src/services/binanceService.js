@@ -1,46 +1,46 @@
 import axios from "axios";
+import crypto from "crypto";
 
-// URLs para Testnet e Produção Binance
-const BINANCE_PROD_API_URL = "https://api.binance.com";
+const BINANCE_PROD_API_URL = "https://fapi.binance.com";
 const BINANCE_TESTNET_API_URL = "https://testnet.binancefuture.com";
 
-/**
- * Executa ordem Binance (testnet ou produção) conforme parâmetros IA.
- * Recebe userId, sinal, params IA (sizing, tp, sl, modo), e contexto do usuário (chaves).
- */
-export async function executarOrdemBinance(userId, signal, iaParams, contexto) {
-  const isProd = iaParams.modo === "producao";
-  const apiUrl = isProd ? BINANCE_PROD_API_URL : BINANCE_TESTNET_API_URL;
-  const apiKey = isProd ? contexto.binance_prod_api_key : contexto.binance_test_api_key;
-  const apiSecret = isProd ? contexto.binance_prod_api_secret : contexto.binance_test_api_secret;
-
-  // Monta payload conforme o padrão Binance Futures
-  const payload = {
-    symbol: signal.symbol,
-    side: signal.side.toUpperCase(), // "BUY" ou "SELL"
-    type: "MARKET",
-    quantity: calcularQtd(iaParams.sizing, contexto.saldo, signal.price),
-    // Outros campos TP/SL podem exigir ordens OCO, ajusta conforme o caso real!
-    // ...
-  };
-
-  try {
-    const result = await axios.post(`${apiUrl}/fapi/v1/order`, payload, {
-      headers: {
-        "X-MBX-APIKEY": apiKey,
-        // Pode precisar de assinatura/timestamp
-      }
-    });
-    return { status: "executado", modo: isProd ? "producao" : "testnet", result: result.data };
-  } catch (err) {
-    return { status: "erro", modo: isProd ? "producao" : "testnet", error: err.message };
-  }
+// Função auxiliar para assinatura Binance Futures (HMAC SHA256)
+function signBinanceRequest(apiSecret, params = {}) {
+  const query = Object.keys(params).map(k => `${k}=${params[k]}`).join('&');
+  return crypto.createHmac("sha256", apiSecret).update(query).digest("hex");
 }
 
-function calcularQtd(sizing, saldo, price) {
-  const pct = typeof sizing === "string" && sizing.endsWith("%")
-    ? parseFloat(sizing.replace("%", "")) / 100
-    : parseFloat(sizing) / 100;
-  const usd = saldo * pct;
-  return (usd / price).toFixed(4); // Ajuste casas decimais
+// FECHAR POSIÇÃO BINANCE (GLOBAL ADMIN)
+export async function closeBinanceOrder({ apiKey, apiSecret, symbol, side, qty, isTestnet = false }) {
+  const apiUrl = isTestnet ? BINANCE_TESTNET_API_URL : BINANCE_PROD_API_URL;
+  const closeSide = side === "BUY" ? "SELL" : "BUY";
+  const timestamp = Date.now();
+
+  // Monta payload (Binance exige params em query string)
+  const params = {
+    symbol,
+    side: closeSide,
+    type: "MARKET",
+    quantity: qty,
+    reduceOnly: "true",
+    timestamp
+  };
+  const signature = signBinanceRequest(apiSecret, params);
+
+  const queryString = Object.keys(params).map(k => `${k}=${encodeURIComponent(params[k])}`).join("&") + `&signature=${signature}`;
+
+  try {
+    const result = await axios.post(
+      `${apiUrl}/fapi/v1/order?${queryString}`,
+      null, // POST vazio, params na query
+      {
+        headers: {
+          "X-MBX-APIKEY": apiKey
+        }
+      }
+    );
+    return { status: "executado", result: result.data };
+  } catch (err) {
+    return { status: "erro", error: err.response?.data || err.message };
+  }
 }
