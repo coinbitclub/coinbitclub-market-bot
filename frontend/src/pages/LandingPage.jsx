@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-// SVGs para reforçar o visual cripto/IA/segurança
+// SVG Icons Premium
 const icons = {
   shield: (
     <svg className="w-8 h-8 mb-3 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -22,22 +22,30 @@ const icons = {
       <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M2 19h20" />
     </svg>
   ),
-  rocket: (
-    <svg className="w-8 h-8 mb-3 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M5 19l4-4-1-4 9-9a2 2 0 113 3l-9 9-4-1-4 4 2 2z" />
-    </svg>
-  ),
 };
 
 export default function LandingPage() {
   return (
     <div className="bg-[#0c101b] min-h-screen font-sans text-white relative overflow-x-hidden">
 
-      {/* BG ANIMADO */}
-      <div className="fixed inset-0 -z-10 pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-[60vh] bg-gradient-to-br from-cyan-900/40 via-indigo-800/40 to-[#101323]/80 blur-3xl opacity-80"></div>
-        <div className="absolute bottom-0 right-0 w-[60vw] h-[30vw] bg-gradient-to-tr from-yellow-400/10 via-pink-500/5 to-cyan-400/10 blur-3xl rounded-full"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-cyan-700/10 via-transparent to-transparent"></div>
+      {/* BACKGROUND ANIMADO PREMIUM */}
+      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+        <svg width="100%" height="100%" viewBox="0 0 1200 800" className="absolute inset-0 w-full h-full" fill="none">
+          <defs>
+            <radialGradient id="bg1" cx="60%" cy="10%" r="120%" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#01E4F8" stopOpacity="0.18" />
+              <stop offset="0.4" stopColor="#181C34" stopOpacity="0.05" />
+              <stop offset="1" stopColor="#101323" stopOpacity="0.95" />
+            </radialGradient>
+            <radialGradient id="bg2" cx="90%" cy="80%" r="90%" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#FFC93C" stopOpacity="0.18" />
+              <stop offset="0.6" stopColor="#0C101B" stopOpacity="0.05" />
+              <stop offset="1" stopColor="#101323" stopOpacity="0.7" />
+            </radialGradient>
+          </defs>
+          <rect width="1200" height="800" fill="url(#bg1)" />
+          <rect width="1200" height="800" fill="url(#bg2)" />
+        </svg>
       </div>
 
       {/* HEADER */}
@@ -59,8 +67,8 @@ export default function LandingPage() {
         <span className="uppercase text-xs md:text-sm tracking-widest font-bold bg-cyan-400/20 text-cyan-200 px-4 py-2 rounded-full mb-2 animate-pulse shadow">
           O robô de cripto que só lucra junto com você
         </span>
-        <h1 className="text-4xl md:text-6xl font-black leading-tight max-w-4xl drop-shadow-xl">
-          Deixe a <span className="text-cyan-300">inteligência artificial</span> operar<br className="hidden md:block" /> seu <span className="text-yellow-400">dinheiro em cripto</span> 24/7.
+        <h1 className="text-5xl md:text-7xl font-black leading-tight max-w-4xl drop-shadow-xl bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-yellow-200 to-yellow-400 animate-gradient-x">
+          Deixe a inteligência artificial operar<br className="hidden md:block" /> seu dinheiro em cripto 24/7.
         </h1>
         <p className="text-lg md:text-2xl text-gray-200 max-w-2xl mt-4">
           Teste grátis por <b className="text-yellow-400">7 dias</b>, saldo sempre <b className="text-cyan-300">seguro na sua exchange</b>.<br />
@@ -68,37 +76,36 @@ export default function LandingPage() {
         </p>
         <Link
           to="/cadastro"
-          className="mt-8 bg-gradient-to-r from-yellow-400 via-yellow-300 to-cyan-400 hover:brightness-105 text-black font-black py-5 px-14 rounded-full text-2xl shadow-xl transition hover:scale-105"
+          className="mt-8 bg-gradient-to-r from-yellow-400 via-yellow-300 to-cyan-400 hover:from-yellow-300 hover:to-cyan-300 text-black font-black py-5 px-14 rounded-full text-2xl shadow-xl transition-transform hover:scale-105"
         >
           QUERO TESTAR GRÁTIS
         </Link>
         <div className="flex gap-4 mt-8">
           <img src="/binance-logo.svg" alt="Binance" className="h-8 opacity-80" />
           <img src="/bybit-logo.svg" alt="Bybit" className="h-8 opacity-80" />
-          {/* Adicione logos conforme desejar */}
         </div>
       </section>
 
       {/* DIFERENCIAIS */}
       <section className="max-w-6xl mx-auto py-16 px-6 grid md:grid-cols-3 gap-10 z-10 relative">
-        <div className="bg-[#151b29] bg-opacity-80 rounded-2xl p-8 shadow-xl border border-cyan-800/40 hover:scale-105 hover:shadow-cyan-400/30 transition-all duration-300 flex flex-col items-center text-center">
+        <div className="bg-[#181e34]/80 backdrop-blur-xl border border-cyan-400/30 shadow-[0_4px_32px_0_rgba(0,255,255,0.07)] rounded-2xl p-8 flex flex-col items-center transition-transform hover:scale-105 hover:shadow-cyan-300/50">
           {icons.shield}
           <h3 className="text-2xl font-bold mb-2 text-cyan-300">Saldo Sempre Seguro</h3>
           <p className="text-gray-300">Seu dinheiro nunca sai da sua exchange. Acesso só via API autorizada.</p>
         </div>
-        <div className="bg-[#151b29] bg-opacity-80 rounded-2xl p-8 shadow-xl border border-cyan-800/40 hover:scale-105 hover:shadow-cyan-400/30 transition-all duration-300 flex flex-col items-center text-center">
+        <div className="bg-[#181e34]/80 backdrop-blur-xl border border-cyan-400/30 shadow-[0_4px_32px_0_rgba(0,255,255,0.07)] rounded-2xl p-8 flex flex-col items-center transition-transform hover:scale-105 hover:shadow-cyan-300/50">
           {icons.bot}
           <h3 className="text-2xl font-bold mb-2 text-yellow-400">IA 24/7 no Mercado</h3>
           <p className="text-gray-300">Robô próprio, inteligência artificial operando para você, todos os dias e noites.</p>
         </div>
-        <div className="bg-[#151b29] bg-opacity-80 rounded-2xl p-8 shadow-xl border border-cyan-800/40 hover:scale-105 hover:shadow-cyan-400/30 transition-all duration-300 flex flex-col items-center text-center">
+        <div className="bg-[#181e34]/80 backdrop-blur-xl border border-cyan-400/30 shadow-[0_4px_32px_0_rgba(0,255,255,0.07)] rounded-2xl p-8 flex flex-col items-center transition-transform hover:scale-105 hover:shadow-cyan-300/50">
           {icons.profit}
           <h3 className="text-2xl font-bold mb-2 text-green-400">Só cobra se der lucro</h3>
           <p className="text-gray-300">Zero taxa fixa, só comissão sobre lucro real, nunca no prejuízo.</p>
         </div>
       </section>
 
-      {/* PLANOS - OPÇÃO DIFERENCIAL */}
+      {/* PLANOS */}
       <section className="max-w-5xl mx-auto py-8 px-4 grid md:grid-cols-2 gap-7">
         <div className="bg-gradient-to-tr from-cyan-900 via-[#151b29] to-[#181c34] p-7 rounded-2xl shadow-xl border border-cyan-800/40">
           <h4 className="text-lg uppercase font-black text-cyan-300 tracking-wide mb-1">Plano Mensal</h4>
@@ -126,7 +133,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* VISUALIZAÇÃO EM TEMPO REAL */}
+      {/* LUCRO EM TEMPO REAL */}
       <section className="bg-gradient-to-r from-[#181c34] via-[#111726] to-[#101323] py-12 my-12 shadow-inner">
         <div className="max-w-3xl mx-auto flex flex-col items-center">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-7 text-yellow-400 drop-shadow-lg">
@@ -214,6 +221,20 @@ export default function LandingPage() {
         |
         <a href="mailto:suporte@coinbitclub.vip" className="underline mx-2">Suporte</a>
       </footer>
+
+      {/* GRADIENTE DE TEXTO (Tailwind Animation) */}
+      <style>
+        {`
+          @keyframes gradient-x {
+            0%,100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+          }
+          .animate-gradient-x {
+            background-size: 200% 200%;
+            animation: gradient-x 6s ease-in-out infinite;
+          }
+        `}
+      </style>
     </div>
   );
 }
