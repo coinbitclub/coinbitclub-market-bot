@@ -1,0 +1,22 @@
+module.exports = {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,jsx,ts,tsx}"
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: "#10b981", // teal (pode customizar para ciano ou dourado)
+        accent: "#FFD700",  // dourado
+        dark: "#111827",
+        light: "#F3F4F6"
+      },
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+      }
+    }
+  },
+  plugins: [
+    require('@tailwindcss/forms'),
+  ],
+}
