@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import SidebarAdmin from "../../components/SidebarAdmin";
 
-const API_BASE = import.meta.env.VITE_API_URL || ""; // Configure no .env
+const API_BASE = process.env.REACT_APP_API_URL || ""; // Configure no .env
 
 export default function AdminDashboard() {
   const [overview, setOverview] = useState(null);

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Sidebar from "../components/Sidebar";
 
-const API_BASE = import.meta.env.VITE_API_URL || "";
+const API_BASE = process.env.REACT_APP_API_URL || "";
 
 export default function Dashboard() {
   const [dados, setDados] = useState(null);
