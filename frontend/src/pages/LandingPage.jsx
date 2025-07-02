@@ -1,45 +1,131 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-// SVG Icons Premium
-const icons = {
-  shield: (
-    <svg className="w-8 h-8 mb-3 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+function IconShield() {
+  return (
+    <svg className="w-7 h-7 mx-auto mb-2 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 3l7 4v5c0 5.25-3.75 10-7 10S5 17.25 5 12V7l7-4z" />
     </svg>
-  ),
-  bot: (
-    <svg className="w-8 h-8 mb-3 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  );
+}
+function IconIA() {
+  return (
+    <svg className="w-7 h-7 mx-auto mb-2 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <circle cx="12" cy="12" r="10" strokeWidth="2" />
-      <rect x="9" y="8" width="6" height="6" rx="2" fill="currentColor" />
-      <circle cx="10.5" cy="11" r="1" fill="#fff" />
-      <circle cx="13.5" cy="11" r="1" fill="#fff" />
+      <path strokeWidth="2" d="M12 8v4l3 3" />
+      <circle cx="12" cy="7" r="1" fill="#00FFD8" />
     </svg>
-  ),
-  profit: (
-    <svg className="w-8 h-8 mb-3 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M4 17l6-6 4 4 6-6" />
-      <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M2 19h20" />
+  );
+}
+function IconProfit() {
+  return (
+    <svg className="w-7 h-7 mx-auto mb-2 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <rect x="7" y="9" width="10" height="7" rx="2" strokeWidth="2"/>
+      <path d="M12 6v3" strokeWidth="2" />
+      <path d="M10 13h4" strokeWidth="2" />
+      <circle cx="12" cy="17" r="1.5" fill="#FFC93C" />
     </svg>
-  ),
-};
+  );
+}
 
 export default function LandingPage() {
   return (
-    <div className="bg-[#0c101b] min-h-screen font-sans text-white relative overflow-x-hidden">
+    <div className="bg-gradient-to-br from-[#111727] via-[#171c29] to-[#101323] min-h-screen flex flex-col justify-center items-center font-sans text-white">
+      {/* CARD CENTRAL */}
+      <div className="w-full max-w-2xl md:max-w-3xl bg-[#10151f]/90 rounded-3xl shadow-2xl border border-[#23283a] p-6 md:p-10 mx-3 my-10 flex flex-col items-center relative" style={{ boxShadow: "0 8px 48px 0 rgba(0,255,255,0.07)" }}>
+        
+        {/* Header/logo */}
+        <div className="w-full flex justify-between items-center mb-6">
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="CoinbitClub" className="h-9 md:h-10 rounded-full bg-[#182232] p-1" />
+            <span className="font-bold text-lg md:text-xl tracking-tight text-cyan-200" style={{letterSpacing: ".5px"}}>CoinbitClub<br className="md:hidden"/><span className="font-medium text-xs md:text-sm block text-gray-400">MarketBot</span></span>
+          </div>
+          <Link to="/login" className="bg-cyan-400 hover:bg-cyan-300 text-[#222] font-semibold text-xs md:text-base px-4 py-2 rounded-full shadow transition-all">
+            Área do Assinante
+          </Link>
+        </div>
 
-      {/* BACKGROUND ANIMADO PREMIUM */}
-      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+        {/* Hero */}
+        <div className="text-center mb-5 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-black mb-2 md:mb-4 leading-tight">
+            O robô de cripto que <span className="text-cyan-200">só lucra junto com você</span>
+          </h1>
+          <p className="text-sm md:text-base text-gray-300 mb-5">
+            Teste grátis 7 dias: Saldo sempre seguro na sua exchange.
+          </p>
+          <Link
+            to="/cadastro"
+            className="inline-block bg-yellow-400 hover:bg-yellow-300 text-[#101323] font-bold py-3 px-7 rounded-full text-base md:text-lg shadow-lg transition-all mb-2"
+            style={{ minWidth: 220 }}
+          >
+            Quero Testar Grátis
+          </Link>
+        </div>
+
+        {/* Diferenciais */}
+        <div className="w-full flex flex-col md:flex-row gap-3 md:gap-4 mb-7 md:mb-8">
+          <div className="flex-1 bg-[#11192a]/70 rounded-xl border border-cyan-900/30 px-3 py-3 md:py-5 text-center shadow flex flex-col items-center min-w-[120px]">
+            <IconShield />
+            <span className="text-xs md:text-sm font-bold text-cyan-200 mb-0.5">Saldo Sempre Seguro</span>
+            <span className="text-xs text-gray-400">Seu dinheiro nunca sai da sua exchange.</span>
+          </div>
+          <div className="flex-1 bg-[#11192a]/70 rounded-xl border border-cyan-900/30 px-3 py-3 md:py-5 text-center shadow flex flex-col items-center min-w-[120px]">
+            <IconIA />
+            <span className="text-xs md:text-sm font-bold text-cyan-200 mb-0.5">IA 24/7</span>
+            <span className="text-xs text-gray-400">Robô próprio operando todos os dias.</span>
+          </div>
+          <div className="flex-1 bg-[#11192a]/70 rounded-xl border border-cyan-900/30 px-3 py-3 md:py-5 text-center shadow flex flex-col items-center min-w-[120px]">
+            <IconProfit />
+            <span className="text-xs md:text-sm font-bold text-yellow-300 mb-0.5">Só cobra no lucro</span>
+            <span className="text-xs text-gray-400">Você só paga comissão quando tem lucro.</span>
+          </div>
+        </div>
+
+        {/* Resultados e Depoimentos */}
+        <div className="w-full flex flex-col md:flex-row gap-3 md:gap-4 mb-4">
+          <div className="flex-1 flex flex-col justify-center items-center text-left">
+            <div className="mb-2">
+              <div className="text-xl md:text-2xl font-black text-white leading-tight">
+                <span className="text-cyan-200">+3,2%</span>
+                <span className="text-base font-medium text-gray-300 ml-1">Rentabilidade diária</span>
+              </div>
+              <div className="text-xl md:text-2xl font-black text-white leading-tight">
+                <span className="text-cyan-200">+12,5%</span>
+                <span className="text-base font-medium text-gray-300 ml-1">Rentabilidade mensal</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col gap-2">
+            <div className="bg-[#151e2c]/60 rounded-xl p-3 text-xs text-white font-medium shadow border border-cyan-900/20">
+              <span>“O MarketBot fez tudo mais fácil!”</span>
+              <div className="text-[10px] text-gray-400 mt-1">Ana M</div>
+            </div>
+            <div className="bg-[#151e2c]/60 rounded-xl p-3 text-xs text-white font-medium shadow border border-cyan-900/20">
+              <span>“Lucro constante e sem complicação”</span>
+              <div className="text-[10px] text-gray-400 mt-1">Pedro R</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="w-full text-center text-[11px] text-gray-400 mt-2 pt-2 border-t border-cyan-900/10 flex flex-wrap justify-center gap-2">
+          <span>Termos de Uso</span>
+          <span>•</span>
+          <span>Política de Privacidade</span>
+        </div>
+      </div>
+      {/* Fundo gradiente animado discreto */}
+      <div className="fixed inset-0 -z-10 pointer-events-none">
         <svg width="100%" height="100%" viewBox="0 0 1200 800" className="absolute inset-0 w-full h-full" fill="none">
           <defs>
-            <radialGradient id="bg1" cx="60%" cy="10%" r="120%" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#01E4F8" stopOpacity="0.18" />
-              <stop offset="0.4" stopColor="#181C34" stopOpacity="0.05" />
-              <stop offset="1" stopColor="#101323" stopOpacity="0.95" />
+            <radialGradient id="bg1" cx="60%" cy="10%" r="100%" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#01E4F8" stopOpacity="0.10" />
+              <stop offset="0.4" stopColor="#181C34" stopOpacity="0.07" />
+              <stop offset="1" stopColor="#101323" stopOpacity="0.90" />
             </radialGradient>
             <radialGradient id="bg2" cx="90%" cy="80%" r="90%" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#FFC93C" stopOpacity="0.18" />
-              <stop offset="0.6" stopColor="#0C101B" stopOpacity="0.05" />
+              <stop stopColor="#FFC93C" stopOpacity="0.10" />
+              <stop offset="0.6" stopColor="#0C101B" stopOpacity="0.04" />
               <stop offset="1" stopColor="#101323" stopOpacity="0.7" />
             </radialGradient>
           </defs>
@@ -47,194 +133,6 @@ export default function LandingPage() {
           <rect width="1200" height="800" fill="url(#bg2)" />
         </svg>
       </div>
-
-      {/* HEADER */}
-      <header className="flex justify-between items-center px-6 md:px-14 py-6 border-b border-cyan-800/50 bg-[#101323]/80 backdrop-blur-lg z-20 relative shadow-xl">
-        <div className="flex items-center gap-4">
-          <img src="/logo.png" alt="CoinbitClub" className="h-12 drop-shadow-lg" />
-          <span className="text-2xl font-extrabold text-cyan-300 tracking-wider">CoinbitClub MarketBot</span>
-        </div>
-        <Link
-          to="/login"
-          className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold px-7 py-2 rounded-full shadow-md text-lg transition"
-        >
-          Área do Assinante
-        </Link>
-      </header>
-
-      {/* HERO */}
-      <section className="flex flex-col items-center justify-center gap-7 py-20 md:py-32 px-4 text-center relative z-10">
-        <span className="uppercase text-xs md:text-sm tracking-widest font-bold bg-cyan-400/20 text-cyan-200 px-4 py-2 rounded-full mb-2 animate-pulse shadow">
-          O robô de cripto que só lucra junto com você
-        </span>
-        <h1 className="text-5xl md:text-7xl font-black leading-tight max-w-4xl drop-shadow-xl bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-yellow-200 to-yellow-400 animate-gradient-x">
-          Deixe a inteligência artificial operar<br className="hidden md:block" /> seu dinheiro em cripto 24/7.
-        </h1>
-        <p className="text-lg md:text-2xl text-gray-200 max-w-2xl mt-4">
-          Teste grátis por <b className="text-yellow-400">7 dias</b>, saldo sempre <b className="text-cyan-300">seguro na sua exchange</b>.<br />
-          Zero risco, zero compromisso, 100% controle seu!
-        </p>
-        <Link
-          to="/cadastro"
-          className="mt-8 bg-gradient-to-r from-yellow-400 via-yellow-300 to-cyan-400 hover:from-yellow-300 hover:to-cyan-300 text-black font-black py-5 px-14 rounded-full text-2xl shadow-xl transition-transform hover:scale-105"
-        >
-          QUERO TESTAR GRÁTIS
-        </Link>
-        <div className="flex gap-4 mt-8">
-          <img src="/binance-logo.svg" alt="Binance" className="h-8 opacity-80" />
-          <img src="/bybit-logo.svg" alt="Bybit" className="h-8 opacity-80" />
-        </div>
-      </section>
-
-      {/* DIFERENCIAIS */}
-      <section className="max-w-6xl mx-auto py-16 px-6 grid md:grid-cols-3 gap-10 z-10 relative">
-        <div className="bg-[#181e34]/80 backdrop-blur-xl border border-cyan-400/30 shadow-[0_4px_32px_0_rgba(0,255,255,0.07)] rounded-2xl p-8 flex flex-col items-center transition-transform hover:scale-105 hover:shadow-cyan-300/50">
-          {icons.shield}
-          <h3 className="text-2xl font-bold mb-2 text-cyan-300">Saldo Sempre Seguro</h3>
-          <p className="text-gray-300">Seu dinheiro nunca sai da sua exchange. Acesso só via API autorizada.</p>
-        </div>
-        <div className="bg-[#181e34]/80 backdrop-blur-xl border border-cyan-400/30 shadow-[0_4px_32px_0_rgba(0,255,255,0.07)] rounded-2xl p-8 flex flex-col items-center transition-transform hover:scale-105 hover:shadow-cyan-300/50">
-          {icons.bot}
-          <h3 className="text-2xl font-bold mb-2 text-yellow-400">IA 24/7 no Mercado</h3>
-          <p className="text-gray-300">Robô próprio, inteligência artificial operando para você, todos os dias e noites.</p>
-        </div>
-        <div className="bg-[#181e34]/80 backdrop-blur-xl border border-cyan-400/30 shadow-[0_4px_32px_0_rgba(0,255,255,0.07)] rounded-2xl p-8 flex flex-col items-center transition-transform hover:scale-105 hover:shadow-cyan-300/50">
-          {icons.profit}
-          <h3 className="text-2xl font-bold mb-2 text-green-400">Só cobra se der lucro</h3>
-          <p className="text-gray-300">Zero taxa fixa, só comissão sobre lucro real, nunca no prejuízo.</p>
-        </div>
-      </section>
-
-      {/* PLANOS */}
-      <section className="max-w-5xl mx-auto py-8 px-4 grid md:grid-cols-2 gap-7">
-        <div className="bg-gradient-to-tr from-cyan-900 via-[#151b29] to-[#181c34] p-7 rounded-2xl shadow-xl border border-cyan-800/40">
-          <h4 className="text-lg uppercase font-black text-cyan-300 tracking-wide mb-1">Plano Mensal</h4>
-          <div className="flex items-baseline gap-2 mb-2">
-            <span className="text-3xl font-extrabold text-yellow-400">R$ 120/mês</span>
-            <span className="text-gray-300">+ 8% do lucro</span>
-          </div>
-          <ul className="text-gray-300 text-base ml-5 list-disc">
-            <li>Acesso ilimitado e prioridade de suporte</li>
-            <li>Pagou, usou, cancelou a hora que quiser</li>
-            <li>Só pague comissão se tiver lucro</li>
-          </ul>
-        </div>
-        <div className="bg-gradient-to-tr from-cyan-900 via-[#151b29] to-[#181c34] p-7 rounded-2xl shadow-xl border border-cyan-800/40">
-          <h4 className="text-lg uppercase font-black text-cyan-300 tracking-wide mb-1">Plano Pré-pago</h4>
-          <div className="flex items-baseline gap-2 mb-2">
-            <span className="text-3xl font-extrabold text-yellow-400">15% do lucro</span>
-            <span className="text-gray-300">saldo mínimo R$ 120</span>
-          </div>
-          <ul className="text-gray-300 text-base ml-5 list-disc">
-            <li>Nenhuma mensalidade fixa</li>
-            <li>Ideal para testar sem compromisso</li>
-            <li>Mesma proteção e tecnologia do plano mensal</li>
-          </ul>
-        </div>
-      </section>
-
-      {/* LUCRO EM TEMPO REAL */}
-      <section className="bg-gradient-to-r from-[#181c34] via-[#111726] to-[#101323] py-12 my-12 shadow-inner">
-        <div className="max-w-3xl mx-auto flex flex-col items-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-7 text-yellow-400 drop-shadow-lg">
-            Lucro em Tempo Real
-          </h2>
-          <div className="w-full rounded-2xl shadow-2xl border border-cyan-700 bg-[#12192a]/90 text-left p-8 flex flex-col gap-2">
-            <p className="font-bold text-cyan-300 mb-1 text-lg">Rentabilidade do dia: <span className="text-green-400">+3.2% / +$52.00</span></p>
-            <p className="font-bold text-cyan-300 mb-1 text-lg">Rentabilidade mês: <span className="text-green-400">+12.5% / +$320.00</span></p>
-            <p className="text-gray-300">Transparência total e acompanhamento ao vivo direto no painel do assinante.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* DEPOIMENTOS */}
-      <section className="max-w-5xl mx-auto py-16 px-6">
-        <h2 className="text-2xl md:text-3xl font-bold mb-9 text-cyan-300 text-center">O que dizem nossos assinantes</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-[#161b27] rounded-2xl p-6 shadow-md border border-cyan-900/30">
-            <p className="italic text-gray-200">“Finalmente um robô que protege meu saldo e só lucra junto comigo!”</p>
-            <div className="flex items-center gap-2 mt-3">
-              <span className="w-2 h-2 rounded-full bg-green-400"></span>
-              <span className="text-xs text-gray-400">Henrique S.</span>
-            </div>
-          </div>
-          <div className="bg-[#161b27] rounded-2xl p-6 shadow-md border border-cyan-900/30">
-            <p className="italic text-gray-200">“Tive mais resultado em 1 mês do que 1 ano tentando operar sozinho.”</p>
-            <div className="flex items-center gap-2 mt-3">
-              <span className="w-2 h-2 rounded-full bg-green-400"></span>
-              <span className="text-xs text-gray-400">Paula M.</span>
-            </div>
-          </div>
-          <div className="bg-[#161b27] rounded-2xl p-6 shadow-md border border-cyan-900/30">
-            <p className="italic text-gray-200">“Prático, seguro e com suporte que responde de verdade.”</p>
-            <div className="flex items-center gap-2 mt-3">
-              <span className="w-2 h-2 rounded-full bg-green-400"></span>
-              <span className="text-xs text-gray-400">Leandro T.</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="max-w-4xl mx-auto py-14 px-6">
-        <h2 className="text-2xl font-bold mb-8 text-cyan-300 text-center">Perguntas Frequentes</h2>
-        <div className="space-y-6">
-          <details className="bg-[#161b27] rounded-xl p-5 cursor-pointer border border-cyan-900/30 shadow">
-            <summary className="font-semibold text-yellow-400">Preciso transferir dinheiro para CoinbitClub?</summary>
-            <p className="text-gray-300 mt-2">Não! Seu saldo nunca sai da sua exchange. Operamos apenas via API autorizada por você.</p>
-          </details>
-          <details className="bg-[#161b27] rounded-xl p-5 cursor-pointer border border-cyan-900/30 shadow">
-            <summary className="font-semibold text-yellow-400">Consigo desligar o robô quando quiser?</summary>
-            <p className="text-gray-300 mt-2">Sim. Controle total: pause, ajuste ou desligue em tempo real pela sua área do assinante.</p>
-          </details>
-          <details className="bg-[#161b27] rounded-xl p-5 cursor-pointer border border-cyan-900/30 shadow">
-            <summary className="font-semibold text-yellow-400">Quais os riscos?</summary>
-            <p className="text-gray-300 mt-2">Todo investimento em ativos digitais envolve risco. Você tem controle total e o sistema só cobra sobre lucro.</p>
-          </details>
-        </div>
-      </section>
-
-      {/* CTA FINAL */}
-      <section className="bg-cyan-400 text-black py-14 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold mb-4">Pronto para ver o MarketBot em ação?</h2>
-        <p className="text-lg mb-8">Teste grátis por 7 dias. Sem compromisso.</p>
-        <Link
-          to="/cadastro"
-          className="bg-black text-cyan-400 px-12 py-5 rounded-full font-black text-2xl hover:bg-gray-900 transition shadow-xl"
-        >
-          Quero Testar Agora!
-        </Link>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="bg-[#101323] text-center text-gray-400 py-8 text-xs border-t border-cyan-900/30">
-        <div className="flex justify-center items-center gap-4 mb-2">
-          <span className="inline-block rounded-full px-3 py-1 bg-cyan-700/30 text-xs text-cyan-300 font-bold">100% Seguro</span>
-          <span className="inline-block rounded-full px-3 py-1 bg-yellow-400/20 text-xs text-yellow-400 font-bold">Inteligência Artificial</span>
-          <span className="inline-block rounded-full px-3 py-1 bg-green-400/20 text-xs text-green-400 font-bold">Resultados Reais</span>
-        </div>
-        © {new Date().getFullYear()} CoinbitClub. Seu dinheiro, sua decisão, sua conta.
-        <br />
-        <Link to="/termos" className="underline mx-2">Termos de Uso</Link>
-        |
-        <Link to="/privacidade" className="underline mx-2">Política de Privacidade</Link>
-        |
-        <a href="mailto:suporte@coinbitclub.vip" className="underline mx-2">Suporte</a>
-      </footer>
-
-      {/* GRADIENTE DE TEXTO (Tailwind Animation) */}
-      <style>
-        {`
-          @keyframes gradient-x {
-            0%,100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-          }
-          .animate-gradient-x {
-            background-size: 200% 200%;
-            animation: gradient-x 6s ease-in-out infinite;
-          }
-        `}
-      </style>
     </div>
   );
 }
