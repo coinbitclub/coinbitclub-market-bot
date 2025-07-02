@@ -1,0 +1,57 @@
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+
+export default function WithdrawalRequest() {
+  const [valor, setValor] = useState("");
+  const [mensagem, setMensagem] = useState("");
+
+  function solicitar(e) {
+    e.preventDefault();
+    setMensagem(`Solicitação de saque de R$ ${valor} enviada para análise.`);
+    setValor("");
+  }
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Solicitar Saque</h1>
+      <form onSubmit={solicitar} className="bg-card rounded-xl shadow border border-border p-8 max-w-xl mb-8">
+        <label className="block mb-2">Valor do saque (R$)</label>
+        <input
+          type="number"
+          value={valor}
+          onChange={e => setValor(e.target.value)}
+          className="w-full p-2 rounded border border-border bg-background mb-4"
+          min={10}
+          max={50000}
+          required
+        />
+        <Button type="submit">Solicitar Saque</Button>
+        {mensagem && <div className="mt-4 text-green-400">{mensagem}</div>}
+      </form>
+      <div className="bg-card rounded-xl shadow border border-border p-6">
+        <h2 className="font-bold text-lg mb-3">Minhas Solicitações</h2>
+        <table className="w-full text-left">
+          <thead>
+            <tr>
+              <th className="py-2">Valor</th>
+              <th>Status</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="py-2">R$ 350,00</td>
+              <td><span className="text-yellow-400">Em análise</span></td>
+              <td>2024-07-02</td>
+            </tr>
+            <tr>
+              <td className="py-2">R$ 100,00</td>
+              <td><span className="text-green-400">Aprovado</span></td>
+              <td>2024-06-22</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
