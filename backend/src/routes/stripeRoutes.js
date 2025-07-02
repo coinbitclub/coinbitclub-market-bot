@@ -1,4 +1,4 @@
-import express from "express";
+﻿import express from "express";
 import Stripe from "stripe";
 import { pool } from "../database.js";
 
@@ -8,11 +8,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 router.post("/checkout", async (req, res) => {
   try {
     const { plan_id, user_email } = req.body;
-    if (!plan_id || !user_email) return res.status(400).json({ error: "plan_id e user_email obrigatórios" });
+    if (!plan_id || !user_email) return res.status(400).json({ error: "plan_id e user_email obrigatÃ³rios" });
 
     // Busca o price_id correto no banco
     const { rows } = await pool.query("SELECT stripe_price_id FROM plans WHERE id = $1", [plan_id]);
-    if (!rows.length) return res.status(404).json({ error: "Plano não encontrado" });
+    if (!rows.length) return res.status(404).json({ error: "Plano nÃ£o encontrado" });
     const price_id = rows[0].stripe_price_id;
 
     // Descobre o modo (assinatura ou pagamento avulso)
