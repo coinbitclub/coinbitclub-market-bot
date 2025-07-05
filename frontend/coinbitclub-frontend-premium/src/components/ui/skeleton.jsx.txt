@@ -1,8 +1,0 @@
-export function Skeleton({ className = "", ...props }) {
-  return (
-    <div
-      className={`bg-muted animate-pulse rounded ${className}`}
-      {...props}
-    />
-  );
-}

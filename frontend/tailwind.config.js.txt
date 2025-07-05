@@ -1,22 +1,17 @@
+@"
 module.exports = {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,jsx,ts,tsx}"
-  ],
-  theme: {
-    extend: {
-      colors: {
-        primary: "#10b981", // teal (pode customizar para ciano ou dourado)
-        accent: "#FFD700",  // dourado
-        dark: "#111827",
-        light: "#F3F4F6"
-      },
-      fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
-      }
-    }
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-  ],
 }
+"@ | Out-File -Encoding utf8 postcss.config.cjs; `
+@"
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+"@ | Out-File -Encoding utf8 src/index.css; `
+npm install -D tailwindcss autoprefixer @tailwindcss/postcss; `
+npm run dev -- --force
