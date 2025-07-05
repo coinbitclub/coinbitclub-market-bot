@@ -9,7 +9,7 @@ export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_SSL === 'true'
     ? { rejectUnauthorized: false }
-    : false,
+    : false
 });
 
 // ----------- USUÁRIO -----------
@@ -30,25 +30,36 @@ export async function getUserById(userId) {
 }
 
 export async function updateUser(userId, data) {
-  const fields = [];
+  const keys = ['nome', 'sobrenome', 'telefone', 'pais'];
+  const updates = [];
   const values = [];
   let idx = 1;
-  for (const [key, value] of Object.entries(data)) {
-    fields.push(`${key} = $${idx}`);
-    values.push(value);
-    idx++;
+
+  for (const key of keys) {
+    if (data[key] !== undefined) {
+      updates.push(`${key} = $${idx}`);
+      values.push(data[key]);
+      idx++;
+    }
   }
+
+  if (updates.length === 0) {
+    throw new Error('Nenhum campo para atualizar.');
+  }
+
   values.push(userId);
-  const query = `
+  const sql = `
     UPDATE users
-    SET ${fields.join(', ')}, updated_at = NOW()
+    SET ${updates.join(', ')}, updated_at = NOW()
     WHERE id = $${idx}
     RETURNING *
   `;
-  const { rows } = await pool.query(query, values);
+
+  const { rows } = await pool.query(sql, values);
   return rows[0];
 }
 
+// ----------- MENSAGENS -----------
 export async function addUserMessage(userId, tipo, mensagem) {
   await pool.query(
     `INSERT INTO user_messages (user_id, tipo_mensagem, mensagem, enviado_em)
@@ -142,15 +153,12 @@ export async function hasActiveSubscription(userId) {
 
 export async function getUserPlan(userId) {
   const { rows } = await pool.query(
-    `SELECT s.*, p.nome     AS plano_nome,
-              p.valor_mensalidade,
-              p.percentual_comissao,
-              p.saldo_minimo,
-              p.moeda
+    `SELECT s.*, p.nome           AS plano_nome,
+            p.valor_mensalidade, p.percentual_comissao,
+            p.saldo_minimo,      p.moeda
      FROM user_subscriptions s
      LEFT JOIN plans p ON s.plan_id = p.id
-     WHERE s.user_id = $1
-       AND s.is_active = true
+     WHERE s.user_id = $1 AND s.is_active = true
      ORDER BY s.criado_em DESC
      LIMIT 1`,
     [userId]
@@ -167,9 +175,7 @@ export async function getActivePlans() {
 
 export async function getPlanPriceId(plan_id) {
   const { rows } = await pool.query(
-    `SELECT stripe_price_id
-     FROM plans
-     WHERE id = $1`,
+    `SELECT stripe_price_id FROM plans WHERE id = $1`,
     [plan_id]
   );
   return rows[0]?.stripe_price_id || null;
@@ -177,20 +183,16 @@ export async function getPlanPriceId(plan_id) {
 
 export async function getPlanStripeIds(plan_id) {
   const { rows } = await pool.query(
-    `SELECT stripe_product_id, stripe_price_id
-     FROM plans
-     WHERE id = $1`,
+    `SELECT stripe_product_id, stripe_price_id FROM plans WHERE id = $1`,
     [plan_id]
   );
   return rows[0] || null;
 }
 
+// ----------- STRIPE USERS -----------
 export async function getStripeUser(userId) {
   const { rows } = await pool.query(
-    `SELECT * FROM stripe_users
-     WHERE user_id = $1
-     ORDER BY criado_em DESC
-     LIMIT 1`,
+    `SELECT * FROM stripe_users WHERE user_id = $1 ORDER BY criado_em DESC LIMIT 1`,
     [userId]
   );
   return rows[0];
@@ -213,9 +215,7 @@ export async function saveStripeUser({ user_id, stripe_customer_id, stripe_conne
 // ----------- SALDO E MOVIMENTAÇÃO -----------
 export async function getUserBalance(userId) {
   const { rows } = await pool.query(
-    `SELECT saldo, saldo_bloqueado, moeda
-     FROM user_balance
-     WHERE user_id = $1`,
+    `SELECT saldo, saldo_bloqueado, moeda FROM user_balance WHERE user_id = $1`,
     [userId]
   );
   return rows[0];
@@ -224,9 +224,7 @@ export async function getUserBalance(userId) {
 export async function updateUserBalance(userId, saldo, saldo_bloqueado) {
   const { rows } = await pool.query(
     `UPDATE user_balance
-     SET saldo = $2,
-         saldo_bloqueado = $3,
-         atualizado_em = NOW()
+     SET saldo = $2, saldo_bloqueado = $3, atualizado_em = NOW()
      WHERE user_id = $1
      RETURNING *`,
     [userId, saldo, saldo_bloqueado]
@@ -243,18 +241,7 @@ export async function addUserBalanceEvent(userId, evento, descricao, saldo_anter
   );
 }
 
-export async function addFinancialMovement({
-  user_id,
-  tipo_movimento,
-  valor,
-  descricao,
-  saldo_apos,
-  origem,
-  status = 'efetivado',
-  stripe_payment_id,
-  tipo_comissao,
-  plano_id
-}) {
+export async function addFinancialMovement({ user_id, tipo_movimento, valor, descricao, saldo_apos, origem, status = 'efetivado', stripe_payment_id, tipo_comissao, plano_id }) {
   await pool.query(
     `INSERT INTO user_financial
        (user_id, tipo_movimento, valor, descricao,
@@ -265,23 +252,10 @@ export async function addFinancialMovement({
   );
 }
 
-export async function getUserFinance(userId, limit = 40) {
-  const { rows } = await pool.query(
-    `SELECT * FROM user_financial
-     WHERE user_id = $1
-     ORDER BY data DESC
-     LIMIT $2`,
-    [userId, limit]
-  );
-  return rows;
-}
-
-// ----------- STATUS/OPERAÇÃO -----------
+// ----------- STATUS E OPERAÇÕES -----------
 export async function setUserStatus(userId, status) {
   await pool.query(
-    `UPDATE users
-     SET status = $1
-     WHERE id = $2`,
+    `UPDATE users SET status = $1 WHERE id = $2`,
     [status, userId]
   );
 }
@@ -294,7 +268,6 @@ export async function getUserStatus(userId) {
   return rows[0]?.status || null;
 }
 
-// ----------- OPERAÇÕES & LOGS -----------
 export async function getUserOperations(userId) {
   const { rows } = await pool.query(
     `SELECT * FROM user_operations
@@ -321,35 +294,3 @@ export async function logBot({ severity, message, context }) {
     [severity, message, JSON.stringify(context)]
   );
 }
-
-// ----------- EXPORTA TUDO -----------
-export default {
-  pool,
-  getUserByEmail,
-  getUserById,
-  updateUser,
-  addUserMessage,
-  cleanExpiredTestUsers,
-  cleanOldInactiveUsers,
-  getBinanceCredentials,
-  saveBinanceCredentials,
-  getBybitCredentials,
-  saveBybitCredentials,
-  hasActiveSubscription,
-  getUserPlan,
-  getActivePlans,
-  getPlanPriceId,
-  getPlanStripeIds,
-  getStripeUser,
-  saveStripeUser,
-  getUserBalance,
-  updateUserBalance,
-  addUserBalanceEvent,
-  addFinancialMovement,
-  getUserFinance,
-  setUserStatus,
-  getUserStatus,
-  getUserOperations,
-  logEvent,
-  logBot,
-};
