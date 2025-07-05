@@ -1,138 +1,115 @@
-// backend/src/index.js
+﻿// backend/src/database.js
+// Versão: 2025-07-01 — Banco unificado: Stripe, Planos, Saldos, Usuários, Exchanges
 
-import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
-import morgan from "morgan";
-import basicAuth from "express-basic-auth";
+import pkg from 'pg';
+const { Pool } = pkg;
 
-import {
-  ensureSignalsTable,
-  ensureDominanceTable,
-  ensureFearGreedTable,
-  ensureMarketTable,
-  ensureUsersTable,
-  ensureUserCredentialsTable,
-  ensureUserSubscriptionsTable,
-  ensureTradesTable,
-  ensureIntegrationsTable,
-  ensureAffiliatesTable,
-  ensureNotificationsTable,
-  ensureBotLogsTable,
-  ensureOpenTradesTable,
-  ensurePositionsTable,
-  ensureIndicatorsTable
-} from "./services/dbMigrations.js";
+// Configuração do pool (atenção para SSL!)
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_SSL === 'true'
+    ? { rejectUnauthorized: false }
+    : false,
+});
 
-import { pool } from "./database.js";            // ← caminho correto
-import { setupScheduler } from "./services/scheduler.js";
-
-import webhookRouter   from "./routes/webhookRoutes.js";
-import fetchRouter     from "./routes/fetch.js";
-import tradingRouter   from "./routes/trading.js";
-import dashboardRouter from "./routes/dashboard.js";
-import userRouter      from "./routes/user.js";
-import adminRouter     from "./routes/admin.js";
-import affiliateRouter from "./routes/affiliate.js";
-import stripeRoutes, { stripeWebhookHandler } from "./routes/stripeRoutes.js";
-
-dotenv.config();
-
-// fallback defaults
-process.env.JWT_SECRET    ||= "VictoreLais2025";
-process.env.WEBHOOK_TOKEN ||= "210406";
-
-const app  = express();
-const port = process.env.PORT || 8080;
-
-// 1) CORS global (inclui preflight)
-app.use(cors({
-  origin: "*",
-  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"]
-}));
-app.options("*", cors());
-
-// 2) Logger + JSON parser
-app.use(morgan("combined"));
-app.use(express.json({ limit: "200kb" }));
-
-// 3) Health-check
-app.get("/",      (_req, res) => res.send("🚀 Bot ativo!"));
-app.get("/healthz", (_req, res) => res.send("OK"));
-
-// 4) Stripe webhook antes do parser JSON
-app.post(
-  "/api/stripe/webhook",
-  express.raw({ type: "application/json", limit: "200kb" }),
-  stripeWebhookHandler
-);
-
-// 5) Migrar DB & criar tabelas extras
-(async () => {
-  await ensureSignalsTable();
-  await ensureDominanceTable();
-  await ensureFearGreedTable();
-  await ensureMarketTable();
-  await ensureUsersTable();
-  await ensureUserCredentialsTable();
-  await ensureUserSubscriptionsTable();
-  await ensureTradesTable();
-  await ensureIntegrationsTable();
-  await ensureAffiliatesTable();
-  await ensureNotificationsTable();
-  await ensureBotLogsTable();
-  await ensureOpenTradesTable();
-  await ensurePositionsTable();
-  await ensureIndicatorsTable();
-
-  // tabelas de riscos e saques
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS user_risks (
-      user_id     INTEGER PRIMARY KEY REFERENCES users(id),
-      leverage    INTEGER NOT NULL,
-      capital_pct NUMERIC NOT NULL,
-      stop_pct    NUMERIC NOT NULL
-    );
-  `);
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS withdrawals (
-      id          SERIAL PRIMARY KEY,
-      user_id     INTEGER REFERENCES users(id),
-      amount      NUMERIC NOT NULL,
-      status      VARCHAR(20) DEFAULT 'pending',
-      created_at  TIMESTAMP DEFAULT NOW()
-    );
-  `);
-
-  // 6) Montar rotas (ordem importa)
-  app.use("/webhook",         webhookRouter);
-  app.use("/api/admin",       adminRouter);
-  app.use("/api/user",        userRouter);
-  app.use("/api/fetch",       fetchRouter);
-  app.use("/api/trading",     tradingRouter);
-  app.use("/api/affiliate",   affiliateRouter);
-  app.use("/api/stripe",      stripeRoutes);
-
-  // painel de métricas protegido por basic auth
-  app.use(
-    "/dashboard",
-    basicAuth({
-      users:     { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS },
-      challenge: true
-    }),
-    dashboardRouter
+// ----------- USUÁRIO -----------
+export async function getUserByEmail(email) {
+  const { rows } = await pool.query(
+    'SELECT * FROM users WHERE email = ',
+    [email]
   );
+  return rows[0];
+}
 
-  // 7) Error handler global
-  app.use((err, _req, res, _next) => {
-    console.error("❌ ERRO GERAL:", err);
-    res.status(err.status || 500).json({ error: err.message });
-  });
+export async function getUserById(userId) {
+  const { rows } = await pool.query(
+    'SELECT * FROM users WHERE id = ',
+    [userId]
+  );
+  return rows[0];
+}
 
-  // 8) Iniciar servidor + scheduler
-  app.listen(port, () => {
-    console.log(`🚀 Server listening on port ${port}`);
-    setupScheduler();
-  });
-})();
+export async function updateUser(userId, data) { const keys=["nome","sobrenome","telefone","pais"]; const updates=[]; const values=[]; let idx=1; for(const key of keys){ if(data[key]!==undefined){ updates.push(`${key} = ${idx}`); values.push(data[key]); idx++; }} if(!updates.length) throw new Error("Nenhum campo para atualizar."); values.push(userId); const query=`UPDATE users SET ${updates.join(", ")}, updated_at = NOW() WHERE id = ${idx} RETURNING *`; const { rows } = await pool.query(query, values); return rows[0]; }
+}
+
+export async function addUserMessage(userId, tipo, mensagem) {
+  await pool.query(
+    \INSERT INTO user_messages (user_id, tipo_mensagem, mensagem, enviado_em)
+     VALUES (, , , NOW())\,
+    [userId, tipo, mensagem]
+  );
+}
+
+// ----------- LIMPEZA -----------
+export async function cleanExpiredTestUsers() {
+  await pool.query(\
+    DELETE FROM users
+    WHERE test_expiration IS NOT NULL
+      AND test_expiration < NOW()
+      AND is_test = true
+  \);
+}
+
+export async function cleanOldInactiveUsers() {
+  await pool.query(\
+    DELETE FROM users
+    WHERE last_login IS NOT NULL
+      AND last_login < NOW() - INTERVAL '180 days'
+      AND is_test = false
+  \);
+}
+
+// ----------- CREDENCIAIS EXCHANGES -----------
+export async function getBinanceCredentials(userId, modo = 'testnet') {
+  const { rows } = await pool.query(\
+    SELECT binance_api_key, binance_api_secret
+    FROM user_credentials
+    WHERE user_id =  AND modo = 
+    LIMIT 1\,
+    [userId, modo]
+  );
+  return rows[0];
+}
+
+export async function saveBinanceCredentials({ user_id, api_key, api_secret, modo = 'testnet' }) {
+  const { rows } = await pool.query(\
+    INSERT INTO user_credentials
+      (user_id, modo, binance_api_key, binance_api_secret)
+    VALUES (, , , )
+    ON CONFLICT (user_id, modo) DO UPDATE
+      SET binance_api_key   = EXCLUDED.binance_api_key,
+          binance_api_secret = EXCLUDED.binance_api_secret
+    RETURNING *\,
+    [user_id, modo, api_key, api_secret]
+  );
+  return rows[0];
+}
+
+export async function getBybitCredentials(userId, modo = 'testnet') {
+  const { rows } = await pool.query(\
+    SELECT bybit_api_key, bybit_api_secret
+    FROM user_credentials
+    WHERE user_id =  AND modo = 
+    LIMIT 1\,
+    [userId, modo]
+  );
+  return rows[0];
+}
+
+export async function saveBybitCredentials({ user_id, api_key, api_secret, is_testnet }) {
+  const modo = is_testnet ? 'testnet' : 'production';
+  const { rows } = await pool.query(\
+    INSERT INTO user_credentials
+      (user_id, modo, bybit_api_key, bybit_api_secret)
+    VALUES (, , , )
+    ON CONFLICT (user_id, modo) DO UPDATE
+      SET bybit_api_key    = EXCLUDED.bybit_api_key,
+          bybit_api_secret = EXCLUDED.bybit_api_secret
+    RETURNING *\,
+    [user_id, modo, api_key, api_secret]
+  );
+  return rows[0];
+}
+
+// … continue colando todas as outras funções exportadas nomeadas da mesma forma …
+
