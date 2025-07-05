@@ -23,7 +23,8 @@ import {
   ensurePositionsTable,
   ensureIndicatorsTable
 } from "./services/dbMigrations.js";
-import { pool } from "./services/db.js";             // para migrações inline de riscos/saques
+
+import { pool } from "./database.js";           // <-- ajuste aqui
 import { setupScheduler } from "./services/scheduler.js";
 
 import webhookRouter   from "./routes/webhookRoutes.js";
@@ -32,8 +33,8 @@ import tradingRouter   from "./routes/trading.js";
 import dashboardRouter from "./routes/dashboard.js";
 import userRouter      from "./routes/user.js";
 import adminRouter     from "./routes/admin.js";
-import affiliateRouter from "./routes/affiliate.js";    // novo
-import stripeRoutes, { stripeWebhookHandler } from "./routes/stripeRoutes.js"; // novo
+import affiliateRouter from "./routes/affiliate.js";
+import stripeRoutes, { stripeWebhookHandler } from "./routes/stripeRoutes.js";
 
 dotenv.config();
 
@@ -44,7 +45,7 @@ process.env.WEBHOOK_TOKEN ||= "210406";
 const app  = express();
 const port = process.env.PORT || 8080;
 
-// 1) CORS global (inclui preflight)
+// 1) UNIVERSAL CORS
 app.use(cors({
   origin: "*",
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
@@ -52,22 +53,22 @@ app.use(cors({
 }));
 app.options("*", cors());
 
-// 2) logger + JSON parser
+// 2) logging + JSON parser
 app.use(morgan("combined"));
 app.use(express.json({ limit: "200kb" }));
 
 // 3) Health checks
-app.get("/",     (_req, res) => res.send("🚀 Bot ativo!"));
+app.get("/",      (_req, res) => res.send("🚀 Bot ativo!"));
 app.get("/healthz", (_req, res) => res.send("OK"));
 
-// 4) Stripe webhook (raw body) antes do JSON
+// 4) Stripe webhook (raw body)
 app.post(
   "/api/stripe/webhook",
   express.raw({ type: "application/json", limit: "200kb" }),
   stripeWebhookHandler
 );
 
-// 5) Rodar migrações iniciais
+// 5) Run DB migrations & create extra tables
 (async () => {
   await ensureSignalsTable();
   await ensureDominanceTable();
@@ -85,7 +86,7 @@ app.post(
   await ensurePositionsTable();
   await ensureIndicatorsTable();
 
-  // migrar as tabelas extras de riscos e saques
+  // criação de user_risks e withdrawals
   await pool.query(`
     CREATE TABLE IF NOT EXISTS user_risks (
       user_id    INTEGER PRIMARY KEY REFERENCES users(id),
@@ -104,16 +105,16 @@ app.post(
     );
   `);
 
-  // 6) Montar rotas – atenção à ordem!
+  // 6) Mount routes
   app.use("/webhook",         webhookRouter);
   app.use("/api/admin",       adminRouter);
   app.use("/api/user",        userRouter);
-  app.use("/api/fetch",       fetchRouter);      // antes era "/api"
-  app.use("/api/trading",     tradingRouter);    // antes era "/trading"
-  app.use("/api/affiliate",   affiliateRouter);  // novo
+  app.use("/api/fetch",       fetchRouter);
+  app.use("/api/trading",     tradingRouter);
+  app.use("/api/affiliate",   affiliateRouter);
   app.use("/api/stripe",      stripeRoutes);
 
-  // Dashboard protegido por basic auth
+  // dashboard com basic auth
   app.use(
     "/dashboard",
     basicAuth({
@@ -129,7 +130,7 @@ app.post(
     res.status(err.status || 500).json({ error: err.message });
   });
 
-  // 8) Start server + scheduler
+  // 8) Start server & scheduler
   app.listen(port, () => {
     console.log(`🚀 Server listening on port ${port}`);
     setupScheduler();
