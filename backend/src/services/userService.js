@@ -1,6 +1,6 @@
 // backend/src/services/userService.js
 
-import { pool } from "../services/db.js";
+import { pool } from "../database.js";         // <— caminho corrigido
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
@@ -43,7 +43,8 @@ export async function registerUser({ nome, sobrenome, email, senha, telefone, pa
 // Login do usuário
 export async function loginUser({ email, senha }) {
   const { rows } = await pool.query(
-    "SELECT id, nome, sobrenome, email, telefone, pais, password_hash, role FROM users WHERE email = $1",
+    `SELECT id, nome, sobrenome, email, telefone, pais, password_hash, role
+     FROM users WHERE email = $1`,
     [email]
   );
   if (!rows.length) {
@@ -55,7 +56,7 @@ export async function loginUser({ email, senha }) {
     return { status: 401, error: "Senha incorreta." };
   }
   const token = jwt.sign(
-    { id: user.id, email: user.email, role: user.role || 'user' },
+    { id: user.id, email: user.email, role: user.role || "user" },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
@@ -95,7 +96,7 @@ export async function updateUser(id, data) {
     throw new Error("Nenhum campo para atualizar.");
   }
   values.push(id);
-  const query = `UPDATE users SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${values.length}`;
+  const query = `UPDATE users SET ${fields.join(", ")}, updated_at = NOW() WHERE id = $${values.length}`;
   await pool.query(query, values);
   return { ok: true };
 }
@@ -107,8 +108,7 @@ export async function saveCredentials(userId, { exchange, api_key, api_secret, i
        (user_id, exchange, api_key, api_secret, is_testnet)
      VALUES ($1, $2, $3, $4, $5)
      ON CONFLICT (user_id, exchange, is_testnet)
-     DO UPDATE SET api_key = EXCLUDED.api_key,
-                   api_secret = EXCLUDED.api_secret
+     DO UPDATE SET api_key = EXCLUDED.api_key, api_secret = EXCLUDED.api_secret
      RETURNING *`,
     [userId, exchange, api_key, api_secret, !!is_testnet]
   );
@@ -158,8 +158,11 @@ export async function changeSubscription(userId, { tipo_plano, valor_pago, metod
 // GET/PUT riscos do usuário
 export async function getRisks(userId) {
   const { rows } = await pool.query(
-    `SELECT leverage, capital_pct AS "capitalPct", stop_pct AS "stopPct"
-     FROM user_risks WHERE user_id = $1`,
+    `SELECT leverage,
+            capital_pct  AS "capitalPct",
+            stop_pct     AS "stopPct"
+     FROM user_risks
+     WHERE user_id = $1`,
     [userId]
   );
   return rows.length
@@ -169,12 +172,13 @@ export async function getRisks(userId) {
 
 export async function updateRisks(userId, { leverage, capitalPct, stopPct }) {
   await pool.query(
-    `INSERT INTO user_risks (user_id, leverage, capital_pct, stop_pct)
+    `INSERT INTO user_risks
+       (user_id, leverage, capital_pct, stop_pct)
      VALUES ($1, $2, $3, $4)
      ON CONFLICT (user_id) DO UPDATE
-     SET leverage = EXCLUDED.leverage,
-         capital_pct = EXCLUDED.capital_pct,
-         stop_pct = EXCLUDED.stop_pct`,
+       SET leverage    = EXCLUDED.leverage,
+           capital_pct = EXCLUDED.capital_pct,
+           stop_pct    = EXCLUDED.stop_pct`,
     [userId, leverage, capitalPct, stopPct]
   );
   return { ok: true };
@@ -184,7 +188,10 @@ export async function updateRisks(userId, { leverage, capitalPct, stopPct }) {
 export async function getSignals(userId) {
   const { rows } = await pool.query(
     `SELECT id, pair, type, direction, time
-     FROM signals WHERE user_id = $1 ORDER BY time DESC LIMIT 50`,
+     FROM signals
+     WHERE user_id = $1
+     ORDER BY time DESC
+     LIMIT 50`,
     [userId]
   );
   return rows;
@@ -193,7 +200,8 @@ export async function getSignals(userId) {
 // POST solicitação de saque
 export async function requestWithdrawal(userId, amount) {
   await pool.query(
-    `INSERT INTO withdrawals (user_id, amount) VALUES ($1, $2)`,
+    `INSERT INTO withdrawals (user_id, amount)
+     VALUES ($1, $2)`,
     [userId, amount]
   );
   return { ok: true };
