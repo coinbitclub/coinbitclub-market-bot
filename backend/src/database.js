@@ -206,7 +206,7 @@ export async function saveStripeUser({ user_id, stripe_customer_id, stripe_conne
      ON CONFLICT (user_id) DO UPDATE
        SET stripe_customer_id = EXCLUDED.stripe_customer_id,
            stripe_connect_id  = EXCLUDED.stripe_connect_id
-     RETURNING *`,
+     RETURNING *`,    
     [user_id, stripe_customer_id, stripe_connect_id]
   );
   return rows[0];
@@ -241,7 +241,18 @@ export async function addUserBalanceEvent(userId, evento, descricao, saldo_anter
   );
 }
 
-export async function addFinancialMovement({ user_id, tipo_movimento, valor, descricao, saldo_apos, origem, status = 'efetivado', stripe_payment_id, tipo_comissao, plano_id }) {
+export async function addFinancialMovement({
+  user_id,
+  tipo_movimento,
+  valor,
+  descricao,
+  saldo_apos,
+  origem,
+  status = 'efetivado',
+  stripe_payment_id,
+  tipo_comissao,
+  plano_id
+}) {
   await pool.query(
     `INSERT INTO user_financial
        (user_id, tipo_movimento, valor, descricao,
