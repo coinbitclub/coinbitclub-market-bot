@@ -71,7 +71,7 @@ app.use((req, res, next) => {
 });
 
 // Health checks
-app.get("/",     (_req, res) => res.send("🚀 Bot ativo!"));
+app.get("/",      (_req, res) => res.send("🚀 Bot ativo!"));
 app.get("/healthz", (_req, res) => res.send("OK"));
 
 // -- Boot Sequence
@@ -118,18 +118,17 @@ app.get("/healthz", (_req, res) => res.send("OK"));
   console.log("🛠️ Migrações concluídas. Configurando rotas...");
 
   // -- Rotas principais
-  app.use("/webhook",     webhookRouter);
-  app.use("/api/stripe",  stripeRoutes);
-  app.use("/api/fetch",   fetchRouter);
-  app.use("/api/trading", tradingRouter);
+  app.use("/webhook",      webhookRouter);
+  app.use("/api/stripe",   stripeRoutes);
+  app.use("/api/fetch",    fetchRouter);
+  app.use("/api/trading",  tradingRouter);
   app.use("/api/affiliate", affiliateRouter);
-  app.use("/api/user",    userRouter);
-  app.use("/api/admin",   adminRouter);
-
+  app.use("/api/user",     userRouter);
+  app.use("/api/admin",    adminRouter);
   app.use(
     "/dashboard",
     basicAuth({
-      users: { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS },
+      users:   { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS },
       challenge: true
     }),
     dashboardRouter

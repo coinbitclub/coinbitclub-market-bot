@@ -2,29 +2,22 @@
 import express from 'express';
 import { verifyToken } from '../middleware/verifyToken.js';
 
-import {
-  parseSignal,
-  parseDominance,
-  parseFearGreed,
-  parseMarket
-} from '../services/parserService.js';
+import { parseSignal }    from '../parseSignal.js';
+import { parseDominance } from '../parseDominance.js';
+import { parseFearGreed } from '../parseFearGreed.js';
+import { parseMarket }    from '../parseMarket.js';
 
+import { saveSignal } from '../services/signalService.js';
 import {
-  saveSignal,
   insertDominance,
   insertFearGreed,
   insertMarket
-} from '../services/webhookService.js';
+} from '../services/databaseService.js';
 
 const router = express.Router();
 
-// Autenticação (Bearer JWT ou ?token=…) para todas as rotas
 router.use(verifyToken);
 
-/**
- * POST /webhook/signal
- * Responde 200 imediatamente e salva sinal em background.
- */
 router.post('/signal', async (req, res, next) => {
   try {
     const data = parseSignal(req.body);
@@ -35,9 +28,6 @@ router.post('/signal', async (req, res, next) => {
   }
 });
 
-/**
- * POST /webhook/dominance
- */
 router.post('/dominance', async (req, res, next) => {
   try {
     const data = parseDominance(req.body);
@@ -48,9 +38,6 @@ router.post('/dominance', async (req, res, next) => {
   }
 });
 
-/**
- * POST /webhook/fear-greed
- */
 router.post('/fear-greed', async (req, res, next) => {
   try {
     const data = parseFearGreed(req.body);
@@ -61,9 +48,6 @@ router.post('/fear-greed', async (req, res, next) => {
   }
 });
 
-/**
- * POST /webhook/market
- */
 router.post('/market', async (req, res, next) => {
   try {
     const data = parseMarket(req.body);
