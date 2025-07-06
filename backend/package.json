@@ -43,11 +43,7 @@
     "nodemon": "^3.1.10",
     "supertest": "^7.1.1"
   },
-  "jest": {
-    "testEnvironment": "node",
-    "roots": ["<rootDir>/tests"],
-    "transform": {}
-  },
+
   "engines": {
     "node": ">=16"
   }
