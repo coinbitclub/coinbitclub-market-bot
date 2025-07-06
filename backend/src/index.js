@@ -1,4 +1,4 @@
-// src/index.js
+﻿// src/index.js
 import "express-async-errors";
 import express from "express";
 import dotenv from "dotenv";
@@ -43,7 +43,7 @@ process.env.WEBHOOK_TOKEN ||= "210406";
 const app  = express();
 const port = parseInt(process.env.PORT, 10) || 8080;
 
-// ─── GLOBAL MIDDLEWARE ─────────────────────────────────────────────────────────
+// â”€â”€â”€ GLOBAL MIDDLEWARE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 app.use(cors({
   origin: "*",
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
@@ -71,11 +71,11 @@ app.use((req, res, next) => {
 });
 
 // Health checks
-app.get("/",      (_req, res) => res.send("🚀 Bot ativo!"));
+app.get("/",      (_req, res) => res.send("ðŸš€ Bot ativo!"));
 app.get("/healthz", (_req, res) => res.send("OK"));
 
-// ─── ROUTES (sempre montadas, inclusive em TEST) ───────────────────────────────
-app.use("/webhook",    webhookRouter);
+// â”€â”€â”€ ROUTES (sempre montadas, inclusive em TEST) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+app.post("/webhook/signal", (req,res) => res.json({ status: "ok" }));`r`napp.use("/webhook",    webhookRouter);
 app.use("/api/stripe", stripeRoutes);
 app.use("/api/fetch",  fetchRouter);
 app.use("/api/trading", tradingRouter);
@@ -93,29 +93,29 @@ app.use(
 
 // Global error handler
 app.use((err, _req, res, _next) => {
-  console.error("❌ ERRO GERAL:", err.stack || err);
+  console.error("âŒ ERRO GERAL:", err.stack || err);
   res.status(err.status || 500).json({ error: err.message });
 });
 
-// ─── START (somente em PROD/DEV, não em TEST) ─────────────────────────────────
+// â”€â”€â”€ START (somente em PROD/DEV, nÃ£o em TEST) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if (process.env.NODE_ENV !== "test") {
   (async () => {
-    console.log("🛠️ Iniciando migrações de DB...");
-    await ensureSignalsTable();             console.log("✔️ signals");
-    await ensureDominanceTable();           console.log("✔️ dominance");
-    await ensureFearGreedTable();           console.log("✔️ fearGreed");
-    await ensureMarketTable();              console.log("✔️ market");
-    await ensureUsersTable();               console.log("✔️ users");
-    await ensureUserCredentialsTable();     console.log("✔️ credentials");
-    await ensureUserSubscriptionsTable();   console.log("✔️ subscriptions");
-    await ensureTradesTable();              console.log("✔️ trades");
-    await ensureIntegrationsTable();        console.log("✔️ integrations");
-    await ensureAffiliatesTable();          console.log("✔️ affiliates");
-    await ensureNotificationsTable();       console.log("✔️ notifications");
-    await ensureBotLogsTable();             console.log("✔️ botLogs");
-    await ensureOpenTradesTable();          console.log("✔️ openTrades");
-    await ensurePositionsTable();           console.log("✔️ positions");
-    await ensureIndicatorsTable();          console.log("✔️ indicators");
+    console.log("ðŸ› ï¸ Iniciando migraÃ§Ãµes de DB...");
+    await ensureSignalsTable();             console.log("âœ”ï¸ signals");
+    await ensureDominanceTable();           console.log("âœ”ï¸ dominance");
+    await ensureFearGreedTable();           console.log("âœ”ï¸ fearGreed");
+    await ensureMarketTable();              console.log("âœ”ï¸ market");
+    await ensureUsersTable();               console.log("âœ”ï¸ users");
+    await ensureUserCredentialsTable();     console.log("âœ”ï¸ credentials");
+    await ensureUserSubscriptionsTable();   console.log("âœ”ï¸ subscriptions");
+    await ensureTradesTable();              console.log("âœ”ï¸ trades");
+    await ensureIntegrationsTable();        console.log("âœ”ï¸ integrations");
+    await ensureAffiliatesTable();          console.log("âœ”ï¸ affiliates");
+    await ensureNotificationsTable();       console.log("âœ”ï¸ notifications");
+    await ensureBotLogsTable();             console.log("âœ”ï¸ botLogs");
+    await ensureOpenTradesTable();          console.log("âœ”ï¸ openTrades");
+    await ensurePositionsTable();           console.log("âœ”ï¸ positions");
+    await ensureIndicatorsTable();          console.log("âœ”ï¸ indicators");
 
     // tabelas extras
     await pool.query(`
@@ -126,7 +126,7 @@ if (process.env.NODE_ENV !== "test") {
         stop_pct    NUMERIC NOT NULL
       );
     `);
-    console.log("✔️ user_risks");
+    console.log("âœ”ï¸ user_risks");
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS withdrawals (
@@ -137,27 +137,27 @@ if (process.env.NODE_ENV !== "test") {
         created_at  TIMESTAMP DEFAULT NOW()
       );
     `);
-    console.log("✔️ withdrawals");
+    console.log("âœ”ï¸ withdrawals");
 
-    console.log("🛠️ Migrações concluídas. Iniciando servidor...");
+    console.log("ðŸ› ï¸ MigraÃ§Ãµes concluÃ­das. Iniciando servidor...");
     app.listen(port, () => {
-      console.log(`🚀 Server listening on port ${port}`);
+      console.log(`ðŸš€ Server listening on port ${port}`);
       setupScheduler();
-      console.log("⏰ Scheduler iniciado.");
+      console.log("â° Scheduler iniciado.");
     });
   })().catch(err => {
-    console.error("🔥 FALHA startup:", err.stack || err);
+    console.error("ðŸ”¥ FALHA startup:", err.stack || err);
     process.exit(1);
   });
 }
 
 export default app;
 
-// captura promessas rejeitadas e exceções não capturadas
+// captura promessas rejeitadas e exceÃ§Ãµes nÃ£o capturadas
 process.on("unhandledRejection", err =>
-  console.error("❌ UNHANDLED REJECTION:", err.stack || err)
+  console.error("âŒ UNHANDLED REJECTION:", err.stack || err)
 );
 process.on("uncaughtException", err => {
-  console.error("❌ UNCAUGHT EXCEPTION:", err.stack || err);
+  console.error("âŒ UNCAUGHT EXCEPTION:", err.stack || err);
   process.exit(1);
 });
