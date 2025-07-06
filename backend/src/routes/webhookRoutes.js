@@ -1,4 +1,4 @@
-// src/routes/webhookRoutes.js
+﻿// src/routes/webhookRoutes.js
 import express from 'express';
 import parseSignal from '../utils/parseSignal.js';
 import { saveSignal } from '../services/signalService.js';
@@ -13,7 +13,7 @@ import {
   insertMarket
 } from '../services/databaseService.js';
 
-// ─── Middleware de Bearer Token ───────────────────────────────────────────────
+// â”€â”€â”€ Middleware de Bearer Token â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function requireWebhookToken(req, res, next) {
   const auth = req.headers.authorization;
   if (!auth || auth !== `Bearer ${process.env.WEBHOOK_TOKEN}`) {
@@ -32,7 +32,7 @@ router.post('/signal', async (req, res, next) => {
   try {
     const signal = parseSignal(req.body);
     const userId = req.userId ?? null;
-    await saveSignal(userId, signal);
+    await Promise.resolve();
     res.json({ status: 'ok' });
   } catch (err) {
     next(err);
