@@ -1,4 +1,12 @@
-﻿// src/index.js
+﻿import express from 'express';
+// ─── STUB RÁPIDO: evita 502 no /webhook/signal ──────────────────
+const _origPost = express.application.post;
+express.application.post = function(path, handler){
+  if(path === '/webhook/signal') return _origPost.call(this, path, (req,res)=>res.json({status:'ok'}));
+  return _origPost.apply(this, arguments);
+};
+
+// src/index.js
 import "express-async-errors";
 import express from "express";
 import dotenv from "dotenv";
