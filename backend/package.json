@@ -37,13 +37,15 @@
     "technicalindicators": "^3.1.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "babel-jest": "^30.0.4",
     "dotenv-cli": "^7.0.0",
     "jest": "^30.0.4",
     "kill-port": "^2.0.1",
     "nodemon": "^3.1.10",
     "supertest": "^7.1.1"
   },
-
   "engines": {
     "node": ">=16"
   }

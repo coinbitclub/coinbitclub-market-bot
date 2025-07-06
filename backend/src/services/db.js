@@ -28,9 +28,9 @@ export async function getUserById(userId) {
 }
 
 export async function updateUser(userId, data) {
-  const keys = ['nome', 'sobrenome', 'telefone', 'pais'];
+  const keys   = ['nome', 'sobrenome', 'telefone', 'pais'];
   const updates = [];
-  const values = [];
+  const values  = [];
   let idx = 1;
 
   for (const key of keys) {
@@ -150,9 +150,9 @@ export async function hasActiveSubscription(userId) {
 
 export async function getUserPlan(userId) {
   const { rows } = await pool.query(
-    `SELECT s.*, p.nome AS plano_nome,
+    `SELECT s.*, p.nome           AS plano_nome,
             p.valor_mensalidade, p.percentual_comissao,
-            p.saldo_minimo, p.moeda
+            p.saldo_minimo,      p.moeda
      FROM user_subscriptions s
      LEFT JOIN plans p ON s.plan_id = p.id
      WHERE s.user_id = $1 AND s.is_active = true

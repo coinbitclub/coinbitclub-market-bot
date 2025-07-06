@@ -1,5 +1,5 @@
 // src/index.js
-import "express-async-errors";               // captura erros em routes async
+import "express-async-errors";
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -40,29 +40,21 @@ dotenv.config();
 process.env.JWT_SECRET    ||= "VictoreLais2025";
 process.env.WEBHOOK_TOKEN ||= "210406";
 
-const app  = express();
+export const app = express();              // <-- exporta o app
 const port = parseInt(process.env.PORT, 10) || 8080;
 
-// -- Middlewares
-app.use(cors({
-  origin: "*",
-  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"]
-}));
+app.use(cors({ origin: "*", methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"], allowedHeaders: ["Content-Type","Authorization"] }));
 app.options("*", cors());
 app.use(morgan("combined"));
 
-// Stripe webhook raw body (antes do JSON parser)
+// Stripe webhook raw body
 app.post(
   "/api/stripe/webhook",
   express.raw({ type: "application/json", limit: "200kb" }),
   stripeWebhookHandler
 );
 
-// JSON parser para o resto
 app.use(express.json({ limit: "200kb" }));
-
-// Rejeita body não-JSON em POST/PUT/PATCH
 app.use((req, res, next) => {
   if (["POST","PUT","PATCH"].includes(req.method) && !req.is("application/json")) {
     return res.status(415).json({ error: "Content-Type deve ser application/json" });
@@ -70,30 +62,28 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health checks
 app.get("/",      (_req, res) => res.send("🚀 Bot ativo!"));
 app.get("/healthz", (_req, res) => res.send("OK"));
 
-// -- Boot Sequence
 (async () => {
   console.log("🛠️ Iniciando migrações de DB...");
-  await ensureSignalsTable();             console.log("✔️ signals");
-  await ensureDominanceTable();           console.log("✔️ dominance");
-  await ensureFearGreedTable();           console.log("✔️ fearGreed");
-  await ensureMarketTable();              console.log("✔️ market");
-  await ensureUsersTable();               console.log("✔️ users");
-  await ensureUserCredentialsTable();     console.log("✔️ credentials");
-  await ensureUserSubscriptionsTable();   console.log("✔️ subscriptions");
-  await ensureTradesTable();              console.log("✔️ trades");
-  await ensureIntegrationsTable();        console.log("✔️ integrations");
-  await ensureAffiliatesTable();          console.log("✔️ affiliates");
-  await ensureNotificationsTable();       console.log("✔️ notifications");
-  await ensureBotLogsTable();             console.log("✔️ botLogs");
-  await ensureOpenTradesTable();          console.log("✔️ openTrades");
-  await ensurePositionsTable();           console.log("✔️ positions");
-  await ensureIndicatorsTable();          console.log("✔️ indicators");
+  await ensureSignalsTable();    console.log("✔️ signals");
+  await ensureDominanceTable();  console.log("✔️ dominance");
+  await ensureFearGreedTable();  console.log("✔️ fearGreed");
+  await ensureMarketTable();     console.log("✔️ market");
+  await ensureUsersTable();      console.log("✔️ users");
+  await ensureUserCredentialsTable();   console.log("✔️ credentials");
+  await ensureUserSubscriptionsTable(); console.log("✔️ subscriptions");
+  await ensureTradesTable();     console.log("✔️ trades");
+  await ensureIntegrationsTable();console.log("✔️ integrations");
+  await ensureAffiliatesTable(); console.log("✔️ affiliates");
+  await ensureNotificationsTable();console.log("✔️ notifications");
+  await ensureBotLogsTable();    console.log("✔️ botLogs");
+  await ensureOpenTradesTable(); console.log("✔️ openTrades");
+  await ensurePositionsTable();  console.log("✔️ positions");
+  await ensureIndicatorsTable(); console.log("✔️ indicators");
 
-  // tabelas auxiliares
+  // Tabelas extras
   await pool.query(`
     CREATE TABLE IF NOT EXISTS user_risks (
       user_id     INTEGER PRIMARY KEY REFERENCES users(id),
@@ -116,31 +106,28 @@ app.get("/healthz", (_req, res) => res.send("OK"));
   console.log("✔️ withdrawals");
 
   console.log("🛠️ Migrações concluídas. Configurando rotas...");
-
-  // -- Rotas principais
-  app.use("/webhook",      webhookRouter);
-  app.use("/api/stripe",   stripeRoutes);
-  app.use("/api/fetch",    fetchRouter);
-  app.use("/api/trading",  tradingRouter);
+  app.use("/webhook",     webhookRouter);
+  app.use("/api/stripe",  stripeRoutes);
+  app.use("/api/fetch",   fetchRouter);
+  app.use("/api/trading", tradingRouter);
   app.use("/api/affiliate", affiliateRouter);
-  app.use("/api/user",     userRouter);
-  app.use("/api/admin",    adminRouter);
+  app.use("/api/user",    userRouter);
+  app.use("/api/admin",   adminRouter);
   app.use(
     "/dashboard",
     basicAuth({
-      users:   { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS },
+      users: { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS },
       challenge: true
     }),
     dashboardRouter
   );
 
-  // Middleware de erro global
+  // Error handler
   app.use((err, _req, res, _next) => {
     console.error("❌ ERRO GERAL:", err.stack || err);
     res.status(err.status || 500).json({ error: err.message });
   });
 
-  // Inicia servidor e scheduler
   app.listen(port, () => {
     console.log(`🚀 Server listening on port ${port}`);
     setupScheduler();
@@ -151,11 +138,5 @@ app.get("/healthz", (_req, res) => res.send("OK"));
   process.exit(1);
 });
 
-// Trata promessas rejeitadas e exceções não capturadas
-process.on("unhandledRejection", err =>
-  console.error("❌ UNHANDLED REJECTION:", err.stack || err)
-);
-process.on("uncaughtException", err => {
-  console.error("❌ UNCAUGHT EXCEPTION:", err.stack || err);
-  process.exit(1);
-});
+process.on("unhandledRejection", err => console.error("❌ UNHANDLED REJECTION:", err.stack || err));
+process.on("uncaughtException", err => { console.error("❌ UNCAUGHT EXCEPTION:", err.stack || err); process.exit(1); });
