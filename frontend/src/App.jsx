@@ -1,107 +1,110 @@
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import LandingPage from "./pages/LandingPage";
-import Login from "./pages/Login";
-import Cadastro from "./pages/Cadastro";
-import Dashboard from "./pages/Dashboard";
-import Historico from "./pages/Historico";
-import Financeiro from "./pages/Financeiro";
-import Planos from "./pages/Planos";
-import ApiKeys from "./pages/ApiKeys";
-import Ajuda from "./pages/Ajuda";
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminUsuarios from "./pages/admin/AdminUsuarios";
-import AdminAfiliados from "./pages/admin/AdminAfiliados";
-import AdminOperacoes from "./pages/admin/AdminOperacoes";
-import AdminFinanceiro from "./pages/admin/AdminFinanceiro";
-import AdminLogs from "./pages/admin/AdminLogs";
-import AdminRelatoriosIa from "./pages/admin/AdminRelatoriosIa";
-import ProtectedRoute from "./routes/ProtectedRoute";
-import { useAuth } from "./context/AuthContext";
+// src/App.jsx
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import RequireAuth from './auth/RequireAuth';
+
+// ========= PÚBLICAS =========
+import LandingPage         from './pages/LandingPage';
+import Login               from './pages/Login';
+import Register            from './pages/Register';
+import FAQ                 from './pages/FAQ';
+import ComoFunciona        from './pages/ComoFunciona';
+import PoliticaPrivacidade from './pages/PoliticaPrivacidade';
+import Terms               from './pages/Terms';
+import NotFound            from './pages/NotFound';
+
+// ======== PAINEL USUÁRIO ========
+import PainelLayout  from './pages/painel/PainelLayout';
+import Dashboard     from './pages/painel/Dashboard';
+import Plano         from './pages/painel/Plano';
+import Riscos        from './pages/painel/Riscos';
+import Configuracoes from './pages/painel/Configuracoes';
+import Extrato       from './pages/painel/Extrato';
+import Sinais        from './pages/painel/Sinais';
+
+// ======== AFILIADO ========
+import AffiliateLayout    from './layout/AffiliateLayout';
+import AffiliateDashboard from './pages/afiliado/Dashboard';
+import AffiliateExtrato   from './pages/afiliado/Extrato';
+import AffiliateConvite   from './pages/afiliado/Convite';
+import AffiliateSaque     from './pages/afiliado/Saque';
+
+// ======== ADMIN ========
+import AdminLayout      from './layout/AdminLayout';
+import AdminDashboard   from './pages/admin/Dashboard';
+import AdminOperacoes   from './pages/admin/Operacoes';
+import AdminAlertas     from './pages/admin/Alertas';
+import AdminFinanceiro  from './pages/admin/Financeiro';
+import AdminUsuarios    from './pages/admin/Usuarios';
+import AdminParametros  from './pages/admin/Parametros';
+import AdminAfiliados   from './pages/admin/Affiliates';
 
 export default function App() {
-  const { user, admin } = useAuth();
-
   return (
     <Routes>
-      {/* Landing page */}
-      <Route path="/" element={<LandingPage />} />
 
-      {/* Área do usuário */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/cadastro" element={<Cadastro />} />
-      <Route path="/app" element={
-        <ProtectedRoute user={user}>
-          <Dashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/app/historico" element={
-        <ProtectedRoute user={user}>
-          <Historico />
-        </ProtectedRoute>
-      } />
-      <Route path="/app/financeiro" element={
-        <ProtectedRoute user={user}>
-          <Financeiro />
-        </ProtectedRoute>
-      } />
-      <Route path="/app/planos" element={
-        <ProtectedRoute user={user}>
-          <Planos />
-        </ProtectedRoute>
-      } />
-      <Route path="/app/api-keys" element={
-        <ProtectedRoute user={user}>
-          <ApiKeys />
-        </ProtectedRoute>
-      } />
-      <Route path="/app/ajuda" element={
-        <ProtectedRoute user={user}>
-          <Ajuda />
-        </ProtectedRoute>
-      } />
+      {/* ============ PÚBLICAS ============ */}
+      <Route path="/"                      element={<LandingPage />} />
+      <Route path="login"                 element={<Login />} />
+      <Route path="register"              element={<Register />} />
+      <Route path="faq"                   element={<FAQ />} />
+      <Route path="como-funciona"         element={<ComoFunciona />} />
+      <Route path="politica-privacidade"  element={<PoliticaPrivacidade />} />
+      <Route path="termos-de-uso"         element={<Terms />} />
 
-      {/* Área de administração */}
-      <Route path="/admin/login" element={<AdminLogin />} />
-      <Route path="/admin" element={
-        <ProtectedRoute admin={admin}>
-          <AdminDashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/usuarios" element={
-        <ProtectedRoute admin={admin}>
-          <AdminUsuarios />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/afiliados" element={
-        <ProtectedRoute admin={admin}>
-          <AdminAfiliados />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/operacoes" element={
-        <ProtectedRoute admin={admin}>
-          <AdminOperacoes />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/financeiro" element={
-        <ProtectedRoute admin={admin}>
-          <AdminFinanceiro />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/logs" element={
-        <ProtectedRoute admin={admin}>
-          <AdminLogs />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/relatorios-ia" element={
-        <ProtectedRoute admin={admin}>
-          <AdminRelatoriosIa />
-        </ProtectedRoute>
-      } />
+      {/* ============ PAINEL USUÁRIO ============ */}
+      <Route
+        path="painel/*"
+        element={
+          <RequireAuth roles={['user']}>
+            <PainelLayout />
+          </RequireAuth>
+        }
+      >
+        <Route index                element={<Dashboard />} />
+        <Route path="plano"         element={<Plano />} />
+        <Route path="riscos"        element={<Riscos />} />
+        <Route path="configuracoes" element={<Configuracoes />} />
+        <Route path="extrato"       element={<Extrato />} />
+        <Route path="sinais"        element={<Sinais />} />
+      </Route>
 
-      {/* Redirecionamento padrão */}
-      <Route path="*" element={<Navigate to="/" />} />
+      {/* ============ AFILIADO ============ */}
+      <Route
+        path="afiliado/*"
+        element={
+          <RequireAuth roles={['affiliate']}>
+            <AffiliateLayout />
+          </RequireAuth>
+        }
+      >
+        <Route index           element={<AffiliateDashboard />} />
+        <Route path="extrato"  element={<AffiliateExtrato />} />
+        <Route path="convite"  element={<AffiliateConvite />} />
+        <Route path="saque"    element={<AffiliateSaque />} />
+      </Route>
+
+      {/* ============ ADMIN ============ */}
+      <Route
+        path="admin/*"
+        element={
+          <RequireAuth roles={['admin']}>
+            <AdminLayout />
+          </RequireAuth>
+        }
+      >
+        <Route index              element={<AdminDashboard />} />
+        <Route path="operacoes"   element={<AdminOperacoes />} />
+        <Route path="alertas"     element={<AdminAlertas />} />
+        <Route path="financeiro"  element={<AdminFinanceiro />} />
+        <Route path="usuarios"    element={<AdminUsuarios />} />
+        <Route path="parametros"  element={<AdminParametros />} />
+        <Route path="afiliados"   element={<AdminAfiliados />} />
+      </Route>
+
+      {/* ============ 404 (fallback) ============ */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+
     </Routes>
   );
 }

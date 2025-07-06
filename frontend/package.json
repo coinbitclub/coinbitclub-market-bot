@@ -1,40 +1,28 @@
 {
-  "name": "coinbitclub-frontend",
-  "version": "0.0.0",
+  "name": "coinbitclub-frontend-premium",
   "private": true,
-  "dependencies": {
-    "axios": "^1.6.7",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-icons": "^5.5.0",
-    "react-router-dom": "^6.23.0",
-    "react-scripts": "^5.0.1"
-  },
+  "version": "1.0.0",
   "scripts": {
-    "start": "react-scripts start",
     "dev": "vite",
     "build": "vite build",
-    "serve": "vite preview"
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "start:testnet": "cross-env PORT=8090 react-scripts start"
+    "fix-case": "node fix-case.js",
+    "preview": "vite preview"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "dependencies": {
+    "axios": "^1.6.0",
+    "path": "^0.12.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-helmet-async": "^2.0.2",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^6.30.1"
   },
   "devDependencies": {
-    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/postcss": "^4.1.11",
+    "@vitejs/plugin-react": "^4.6.0",
     "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.11"
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.3.2",
+    "vite": "^4.4.9"
   }
 }
