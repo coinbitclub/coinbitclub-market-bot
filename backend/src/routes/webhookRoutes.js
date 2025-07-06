@@ -1,73 +1,77 @@
 // src/routes/webhookRoutes.js
-import express from 'express'
-import { verifyToken } from '../middleware/verifyToken.js'
+import express from 'express';
+import { verifyToken } from '../middleware/verifyToken.js';
 
-import { parseSignal }    from '../parseSignal.js'
-import { parseDominance } from '../parseDominance.js'
-import { parseFearGreed } from '../parseFearGreed.js'
-import { parseMarket }    from '../parseMarket.js'
+import {
+  parseSignal,
+  parseDominance,
+  parseFearGreed,
+  parseMarket
+} from '../services/parserService.js';
 
-import { saveSignal }                   from '../services/signalService.js'
-import { insertDominance }              from '../services/databaseService.js'
-import { insertFearGreed }              from '../services/databaseService.js'
-import { insertMarket }                 from '../services/databaseService.js'
+import {
+  saveSignal,
+  insertDominance,
+  insertFearGreed,
+  insertMarket
+} from '../services/webhookService.js';
 
-const router = express.Router()
+const router = express.Router();
 
-// aplica autenticação (Bearer JWT ou ?token=…) em todas as rotas abaixo
-router.use(verifyToken)
+// Autenticação (Bearer JWT ou ?token=…) para todas as rotas
+router.use(verifyToken);
 
 /**
  * POST /webhook/signal
+ * Responde 200 imediatamente e salva sinal em background.
  */
 router.post('/signal', async (req, res, next) => {
   try {
-    const signal   = parseSignal(req.body)
-    const userId   = req.userId ?? null
-    await saveSignal(userId, signal)
-    res.json({ status: 'ok' })
+    const data = parseSignal(req.body);
+    res.status(200).json({ status: 'received' });
+    await saveSignal({ ...data, userId: req.userId ?? null });
   } catch (err) {
-    next(err)
+    next(err);
   }
-})
+});
 
 /**
  * POST /webhook/dominance
  */
 router.post('/dominance', async (req, res, next) => {
   try {
-    const dom = parseDominance(req.body)
-    await insertDominance(dom)
-    res.json({ status: 'ok' })
+    const data = parseDominance(req.body);
+    res.status(200).json({ status: 'received' });
+    await insertDominance(data);
   } catch (err) {
-    next(err)
+    next(err);
   }
-})
+});
 
 /**
  * POST /webhook/fear-greed
  */
 router.post('/fear-greed', async (req, res, next) => {
   try {
-    const fg = parseFearGreed(req.body)
-    await insertFearGreed(fg)
-    res.json({ status: 'ok' })
+    const data = parseFearGreed(req.body);
+    res.status(200).json({ status: 'received' });
+    await insertFearGreed(data);
   } catch (err) {
-    next(err)
+    next(err);
   }
-})
+});
 
 /**
  * POST /webhook/market
  */
 router.post('/market', async (req, res, next) => {
   try {
-    const mk = parseMarket(req.body)
-    await insertMarket(mk)
-    res.json({ status: 'ok' })
+    const data = parseMarket(req.body);
+    res.status(200).json({ status: 'received' });
+    await insertMarket(data);
   } catch (err) {
-    next(err)
+    next(err);
   }
-})
+});
 
-export default router
+export default router;
