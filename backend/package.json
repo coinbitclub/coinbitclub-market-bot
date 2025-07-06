@@ -2,19 +2,18 @@
   "type": "module",
   "name": "coinbitclub-market-bot-backend",
   "version": "1.0.0",
-  "description": "Backend do CoinbitClub Market Bot — API Express, banco PostgreSQL, Stripe, agendamento e integração com Webhooks",
+  "description": "Backend do CoinbitClub Market Bot — API Express, PostgreSQL, Stripe, scheduler e Webhooks",
   "main": "src/index.js",
   "scripts": {
     "prestart": "npx kill-port 3000 3001 8080 8090",
     "start": "node -r dotenv/config src/index.js",
     "dev": "npx kill-port 3000 3001 8080 8090 && nodemon --exec \"node -r dotenv/config\" src/index.js",
-    "start:dev": "npx kill-port 3000 3001 8080 8090 && nodemon --exec \"node -r dotenv/config\" src/index.js",
     "start:test": "npx kill-port 3000 3001 && node -r dotenv/config src/index.js --env=test",
     "start:prod": "npx kill-port 3000 3001 && node -r dotenv/config src/index.js --env=production",
     "bot": "node -r dotenv/config src/tradingBot.js",
     "train": "node -r dotenv/config src/trainModel.js",
-    "test:api": "powershell ./test-rotas.ps1",
-    "worker": "node -r dotenv/config src/worker.js"
+    "worker": "node -r dotenv/config src/worker.js",
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "axios": "^1.10.0",
@@ -39,7 +38,17 @@
   },
   "devDependencies": {
     "dotenv-cli": "^7.0.0",
+    "jest": "^30.0.4",
     "kill-port": "^2.0.1",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "supertest": "^7.1.1"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": ["<rootDir>/tests"],
+    "transform": {}
+  },
+  "engines": {
+    "node": ">=16"
   }
 }
