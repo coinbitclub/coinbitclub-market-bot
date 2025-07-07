@@ -26,15 +26,20 @@ const app = express()
 // ————— Proxy Trust —————
 app.set('trust proxy', 1)
 
-// ————— Porta obrigatória em produção —————
-if (!process.env.PORT) {
-  console.error('❌ ERRO: variável de ambiente PORT não definida.')
-  process.exit(1)
+// ————— PORT & Ambiente —————
+let PORT
+if (process.env.NODE_ENV === 'production') {
+  if (!process.env.PORT) {
+    console.error('❌ ERRO: variável de ambiente PORT não definida em produção.')
+    process.exit(1)
+  }
+  PORT = Number(process.env.PORT)
+} else {
+  PORT = Number(process.env.PORT) || 8080
 }
-const PORT = Number(process.env.PORT)
 console.log(`🛡️  Usando porta ${PORT}`)
 
-// ————— Variáveis críticas —————
+// ————— WEBHOOK_TOKEN obrigatório em qualquer ambiente —————
 if (!process.env.WEBHOOK_TOKEN) {
   console.error('❌ ERRO: variável de ambiente WEBHOOK_TOKEN não definida.')
   process.exit(1)
@@ -58,7 +63,7 @@ app.use(rateLimit({
   legacyHeaders: false
 }))
 
-// ————— JSON —————
+// ————— JSON Body —————
 app.use(express.json({ limit: '200kb' }))
 
 // ————— Sentry & Metrics —————
@@ -71,7 +76,7 @@ new Histogram({
   labelNames: ['method','route','code']
 })
 
-// ————— Healthchecks & Metrics endpoint —————
+// ————— Health & Metrics endpoints —————
 app.get('/',      (_req, res) => res.send('🚀 Bot ativo!'))
 app.get('/healthz', (_req, res) => res.send('OK'))
 app.get('/metrics', async (_req, res) => {
@@ -83,7 +88,7 @@ app.get('/metrics', async (_req, res) => {
 const swaggerDocument = YAML.load(path.resolve('docs/swagger.yaml'))
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
-// ————— Helper: token de webhook —————
+// ————— Helper: extrai token do webhook —————
 function getWebhookToken(req) {
   if (req.query.token) return req.query.token
   const auth = req.headers.authorization
@@ -91,7 +96,7 @@ function getWebhookToken(req) {
   return null
 }
 
-// ————— Webhook: Signal —————
+// ————— Webhook Signal —————
 app.post('/webhook/signal', async (req, res, next) => {
   if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
@@ -108,7 +113,7 @@ app.post('/webhook/signal', async (req, res, next) => {
   }
 })
 
-// ————— Webhook: Dominance —————
+// ————— Webhook Dominance —————
 app.post('/webhook/dominance', async (req, res, next) => {
   if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
