@@ -19,9 +19,11 @@ import { setupScheduler } from './services/scheduler.js'
 const app = express()
 const PORT = Number(process.env.PORT) || 8080
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN
+// Defina no .env sem barra final:
+// FRONTEND_URL=https://marketbot.netlify.app
 const FRONTEND_URL = process.env.FRONTEND_URL || '*'
 
-// CORS configuration
+// CORS
 app.use(cors({
   origin: FRONTEND_URL,
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
@@ -29,14 +31,14 @@ app.use(cors({
 }))
 app.options('*', cors())
 
-// JSON parsing (limit to 200kb)
+// Body parser
 app.use(express.json({ limit: '200kb' }))
 
-// Health-checks
-app.get('/',      (_req, res) => res.send('🚀 Bot ativo!'))
+// Healthchecks
+app.get('/', (_req, res) => res.send('🚀 Bot ativo!'))
 app.get('/healthz', (_req, res) => res.send('OK'))
 
-// Webhook: Signal
+// Webhook de SINAL
 app.post('/webhook/signal', async (req, res, next) => {
   if (req.query.token !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
@@ -53,7 +55,7 @@ app.post('/webhook/signal', async (req, res, next) => {
   }
 })
 
-// Webhook: Dominance
+// Webhook de DOMINANCE
 app.post('/webhook/dominance', async (req, res, next) => {
   if (req.query.token !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
@@ -76,7 +78,7 @@ app.use((err, _req, res, _next) => {
   res.status(err.status || 500).json({ error: err.message })
 })
 
-// On non-test environments, run migrations, start scheduler & then listen
+// Bootstrap (apenas fora de test)
 if (process.env.NODE_ENV !== 'test') {
   ;(async () => {
     console.log('🛠️ Iniciando migrações de DB…')
