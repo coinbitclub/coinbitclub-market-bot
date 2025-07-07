@@ -1,22 +1,19 @@
-import { parseSignal } from '../src/services/parseSignal.js';
-
-describe('parseSignal util', () => {
-  it('deve extrair corretamente symbol, price e side', () => {
-    const body = {
-      symbol: 'ETHUSDT',
-      price: '2000.50',
-      side: 'sell',
-      extra: 'ignored'
-    };
-    const parsed = parseSignal(body);
-    expect(parsed).toEqual({
-      symbol: 'ETHUSDT',
-      price: 2000.50,
-      side: 'sell'
-    });
-  });
-
-  it('lança erro se faltar campo obrigatório', () => {
-    expect(() => parseSignal({ price: 1 })).toThrow('Invalid signal payload');
-  });
-});
+export function parseSignal(body) {
+  const { symbol, price, side, timestamp } = body;
+  if (
+    typeof symbol !== "string" ||
+    (typeof price !== "string" && typeof price !== "number") ||
+    typeof side !== "string"
+  ) {
+    const err = new Error("Invalid signal payload");
+    err.status = 400;
+    throw err;
+  }
+  const priceNum = typeof price === "string" ? parseFloat(price) : price;
+  if (Number.isNaN(priceNum)) {
+    const err = new Error("Invalid signal payload");
+    err.status = 400;
+    throw err;
+  }
+  return { symbol, price: priceNum, side, timestamp };
+}

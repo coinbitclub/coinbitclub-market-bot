@@ -4,7 +4,6 @@ export async function saveSignal({ symbol, price, side, timestamp }) {
   if (process.env.NODE_ENV === "test") {
     return { id: 1 };
   }
-
   const receivedAt = timestamp || new Date().toISOString();
   const { rows } = await pool.query(
     `INSERT INTO signals(ticker, price, side, received_at)
@@ -19,7 +18,6 @@ export async function saveDominance({ btc_dom, eth_dom, timestamp }) {
   if (process.env.NODE_ENV === "test") {
     return { id: 1 };
   }
-
   const ts = timestamp || new Date().toISOString();
   const { rows } = await pool.query(
     `INSERT INTO cointars(btc_dom, eth_dom, timestamp)
