@@ -23,8 +23,8 @@ import {
 import { setupScheduler } from "./services/scheduler.js";
 
 dotenv.config();
+process.env.JWT_SECRET    ||= "VictoreLais2025";
 process.env.WEBHOOK_TOKEN ||= "210406";
-process.env.NODE_ENV      ||= "production";
 
 const app  = express();
 const port = parseInt(process.env.PORT, 10) || 8080;
@@ -38,7 +38,7 @@ app.use(cors({
 app.options("*", cors());
 app.use(morgan("combined"));
 
-// Stripe raw webhook
+// Stripe webhook (raw body)
 app.post(
   "/api/stripe/webhook",
   express.raw({ type: "application/json", limit: "200kb" }),
@@ -55,8 +55,8 @@ app.use((req, res, next) => {
 });
 
 // Healthchecks
-app.get("/",       (_req, res) => res.send("🚀 Bot ativo!"));
-app.get("/healthz",(_req, res) => res.send("OK"));
+app.get("/",      (_req, res) => res.send("🚀 Bot ativo!"));
+app.get("/healthz", (_req, res) => res.send("OK"));
 
 // Main routes
 app.use("/webhook",       webhookRouter);
@@ -67,7 +67,7 @@ app.use("/api/affiliate", affiliateRouter);
 app.use("/api/user",      userRouter);
 app.use("/api/admin",     adminRouter);
 
-// Dashboard (basic auth)
+// Dashboard UI (basic auth)
 app.use(
   "/dashboard",
   basicAuth({
@@ -83,7 +83,7 @@ app.use((err, _req, res, _next) => {
   res.status(err.status || 500).json({ error: err.message });
 });
 
-// Startup: migrations + server + scheduler (skip in tests)
+// Startup: migrations + server + scheduler
 if (process.env.NODE_ENV !== "test") {
   (async () => {
     console.log("🛠️ Iniciando migrações de DB…");
@@ -91,7 +91,7 @@ if (process.env.NODE_ENV !== "test") {
     await ensureCointarsTable();    console.log("✔️ cointars");
     await ensurePositionsTable();   console.log("✔️ positions");
     await ensureIndicatorsTable();  console.log("✔️ indicators");
-    console.log("🛠️ Migrações concluídas. Iniciando servidor…");
+    console.log("🛠️ Migrações concluídas. Iniciando servidor...");
     app.listen(port, () => {
       console.log(`🚀 Server listening on port ${port}`);
       setupScheduler();
@@ -104,6 +104,7 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 export default app;
+
 process.on("unhandledRejection", err =>
   console.error("❌ UNHANDLED REJECTION:", err.stack || err)
 );

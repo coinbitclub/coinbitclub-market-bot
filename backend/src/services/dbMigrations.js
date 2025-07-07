@@ -1,4 +1,4 @@
-import { pool } from "./db.js";
+import { pool } from './db.js';
 
 export async function ensureSignalsTable() {
   // 1) cria tabela se não existir
@@ -17,13 +17,12 @@ export async function ensureSignalsTable() {
       ADD COLUMN IF NOT EXISTS received_at  TIMESTAMPTZ NOT NULL DEFAULT now();
   `);
 
-  // 3) remove coluna antiga `symbol`, se existir
+  // 3) remove antiga coluna symbol, se existir
   await pool.query(`
     DO $$
     BEGIN
       IF EXISTS (
-        SELECT 1
-          FROM information_schema.columns
+        SELECT 1 FROM information_schema.columns
          WHERE table_name='signals' AND column_name='symbol'
       ) THEN
         ALTER TABLE signals DROP COLUMN symbol;
@@ -39,28 +38,19 @@ export async function ensureCointarsTable() {
       id SERIAL PRIMARY KEY
     );
   `);
+
   await pool.query(`
     ALTER TABLE cointars
       ADD COLUMN IF NOT EXISTS btc_dom   NUMERIC     NOT NULL,
       ADD COLUMN IF NOT EXISTS eth_dom   NUMERIC     NOT NULL,
-      ADD COLUMN IF NOT EXISTS timestamp TIMESTAMPTZ NOT NULL;
+      ADD COLUMN IF NOT EXISTS timestamp TIMESTAMPTZ NOT NULL DEFAULT now();
   `);
 }
 
 export async function ensurePositionsTable() {
-  // mantenha sua definição atual de positions…
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS positions (
-      /* … campos … */
-    );
-  `);
+  // mantenha aqui sua definição atual de positions…
 }
 
 export async function ensureIndicatorsTable() {
-  // mantenha sua definição atual de indicators…
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS indicators (
-      /* … campos … */
-    );
-  `);
+  // mantenha aqui sua definição atual de indicators…
 }
