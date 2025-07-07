@@ -1,8 +1,8 @@
 // src/components/SignalForm.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { postSignal } from '../api';
 
-export default function SignalForm() {
+export function SignalForm() {
   const [symbol, setSymbol] = useState('');
   const [price,  setPrice]  = useState('');
   const [side,   setSide]   = useState('buy');
@@ -12,7 +12,7 @@ export default function SignalForm() {
     e.preventDefault();
     try {
       const { ok, id } = await postSignal({ symbol, price: Number(price), side });
-      setMsg(ok ? `Salvou sinal #${id}` : 'Erro desconhecido');
+      setMsg(ok ? `Sinal #${id} salvo!` : 'Erro inesperado');
     } catch (err) {
       setMsg(`Erro: ${err.error || err.message}`);
     }

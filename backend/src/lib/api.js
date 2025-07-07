@@ -2,7 +2,6 @@
 const API_URL = import.meta.env.VITE_API_URL;
 const TOKEN   = import.meta.env.VITE_WEBHOOK_TOKEN;
 
-// health checks
 export async function getStatus() {
   const res = await fetch(`${API_URL}/`);
   return res.text();
@@ -13,7 +12,6 @@ export async function getHealthz() {
   return res.text();
 }
 
-// envia um sinal
 export async function postSignal({ symbol, price, side }) {
   const res = await fetch(
     `${API_URL}/webhook/signal?token=${TOKEN}`,
@@ -27,7 +25,6 @@ export async function postSignal({ symbol, price, side }) {
   return res.json();
 }
 
-// envia dominance
 export async function postDominance({ btc_dom, eth_dom }) {
   const res = await fetch(
     `${API_URL}/webhook/dominance?token=${TOKEN}`,
