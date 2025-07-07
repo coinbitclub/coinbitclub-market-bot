@@ -1,73 +1,74 @@
-import express from 'express';
-import cors from 'cors';
-import 'express-async-errors';
-import 'dotenv/config';
+// src/index.js
+import express from 'express'
+import 'express-async-errors'
+import './services/dbMigrations.js'      // garante que as migrations rodem antes de tudo
+import dotenv from 'dotenv/config'
 
-import { runMigrations } from './services/dbMigrations.js';
-import { initScheduler } from './services/scheduler.js';
-import { saveSignal, saveDominance } from './services/signalService.js';
-import { parseSignal } from './services/parseSignal.js';
-import { parseDominance } from './services/parseDominance.js';
+import parseSignal from './services/parseSignal.js'                    // default export
+import { parseDominance } from './services/parseDominance.js'          // named export
+import { saveSignal, saveDominance } from './services/signalService.js'// named exports
+import initScheduler from './services/scheduler.js'                    // default export
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+const app = express()
+app.use(express.json())
 
-const TOKEN = process.env.WEBHOOK_TOKEN;
+const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN
 
-// Rotas de healthcheck
-app.get('/', (_req, res) => res.json({ ok: true }));
-app.get('/healthz', (_req, res) => res.send('ok'));
+// rotas GET
+app.get('/', (_req, res) => {
+  res.send('alive')
+})
+app.get('/healthz', (_req, res) => {
+  res.status(200).end()
+})
 
-// Webhook de SIGNAL
-app.post('/webhook/signal', async (req, res) => {
-  const { token } = req.query;
-  if (token !== TOKEN) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+// rota de sinal
+app.post('/webhook/signal', async (req, res, next) => {
   try {
-    const { symbol, price, side, time } = parseSignal(req.body);
-    const { id } = await saveSignal({ symbol, price, side, time });
-    return res.json({ ok: true, id });
-  } catch (err) {
-    console.error('❌ ERRO GERAL:', err.stack || err);
-    const status = err.statusCode || 400;
-    return res.status(status).json({ error: err.message });
-  }
-});
+    const token = req.query.token
+    if (token !== WEBHOOK_TOKEN) {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
 
-// Webhook de DOMINANCE
-app.post('/webhook/dominance', async (req, res) => {
-  const { token } = req.query;
-  if (token !== TOKEN) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    // parseSignal lança erro 400 se payload inválido
+    const { symbol, price, side, time } = parseSignal(req.body)
+    const id = await saveSignal({ symbol, price, side, time })
+    return res.json({ ok: true, id })
+  } catch (err) {
+    return next(err)
   }
+})
+
+// rota de dominância
+app.post('/webhook/dominance', async (req, res, next) => {
   try {
-    const { btc_dom, eth_dom, time } = parseDominance(req.body);
-    const { id } = await saveDominance({ btc_dom, eth_dom, time });
-    return res.json({ ok: true, id });
-  } catch (err) {
-    console.error('❌ ERRO GERAL:', err.stack || err);
-    const status = err.statusCode || 400;
-    return res.status(status).json({ error: err.message });
-  }
-});
+    const token = req.query.token
+    if (token !== WEBHOOK_TOKEN) {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
 
-// Error handler global
+    // parseDominance lança erro 400 se payload inválido
+    const { btc_dom, eth_dom } = parseDominance(req.body)
+    const id = await saveDominance({ btc_dom, eth_dom })
+    return res.json({ ok: true, id })
+  } catch (err) {
+    return next(err)
+  }
+})
+
+// inicia o scheduler (jobs agendados)
+initScheduler()
+
+// tratamento global de erros
 app.use((err, _req, res, _next) => {
-  console.error('❌ ERRO GERAL:', err.stack || err);
-  res.status(err.status || 500).json({ error: err.message });
-});
+  console.error('❌ ERRO GERAL:', err.stack || err)
+  res.status(err.status || 500).json({ error: err.message })
+})
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8080
+app.listen(port, () => {
+  console.log(`🚀 Server listening on port ${port}`)
+})
 
-(async () => {
-  console.log('🛠️ Iniciando migrações de DB…');
-  await runMigrations();
-  console.log('🛠️ Migrações concluídas. Iniciando servidor...');
-  app.listen(port, () => console.log(`🚀 Server listening on port ${port}`));
-  console.log('⏰ Scheduler iniciado.');
-  initScheduler();
-})();
-
-export default app;
+// exporta o app para os testes
+export default app
