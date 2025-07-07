@@ -26,8 +26,20 @@ const app = express();
 // ————— Proxy Trust —————
 app.set('trust proxy', 1);
 
-const PORT = Number(process.env.PORT) || 8080;
-const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN;
+// ————— Porta obrigatória em produção —————
+if (!process.env.PORT) {
+  console.error('❌ ERRO: variável de ambiente PORT não definida.');
+  process.exit(1);
+}
+const PORT = Number(process.env.PORT);
+console.log(`🛡️  Usando porta ${PORT}`);
+
+// ————— Variáveis críticas —————
+const WEBHOOK_TOKEN  = process.env.WEBHOOK_TOKEN;
+if (!WEBHOOK_TOKEN) {
+  console.error('❌ ERRO: variável WEBHOOK_TOKEN não definida.');
+  process.exit(1);
+}
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 
 // ————— CORS —————
@@ -53,14 +65,14 @@ app.use(express.json({ limit: '200kb' }));
 Sentry.init({ dsn: process.env.SENTRY_DSN });
 app.use(Sentry.Handlers.requestHandler());
 collectDefaultMetrics();
-const httpHistogram = new Histogram({
+new Histogram({
   name: 'http_request_duration_seconds',
   help: 'Duração das requisições HTTP em seconds',
-  labelNames: ['method', 'route', 'code']
+  labelNames: ['method','route','code']
 });
 
 // ————— Healthchecks & Metrics endpoint —————
-app.get('/', (_req, res) => res.send('🚀 Bot ativo!'));
+app.get('/',    (_req, res) => res.send('🚀 Bot ativo!'));
 app.get('/healthz', (_req, res) => res.send('OK'));
 app.get('/metrics', async (_req, res) => {
   res.set('Content-Type', register.contentType);
@@ -71,20 +83,17 @@ app.get('/metrics', async (_req, res) => {
 const swaggerDocument = YAML.load(path.resolve('docs/swagger.yaml'));
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// Helper to extract token from query or Authorization header
+// ————— Helper: token de webhook —————
 function getWebhookToken(req) {
   if (req.query.token) return req.query.token;
   const auth = req.headers.authorization;
-  if (auth && auth.startsWith('Bearer ')) {
-    return auth.slice(7).trim();
-  }
+  if (auth?.startsWith('Bearer ')) return auth.slice(7).trim();
   return null;
 }
 
-// ————— Webhook de SINAL —————
+// ————— Webhook: Signal —————
 app.post('/webhook/signal', async (req, res, next) => {
-  const token = getWebhookToken(req);
-  if (token !== WEBHOOK_TOKEN) {
+  if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' });
   }
   try {
@@ -99,10 +108,9 @@ app.post('/webhook/signal', async (req, res, next) => {
   }
 });
 
-// ————— Webhook de DOMINANCE —————
+// ————— Webhook: Dominance —————
 app.post('/webhook/dominance', async (req, res, next) => {
-  const token = getWebhookToken(req);
-  if (token !== WEBHOOK_TOKEN) {
+  if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' });
   }
   try {
@@ -124,7 +132,7 @@ app.use((err, _req, res, _next) => {
   res.status(err.status || 500).json({ error: err.message });
 });
 
-// ————— Startup (migrations + scheduler + listen) —————
+// ————— Startup: migrations + scheduler + listen —————
 if (process.env.NODE_ENV !== 'test') {
   (async () => {
     console.log('🛠️ Iniciando migrações de DB…');
@@ -138,25 +146,9 @@ if (process.env.NODE_ENV !== 'test') {
     setupScheduler();
     console.log('⏰ Scheduler iniciado.');
 
-    const server = app.listen(PORT, () => {
+    app.listen(PORT, () => {
       console.log(`🚀 Server listening on port ${PORT}`);
     });
-
-    // Graceful shutdown on SIGTERM/SIGINT
-    const shutdown = () => {
-      console.log('📦 Shutdown signal received, closing server...');
-      server.close(() => {
-        console.log('✅ HTTP server closed. Exiting process.');
-        process.exit(0);
-      });
-      // if after 10s it's still not closed, force exit
-      setTimeout(() => {
-        console.error('⏱️ Forced shutdown.');
-        process.exit(1);
-      }, 10000).unref();
-    };
-    process.on('SIGTERM', shutdown);
-    process.on('SIGINT', shutdown);
   })().catch(ex => {
     console.error('🔥 Startup error:', ex.stack || ex);
     process.exit(1);
