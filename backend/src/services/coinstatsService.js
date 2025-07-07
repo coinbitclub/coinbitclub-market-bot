@@ -1,11 +1,13 @@
 import axios from 'axios';
 
+const BASE = 'https://openapi.coinstats.app/v1';
+  
 export async function fetchMetrics(apiKey) {
   const { data } = await axios.get(
-    'https://api.coinstats.app/public/v1/markets?skip=0&limit=1',
+    `${BASE}/markets?skip=0&limit=1`,
     { headers: { 'X-API-KEY': apiKey } }
   );
-  // O endpoint retorna { coins: [ { marketCap, volume, … } ] }
+  // Novo formato: data.coins em vez de data.coins
   const coin = data.coins?.[0] || {};
   return {
     totalMarketCap: coin.marketCap || 0,
@@ -15,7 +17,7 @@ export async function fetchMetrics(apiKey) {
 
 export async function fetchFearGreed(apiKey) {
   const { data } = await axios.get(
-    'https://openapiv1.coinstats.app/insights/fear-and-greed',
+    `${BASE}/insights/fear-and-greed`,
     { headers: { 'X-API-KEY': apiKey } }
   );
   return {
@@ -26,7 +28,7 @@ export async function fetchFearGreed(apiKey) {
 
 export async function fetchDominance(apiKey) {
   const { data } = await axios.get(
-    'https://openapiv1.coinstats.app/insights/btc-dominance?type=24h',
+    `${BASE}/insights/btc-dominance?type=24h`,
     { headers: { 'X-API-KEY': apiKey } }
   );
   return { dominance: data.btc_dominance };
