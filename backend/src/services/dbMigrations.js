@@ -1,15 +1,16 @@
 // src/services/dbMigrations.js
+
 import { pool } from './db.js';
 
 export async function ensureSignalsTable() {
-  // 1) cria tabela se não existir
+  // 1) cria tabela se não existir (com chave primária)
   await pool.query(`
     CREATE TABLE IF NOT EXISTS signals (
       id SERIAL PRIMARY KEY
     );
   `);
 
-  // 2) adiciona ticker, price, side e received_at (caso estejam faltando)
+  // 2) adiciona colunas ticker, price, side e received_at, se faltarem
   await pool.query(`
     ALTER TABLE signals
       ADD COLUMN IF NOT EXISTS ticker       TEXT        NOT NULL,
@@ -18,31 +19,17 @@ export async function ensureSignalsTable() {
       ADD COLUMN IF NOT EXISTS received_at  TIMESTAMPTZ NOT NULL DEFAULT now();
   `);
 
-  // 3) elimina a coluna antiga `symbol`, se ainda existir
+  // 3) elimina a coluna antiga `symbol`, caso ainda exista
   await pool.query(`
     DO $$
     BEGIN
       IF EXISTS (
         SELECT 1
           FROM information_schema.columns
-         WHERE table_name='signals' AND column_name='symbol'
+         WHERE table_name='signals'
+           AND column_name='symbol'
       ) THEN
         ALTER TABLE signals DROP COLUMN symbol;
-      END IF;
-    END
-    $$;
-  `);
-
-  // 4) elimina a coluna antiga `time`, se ainda existir
-  await pool.query(`
-    DO $$
-    BEGIN
-      IF EXISTS (
-        SELECT 1
-          FROM information_schema.columns
-         WHERE table_name='signals' AND column_name='time'
-      ) THEN
-        ALTER TABLE signals DROP COLUMN "time";
       END IF;
     END
     $$;
@@ -50,14 +37,14 @@ export async function ensureSignalsTable() {
 }
 
 export async function ensureCointarsTable() {
-  // 1) cria tabela se não existir
+  // 1) cria tabela cointars se não existir
   await pool.query(`
     CREATE TABLE IF NOT EXISTS cointars (
       id SERIAL PRIMARY KEY
     );
   `);
 
-  // 2) adiciona btc_dom, eth_dom e timestamp (caso estejam faltando)
+  // 2) adiciona colunas btc_dom, eth_dom e timestamp, se faltarem
   await pool.query(`
     ALTER TABLE cointars
       ADD COLUMN IF NOT EXISTS btc_dom   NUMERIC     NOT NULL,
@@ -67,21 +54,23 @@ export async function ensureCointarsTable() {
 }
 
 export async function ensurePositionsTable() {
-  // ajuste esta definição conforme seu schema de positions
+  // adapte aqui os campos existentes de positions
   await pool.query(`
     CREATE TABLE IF NOT EXISTS positions (
       id SERIAL PRIMARY KEY
-      -- adicione aqui os demais campos da tabela positions
+      -- coloque aqui os demais campos de positions,
+      -- por exemplo: ,user_id INT NOT NULL, symbol TEXT NOT NULL, ...
     );
   `);
 }
 
 export async function ensureIndicatorsTable() {
-  // ajuste esta definição conforme seu schema de indicators
+  // adapte aqui os campos existentes de indicators
   await pool.query(`
     CREATE TABLE IF NOT EXISTS indicators (
       id SERIAL PRIMARY KEY
-      -- adicione aqui os demais campos da tabela indicators
+      -- coloque aqui os demais campos de indicators,
+      -- por exemplo: ,symbol TEXT NOT NULL, timeframe TEXT NOT NULL, ...
     );
   `);
 }

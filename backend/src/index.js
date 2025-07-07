@@ -1,101 +1,97 @@
-import express from "express";
-import "express-async-errors";
-import dotenv from "dotenv";
-import cors from "cors";
-import morgan from "morgan";
-import basicAuth from "express-basic-auth";
+// src/index.js
+import express from 'express';
+import 'express-async-errors';
+import 'dotenv/config';
 
-import webhookRouter from "./routes/webhook.js";
-import stripeRoutes, { stripeWebhookHandler } from "./routes/stripeRoutes.js";
-import fetchRouter from "./routes/fetch.js";
-import tradingRouter from "./routes/trading.js";
-import affiliateRouter from "./routes/affiliate.js";
-import userRouter from "./routes/user.js";
-import adminRouter from "./routes/admin.js";
-import dashboardRouter from "./routes/dashboard.js";
-
+import { pool } from './services/db.js';
 import {
   ensureSignalsTable,
   ensureCointarsTable,
   ensurePositionsTable,
   ensureIndicatorsTable
-} from "./services/dbMigrations.js";
-import { setupScheduler } from "./services/scheduler.js";
+} from './services/dbMigrations.js';
+import parseSignal from './services/parseSignal.js';
+import parseDominance from './services/parseDominance.js';
+import { saveSignal, saveDominance } from './services/signalService.js';
 
-dotenv.config();
-process.env.JWT_SECRET    ||= "VictoreLais2025";
-process.env.WEBHOOK_TOKEN ||= "210406";
+const app = express();
+app.use(express.json());
 
-const app  = express();
-const port = parseInt(process.env.PORT, 10) || 8080;
-
-// CORS & logging
-app.use(cors({ origin: "*", methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"], allowedHeaders: ["Content-Type","Authorization"] }));
-app.options("*", cors());
-app.use(morgan("combined"));
-
-// Stripe webhook (raw body)
-app.post(
-  "/api/stripe/webhook",
-  express.raw({ type: "application/json", limit: "200kb" }),
-  stripeWebhookHandler
-);
-
-// JSON parsing + enforcement
-app.use(express.json({ limit: "200kb" }));
-app.use((req, res, next) => {
-  if (["POST","PUT","PATCH"].includes(req.method) && !req.is("application/json")) {
-    return res.status(415).json({ error: "Content-Type deve ser application/json" });
-  }
-  next();
+// ─── Rotas de Saúde ─────────────────────────────────────────────────────────────
+app.get('/', (_req, res) => {
+  // resposta leve para root
+  res.json({ message: 'OK' });
 });
 
-// Healthchecks
-app.get("/",      (_req, res) => res.send("🚀 Bot ativo!"));
-app.get("/healthz", (_req, res) => res.send("OK"));
+app.get('/healthz', (_req, res) => {
+  // para readiness/liveness probes
+  res.sendStatus(200);
+});
 
-// Main routes
-app.use("/webhook",       webhookRouter);
-app.use("/api/stripe",    stripeRoutes);
-app.use("/api/fetch",     fetchRouter);
-app.use("/api/trading",   tradingRouter);
-app.use("/api/affiliate", affiliateRouter);
-app.use("/api/user",      userRouter);
-app.use("/api/admin",     adminRouter);
+// ─── Webhook de SINAL ───────────────────────────────────────────────────────────
+app.post('/webhook/signal', async (req, res) => {
+  // 1) valida token
+  if (req.query.token !== process.env.WEBHOOK_TOKEN) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
 
-// Dashboard UI (basic auth)
-app.use(
-  "/dashboard",
-  basicAuth({ users: { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS }, challenge: true }),
-  dashboardRouter
-);
+  // 2) valida payload
+  let { symbol, price, side } = {};
+  try {
+    ({ symbol, price, side } = parseSignal(req.body));
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
 
-// Global error handler
+  // 3) grava no DB
+  const id = await saveSignal(symbol, price, side);
+
+  // 4) retorna OK + id
+  return res.json({ ok: true, id });
+});
+
+// ─── Webhook de DOMINANCE ────────────────────────────────────────────────────────
+app.post('/webhook/dominance', async (req, res) => {
+  // 1) valida token
+  if (req.query.token !== process.env.WEBHOOK_TOKEN) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  // 2) valida payload
+  let btc_dom, eth_dom;
+  try {
+    ({ btc_dom, eth_dom } = parseDominance(req.body));
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+
+  // 3) grava no DB
+  const id = await saveDominance(btc_dom, eth_dom);
+
+  // 4) retorna OK + id
+  return res.json({ ok: true, id });
+});
+
+// ─── Tratador global de erros ──────────────────────────────────────────────────
 app.use((err, _req, res, _next) => {
-  console.error("❌ ERRO GERAL:", err.stack || err);
+  console.error('❌ ERRO GERAL:', err.stack || err);
   res.status(err.status || 500).json({ error: err.message });
 });
 
-// Startup: migrations → servidor → scheduler
-if (process.env.NODE_ENV !== "test") {
-  (async () => {
-    console.log("🛠️ Iniciando migrações de DB…");
-    await ensureSignalsTable();     console.log("✔️ signals");
-    await ensureCointarsTable();    console.log("✔️ cointars");
-    await ensurePositionsTable();   console.log("✔️ positions");
-    await ensureIndicatorsTable();  console.log("✔️ indicators");
-    console.log("🛠️ Migrações concluídas. Iniciando servidor...");
-    app.listen(port, () => {
-      console.log(`🚀 Server listening on port ${port}`);
-      setupScheduler();
-      console.log("⏰ Scheduler iniciado.");
-    });
-  })().catch(err => {
-    console.error("🔥 FALHA startup:", err.stack || err);
-    process.exit(1);
+// ─── Arranque: migrações + servidor ─────────────────────────────────────────────
+async function main() {
+  // garante que todas as tabelas existem e estão no esquema certo
+  await ensureSignalsTable();
+  await ensureCointarsTable();
+  await ensurePositionsTable();
+  await ensureIndicatorsTable();
+
+  const port = process.env.PORT || 8080;
+  app.listen(port, () => {
+    console.log(`🚀 Server listening on port ${port}`);
   });
 }
 
+main();
+
 export default app;
-process.on("unhandledRejection", err => console.error("❌ UNHANDLED REJECTION:", err.stack || err));
-process.on("uncaughtException",  err => { console.error("❌ UNCAUGHT EXCEPTION:", err.stack || err); process.exit(1); });
