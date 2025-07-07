@@ -1,74 +1,89 @@
 // src/index.js
 import express from 'express'
 import 'express-async-errors'
-import './services/dbMigrations.js'      // garante que as migrations rodem antes de tudo
-import dotenv from 'dotenv/config'
+import 'dotenv/config'
 
-import parseSignal from './services/parseSignal.js'                    // default export
-import { parseDominance } from './services/parseDominance.js'          // named export
-import { saveSignal, saveDominance } from './services/signalService.js'// named exports
-import initScheduler from './services/scheduler.js'                    // default export
+import {
+  ensureSignalsTable,
+  ensureCointarsTable,
+  ensurePositionsTable,
+  ensureIndicatorsTable
+} from './services/dbMigrations.js'
+
+import { parseSignal } from './services/parseSignal.js'
+import { parseDominance } from './services/parseDominance.js'
+import { saveSignal, saveDominance } from './services/signalService.js'
+import { setupScheduler } from './services/scheduler.js'
 
 const app = express()
-app.use(express.json())
-
+const PORT = parseInt(process.env.PORT, 10) || 8080
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN
 
-// rotas GET
-app.get('/', (_req, res) => {
-  res.send('alive')
-})
-app.get('/healthz', (_req, res) => {
-  res.status(200).end()
-})
+app.use(express.json())
 
-// rota de sinal
+// Healthchecks
+app.get('/', (_req, res) => res.send('🚀 Bot ativo!'))
+app.get('/healthz', (_req, res) => res.send('OK'))
+
+// POST /webhook/signal
 app.post('/webhook/signal', async (req, res, next) => {
+  if (req.query.token !== WEBHOOK_TOKEN) {
+    return res.status(401).json({ error: 'Token inválido' })
+  }
   try {
-    const token = req.query.token
-    if (token !== WEBHOOK_TOKEN) {
-      return res.status(401).json({ error: 'Unauthorized' })
-    }
-
-    // parseSignal lança erro 400 se payload inválido
-    const { symbol, price, side, time } = parseSignal(req.body)
-    const id = await saveSignal({ symbol, price, side, time })
+    const payload = parseSignal(req.body)
+    const { id } = await saveSignal(payload)
     return res.json({ ok: true, id })
   } catch (err) {
-    return next(err)
+    if (err.message === 'Invalid signal payload') {
+      return res.status(400).json({ error: err.message })
+    }
+    next(err)
   }
 })
 
-// rota de dominância
+// POST /webhook/dominance
 app.post('/webhook/dominance', async (req, res, next) => {
+  if (req.query.token !== WEBHOOK_TOKEN) {
+    return res.status(401).json({ error: 'Token inválido' })
+  }
   try {
-    const token = req.query.token
-    if (token !== WEBHOOK_TOKEN) {
-      return res.status(401).json({ error: 'Unauthorized' })
-    }
-
-    // parseDominance lança erro 400 se payload inválido
-    const { btc_dom, eth_dom } = parseDominance(req.body)
-    const id = await saveDominance({ btc_dom, eth_dom })
+    const payload = parseDominance(req.body)
+    const { id } = await saveDominance(payload)
     return res.json({ ok: true, id })
   } catch (err) {
-    return next(err)
+    if (err.message === 'Invalid dominance payload') {
+      return res.status(400).json({ error: err.message })
+    }
+    next(err)
   }
 })
 
-// inicia o scheduler (jobs agendados)
-initScheduler()
-
-// tratamento global de erros
+// Global error handler
 app.use((err, _req, res, _next) => {
   console.error('❌ ERRO GERAL:', err.stack || err)
   res.status(err.status || 500).json({ error: err.message })
 })
 
-const port = process.env.PORT || 8080
-app.listen(port, () => {
-  console.log(`🚀 Server listening on port ${port}`)
-})
+// Somente em produção (ou dev), rodar migrations, scheduler e subir server
+if (process.env.NODE_ENV !== 'test') {
+  ;(async () => {
+    console.log('🛠️ Iniciando migrações de DB…')
+    await ensureSignalsTable();    console.log('✔️ signals')
+    await ensureCointarsTable();   console.log('✔️ cointars')
+    await ensurePositionsTable();  console.log('✔️ positions')
+    await ensureIndicatorsTable(); console.log('✔️ indicators')
+    console.log('🛠️ Migrações concluídas.')
+    console.log('⏰ Iniciando scheduler…')
+    setupScheduler()
+    console.log('⏰ Scheduler iniciado.')
+    app.listen(PORT, () => {
+      console.log(`🚀 Server listening on port ${PORT}`)
+    })
+  })().catch(err => {
+    console.error('🔥 FALHA na inicialização:', err.stack || err)
+    process.exit(1)
+  })
+}
 
-// exporta o app para os testes
 export default app
