@@ -7,19 +7,20 @@
   "scripts": {
     "dev": "npx kill-port 3000 3001 8080 8090 && nodemon --exec \"node -r dotenv/config\" src/index.js",
     "start": "npm run start:prod",
-    "start:prod": "NODE_ENV=production node -r dotenv/config src/index.js",
-    "start:test": "NODE_ENV=test node -r dotenv/config src/index.js",
+    "start:prod": "cross-env NODE_ENV=production node -r dotenv/config src/index.js",
+    "start:test": "cross-env NODE_ENV=test node -r dotenv/config src/index.js",
     "start:dev": "npm run dev",
     "bot": "node -r dotenv/config src/tradingBot.js",
     "train": "node -r dotenv/config src/trainModel.js",
     "worker": "node -r dotenv/config src/worker.js",
-    "migrate": "node-pg-migrate up --pattern \"2025*.js\"",
+    "migrate": "node-pg-migrate up --pattern \"^202[0-9]+.*\\.js$\"",
     "test": "jest --runInBand"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "express-async-errors": "^3.1.1",
