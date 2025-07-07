@@ -23,6 +23,7 @@ import {
 import { setupScheduler } from "./services/scheduler.js";
 
 dotenv.config();
+// Em produção, garanta que NODE_ENV=production nas Env Vars do Railway
 process.env.JWT_SECRET    ||= "VictoreLais2025";
 process.env.WEBHOOK_TOKEN ||= "210406";
 
@@ -55,8 +56,8 @@ app.use((req, res, next) => {
 });
 
 // Healthchecks
-app.get("/",      (_req, res) => res.send("🚀 Bot ativo!"));
-app.get("/healthz", (_req, res) => res.send("OK"));
+app.get("/",       (_req, res) => res.send("🚀 Bot ativo!"));
+app.get("/healthz",(_req, res) => res.send("OK"));
 
 // Main routes
 app.use("/webhook",       webhookRouter);
@@ -83,25 +84,23 @@ app.use((err, _req, res, _next) => {
   res.status(err.status || 500).json({ error: err.message });
 });
 
-// Startup (migrations + server + scheduler)
-if (process.env.NODE_ENV !== "test") {
-  (async () => {
-    console.log("🛠️ Iniciando migrações de DB…");
-    await ensureSignalsTable();     console.log("✔️ signals");
-    await ensureCointarsTable();    console.log("✔️ cointars");
-    await ensurePositionsTable();   console.log("✔️ positions");
-    await ensureIndicatorsTable();  console.log("✔️ indicators");
-    console.log("🛠️ Migrações concluídas. Iniciando servidor...");
-    app.listen(port, () => {
-      console.log(`🚀 Server listening on port ${port}`);
-      setupScheduler();
-      console.log("⏰ Scheduler iniciado.");
-    });
-  })().catch(err => {
-    console.error("🔥 FALHA startup:", err.stack || err);
-    process.exit(1);
+// Always run migrations before listening (garante ticker criado)
+(async () => {
+  console.log("🛠️ Iniciando migrações de DB…");
+  await ensureSignalsTable();     console.log("✔️ signals");
+  await ensureCointarsTable();    console.log("✔️ cointars");
+  await ensurePositionsTable();   console.log("✔️ positions");
+  await ensureIndicatorsTable();  console.log("✔️ indicators");
+  console.log("🛠️ Migrações concluídas. Iniciando servidor...");
+  app.listen(port, () => {
+    console.log(`🚀 Server listening on port ${port}`);
+    setupScheduler();
+    console.log("⏰ Scheduler iniciado.");
   });
-}
+})().catch(err => {
+  console.error("🔥 FALHA startup:", err.stack || err);
+  process.exit(1);
+});
 
 export default app;
 
