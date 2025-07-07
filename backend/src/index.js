@@ -24,7 +24,6 @@ import { setupScheduler } from './services/scheduler.js';
 const app = express();
 
 // ————— Proxy Trust —————
-// necessário para que o Express confie no X-Forwarded-For vindo do Railway
 app.set('trust proxy', 1);
 
 const PORT = Number(process.env.PORT) || 8080;
@@ -139,9 +138,25 @@ if (process.env.NODE_ENV !== 'test') {
     setupScheduler();
     console.log('⏰ Scheduler iniciado.');
 
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`🚀 Server listening on port ${PORT}`);
     });
+
+    // Graceful shutdown on SIGTERM/SIGINT
+    const shutdown = () => {
+      console.log('📦 Shutdown signal received, closing server...');
+      server.close(() => {
+        console.log('✅ HTTP server closed. Exiting process.');
+        process.exit(0);
+      });
+      // if after 10s it's still not closed, force exit
+      setTimeout(() => {
+        console.error('⏱️ Forced shutdown.');
+        process.exit(1);
+      }, 10000).unref();
+    };
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
   })().catch(ex => {
     console.error('🔥 Startup error:', ex.stack || ex);
     process.exit(1);
