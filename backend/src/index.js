@@ -23,7 +23,8 @@ import { setupScheduler } from './services/scheduler.js';
 
 const app = express();
 
-// Configura proxy para aceitar X-Forwarded-For (necessary on Railway)
+// ————— Proxy Trust —————
+// necessário para que o Express confie no X-Forwarded-For vindo do Railway
 app.set('trust proxy', 1);
 
 const PORT = Number(process.env.PORT) || 8080;
