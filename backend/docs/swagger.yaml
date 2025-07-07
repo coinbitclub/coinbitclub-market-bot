@@ -1,0 +1,38 @@
+openapi: 3.0.0
+info:
+  title: CoinbitClub MarketBot API
+  version: 1.0.0
+paths:
+  /webhook/signal:
+    post:
+      summary: Recebe sinal de TradingView
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Signal'
+      responses:
+        '200':
+          description: Ok
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+components:
+  schemas:
+    Signal:
+      type: object
+      properties:
+        token:
+          type: string
+        symbol:
+          type: string
+        side:
+          type: string
+          enum: [buy, sell]
+        price:
+          type: number
+        quantity:
+          type: number
+      required: [token, symbol, side, price, quantity]
