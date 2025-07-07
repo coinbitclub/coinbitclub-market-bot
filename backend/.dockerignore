@@ -1,4 +1,7 @@
-.git
+cd backend
+@'
 node_modules
-**/node_modules
 *.log
+.env
+railway.json
+'@ > .dockerignore

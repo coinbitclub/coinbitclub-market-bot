@@ -1,1 +1,2 @@
-web: node -r dotenv/config src/index.js
+web: npm run start:prod
+
