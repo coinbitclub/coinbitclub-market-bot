@@ -29,14 +29,14 @@ app.use(cors({
 }))
 app.options('*', cors())
 
-// JSON parsing
+// JSON parsing (limit to 200kb)
 app.use(express.json({ limit: '200kb' }))
 
-// Healthchecks
-app.get('/',    (_req, res) => res.send('🚀 Bot ativo!'))
+// Health-checks
+app.get('/',      (_req, res) => res.send('🚀 Bot ativo!'))
 app.get('/healthz', (_req, res) => res.send('OK'))
 
-// POST /webhook/signal
+// Webhook: Signal
 app.post('/webhook/signal', async (req, res, next) => {
   if (req.query.token !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
@@ -53,7 +53,7 @@ app.post('/webhook/signal', async (req, res, next) => {
   }
 })
 
-// POST /webhook/dominance
+// Webhook: Dominance
 app.post('/webhook/dominance', async (req, res, next) => {
   if (req.query.token !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
@@ -76,7 +76,7 @@ app.use((err, _req, res, _next) => {
   res.status(err.status || 500).json({ error: err.message })
 })
 
-// On normal runs, run migrations, start scheduler, then listen
+// On non-test environments, run migrations, start scheduler & then listen
 if (process.env.NODE_ENV !== 'test') {
   ;(async () => {
     console.log('🛠️ Iniciando migrações de DB…')
