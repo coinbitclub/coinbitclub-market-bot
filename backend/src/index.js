@@ -15,21 +15,18 @@ app.use(express.json());
 
 const TOKEN = process.env.WEBHOOK_TOKEN;
 
-// Rotas de saúde
+// Rotas de healthcheck
 app.get('/', (_req, res) => res.json({ ok: true }));
 app.get('/healthz', (_req, res) => res.send('ok'));
 
-// Webhook de sinal
+// Webhook de SIGNAL
 app.post('/webhook/signal', async (req, res) => {
   const { token } = req.query;
   if (token !== TOKEN) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-
   try {
-    // Valida e extrai campos
     const { symbol, price, side, time } = parseSignal(req.body);
-    // Persiste no DB
     const { id } = await saveSignal({ symbol, price, side, time });
     return res.json({ ok: true, id });
   } catch (err) {
@@ -39,17 +36,14 @@ app.post('/webhook/signal', async (req, res) => {
   }
 });
 
-// Webhook de dominância
+// Webhook de DOMINANCE
 app.post('/webhook/dominance', async (req, res) => {
   const { token } = req.query;
   if (token !== TOKEN) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-
   try {
-    // Valida e extrai campos
     const { btc_dom, eth_dom, time } = parseDominance(req.body);
-    // Persiste no DB
     const { id } = await saveDominance({ btc_dom, eth_dom, time });
     return res.json({ ok: true, id });
   } catch (err) {
@@ -59,7 +53,7 @@ app.post('/webhook/dominance', async (req, res) => {
   }
 });
 
-// Tratador global de erros (por via das rotas async)
+// Error handler global
 app.use((err, _req, res, _next) => {
   console.error('❌ ERRO GERAL:', err.stack || err);
   res.status(err.status || 500).json({ error: err.message });
@@ -67,7 +61,7 @@ app.use((err, _req, res, _next) => {
 
 const port = process.env.PORT || 8080;
 
-;(async () => {
+(async () => {
   console.log('🛠️ Iniciando migrações de DB…');
   await runMigrations();
   console.log('🛠️ Migrações concluídas. Iniciando servidor...');
