@@ -27,16 +27,12 @@ const app = express()
 app.set('trust proxy', 1)
 
 // ————— PORT & Ambiente —————
-let PORT
-if (process.env.NODE_ENV === 'production') {
-  if (!process.env.PORT) {
-    console.error('❌ ERRO: variável de ambiente PORT não definida em produção.')
-    process.exit(1)
-  }
-  PORT = Number(process.env.PORT)
-} else {
-  PORT = Number(process.env.PORT) || 8080
-}
+let PORT = process.env.NODE_ENV === 'production'
+  ? (process.env.PORT
+      ? Number(process.env.PORT)
+      : (() => { console.error('❌ PORT não definida!'); process.exit(1) })())
+  : (Number(process.env.PORT) || 8080)
+
 console.log(`🛡️  Usando porta ${PORT}`)
 
 // ————— WEBHOOK_TOKEN obrigatório —————
@@ -98,13 +94,21 @@ function getWebhookToken(req) {
 
 // ————— Webhook Signal —————
 app.post('/webhook/signal', async (req, res, next) => {
+  // Autenticação
   if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
   }
 
-  // DEBUG: inspecionar payload recebido
+  // ---- handshake: se vier sem body, devolve 200 direto e não processa
+  if (!req.body || Object.keys(req.body).length === 0) {
+    console.log('🤝 [webhook/signal] handshake vazio recebido, respondendo 200 OK')
+    return res.status(200).json({ ok: true, handshake: true })
+  }
+
+  // DEBUG payload
   console.log('🔔 [webhook/signal] payload raw:', req.body)
 
+  // Processa sinal
   try {
     const payload = parseSignal(req.body)
     const { id } = await saveSignal(payload)
@@ -122,6 +126,13 @@ app.post('/webhook/dominance', async (req, res, next) => {
   if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
   }
+
+  if (!req.body || Object.keys(req.body).length === 0) {
+    console.log('🤝 [webhook/dominance] handshake vazio, 200 OK')
+    return res.status(200).json({ ok: true, handshake: true })
+  }
+
+  console.log('🔔 [webhook/dominance] payload raw:', req.body)
   try {
     const payload = parseDominance(req.body)
     const { id } = await saveDominance(payload)
