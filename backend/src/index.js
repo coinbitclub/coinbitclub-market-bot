@@ -77,8 +77,10 @@ new Histogram({
 })
 
 // ————— Health & Metrics endpoints —————
-app.get('/',      (_req, res) => res.send('🚀 Bot ativo!'))
-app.get('/healthz', (_req, res) => res.send('OK'))
+// rota de health-check na raiz para Railway
+app.get('/', (_req, res) => res.status(200).send('OK'))
+// rota adicional de healthz (opcional)
+app.get('/healthz', (_req, res) => res.status(200).send('OK'))
 app.get('/metrics', async (_req, res) => {
   res.set('Content-Type', register.contentType)
   res.send(await register.metrics())
