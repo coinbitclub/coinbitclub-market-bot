@@ -23,7 +23,7 @@ import {
 import { setupScheduler } from "./services/scheduler.js";
 
 dotenv.config();
-// Em produção, garanta que NODE_ENV=production nas Env Vars do Railway
+// Em produção, defina NODE_ENV=production nas Vars do Railway
 process.env.JWT_SECRET    ||= "VictoreLais2025";
 process.env.WEBHOOK_TOKEN ||= "210406";
 
@@ -46,7 +46,7 @@ app.post(
   stripeWebhookHandler
 );
 
-// JSON parsing and content-type enforcement
+// JSON parsing + enforce Content-Type
 app.use(express.json({ limit: "200kb" }));
 app.use((req, res, next) => {
   if (["POST","PUT","PATCH"].includes(req.method) && !req.is("application/json")) {
@@ -59,7 +59,7 @@ app.use((req, res, next) => {
 app.get("/",       (_req, res) => res.send("🚀 Bot ativo!"));
 app.get("/healthz",(_req, res) => res.send("OK"));
 
-// Main routes
+// Rotas principais
 app.use("/webhook",       webhookRouter);
 app.use("/api/stripe",    stripeRoutes);
 app.use("/api/fetch",     fetchRouter);
@@ -68,7 +68,7 @@ app.use("/api/affiliate", affiliateRouter);
 app.use("/api/user",      userRouter);
 app.use("/api/admin",     adminRouter);
 
-// Dashboard UI (basic auth)
+// Dashboard (Basic Auth)
 app.use(
   "/dashboard",
   basicAuth({
@@ -78,13 +78,13 @@ app.use(
   dashboardRouter
 );
 
-// Global error handler
+// Error handler
 app.use((err, _req, res, _next) => {
   console.error("❌ ERRO GERAL:", err.stack || err);
   res.status(err.status || 500).json({ error: err.message });
 });
 
-// Always run migrations before listening (garante ticker criado)
+// Migrações → Servidor → Scheduler
 (async () => {
   console.log("🛠️ Iniciando migrações de DB…");
   await ensureSignalsTable();     console.log("✔️ signals");

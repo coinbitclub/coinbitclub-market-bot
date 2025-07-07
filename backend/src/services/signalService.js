@@ -6,7 +6,7 @@ export async function saveSignal({ symbol, price, side, timestamp }) {
   }
   const receivedAt = timestamp || new Date().toISOString();
   const { rows } = await pool.query(
-    `INSERT INTO signals(symbol, price, side, received_at)
+    `INSERT INTO signals(ticker, price, side, received_at)
      VALUES($1, $2, $3, $4) RETURNING id`,
     [symbol, price, side, receivedAt]
   );

@@ -17,7 +17,7 @@ export async function ensureSignalsTable() {
       ADD COLUMN IF NOT EXISTS received_at  TIMESTAMPTZ NOT NULL DEFAULT now();
   `);
 
-  // 3) elimina a coluna antiga `symbol`, se ainda existir
+  // 3) remove a coluna antiga `symbol`, se ainda existir
   await pool.query(`
     DO $$
     BEGIN
@@ -39,7 +39,6 @@ export async function ensureCointarsTable() {
       id SERIAL PRIMARY KEY
     );
   `);
-
   await pool.query(`
     ALTER TABLE cointars
       ADD COLUMN IF NOT EXISTS btc_dom   NUMERIC     NOT NULL,
