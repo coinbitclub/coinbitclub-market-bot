@@ -1,31 +1,26 @@
-import express from "express";
-import * as signalService from "../services/signalService.js";
+import { Router } from 'express';
+import * as signalService from '../services/signalService.js';
 
-const router = express.Router();
+const router = new Router();
 
-// Recebe sinais externos via webhook (ex: TradingView)
-router.post("/signal", async (req, res, next) => {
-  try {
-    const { token } = req.query;
-    // Verifica token do webhook (ajuste para sua env)
-    if (token !== process.env.WEBHOOK_TOKEN)
-      return res.status(401).json({ error: "Token inválido" });
-
-    const signal = await signalService.saveSignal(req.body);
-    res.json({ ok: true, id: signal.id });
-  } catch (err) { next(err); }
+// POST /webhook/signal
+router.post('/signal', async (req, res) => {
+  const { token } = req.query;
+  if (token !== process.env.WEBHOOK_TOKEN) {
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+  const signal = await signalService.saveSignal(req.body);
+  return res.json({ ok: true, id: signal.id });
 });
 
-// Recebe dados de dominância via webhook
-router.post("/dominance", async (req, res, next) => {
-  try {
-    const { token } = req.query;
-    if (token !== process.env.WEBHOOK_TOKEN)
-      return res.status(401).json({ error: "Token inválido" });
-
-    const dominance = await signalService.saveDominance(req.body);
-    res.json({ ok: true, id: dominance.id });
-  } catch (err) { next(err); }
+// POST /webhook/dominance
+router.post('/dominance', async (req, res) => {
+  const { token } = req.query;
+  if (token !== process.env.WEBHOOK_TOKEN) {
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+  const dominance = await signalService.saveDominance(req.body);
+  return res.json({ ok: true, id: dominance.id });
 });
 
 export default router;
