@@ -1,97 +1,79 @@
-// src/index.js
 import express from 'express';
+import cors from 'cors';
 import 'express-async-errors';
 import 'dotenv/config';
 
-import { pool } from './services/db.js';
-import {
-  ensureSignalsTable,
-  ensureCointarsTable,
-  ensurePositionsTable,
-  ensureIndicatorsTable
-} from './services/dbMigrations.js';
-import parseSignal from './services/parseSignal.js';
-import parseDominance from './services/parseDominance.js';
+import { runMigrations } from './services/dbMigrations.js';
+import { initScheduler } from './services/scheduler.js';
 import { saveSignal, saveDominance } from './services/signalService.js';
+import { parseSignal } from './services/parseSignal.js';
+import { parseDominance } from './services/parseDominance.js';
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
-// ─── Rotas de Saúde ─────────────────────────────────────────────────────────────
-app.get('/', (_req, res) => {
-  // resposta leve para root
-  res.json({ message: 'OK' });
-});
+const TOKEN = process.env.WEBHOOK_TOKEN;
 
-app.get('/healthz', (_req, res) => {
-  // para readiness/liveness probes
-  res.sendStatus(200);
-});
+// Rotas de saúde
+app.get('/', (_req, res) => res.json({ ok: true }));
+app.get('/healthz', (_req, res) => res.send('ok'));
 
-// ─── Webhook de SINAL ───────────────────────────────────────────────────────────
+// Webhook de sinal
 app.post('/webhook/signal', async (req, res) => {
-  // 1) valida token
-  if (req.query.token !== process.env.WEBHOOK_TOKEN) {
-    return res.status(401).json({ error: 'Invalid token' });
+  const { token } = req.query;
+  if (token !== TOKEN) {
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  // 2) valida payload
-  let { symbol, price, side } = {};
   try {
-    ({ symbol, price, side } = parseSignal(req.body));
+    // Valida e extrai campos
+    const { symbol, price, side, time } = parseSignal(req.body);
+    // Persiste no DB
+    const { id } = await saveSignal({ symbol, price, side, time });
+    return res.json({ ok: true, id });
   } catch (err) {
-    return res.status(400).json({ error: err.message });
+    console.error('❌ ERRO GERAL:', err.stack || err);
+    const status = err.statusCode || 400;
+    return res.status(status).json({ error: err.message });
   }
-
-  // 3) grava no DB
-  const id = await saveSignal(symbol, price, side);
-
-  // 4) retorna OK + id
-  return res.json({ ok: true, id });
 });
 
-// ─── Webhook de DOMINANCE ────────────────────────────────────────────────────────
+// Webhook de dominância
 app.post('/webhook/dominance', async (req, res) => {
-  // 1) valida token
-  if (req.query.token !== process.env.WEBHOOK_TOKEN) {
-    return res.status(401).json({ error: 'Invalid token' });
+  const { token } = req.query;
+  if (token !== TOKEN) {
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  // 2) valida payload
-  let btc_dom, eth_dom;
   try {
-    ({ btc_dom, eth_dom } = parseDominance(req.body));
+    // Valida e extrai campos
+    const { btc_dom, eth_dom, time } = parseDominance(req.body);
+    // Persiste no DB
+    const { id } = await saveDominance({ btc_dom, eth_dom, time });
+    return res.json({ ok: true, id });
   } catch (err) {
-    return res.status(400).json({ error: err.message });
+    console.error('❌ ERRO GERAL:', err.stack || err);
+    const status = err.statusCode || 400;
+    return res.status(status).json({ error: err.message });
   }
-
-  // 3) grava no DB
-  const id = await saveDominance(btc_dom, eth_dom);
-
-  // 4) retorna OK + id
-  return res.json({ ok: true, id });
 });
 
-// ─── Tratador global de erros ──────────────────────────────────────────────────
+// Tratador global de erros (por via das rotas async)
 app.use((err, _req, res, _next) => {
   console.error('❌ ERRO GERAL:', err.stack || err);
   res.status(err.status || 500).json({ error: err.message });
 });
 
-// ─── Arranque: migrações + servidor ─────────────────────────────────────────────
-async function main() {
-  // garante que todas as tabelas existem e estão no esquema certo
-  await ensureSignalsTable();
-  await ensureCointarsTable();
-  await ensurePositionsTable();
-  await ensureIndicatorsTable();
+const port = process.env.PORT || 8080;
 
-  const port = process.env.PORT || 8080;
-  app.listen(port, () => {
-    console.log(`🚀 Server listening on port ${port}`);
-  });
-}
-
-main();
+;(async () => {
+  console.log('🛠️ Iniciando migrações de DB…');
+  await runMigrations();
+  console.log('🛠️ Migrações concluídas. Iniciando servidor...');
+  app.listen(port, () => console.log(`🚀 Server listening on port ${port}`));
+  console.log('⏰ Scheduler iniciado.');
+  initScheduler();
+})();
 
 export default app;
