@@ -29,6 +29,7 @@ process.env.WEBHOOK_TOKEN ||= "210406";
 const app  = express();
 const port = parseInt(process.env.PORT, 10) || 8080;
 
+// CORS & logging
 app.use(cors({
   origin: "*",
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
@@ -37,11 +38,14 @@ app.use(cors({
 app.options("*", cors());
 app.use(morgan("combined"));
 
+// Stripe webhook (raw body)
 app.post(
   "/api/stripe/webhook",
   express.raw({ type: "application/json", limit: "200kb" }),
   stripeWebhookHandler
 );
+
+// JSON parsing and content-type enforcement
 app.use(express.json({ limit: "200kb" }));
 app.use((req, res, next) => {
   if (["POST","PUT","PATCH"].includes(req.method) && !req.is("application/json")) {
@@ -50,9 +54,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Healthchecks
 app.get("/",      (_req, res) => res.send("🚀 Bot ativo!"));
 app.get("/healthz", (_req, res) => res.send("OK"));
 
+// Main routes
 app.use("/webhook",       webhookRouter);
 app.use("/api/stripe",    stripeRoutes);
 app.use("/api/fetch",     fetchRouter);
@@ -60,6 +66,8 @@ app.use("/api/trading",   tradingRouter);
 app.use("/api/affiliate", affiliateRouter);
 app.use("/api/user",      userRouter);
 app.use("/api/admin",     adminRouter);
+
+// Dashboard UI (basic auth)
 app.use(
   "/dashboard",
   basicAuth({
@@ -69,11 +77,13 @@ app.use(
   dashboardRouter
 );
 
+// Global error handler
 app.use((err, _req, res, _next) => {
   console.error("❌ ERRO GERAL:", err.stack || err);
   res.status(err.status || 500).json({ error: err.message });
 });
 
+// Startup (migrations + server + scheduler)
 if (process.env.NODE_ENV !== "test") {
   (async () => {
     console.log("🛠️ Iniciando migrações de DB…");
@@ -94,6 +104,7 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 export default app;
+
 process.on("unhandledRejection", err =>
   console.error("❌ UNHANDLED REJECTION:", err.stack || err)
 );

@@ -1,7 +1,6 @@
 import { pool } from './db.js';
 
 export async function saveSignal({ symbol, price, side, timestamp }) {
-  // durante testes, não toca no banco
   if (process.env.NODE_ENV === 'test') {
     return { id: 1 };
   }
@@ -15,7 +14,6 @@ export async function saveSignal({ symbol, price, side, timestamp }) {
 }
 
 export async function saveDominance({ btc_dom, eth_dom, timestamp }) {
-  // durante testes, não toca no banco
   if (process.env.NODE_ENV === 'test') {
     return { id: 1 };
   }
