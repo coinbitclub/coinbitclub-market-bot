@@ -23,14 +23,14 @@ import { setupScheduler } from './services/scheduler.js'
 
 const app = express()
 
-// ————— Proxy Trust —————
+// ————— Trust Proxy for correct IP headers —————
 app.set('trust proxy', 1)
 
-// ————— PORT & Ambiente —————
-let PORT = process.env.NODE_ENV === 'production'
+// ————— PORT & ENVIRONMENT —————
+const PORT = process.env.NODE_ENV === 'production'
   ? (process.env.PORT
       ? Number(process.env.PORT)
-      : (() => { console.error('❌ PORT não definida!'); process.exit(1) })())
+      : (() => { console.error('❌ ERRO: PORT não definida!'); process.exit(1) })())
   : (Number(process.env.PORT) || 8080)
 
 console.log(`🛡️  Usando porta ${PORT}`)
@@ -41,7 +41,7 @@ if (!process.env.WEBHOOK_TOKEN) {
   process.exit(1)
 }
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN
-const FRONTEND_URL = process.env.FRONTEND_URL || '*'
+const FRONTEND_URL   = process.env.FRONTEND_URL || '*'
 
 // ————— CORS —————
 app.use(cors({
@@ -59,7 +59,7 @@ app.use(rateLimit({
   legacyHeaders: false
 }))
 
-// ————— JSON Body —————
+// ————— JSON Body Parser —————
 app.use(express.json({ limit: '200kb' }))
 
 // ————— Sentry & Metrics —————
@@ -72,9 +72,9 @@ new Histogram({
   labelNames: ['method','route','code']
 })
 
-// ————— Health & Metrics —————
-app.get('/', (_req, res) => res.status(200).send('OK'))
-app.get('/healthz', (_req, res) => res.status(200).send('OK'))
+// ————— Health & Metrics endpoints —————
+app.get('/',    (_req, res) => res.send('OK'))
+app.get('/healthz', (_req, res) => res.send('OK'))
 app.get('/metrics', async (_req, res) => {
   res.set('Content-Type', register.contentType)
   res.send(await register.metrics())
@@ -92,27 +92,26 @@ function getWebhookToken(req) {
   return null
 }
 
-// ————— Webhook Signal —————
+// ————— Webhook: SIGNAL —————
 app.post('/webhook/signal', async (req, res, next) => {
   // Autenticação
   if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
   }
 
-  // ---- handshake: se vier sem body, devolve 200 direto e não processa
+  // Handshake vazio (alguns clientes testam sem body)
   if (!req.body || Object.keys(req.body).length === 0) {
     console.log('🤝 [webhook/signal] handshake vazio recebido, respondendo 200 OK')
-    return res.status(200).json({ ok: true, handshake: true })
+    return res.json({ ok: true, handshake: true })
   }
 
-  // DEBUG payload
+  // Debug payload
   console.log('🔔 [webhook/signal] payload raw:', req.body)
 
-  // Processa sinal
   try {
     const payload = parseSignal(req.body)
     const { id } = await saveSignal(payload)
-    return res.status(200).json({ ok: true, id })
+    return res.json({ ok: true, id })
   } catch (err) {
     if (err.message === 'Invalid signal payload') {
       return res.status(400).json({ error: err.message })
@@ -121,22 +120,22 @@ app.post('/webhook/signal', async (req, res, next) => {
   }
 })
 
-// ————— Webhook Dominance —————
+// ————— Webhook: DOMINANCE —————
 app.post('/webhook/dominance', async (req, res, next) => {
   if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
   }
 
   if (!req.body || Object.keys(req.body).length === 0) {
-    console.log('🤝 [webhook/dominance] handshake vazio, 200 OK')
-    return res.status(200).json({ ok: true, handshake: true })
+    console.log('🤝 [webhook/dominance] handshake vazio, respondendo 200 OK')
+    return res.json({ ok: true, handshake: true })
   }
 
   console.log('🔔 [webhook/dominance] payload raw:', req.body)
   try {
     const payload = parseDominance(req.body)
     const { id } = await saveDominance(payload)
-    return res.status(200).json({ ok: true, id })
+    return res.json({ ok: true, id })
   } catch (err) {
     if (err.message === 'Invalid dominance payload') {
       return res.status(400).json({ error: err.message })
@@ -145,14 +144,14 @@ app.post('/webhook/dominance', async (req, res, next) => {
   }
 })
 
-// ————— Error Handler —————
+// ————— Global Error Handler —————
 app.use(Sentry.Handlers.errorHandler())
 app.use((err, _req, res, _next) => {
   console.error('❌ ERRO GERAL:', err.stack || err)
   res.status(err.status || 500).json({ error: err.message })
 })
 
-// ————— Startup: migrations + scheduler + listen —————
+// ————— Startup: Migrations + Scheduler + Listen —————
 if (process.env.NODE_ENV !== 'test') {
   ;(async () => {
     console.log('🛠️ Iniciando migrações de DB…')
@@ -172,7 +171,7 @@ if (process.env.NODE_ENV !== 'test') {
 
     // Graceful shutdown
     const shutdown = () => {
-      console.log('📦 Shutdown signal received, closing server...')
+      console.log('📦 Shutdown signal received, closing server…')
       server.close(() => {
         console.log('✅ HTTP server closed. Exiting.')
         process.exit(0)
