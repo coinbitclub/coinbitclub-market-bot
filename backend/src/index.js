@@ -1,10 +1,8 @@
-// src/index.js
-
 import express from 'express'
 import 'express-async-errors'
 import 'dotenv/config'
+import cors from 'cors'
 
-import { pool } from './services/db.js'
 import {
   ensureSignalsTable,
   ensureCointarsTable,
@@ -20,14 +18,24 @@ import { setupScheduler } from './services/scheduler.js'
 const app = express()
 const PORT = Number(process.env.PORT) || 8080
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN
+const FRONTEND_URL = process.env.FRONTEND_URL || '*'
 
-app.use(express.json())
+// CORS configuration
+app.use(cors({
+  origin: FRONTEND_URL,
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
+}))
+app.options('*', cors())
 
-// ─── Healthchecks ───────────────────────────────────────────────────────────────
+// JSON parsing
+app.use(express.json({ limit: '200kb' }))
+
+// Healthchecks
 app.get('/', (_req, res) => res.send('🚀 Bot ativo!'))
 app.get('/healthz', (_req, res) => res.send('OK'))
 
-// ─── Webhook de SINAL ────────────────────────────────────────────────────────────
+// Webhook de SINAL
 app.post('/webhook/signal', async (req, res, next) => {
   if (req.query.token !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
@@ -44,7 +52,7 @@ app.post('/webhook/signal', async (req, res, next) => {
   }
 })
 
-// ─── Webhook de DOMINANCE ────────────────────────────────────────────────────────
+// Webhook de DOMINANCE
 app.post('/webhook/dominance', async (req, res, next) => {
   if (req.query.token !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
@@ -61,23 +69,13 @@ app.post('/webhook/dominance', async (req, res, next) => {
   }
 })
 
-// ─── Tratador global de erros ───────────────────────────────────────────────────
+// Tratador global de erros
 app.use((err, _req, res, _next) => {
   console.error('❌ ERRO GERAL:', err.stack || err)
   res.status(err.status || 500).json({ error: err.message })
 })
 
-// ─── Shutdown gracioso ───────────────────────────────────────────────────────────
-if (process.env.NODE_ENV !== 'test') {
-  process.on('SIGTERM', async () => {
-    console.log('🛑 SIGTERM recebido, fechando pool de conexões…')
-    await pool.end()
-    console.log('✅ Pool fechado, encerrando processo.')
-    process.exit(0)
-  })
-}
-
-// ─── Setup em dev/produção ───────────────────────────────────────────────────────
+// Em dev/produção, executa migrations, scheduler e inicia o servidor
 if (process.env.NODE_ENV !== 'test') {
   ;(async () => {
     console.log('🛠️ Iniciando migrações de DB…')
