@@ -23,30 +23,25 @@ import {
 import { setupScheduler } from "./services/scheduler.js";
 
 dotenv.config();
-// Em produção, defina NODE_ENV=production nas Vars do Railway
-process.env.JWT_SECRET    ||= "VictoreLais2025";
 process.env.WEBHOOK_TOKEN ||= "210406";
+process.env.NODE_ENV      ||= "production";
 
 const app  = express();
 const port = parseInt(process.env.PORT, 10) || 8080;
 
 // CORS & logging
-app.use(cors({
-  origin: "*",
-  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"]
-}));
+app.use(cors({ origin: "*", methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"], allowedHeaders: ["Content-Type","Authorization"] }));
 app.options("*", cors());
 app.use(morgan("combined"));
 
-// Stripe webhook (raw body)
+// Stripe raw webhook
 app.post(
   "/api/stripe/webhook",
   express.raw({ type: "application/json", limit: "200kb" }),
   stripeWebhookHandler
 );
 
-// JSON parsing + enforce Content-Type
+// JSON parsing + enforcement
 app.use(express.json({ limit: "200kb" }));
 app.use((req, res, next) => {
   if (["POST","PUT","PATCH"].includes(req.method) && !req.is("application/json")) {
@@ -59,7 +54,7 @@ app.use((req, res, next) => {
 app.get("/",       (_req, res) => res.send("🚀 Bot ativo!"));
 app.get("/healthz",(_req, res) => res.send("OK"));
 
-// Rotas principais
+// Main routes
 app.use("/webhook",       webhookRouter);
 app.use("/api/stripe",    stripeRoutes);
 app.use("/api/fetch",     fetchRouter);
@@ -68,39 +63,38 @@ app.use("/api/affiliate", affiliateRouter);
 app.use("/api/user",      userRouter);
 app.use("/api/admin",     adminRouter);
 
-// Dashboard (Basic Auth)
+// Dashboard (basic auth)
 app.use(
   "/dashboard",
-  basicAuth({
-    users: { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS },
-    challenge: true
-  }),
+  basicAuth({ users: { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS }, challenge: true }),
   dashboardRouter
 );
 
-// Error handler
+// Global error handler
 app.use((err, _req, res, _next) => {
   console.error("❌ ERRO GERAL:", err.stack || err);
   res.status(err.status || 500).json({ error: err.message });
 });
 
-// Migrações → Servidor → Scheduler
-(async () => {
-  console.log("🛠️ Iniciando migrações de DB…");
-  await ensureSignalsTable();     console.log("✔️ signals");
-  await ensureCointarsTable();    console.log("✔️ cointars");
-  await ensurePositionsTable();   console.log("✔️ positions");
-  await ensureIndicatorsTable();  console.log("✔️ indicators");
-  console.log("🛠️ Migrações concluídas. Iniciando servidor...");
-  app.listen(port, () => {
-    console.log(`🚀 Server listening on port ${port}`);
-    setupScheduler();
-    console.log("⏰ Scheduler iniciado.");
+// On start (skip in tests): run migrations, start server + scheduler
+if (process.env.NODE_ENV !== "test") {
+  (async () => {
+    console.log("🛠️ Iniciando migrações de DB…");
+    await ensureSignalsTable();     console.log("✔️ signals");
+    await ensureCointarsTable();    console.log("✔️ cointars");
+    await ensurePositionsTable();   console.log("✔️ positions");
+    await ensureIndicatorsTable();  console.log("✔️ indicators");
+    console.log("🛠️ Migrações concluídas. Iniciando servidor…");
+    app.listen(port, () => {
+      console.log(`🚀 Server listening on port ${port}`);
+      setupScheduler();
+      console.log("⏰ Scheduler iniciado.");
+    });
+  })().catch(err => {
+    console.error("🔥 FALHA startup:", err.stack || err);
+    process.exit(1);
   });
-})().catch(err => {
-  console.error("🔥 FALHA startup:", err.stack || err);
-  process.exit(1);
-});
+}
 
 export default app;
 
