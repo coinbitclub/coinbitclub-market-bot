@@ -16,7 +16,7 @@ import { saveSignal, saveDominance } from './services/signalService.js'
 import { setupScheduler } from './services/scheduler.js'
 
 const app = express()
-const PORT = parseInt(process.env.PORT, 10) || 8080
+const PORT = Number(process.env.PORT) || 8080
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN
 
 app.use(express.json())
@@ -25,7 +25,7 @@ app.use(express.json())
 app.get('/', (_req, res) => res.send('🚀 Bot ativo!'))
 app.get('/healthz', (_req, res) => res.send('OK'))
 
-// POST /webhook/signal
+// Webhook de SINAL
 app.post('/webhook/signal', async (req, res, next) => {
   if (req.query.token !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
@@ -42,7 +42,7 @@ app.post('/webhook/signal', async (req, res, next) => {
   }
 })
 
-// POST /webhook/dominance
+// Webhook de DOMINANCE
 app.post('/webhook/dominance', async (req, res, next) => {
   if (req.query.token !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
@@ -59,13 +59,13 @@ app.post('/webhook/dominance', async (req, res, next) => {
   }
 })
 
-// Global error handler
+// Tratador global de erros
 app.use((err, _req, res, _next) => {
   console.error('❌ ERRO GERAL:', err.stack || err)
   res.status(err.status || 500).json({ error: err.message })
 })
 
-// Somente em produção (ou dev), rodar migrations, scheduler e subir server
+// Em dev/produção, roda migrations + scheduler + liga o server
 if (process.env.NODE_ENV !== 'test') {
   ;(async () => {
     console.log('🛠️ Iniciando migrações de DB…')
@@ -80,8 +80,8 @@ if (process.env.NODE_ENV !== 'test') {
     app.listen(PORT, () => {
       console.log(`🚀 Server listening on port ${PORT}`)
     })
-  })().catch(err => {
-    console.error('🔥 FALHA na inicialização:', err.stack || err)
+  })().catch(ex => {
+    console.error('🔥 Startup error:', ex.stack || ex)
     process.exit(1)
   })
 }
