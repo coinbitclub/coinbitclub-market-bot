@@ -39,7 +39,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 console.log(`🛡️  Usando porta ${PORT}`)
 
-// ————— WEBHOOK_TOKEN obrigatório em qualquer ambiente —————
+// ————— WEBHOOK_TOKEN obrigatório —————
 if (!process.env.WEBHOOK_TOKEN) {
   console.error('❌ ERRO: variável de ambiente WEBHOOK_TOKEN não definida.')
   process.exit(1)
@@ -76,10 +76,8 @@ new Histogram({
   labelNames: ['method','route','code']
 })
 
-// ————— Health & Metrics endpoints —————
-// rota de health-check na raiz para Railway
+// ————— Health & Metrics —————
 app.get('/', (_req, res) => res.status(200).send('OK'))
-// rota adicional de healthz (opcional)
 app.get('/healthz', (_req, res) => res.status(200).send('OK'))
 app.get('/metrics', async (_req, res) => {
   res.set('Content-Type', register.contentType)
@@ -103,6 +101,10 @@ app.post('/webhook/signal', async (req, res, next) => {
   if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
   }
+
+  // DEBUG: inspecionar payload recebido
+  console.log('🔔 [webhook/signal] payload raw:', req.body)
+
   try {
     const payload = parseSignal(req.body)
     const { id } = await saveSignal(payload)
