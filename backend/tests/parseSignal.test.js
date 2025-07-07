@@ -1,21 +1,20 @@
-/**
- * Valida e extrai os campos de um payload de sinal.
- */
-export function parseSignal(body) {
-  const { symbol, price, side, timestamp } = body;
+// tests/parseSignal.test.js
+import { parseSignal } from '../src/services/parseSignal.js';
 
-  if (
-    typeof symbol !== 'string' ||
-    (typeof price !== 'string' && typeof price !== 'number') ||
-    typeof side !== 'string'
-  ) {
-    throw new Error('Invalid signal payload');
-  }
+describe('parseSignal util', () => {
+  it('deve extrair corretamente symbol, price e side', () => {
+    const body = { symbol: 'BTCUSDT', price: '45000.5', side: 'buy' };
+    const result = parseSignal(body);
+    expect(result).toEqual({
+      symbol: 'BTCUSDT',
+      price: 45000.5,
+      side:  'buy'
+    });
+  });
 
-  const priceNum = typeof price === 'string' ? parseFloat(price) : price;
-  if (Number.isNaN(priceNum)) {
-    throw new Error('Invalid signal payload');
-  }
-
-  return { symbol, price: priceNum, side, timestamp };
-}
+  it('deve lançar erro se faltar campo ou price inválido', () => {
+    expect(() => parseSignal({})).toThrow('Invalid signal payload');
+    expect(() => parseSignal({ symbol: 'BTC', price: 'NaN', side: 'buy' }))
+      .toThrow('Invalid signal payload');
+  });
+});
