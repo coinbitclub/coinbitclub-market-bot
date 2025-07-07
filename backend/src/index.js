@@ -30,11 +30,7 @@ const app  = express();
 const port = parseInt(process.env.PORT, 10) || 8080;
 
 // CORS & logging
-app.use(cors({
-  origin: "*",
-  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"]
-}));
+app.use(cors({ origin: "*", methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"], allowedHeaders: ["Content-Type","Authorization"] }));
 app.options("*", cors());
 app.use(morgan("combined"));
 
@@ -70,10 +66,7 @@ app.use("/api/admin",     adminRouter);
 // Dashboard UI (basic auth)
 app.use(
   "/dashboard",
-  basicAuth({
-    users: { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS },
-    challenge: true
-  }),
+  basicAuth({ users: { [process.env.DASHBOARD_USER]: process.env.DASHBOARD_PASS }, challenge: true }),
   dashboardRouter
 );
 
@@ -83,7 +76,7 @@ app.use((err, _req, res, _next) => {
   res.status(err.status || 500).json({ error: err.message });
 });
 
-// Startup: migrations + server + scheduler
+// Startup: migrations → servidor → scheduler
 if (process.env.NODE_ENV !== "test") {
   (async () => {
     console.log("🛠️ Iniciando migrações de DB…");
@@ -104,11 +97,5 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 export default app;
-
-process.on("unhandledRejection", err =>
-  console.error("❌ UNHANDLED REJECTION:", err.stack || err)
-);
-process.on("uncaughtException", err => {
-  console.error("❌ UNCAUGHT EXCEPTION:", err.stack || err);
-  process.exit(1);
-});
+process.on("unhandledRejection", err => console.error("❌ UNHANDLED REJECTION:", err.stack || err));
+process.on("uncaughtException",  err => { console.error("❌ UNCAUGHT EXCEPTION:", err.stack || err); process.exit(1); });
