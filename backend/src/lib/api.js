@@ -1,53 +1,42 @@
 // src/api.js
-const API_URL = import.meta.env.VITE_API_URL
-const TOKEN   = import.meta.env.VITE_WEBHOOK_TOKEN
+const API_URL = import.meta.env.VITE_API_URL;
+const TOKEN   = import.meta.env.VITE_WEBHOOK_TOKEN;
 
-/**
- * GET /
- */
-export async function status() {
-  const res = await fetch(`${API_URL}/`)
-  return res.text()  // "🚀 Bot ativo!"
+// health checks
+export async function getStatus() {
+  const res = await fetch(`${API_URL}/`);
+  return res.text();
 }
 
-/**
- * GET /healthz
- */
-export async function healthz() {
-  const res = await fetch(`${API_URL}/healthz`)
-  return res.text()  // "OK"
+export async function getHealthz() {
+  const res = await fetch(`${API_URL}/healthz`);
+  return res.text();
 }
 
-/**
- * POST /webhook/signal
- * @param {{ symbol: string, price: number, side: 'buy'|'sell' }} data
- */
-export async function sendSignal(data) {
+// envia um sinal
+export async function postSignal({ symbol, price, side }) {
   const res = await fetch(
     `${API_URL}/webhook/signal?token=${TOKEN}`,
     {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(data)
+      body: JSON.stringify({ symbol, price, side })
     }
-  )
-  if (!res.ok) throw await res.json()
-  return res.json()  // { ok: true, id: number }
+  );
+  if (!res.ok) throw await res.json();
+  return res.json();
 }
 
-/**
- * POST /webhook/dominance
- * @param {{ btc_dom: number, eth_dom: number }} data
- */
-export async function sendDominance(data) {
+// envia dominance
+export async function postDominance({ btc_dom, eth_dom }) {
   const res = await fetch(
     `${API_URL}/webhook/dominance?token=${TOKEN}`,
     {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(data)
+      body: JSON.stringify({ btc_dom, eth_dom })
     }
-  )
-  if (!res.ok) throw await res.json()
-  return res.json()
+  );
+  if (!res.ok) throw await res.json();
+  return res.json();
 }
