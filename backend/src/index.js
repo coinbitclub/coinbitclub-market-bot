@@ -1,3 +1,4 @@
+// src/index.js
 import express from 'express'
 import 'express-async-errors'
 import 'dotenv/config'
@@ -32,10 +33,10 @@ app.options('*', cors())
 app.use(express.json({ limit: '200kb' }))
 
 // Healthchecks
-app.get('/', (_req, res) => res.send('🚀 Bot ativo!'))
+app.get('/',    (_req, res) => res.send('🚀 Bot ativo!'))
 app.get('/healthz', (_req, res) => res.send('OK'))
 
-// Webhook de SINAL
+// POST /webhook/signal
 app.post('/webhook/signal', async (req, res, next) => {
   if (req.query.token !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
@@ -52,7 +53,7 @@ app.post('/webhook/signal', async (req, res, next) => {
   }
 })
 
-// Webhook de DOMINANCE
+// POST /webhook/dominance
 app.post('/webhook/dominance', async (req, res, next) => {
   if (req.query.token !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
@@ -69,13 +70,13 @@ app.post('/webhook/dominance', async (req, res, next) => {
   }
 })
 
-// Tratador global de erros
+// Global error handler
 app.use((err, _req, res, _next) => {
   console.error('❌ ERRO GERAL:', err.stack || err)
   res.status(err.status || 500).json({ error: err.message })
 })
 
-// Em dev/produção, executa migrations, scheduler e inicia o servidor
+// On normal runs, run migrations, start scheduler, then listen
 if (process.env.NODE_ENV !== 'test') {
   ;(async () => {
     console.log('🛠️ Iniciando migrações de DB…')
