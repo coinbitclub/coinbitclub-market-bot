@@ -1,4 +1,3 @@
-// src/index.js
 import express from 'express'
 import 'express-async-errors'
 import 'dotenv/config'
@@ -19,11 +18,9 @@ import { setupScheduler } from './services/scheduler.js'
 const app = express()
 const PORT = Number(process.env.PORT) || 8080
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN
-// Defina no .env sem barra final:
-// FRONTEND_URL=https://marketbot.netlify.app
 const FRONTEND_URL = process.env.FRONTEND_URL || '*'
 
-// CORS
+// CORS configuration
 app.use(cors({
   origin: FRONTEND_URL,
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
@@ -31,7 +28,7 @@ app.use(cors({
 }))
 app.options('*', cors())
 
-// Body parser
+// JSON parsing
 app.use(express.json({ limit: '200kb' }))
 
 // Healthchecks
@@ -72,13 +69,13 @@ app.post('/webhook/dominance', async (req, res, next) => {
   }
 })
 
-// Global error handler
+// Tratador global de erros
 app.use((err, _req, res, _next) => {
   console.error('❌ ERRO GERAL:', err.stack || err)
   res.status(err.status || 500).json({ error: err.message })
 })
 
-// Bootstrap (apenas fora de test)
+// Em dev/produção, executa migrations, scheduler e inicia o servidor
 if (process.env.NODE_ENV !== 'test') {
   ;(async () => {
     console.log('🛠️ Iniciando migrações de DB…')
