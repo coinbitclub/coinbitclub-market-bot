@@ -8,8 +8,10 @@ import YAML from 'yamljs';
 import path from 'path';
 import { collectDefaultMetrics, register, Histogram } from 'prom-client';
 import iconv from 'iconv-lite';
+import AWS from 'aws-sdk';
 
-// Normaliza “UTF-8” maiúsculo
+
+// ————— Normaliza “UTF-8” maiúsculo —————
 iconv.aliases = iconv.aliases || {};
 iconv.aliases['UTF-8'] = ['utf-8'];
 
@@ -48,6 +50,28 @@ if (!process.env.WEBHOOK_TOKEN) {
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN;
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 
+// ————— AWS Lambda para envio de texto —————
+let sendText;
+if (process.env.NODE_ENV === 'test') {
+  // em testes, stub para não crashar
+  sendText = async () => {};
+} else {
+  if (!process.env.AWS_REGION || !process.env.LAMBDA_SEND_TEXT_FN) {
+    console.error('ERRO: AWS_REGION e LAMBDA_SEND_TEXT_FN devem estar definidas.');
+    process.exit(1);
+  }
+  AWS.config.update({ region: process.env.AWS_REGION });
+  const lambda = new AWS.Lambda();
+  sendText = async ({ to, message }) => {
+    const params = {
+      FunctionName: process.env.LAMBDA_SEND_TEXT_FN,
+      InvocationType: 'Event',
+      Payload: JSON.stringify({ to, message }),
+    };
+    await lambda.invoke(params).promise();
+  };
+}
+
 // ————— Segurança & CORS —————
 app.use(
   cors({
@@ -59,7 +83,6 @@ app.use(
 app.options('*', cors());
 
 // ————— Rate Limiting —————
-// Limiter geral, pulando webhooks
 const generalLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 60,
@@ -69,7 +92,6 @@ const generalLimiter = rateLimit({
 });
 app.use(generalLimiter);
 
-// Limiter para login
 const authLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
@@ -78,7 +100,6 @@ const authLimiter = rateLimit({
 });
 app.use('/auth/login', authLimiter);
 
-// Limiter generoso para webhooks
 const webhookLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 1000,
@@ -230,6 +251,18 @@ app.get('/user/profile', ensureAuth, async (req, res, next) => {
     const { rows } = await pool.query(sql, [req.userId]);
     if (!rows[0]) return res.status(404).json({ error: 'Usuário não encontrado' });
     res.json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ————— Envio de Texto via invoke —————
+app.post('/notify/text', ensureAuth, async (req, res, next) => {
+  const { to, message } = req.body;
+  if (!to || !message) return res.status(400).json({ error: 'to e message são obrigatórios' });
+  try {
+    await sendText({ to, message });
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }
