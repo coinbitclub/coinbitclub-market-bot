@@ -1,28 +1,23 @@
-// test/profile.test.js
 import request from 'supertest';
 import app from '../src/index.js';
-import 'dotenv/config';
 
-async function run() {
-  // 1) Faz login e extrai token
-  const loginRes = await request(app)
-    .post('/auth/login')
-    .send({ email: 'erica@test.com', password: 'Senha123!' });
-  if (loginRes.status !== 200) {
-    console.error('❌ Login falhou:', loginRes.status, loginRes.body);
-    process.exit(1);
-  }
-  const token = loginRes.body.token;
+describe('Profile Endpoint', () => {
+  let token;
 
-  // 2) Chama /user/profile com o JWT
-  const profileRes = await request(app)
-    .get('/user/profile')
-    .set('Authorization', `Bearer ${token}`);
+  beforeAll(async () => {
+    const loginRes = await request(app)
+      .post('/auth/login')
+      .send({ email: 'erica@test.com', password: 'Senha123!' })
+      .set('Content-Type', 'application/json; charset=utf-8');
+    expect(loginRes.status).toBe(200);
+    token = loginRes.body.token;
+  });
 
-  console.log('Status:', profileRes.status);
-  console.log('Body:', profileRes.body);
-
-  process.exit(profileRes.status === 200 ? 0 : 1);
-}
-
-run();
+  it('GET /user/profile deve retornar 200 e dados corretos', async () => {
+    const res = await request(app)
+      .get('/user/profile')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('email', 'erica@test.com');
+  });
+});

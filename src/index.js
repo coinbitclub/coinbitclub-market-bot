@@ -7,6 +7,11 @@ import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import path from 'path';
 import { collectDefaultMetrics, register, Histogram } from 'prom-client';
+import iconv from 'iconv-lite';
+
+// Normaliza “UTF-8” maiúsculo
+iconv.aliases = iconv.aliases || {};
+iconv.aliases['UTF-8'] = ['utf-8'];
 
 import {
   ensureSignalsTable,
@@ -34,9 +39,8 @@ if (process.env.NODE_ENV === 'production' && !process.env.PORT) {
   console.error('ERRO: PORT não definida!');
   process.exit(1);
 }
-console.log('Usando porta ' + PORT);
 
-// ————— WEBHOOK_TOKEN obrigatório —————
+// ————— WEBHOOK_TOKEN —————
 if (!process.env.WEBHOOK_TOKEN) {
   console.error('ERRO: variável de ambiente WEBHOOK_TOKEN não definida.');
   process.exit(1);
@@ -71,16 +75,29 @@ app.use(
   })
 );
 
-// ————— JSON Body Parser customizado para /webhook —————
-app.use((req, res, next) => {
-  const isWebhook = req.method === 'POST' && req.path.startsWith('/webhook');
-  const len = req.headers['content-length'];
-  if (isWebhook && (!len || len === '0')) {
-    req.body = {};
-    return next();
-  }
-  express.json({ limit: '200kb' })(req, res, next);
-});
+// ————— Body Parser & Webhook Handshake —————
+if (process.env.NODE_ENV === 'test') {
+  // em teste, JSON simples
+  app.use(express.json({ limit: '200kb', strict: false }));
+} else {
+  app.use((req, res, next) => {
+    if (req.headers['content-type']) {
+      req.headers['content-type'] = req.headers['content-type'].replace(
+        /charset\s*=\s*"?UTF-8"?/i,
+        'charset=utf-8'
+      );
+    }
+
+    const isWebhook = req.method === 'POST' && req.path.startsWith('/webhook');
+    const len = req.headers['content-length'];
+    if (isWebhook && (!len || len === '0')) {
+      req.body = {};
+      return next();
+    }
+
+    express.json({ limit: '200kb', strict: false })(req, res, next);
+  });
+}
 
 // ————— Métricas —————
 collectDefaultMetrics();
@@ -167,7 +184,6 @@ function ensureAuth(req, res, next) {
 }
 
 // ————— Rotas de Usuário —————
-// Registro
 app.post('/auth/register', async (req, res) => {
   const { nome, sobrenome, email, password, telefone, pais } = req.body;
   const hashed = await bcrypt.hash(password, 10);
@@ -176,7 +192,6 @@ app.post('/auth/register', async (req, res) => {
   const { rows } = await pool.query(sql, [nome, sobrenome, email, hashed, telefone, pais]);
   res.status(201).json({ id: rows[0].id });
 });
-// Login
 app.post('/auth/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email e senha são obrigatórios' });
@@ -187,7 +202,6 @@ app.post('/auth/login', async (req, res) => {
   const token = jwt.sign({ userId: rows[0].id }, JWT_SECRET, { expiresIn: '8h' });
   res.json({ token });
 });
-// Sinais do usuário
 app.get('/user/signals', ensureAuth, async (req, res) => {
   const { rows } = await pool.query(
     'SELECT * FROM signals WHERE user_id=$1 ORDER BY timestamp DESC',
@@ -195,7 +209,6 @@ app.get('/user/signals', ensureAuth, async (req, res) => {
   );
   res.json(rows);
 });
-// **Perfil do usuário**  
 app.get('/user/profile', ensureAuth, async (req, res, next) => {
   try {
     const sql = `
@@ -218,7 +231,7 @@ app.use((err, _req, res, _next) => {
   res.status(status).json({ error: err.message });
 });
 
-// ————— Startup: Migrations, Scheduler & Listen —————
+// ————— Startup —————
 if (process.env.NODE_ENV !== 'test') {
   (async () => {
     console.log('Iniciando migrações de DB...');
