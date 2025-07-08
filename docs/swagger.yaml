@@ -1,0 +1,44 @@
+openapi: 3.0.0
+info:
+  title: CoinbitClub MarketBot API
+  version: 1.0.0
+
+paths:
+  /webhook/signal:
+    post:
+      summary: Recebe sinal de TradingView
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+          description: Token de autenticação do webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                symbol:
+                  type: string
+                  example: BTCUSDT
+                side:
+                  type: string
+                  enum: [buy, sell]
+                  example: buy
+                price:
+                  type: number
+                  example: 28156.23
+              required:
+                - symbol
+                - side
+                - price
+      responses:
+        '200':
+          description: Ok
+        '400':
+          description: Payload inválido
+        '401':
+          description: Unauthorized

@@ -1,0 +1,98 @@
+// tests/app.test.js
+import request from 'supertest'
+import app from '../src/index.js'
+
+const TOKEN = process.env.WEBHOOK_TOKEN || '210406'
+const ORIGIN = process.env.FRONTEND_URL || '*'
+
+describe('App Endpoints', () => {
+  describe('CORS support', () => {
+    it('should respond to preflight and expose the correct headers', async () => {
+      const res = await request(app)
+        .options('/webhook/signal')
+        .set('Origin', ORIGIN)
+        .expect(204)
+      expect(res.headers['access-control-allow-origin']).toBe(ORIGIN)
+      expect(res.headers['access-control-allow-methods']).toEqual(
+        expect.stringContaining('POST')
+      )
+      expect(res.headers['access-control-allow-headers']).toEqual(
+        expect.stringContaining('Content-Type')
+      )
+    })
+  })
+
+  describe('Healthchecks', () => {
+    it('GET / → 200 and 🚀 Bot ativo!', async () => {
+      const res = await request(app).get('/')
+      expect(res.status).toBe(200)
+      expect(res.text).toBe('🚀 Bot ativo!')
+    })
+
+    it('GET /healthz → 200 and OK', async () => {
+      const res = await request(app).get('/healthz')
+      expect(res.status).toBe(200)
+      expect(res.text).toBe('OK')
+    })
+  })
+
+  describe('Webhook Signal', () => {
+    it('401 when no token', async () => {
+      const res = await request(app)
+        .post('/webhook/signal')
+        .send({ symbol: 'BTCUSDT', price: 45000, side: 'buy' })
+
+      expect(res.status).toBe(401)
+      expect(res.body).toEqual({ error: 'Token inválido' })
+    })
+
+    it('400 on invalid payload', async () => {
+      const res = await request(app)
+        .post(`/webhook/signal?token=${TOKEN}`)
+        .send({ symbol: 'BTC', price: 'oops', side: 'buy' })
+
+      expect(res.status).toBe(400)
+      expect(res.body).toEqual({ error: 'Invalid signal payload' })
+    })
+
+    it('200 on valid payload', async () => {
+      const res = await request(app)
+        .post(`/webhook/signal?token=${TOKEN}`)
+        .send({ symbol: 'BTCUSDT', price: 45000, side: 'buy' })
+
+      expect(res.status).toBe(200)
+      expect(res.body).toHaveProperty('ok', true)
+      expect(res.body).toHaveProperty('id')
+    })
+  })
+
+  describe('Webhook Dominance', () => {
+    it('401 when no token', async () => {
+      const res = await request(app)
+        .post('/webhook/dominance')
+        .send({ btc_dom: 60.5, eth_dom: 15.2 })
+
+      expect(res.status).toBe(401)
+      expect(res.body).toEqual({ error: 'Token inválido' })
+    })
+
+    it('400 on invalid payload', async () => {
+      const res = await request(app)
+        .post(`/webhook/dominance?token=${TOKEN}`)
+        .send({ btc_dom: 'NaN' })
+
+      expect(res.status).toBe(400)
+      expect(res.body).toEqual({ error: 'Invalid dominance payload' })
+    })
+
+    it('200 on valid payload', async () => {
+      const res = await request(app)
+        .post(`/webhook/dominance?token=${TOKEN}`)
+        .send({ btc_dom: 60.5, eth_dom: 15.2 })
+
+      expect(res.status).toBe(200)
+      expect(res.body).toHaveProperty('ok', true)
+      expect(res.body).toHaveProperty('id')
+    })
+  })
+})
