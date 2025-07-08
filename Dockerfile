@@ -1,21 +1,20 @@
-FROM node:20-slim
+# Dockerfile (na raiz do projeto)
 
-# instala tini
-RUN apt-get update \
- && apt-get install -y --no-install-recommends tini \
- && rm -rf /var/lib/apt/lists/*
+FROM node:20-alpine
 
+# Defina diretório de trabalho
 WORKDIR /app
 
-# instala dependências em prod
+# Copia package.json e package-lock.json e instala só as deps de produção
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-# copia código e docs
+# Copia o código e a pasta de docs (Swagger)
 COPY src   ./src
 COPY docs  ./docs
-COPY .env  ./.env
 
-# usa tini como init e carrega dotenv
-ENTRYPOINT ["tini","--"]
-CMD ["node","-r","dotenv/config","src/index.js"]
+# Expõe a porta (opcional, o Railway detecta automaticamente)
+EXPOSE 8080
+
+# Comando padrão
+CMD ["node", "-r", "dotenv/config", "src/index.js"]
