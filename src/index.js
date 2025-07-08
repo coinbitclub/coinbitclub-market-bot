@@ -10,7 +10,6 @@ import { collectDefaultMetrics, register, Histogram } from 'prom-client';
 import iconv from 'iconv-lite';
 import AWS from 'aws-sdk';
 
-
 // ————— Normaliza “UTF-8” maiúsculo —————
 iconv.aliases = iconv.aliases || {};
 iconv.aliases['UTF-8'] = ['utf-8'];
@@ -50,16 +49,20 @@ if (!process.env.WEBHOOK_TOKEN) {
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN;
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 
-// ————— AWS Lambda para envio de texto —————
-let sendText;
-if (process.env.NODE_ENV === 'test') {
-  // em testes, stub para não crashar
-  sendText = async () => {};
-} else {
-  if (!process.env.AWS_REGION || !process.env.LAMBDA_SEND_TEXT_FN) {
-    console.error('ERRO: AWS_REGION e LAMBDA_SEND_TEXT_FN devem estar definidas.');
-    process.exit(1);
+// ————— AWS Lambda para envio de texto (sem mais crash no import) —————
+let sendText = async () => {
+  if (process.env.NODE_ENV !== 'test') {
+    console.warn(
+      '[sendText] AWS_REGION or LAMBDA_SEND_TEXT_FN missing — invocation skipped'
+    );
   }
+};
+
+if (
+  process.env.AWS_REGION &&
+  process.env.LAMBDA_SEND_TEXT_FN &&
+  process.env.NODE_ENV !== 'test'
+) {
   AWS.config.update({ region: process.env.AWS_REGION });
   const lambda = new AWS.Lambda();
   sendText = async ({ to, message }) => {
@@ -168,7 +171,8 @@ function getWebhookToken(req) {
 
 // ————— Webhook SIGNAL —————
 app.post('/webhook/signal', async (req, res, next) => {
-  if (getWebhookToken(req) !== WEBHOOK_TOKEN) return res.status(401).json({ error: 'Token inválido' });
+  if (getWebhookToken(req) !== WEBHOOK_TOKEN)
+    return res.status(401).json({ error: 'Token inválido' });
   if (!req.body || !Object.keys(req.body).length) {
     console.log('[webhook/signal] handshake vazio');
     return res.json({ ok: true, handshake: true });
@@ -178,14 +182,16 @@ app.post('/webhook/signal', async (req, res, next) => {
     const { id } = await saveSignal(payload);
     return res.json({ ok: true, id });
   } catch (err) {
-    if (err.message.includes('Invalid signal')) return res.status(400).json({ error: err.message });
+    if (err.message.includes('Invalid signal'))
+      return res.status(400).json({ error: err.message });
     next(err);
   }
 });
 
 // ————— Webhook DOMINANCE —————
 app.post('/webhook/dominance', async (req, res, next) => {
-  if (getWebhookToken(req) !== WEBHOOK_TOKEN) return res.status(401).json({ error: 'Token inválido' });
+  if (getWebhookToken(req) !== WEBHOOK_TOKEN)
+    return res.status(401).json({ error: 'Token inválido' });
   if (!req.body || !Object.keys(req.body).length) {
     console.log('[webhook/dominance] handshake vazio');
     return res.json({ ok: true, handshake: true });
@@ -195,7 +201,8 @@ app.post('/webhook/dominance', async (req, res, next) => {
     const { id } = await saveDominance(payload);
     return res.json({ ok: true, id });
   } catch (err) {
-    if (err.message.includes('Invalid dominance')) return res.status(400).json({ error: err.message });
+    if (err.message.includes('Invalid dominance'))
+      return res.status(400).json({ error: err.message });
     next(err);
   }
 });
@@ -226,8 +233,12 @@ app.post('/auth/register', async (req, res) => {
 });
 app.post('/auth/login', async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Email e senha são obrigatórios' });
-  const { rows } = await pool.query('SELECT id,password_hash FROM users WHERE email=$1', [email]);
+  if (!email || !password)
+    return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+  const { rows } = await pool.query(
+    'SELECT id,password_hash FROM users WHERE email=$1',
+    [email]
+  );
   if (!rows.length) return res.status(401).json({ error: 'Credenciais inválidas' });
   const valid = await bcrypt.compare(password, rows[0].password_hash);
   if (!valid) return res.status(401).json({ error: 'Credenciais inválidas' });
@@ -259,7 +270,8 @@ app.get('/user/profile', ensureAuth, async (req, res, next) => {
 // ————— Envio de Texto via invoke —————
 app.post('/notify/text', ensureAuth, async (req, res, next) => {
   const { to, message } = req.body;
-  if (!to || !message) return res.status(400).json({ error: 'to e message são obrigatórios' });
+  if (!to || !message)
+    return res.status(400).json({ error: 'to e message são obrigatórios' });
   try {
     await sendText({ to, message });
     res.json({ ok: true });
