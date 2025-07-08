@@ -59,25 +59,36 @@ app.use(
 app.options('*', cors());
 
 // ————— Rate Limiting —————
-app.use(
-  rateLimit({
-    windowMs: 60 * 1000,
-    max: 60,
-    standardHeaders: true,
-    legacyHeaders: false,
-  })
-);
-app.use(
-  rateLimit({
-    windowMs: 60 * 1000,
-    max: 10,
-    path: ['/auth/login', '/webhook/signal', '/webhook/dominance'],
-  })
-);
+// Limiter geral, pulando webhooks
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.path.startsWith('/webhook'),
+});
+app.use(generalLimiter);
+
+// Limiter para login
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/auth/login', authLimiter);
+
+// Limiter generoso para webhooks
+const webhookLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(['/webhook/signal', '/webhook/dominance'], webhookLimiter);
 
 // ————— Body Parser & Webhook Handshake —————
 if (process.env.NODE_ENV === 'test') {
-  // em teste, JSON simples
   app.use(express.json({ limit: '200kb', strict: false }));
 } else {
   app.use((req, res, next) => {
@@ -235,9 +246,9 @@ app.use((err, _req, res, _next) => {
 if (process.env.NODE_ENV !== 'test') {
   (async () => {
     console.log('Iniciando migrações de DB...');
-    await ensureSignalsTable(); console.log('signals OK');
-    await ensureCointarsTable(); console.log('cointars OK');
-    await ensurePositionsTable(); console.log('positions OK');
+    await ensureSignalsTable();    console.log('signals OK');
+    await ensureCointarsTable();   console.log('cointars OK');
+    await ensurePositionsTable();  console.log('positions OK');
     await ensureIndicatorsTable(); console.log('indicators OK');
     console.log('Migrações concluídas.');
 
