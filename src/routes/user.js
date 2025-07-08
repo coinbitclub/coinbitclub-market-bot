@@ -1,102 +1,166 @@
-import express from "express";
-import { pool } from "../database.js";
-import * as userService from "../services/userService.js";
+// src/routes/users.js
+import express from 'express';
+import Joi from 'joi';
+import { validate } from '../middleware/validatePayload.js';
+import { isUser } from '../middleware/auth.js';
+import * as userService from '../services/userService.js';
 
 const router = express.Router();
 
-// Cadastro de novo usuário
-router.post("/register", async (req, res, next) => {
-  try {
-    const { nome, sobrenome, email, telefone, pais, aceite_termo } = req.body;
-    if (!nome || !sobrenome || !email || !telefone || !pais || !aceite_termo)
-      return res.status(400).json({ error: "Campos obrigatórios não preenchidos" });
-
-    const user = await userService.registerUser({ nome, sobrenome, email, telefone, pais, aceite_termo });
-    res.status(201).json(user);
-  } catch (err) { next(err); }
+// Schemas
+const registerSchema = Joi.object({
+  body: Joi.object({
+    nome: Joi.string().required(),
+    sobrenome: Joi.string().required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+    telefone: Joi.string().required(),
+    pais: Joi.string().required(),
+    aceite_termo: Joi.boolean().valid(true).required(),
+  })
 });
+
+const loginSchema = Joi.object({
+  body: Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+  })
+});
+
+// Cadastro de novo usuário
+router.post(
+  '/register',
+  validate(registerSchema),
+  async (req, res, next) => {
+    try {
+      const user = await userService.registerUser(req.body);
+      res.status(201).json(user);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 // Login de usuário
-router.post("/login", async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    if (!email /*|| !password*/) // Senha opcional até integrar no front
-      return res.status(400).json({ error: "Email (e senha, futuramente) obrigatórios." });
+router.post(
+  '/login',
+  validate(loginSchema),
+  async (req, res, next) => {
+    try {
+      const result = await userService.loginUser(req.body);
+      res.status(result.status || 200).json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
-    const result = await userService.loginUser({ email, password });
-    res.status(result.status || 200).json(result);
-  } catch (err) { next(err); }
-});
+// Recuperação de senha
+router.post(
+  '/forgot',
+  validate(
+    Joi.object({ body: Joi.object({ email: Joi.string().email().required() }) })
+  ),
+  async (req, res, next) => {
+    try {
+      const result = await userService.forgotPassword(req.body.email);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
-// Recuperação de senha (endpoint preparado)
-router.post("/forgot", async (req, res, next) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ error: "Informe o email." });
-    const result = await userService.forgotPassword(email);
-    res.json(result);
-  } catch (err) { next(err); }
-});
+// Abaixo requer usuário autenticado
+router.use(isUser);
 
-// Consulta do próprio perfil (requer JWT, ajuste depois)
-router.get("/me", userService.jwtMiddleware, async (req, res, next) => {
+// Consulta do próprio perfil
+router.get('/me', async (req, res, next) => {
   try {
     const user = await userService.getUserById(req.user.id);
     res.json(user);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
-// Atualização de perfil (nome, telefone, etc)
-router.post("/update", userService.jwtMiddleware, async (req, res, next) => {
+// Atualização de perfil
+router.put('/me', async (req, res, next) => {
   try {
-    const update = await userService.updateUser(req.user.id, req.body);
-    res.json(update);
-  } catch (err) { next(err); }
+    const updated = await userService.updateUser(req.user.id, req.body);
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
 });
 
-// Cadastro ou atualização de credenciais (chaves)
-router.post("/credentials", userService.jwtMiddleware, async (req, res, next) => {
-  try {
-    const { exchange, api_key, api_secret, is_testnet } = req.body;
-    if (!exchange || !api_key || !api_secret)
-      return res.status(400).json({ error: "Campos obrigatórios." });
-
-    const cred = await userService.saveCredentials(req.user.id, { exchange, api_key, api_secret, is_testnet });
-    res.json(cred);
-  } catch (err) { next(err); }
-});
+// Cadastro/atualização de credenciais de exchange
+router.post(
+  '/credentials',
+  validate(
+    Joi.object({
+      body: Joi.object({
+        exchange: Joi.string().required(),
+        api_key: Joi.string().required(),
+        api_secret: Joi.string().required(),
+        is_testnet: Joi.boolean().default(false),
+      })
+    })
+  ),
+  async (req, res, next) => {
+    try {
+      const cred = await userService.saveCredentials(req.user.id, req.body);
+      res.json(cred);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 // Consulta de operações do usuário
-router.get("/operations", userService.jwtMiddleware, async (req, res, next) => {
+router.get('/operations', async (req, res, next) => {
   try {
-    const { modo } = req.query; // modo: "testnet" ou "producao"
-    const ops = await userService.getOperations(req.user.id, modo);
+    const ops = await userService.getOperations(req.user.id, req.query.modo);
     res.json(ops);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Consulta do extrato financeiro do usuário
-router.get("/finance", userService.jwtMiddleware, async (req, res, next) => {
+router.get('/finance', async (req, res, next) => {
   try {
     const fin = await userService.getFinance(req.user.id);
     res.json(fin);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Consulta de assinaturas/plano do usuário
-router.get("/subscriptions", userService.jwtMiddleware, async (req, res, next) => {
+router.get('/subscriptions', async (req, res, next) => {
   try {
-    const plans = await userService.getSubscriptions(req.user.id);
-    res.json(plans);
-  } catch (err) { next(err); }
+    const subs = await userService.getSubscriptions(req.user.id);
+    res.json(subs);
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Assinar/cancelar plano
-router.post("/subscription", userService.jwtMiddleware, async (req, res, next) => {
-  try {
-    const result = await userService.changeSubscription(req.user.id, req.body);
-    res.json(result);
-  } catch (err) { next(err); }
-});
+router.post(
+  '/subscription',
+  validate(
+    Joi.object({ body: Joi.object({ planId: Joi.number().required(), action: Joi.string().valid('subscribe','cancel').required() }) })
+  ),
+  async (req, res, next) => {
+    try {
+      const result = await userService.changeSubscription(req.user.id, req.body);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 export default router;

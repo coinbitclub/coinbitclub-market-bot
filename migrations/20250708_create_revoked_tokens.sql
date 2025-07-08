@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS revoked_tokens (
+token TEXT PRIMARY KEY,
+revoked_at TIMESTAMP DEFAULT NOW()
+);

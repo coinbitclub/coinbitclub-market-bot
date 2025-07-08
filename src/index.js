@@ -1,10 +1,8 @@
-// src/index.js
 import express from 'express';
 import 'express-async-errors';
 import 'dotenv/config';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
-import * as Sentry from '@sentry/node';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import path from 'path';
@@ -14,7 +12,7 @@ import {
   ensureSignalsTable,
   ensureCointarsTable,
   ensurePositionsTable,
-  ensureIndicatorsTable
+  ensureIndicatorsTable,
 } from './services/dbMigrations.js';
 import { parseSignal } from './services/parseSignal.js';
 import { parseDominance } from './services/parseDominance.js';
@@ -31,73 +29,87 @@ const app = express();
 app.set('trust proxy', 1);
 
 // ————— PORT & Ambiente —————
-const PORT = process.env.NODE_ENV === 'production'
-  ? (process.env.PORT
-      ? Number(process.env.PORT)
-      : (() => { console.error('❌ ERRO: PORT não definida!'); process.exit(1); })())
-  : (Number(process.env.PORT) || 8080);
-console.log(`🛡️  Usando porta ${PORT}`);
+const PORT = process.env.PORT ? Number(process.env.PORT) : 8080;
+if (process.env.NODE_ENV === 'production' && !process.env.PORT) {
+  console.error('ERRO: PORT não definida!');
+  process.exit(1);
+}
+console.log('Usando porta ' + PORT);
 
 // ————— WEBHOOK_TOKEN obrigatório —————
 if (!process.env.WEBHOOK_TOKEN) {
-  console.error('❌ ERRO: variável de ambiente WEBHOOK_TOKEN não definida.');
+  console.error('ERRO: variável de ambiente WEBHOOK_TOKEN não definida.');
   process.exit(1);
 }
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN;
-const FRONTEND_URL  = process.env.FRONTEND_URL || '*';
+const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 
-// ————— CORS —————
-app.use(cors({
-  origin: FRONTEND_URL,
-  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization']
-}));
+// ————— Segurança & CORS —————
+app.use(
+  cors({
+    origin: FRONTEND_URL,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 app.options('*', cors());
 
 // ————— Rate Limiting —————
-app.use(rateLimit({
-  windowMs: 60 * 1000,
-  max: 60,
-  standardHeaders: true,
-  legacyHeaders: false
-}));
+app.use(
+  rateLimit({
+    windowMs: 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+);
+app.use(
+  rateLimit({
+    windowMs: 60 * 1000,
+    max: 10,
+    path: ['/auth/login', '/webhook/signal', '/webhook/dominance'],
+  })
+);
 
-// ————— JSON Body Parser com handshake para /webhook —————
+// ————— JSON Body Parser customizado para /webhook —————
 app.use((req, res, next) => {
-  const isWebhookPost = req.method === 'POST' && req.path.startsWith('/webhook');
-  const contentLength = req.headers['content-length'];
-  // Se for POST /webhook/* e não vier body, simulamos {} e seguimos
-  if (isWebhookPost && (!contentLength || contentLength === '0')) {
+  const isWebhook = req.method === 'POST' && req.path.startsWith('/webhook');
+  const len = req.headers['content-length'];
+  if (isWebhook && (!len || len === '0')) {
     req.body = {};
     return next();
   }
-  // Caso contrário, parse JSON normalmente
   express.json({ limit: '200kb' })(req, res, next);
 });
 
-// ————— Sentry & Metrics —————
-Sentry.init({ dsn: process.env.SENTRY_DSN });
-app.use(Sentry.Handlers.requestHandler());
+// ————— Métricas —————
 collectDefaultMetrics();
-new Histogram({
+const httpDuration = new Histogram({
   name: 'http_request_duration_seconds',
-  help: 'Duração das requisições HTTP em seconds',
-  labelNames: ['method','route','code']
+  help: 'Duração das requisições HTTP',
+  labelNames: ['method', 'route', 'code'],
+});
+app.use((req, res, next) => {
+  const end = httpDuration.startTimer();
+  res.on('finish', () => {
+    end({ method: req.method, route: req.route?.path || req.path, code: res.statusCode });
+  });
+  next();
 });
 
-// ————— Health & Metrics endpoints —————
-app.get('/',       (_req, res) => res.send('OK'));
-app.get('/healthz',(_req, res) => res.send('OK'));
+// ————— Health & Metrics —————
+app.get('/', (_req, res) => res.send('🚀 Bot ativo!'));
+app.get(['/health', '/healthz'], (_req, res) => res.send('OK'));
 app.get('/metrics', async (_req, res) => {
   res.set('Content-Type', register.contentType);
   res.send(await register.metrics());
 });
 
 // ————— Swagger UI —————
-const swaggerDocument = YAML.load(path.resolve('docs/swagger.yaml'));
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+const swaggerDoc = YAML.load(path.resolve('docs/swagger.yaml'));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
-// ————— Helper: extrai token do webhook —————
+// ————— Helper para Webhook Token —————
 function getWebhookToken(req) {
   if (req.query.token) return req.query.token;
   const auth = req.headers.authorization;
@@ -105,14 +117,11 @@ function getWebhookToken(req) {
   return null;
 }
 
-// ————— Webhook: SIGNAL —————
+// ————— Webhook SIGNAL —————
 app.post('/webhook/signal', async (req, res, next) => {
-  if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-  // handshake vazio?
-  if (!req.body || Object.keys(req.body).length === 0) {
-    console.log('🤝 [webhook/signal] handshake vazio — 200');
+  if (getWebhookToken(req) !== WEBHOOK_TOKEN) return res.status(401).json({ error: 'Token inválido' });
+  if (!req.body || !Object.keys(req.body).length) {
+    console.log('[webhook/signal] handshake vazio');
     return res.json({ ok: true, handshake: true });
   }
   try {
@@ -120,20 +129,16 @@ app.post('/webhook/signal', async (req, res, next) => {
     const { id } = await saveSignal(payload);
     return res.json({ ok: true, id });
   } catch (err) {
-    if (err.message.includes('Invalid signal')) {
-      return res.status(400).json({ error: err.message });
-    }
+    if (err.message.includes('Invalid signal')) return res.status(400).json({ error: err.message });
     next(err);
   }
 });
 
-// ————— Webhook: DOMINANCE —————
+// ————— Webhook DOMINANCE —————
 app.post('/webhook/dominance', async (req, res, next) => {
-  if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-  if (!req.body || Object.keys(req.body).length === 0) {
-    console.log('🤝 [webhook/dominance] handshake vazio — 200');
+  if (getWebhookToken(req) !== WEBHOOK_TOKEN) return res.status(401).json({ error: 'Token inválido' });
+  if (!req.body || !Object.keys(req.body).length) {
+    console.log('[webhook/dominance] handshake vazio');
     return res.json({ ok: true, handshake: true });
   }
   try {
@@ -141,54 +146,48 @@ app.post('/webhook/dominance', async (req, res, next) => {
     const { id } = await saveDominance(payload);
     return res.json({ ok: true, id });
   } catch (err) {
-    if (err.message.includes('Invalid dominance')) {
-      return res.status(400).json({ error: err.message });
-    }
+    if (err.message.includes('Invalid dominance')) return res.status(400).json({ error: err.message });
     next(err);
   }
 });
 
-// ————— Autenticação e usuários —————
-const JWT_SECRET = process.env.JWT_SECRET || 'troque_para_uma_chave_secreta_forte';
+// ————— Autenticação JWT —————
+const JWT_SECRET = process.env.JWT_SECRET || 'troque_para_uma_chave_secreta';
 function ensureAuth(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Sem token' });
+  const auth = req.headers.authorization;
+  if (!auth) return res.status(401).json({ error: 'Sem token' });
+  const token = auth.split(' ')[1];
   try {
     const { userId } = jwt.verify(token, JWT_SECRET);
     req.userId = userId;
     next();
   } catch {
-    res.status(401).json({ error: 'Token inválido' });
+    return res.status(401).json({ error: 'Token inválido' });
   }
 }
 
-// Registro de usuário
+// ————— Rotas de Usuário —————
+// Registro
 app.post('/auth/register', async (req, res) => {
   const { nome, sobrenome, email, password, telefone, pais } = req.body;
   const hashed = await bcrypt.hash(password, 10);
-  const { rows } = await pool.query(
-    `INSERT INTO users(nome,sobrenome,email,password_hash,telefone,pais)
-     VALUES($1,$2,$3,$4,$5,$6) RETURNING id`,
-    [nome, sobrenome, email, hashed, telefone, pais]
-  );
+  const sql =
+    'INSERT INTO users(nome, sobrenome, email, password_hash, telefone, pais) VALUES($1,$2,$3,$4,$5,$6) RETURNING id';
+  const { rows } = await pool.query(sql, [nome, sobrenome, email, hashed, telefone, pais]);
   res.status(201).json({ id: rows[0].id });
 });
-
 // Login
 app.post('/auth/login', async (req, res) => {
   const { email, password } = req.body;
-  const { rows } = await pool.query(
-    'SELECT id,password_hash FROM users WHERE email=$1',
-    [email]
-  );
+  if (!email || !password) return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+  const { rows } = await pool.query('SELECT id,password_hash FROM users WHERE email=$1', [email]);
   if (!rows.length) return res.status(401).json({ error: 'Credenciais inválidas' });
-  const ok = await bcrypt.compare(password, rows[0].password_hash);
-  if (!ok) return res.status(401).json({ error: 'Credenciais inválidas' });
+  const valid = await bcrypt.compare(password, rows[0].password_hash);
+  if (!valid) return res.status(401).json({ error: 'Credenciais inválidas' });
   const token = jwt.sign({ userId: rows[0].id }, JWT_SECRET, { expiresIn: '8h' });
   res.json({ token });
 });
-
-// Sinais do usuário autenticado
+// Sinais do usuário
 app.get('/user/signals', ensureAuth, async (req, res) => {
   const { rows } = await pool.query(
     'SELECT * FROM signals WHERE user_id=$1 ORDER BY timestamp DESC',
@@ -196,48 +195,49 @@ app.get('/user/signals', ensureAuth, async (req, res) => {
   );
   res.json(rows);
 });
+// **Perfil do usuário**  
+app.get('/user/profile', ensureAuth, async (req, res, next) => {
+  try {
+    const sql = `
+      SELECT id, nome AS name, sobrenome AS surname, email, telefone AS phone, pais AS country
+      FROM users
+      WHERE id=$1
+    `;
+    const { rows } = await pool.query(sql, [req.userId]);
+    if (!rows[0]) return res.status(404).json({ error: 'Usuário não encontrado' });
+    res.json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // ————— Erro Global —————
-app.use(Sentry.Handlers.errorHandler());
 app.use((err, _req, res, _next) => {
-  console.error('❌ ERRO GERAL:', err.stack || err);
+  console.error('ERRO GERAL:', err.stack || err);
   const status = err.status || (err instanceof SyntaxError ? 400 : 500);
   res.status(status).json({ error: err.message });
 });
 
-// ————— Startup: Migrations + Scheduler + Listen —————
+// ————— Startup: Migrations, Scheduler & Listen —————
 if (process.env.NODE_ENV !== 'test') {
   (async () => {
-    console.log('🛠️ Iniciando migrações de DB…');
-    await ensureSignalsTable();    console.log('✔️ signals');
-    await ensureCointarsTable();   console.log('✔️ cointars');
-    await ensurePositionsTable();  console.log('✔️ positions');
-    await ensureIndicatorsTable(); console.log('✔️ indicators');
-    console.log('🛠️ Migrações concluídas.');
+    console.log('Iniciando migrações de DB...');
+    await ensureSignalsTable(); console.log('signals OK');
+    await ensureCointarsTable(); console.log('cointars OK');
+    await ensurePositionsTable(); console.log('positions OK');
+    await ensureIndicatorsTable(); console.log('indicators OK');
+    console.log('Migrações concluídas.');
 
-    console.log('⏰ Iniciando scheduler…');
+    console.log('Iniciando scheduler...');
     setupScheduler();
-    console.log('⏰ Scheduler iniciado.');
+    console.log('Scheduler iniciado.');
 
-    const server = app.listen(PORT, () =>
-      console.log(`🚀 Server listening on port ${PORT}`)
-    );
-
-    const shutdown = () => {
-      console.log('📦 Shutdown signal received, closing server…');
-      server.close(() => {
-        console.log('✅ HTTP server closed. Exiting.');
-        process.exit(0);
-      });
-      setTimeout(() => {
-        console.error('⏱️ Forced shutdown.');
-        process.exit(1);
-      }, 10000).unref();
-    };
+    const server = app.listen(PORT, () => console.log('Server listening on port ' + PORT));
+    const shutdown = () => server.close(() => process.exit(0));
     process.on('SIGTERM', shutdown);
-    process.on('SIGINT',  shutdown);
+    process.on('SIGINT', shutdown);
   })().catch(ex => {
-    console.error('🔥 Startup error:', ex.stack || ex);
+    console.error('Startup error:', ex.stack || ex);
     process.exit(1);
   });
 }

@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS subscriptions (
+id SERIAL PRIMARY KEY,
+user_id INTEGER REFERENCES users(id),
+plan_id INTEGER REFERENCES plans(id),
+status VARCHAR(50) NOT NULL,
+started_at TIMESTAMP DEFAULT NOW(),
+ends_at TIMESTAMP
+);

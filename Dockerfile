@@ -2,19 +2,27 @@
 
 FROM node:20-alpine
 
-# Defina diretório de trabalho
+# Diretório de trabalho
 WORKDIR /app
+
+# Variáveis de ambiente padrão
+ENV NODE_ENV=production
+ENV PORT=8080
 
 # Copia package.json e package-lock.json e instala só as deps de produção
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-# Copia o código e a pasta de docs (Swagger)
-COPY src   ./src
-COPY docs  ./docs
+# Copia o código-fonte e a pasta de docs (Swagger)
+COPY src/ ./src/
+COPY docs/ ./docs/
 
-# Expõe a porta (opcional, o Railway detecta automaticamente)
-EXPOSE 8080
+# Healthcheck para Railway / Kubernetes ou qualquer orquestrador
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
+  CMD wget -qO- http://localhost:$PORT/health || exit 1
 
-# Comando padrão
+# Exponha a porta configurada
+EXPOSE $PORT
+
+# Comando padrão (usa dotenv/config para carregar .env automaticamente)
 CMD ["node", "-r", "dotenv/config", "src/index.js"]

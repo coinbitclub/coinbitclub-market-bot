@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS plans (
+id SERIAL PRIMARY KEY,
+name VARCHAR(100) NOT NULL,
+price_cents INTEGER NOT NULL,
+profit_share_percent INTEGER NOT NULL,
+currency VARCHAR(10) NOT NULL,
+created_at TIMESTAMP DEFAULT NOW()
+);
