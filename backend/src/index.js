@@ -21,7 +21,7 @@ import { saveSignal, saveDominance } from './services/signalService.js'
 import { setupScheduler } from './services/scheduler.js'
 
 // Autenticação e persistência de usuários
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { pool } from './services/database.js'
 
