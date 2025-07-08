@@ -1,4 +1,3 @@
-// src/index.js
 import express from 'express'
 import 'express-async-errors'
 import 'dotenv/config'
@@ -20,6 +19,11 @@ import { parseSignal } from './services/parseSignal.js'
 import { parseDominance } from './services/parseDominance.js'
 import { saveSignal, saveDominance } from './services/signalService.js'
 import { setupScheduler } from './services/scheduler.js'
+
+// Autenticação e persistência de usuários
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+import { pool } from './services/database.js'
 
 const app = express()
 
@@ -94,20 +98,14 @@ function getWebhookToken(req) {
 
 // ————— Webhook: SIGNAL —————
 app.post('/webhook/signal', async (req, res, next) => {
-  // Autenticação
   if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
   }
-
-  // Handshake vazio (alguns clientes testam sem body)
   if (!req.body || Object.keys(req.body).length === 0) {
     console.log('🤝 [webhook/signal] handshake vazio recebido, respondendo 200 OK')
     return res.json({ ok: true, handshake: true })
   }
-
-  // Debug payload
   console.log('🔔 [webhook/signal] payload raw:', req.body)
-
   try {
     const payload = parseSignal(req.body)
     const { id } = await saveSignal(payload)
@@ -125,12 +123,10 @@ app.post('/webhook/dominance', async (req, res, next) => {
   if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' })
   }
-
   if (!req.body || Object.keys(req.body).length === 0) {
     console.log('🤝 [webhook/dominance] handshake vazio, respondendo 200 OK')
     return res.json({ ok: true, handshake: true })
   }
-
   console.log('🔔 [webhook/dominance] payload raw:', req.body)
   try {
     const payload = parseDominance(req.body)
@@ -142,6 +138,57 @@ app.post('/webhook/dominance', async (req, res, next) => {
     }
     next(err)
   }
+})
+
+// ————— Autenticação e usuários —————
+const JWT_SECRET = process.env.JWT_SECRET || 'troque_para_uma_chave_secreta_forte'
+
+function ensureAuth(req, res, next) {
+  const auth = req.headers.authorization?.split(' ')[1]
+  if (!auth) return res.status(401).json({ error: 'Sem token' })
+  try {
+    const { userId } = jwt.verify(auth, JWT_SECRET)
+    req.userId = userId
+    next()
+  } catch {
+    return res.status(401).json({ error: 'Token inválido' })
+  }
+}
+
+// Rota de registro de usuários
+app.post('/auth/register', async (req, res) => {
+  const { nome, sobrenome, email, password, telefone, pais } = req.body
+  const hashed = await bcrypt.hash(password, 10)
+  const { rows } = await pool.query(
+    `INSERT INTO users(nome, sobrenome, email, password_hash, telefone, pais)
+     VALUES($1,$2,$3,$4,$5,$6) RETURNING id`,
+    [nome, sobrenome, email, hashed, telefone, pais]
+  )
+  res.status(201).json({ id: rows[0].id })
+})
+
+// Rota de login e emissão de JWT
+app.post('/auth/login', async (req, res) => {
+  const { email, password } = req.body
+  const { rows } = await pool.query(
+    'SELECT id, password_hash FROM users WHERE email = $1',
+    [email]
+  )
+  if (!rows.length) return res.status(401).json({ error: 'Credenciais inválidas' })
+  const user = rows[0]
+  const ok = await bcrypt.compare(password, user.password_hash)
+  if (!ok) return res.status(401).json({ error: 'Credenciais inválidas' })
+  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '8h' })
+  res.json({ token })
+})
+
+// Rota para listar sinais do usuário autenticado
+app.get('/user/signals', ensureAuth, async (req, res) => {
+  const { rows } = await pool.query(
+    'SELECT * FROM signals WHERE user_id = $1 ORDER BY timestamp DESC',
+    [req.userId]
+  )
+  res.json(rows)
 })
 
 // ————— Global Error Handler —————
@@ -169,7 +216,6 @@ if (process.env.NODE_ENV !== 'test') {
       console.log(`🚀 Server listening on port ${PORT}`)
     })
 
-    // Graceful shutdown
     const shutdown = () => {
       console.log('📦 Shutdown signal received, closing server…')
       server.close(() => {
