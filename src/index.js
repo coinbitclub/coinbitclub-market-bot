@@ -23,7 +23,7 @@ import { setupScheduler } from './services/scheduler.js';
 
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { pool } from './database.js';  // ajustado para src/database.js
+import { pool } from './database.js';
 
 const app = express();
 
@@ -36,7 +36,6 @@ const PORT = process.env.NODE_ENV === 'production'
       ? Number(process.env.PORT)
       : (() => { console.error('❌ ERRO: PORT não definida!'); process.exit(1); })())
   : (Number(process.env.PORT) || 8080);
-
 console.log(`🛡️  Usando porta ${PORT}`);
 
 // ————— WEBHOOK_TOKEN obrigatório —————
@@ -63,8 +62,18 @@ app.use(rateLimit({
   legacyHeaders: false
 }));
 
-// ————— JSON Body Parser —————
-app.use(express.json({ limit: '200kb' }));
+// ————— JSON Body Parser com handshake para /webhook —————
+app.use((req, res, next) => {
+  const isWebhookPost = req.method === 'POST' && req.path.startsWith('/webhook');
+  const contentLength = req.headers['content-length'];
+  // Se for POST /webhook/* e não vier body, simulamos {} e seguimos
+  if (isWebhookPost && (!contentLength || contentLength === '0')) {
+    req.body = {};
+    return next();
+  }
+  // Caso contrário, parse JSON normalmente
+  express.json({ limit: '200kb' })(req, res, next);
+});
 
 // ————— Sentry & Metrics —————
 Sentry.init({ dsn: process.env.SENTRY_DSN });
@@ -79,7 +88,7 @@ new Histogram({
 // ————— Health & Metrics endpoints —————
 app.get('/',       (_req, res) => res.send('OK'));
 app.get('/healthz',(_req, res) => res.send('OK'));
-app.get('/metrics',async (_req, res) => {
+app.get('/metrics', async (_req, res) => {
   res.set('Content-Type', register.contentType);
   res.send(await register.metrics());
 });
@@ -101,6 +110,7 @@ app.post('/webhook/signal', async (req, res, next) => {
   if (getWebhookToken(req) !== WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' });
   }
+  // handshake vazio?
   if (!req.body || Object.keys(req.body).length === 0) {
     console.log('🤝 [webhook/signal] handshake vazio — 200');
     return res.json({ ok: true, handshake: true });
@@ -110,7 +120,7 @@ app.post('/webhook/signal', async (req, res, next) => {
     const { id } = await saveSignal(payload);
     return res.json({ ok: true, id });
   } catch (err) {
-    if (err.message === 'Invalid signal payload') {
+    if (err.message.includes('Invalid signal')) {
       return res.status(400).json({ error: err.message });
     }
     next(err);
@@ -131,7 +141,7 @@ app.post('/webhook/dominance', async (req, res, next) => {
     const { id } = await saveDominance(payload);
     return res.json({ ok: true, id });
   } catch (err) {
-    if (err.message === 'Invalid dominance payload') {
+    if (err.message.includes('Invalid dominance')) {
       return res.status(400).json({ error: err.message });
     }
     next(err);
@@ -140,16 +150,15 @@ app.post('/webhook/dominance', async (req, res, next) => {
 
 // ————— Autenticação e usuários —————
 const JWT_SECRET = process.env.JWT_SECRET || 'troque_para_uma_chave_secreta_forte';
-
 function ensureAuth(req, res, next) {
-  const auth = req.headers.authorization?.split(' ')[1];
-  if (!auth) return res.status(401).json({ error: 'Sem token' });
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Sem token' });
   try {
-    const { userId } = jwt.verify(auth, JWT_SECRET);
+    const { userId } = jwt.verify(token, JWT_SECRET);
     req.userId = userId;
     next();
   } catch {
-    return res.status(401).json({ error: 'Token inválido' });
+    res.status(401).json({ error: 'Token inválido' });
   }
 }
 
@@ -192,7 +201,8 @@ app.get('/user/signals', ensureAuth, async (req, res) => {
 app.use(Sentry.Handlers.errorHandler());
 app.use((err, _req, res, _next) => {
   console.error('❌ ERRO GERAL:', err.stack || err);
-  res.status(err.status || 500).json({ error: err.message });
+  const status = err.status || (err instanceof SyntaxError ? 400 : 500);
+  res.status(status).json({ error: err.message });
 });
 
 // ————— Startup: Migrations + Scheduler + Listen —————
@@ -225,7 +235,7 @@ if (process.env.NODE_ENV !== 'test') {
       }, 10000).unref();
     };
     process.on('SIGTERM', shutdown);
-    process.on('SIGINT', shutdown);
+    process.on('SIGINT',  shutdown);
   })().catch(ex => {
     console.error('🔥 Startup error:', ex.stack || ex);
     process.exit(1);
