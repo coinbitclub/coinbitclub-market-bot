@@ -1,7 +1,0 @@
-// jest.config.js
-export default {
-  transform: {},
-  extensionsToTreatAsEsm: ['.js'],
-  testEnvironment: 'node',
-  testMatch: ['**/tests/**/*.test.js']
-};

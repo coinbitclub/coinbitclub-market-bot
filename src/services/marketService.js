@@ -13,7 +13,6 @@ export async function getMarketHistory() {
 }
 
 /**
- * (Exemplo extra)
  * Busca candles customizados por símbolo/intervalo/limite
  */
 export async function fetchKlines(symbol, interval = '30', limit = 10) {
@@ -30,7 +29,25 @@ export async function fetchKlines(symbol, interval = '30', limit = 10) {
 }
 
 /**
- * Persiste o preço de mercado recebido via webhook
+ * Salva dados agregados de leitura de mercado para uso da IA
+ */
+export async function saveMarket(data) {
+  await pool.query(
+    `INSERT INTO market_readings (
+      fg_index, btc_dominance, volume_btc, tendencia_macro, contexto, created_at
+    ) VALUES ($1, $2, $3, $4, $5, NOW())`,
+    [
+      data.fg_index,
+      data.btc_dominance,
+      data.volume_btc,
+      data.tendencia_macro,
+      JSON.stringify(data.contexto || {})
+    ]
+  );
+}
+
+/**
+ * Salva um preço individual de mercado (via webhook, por exemplo)
  */
 export async function saveMarketPrice({ symbol, price, timestamp }) {
   await pool.query(
@@ -38,4 +55,21 @@ export async function saveMarketPrice({ symbol, price, timestamp }) {
      VALUES ($1, $2, $3, NOW())`,
     [symbol, price, timestamp]
   );
+}
+
+/**
+ * Salva (ou atualiza) múltiplos mercados com base em symbol
+ */
+export async function saveMarkets(markets) {
+  for (const m of markets) {
+    await pool.query(
+      `INSERT INTO markets (symbol, price, change, volume)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (symbol) DO UPDATE
+         SET price  = EXCLUDED.price,
+             change = EXCLUDED.change,
+             volume = EXCLUDED.volume`,
+      [m.symbol, m.price, m.change, m.volume]
+    );
+  }
 }

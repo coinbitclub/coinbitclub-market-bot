@@ -1,3 +1,4 @@
+// src/services/planService.js
 import { pool } from "../database.js";
 
 /** Busca todos os planos ativos para o país informado */
@@ -28,7 +29,30 @@ export async function setUserPlan(userId, planId, isStripe = false, stripeSubscr
     `INSERT INTO user_subscriptions
       (user_id, plan_id, tipo_plano, status, data_inicio, is_stripe, stripe_subscription_id, is_active)
      VALUES ($1, $2, (SELECT tipo FROM plans WHERE id=$2), 'ativo', NOW(), $3, $4, true)
-     ON CONFLICT (user_id, plan_id) DO UPDATE SET is_active=true, status='ativo', data_inicio=NOW()`,
+     ON CONFLICT (user_id, plan_id) DO UPDATE
+       SET is_active=true, status='ativo', data_inicio=NOW()`,
     [userId, planId, isStripe, stripeSubscriptionId]
   );
+}
+
+/** Lista todos os planos existentes */
+export async function listPlans() {
+  const { rows } = await pool.query('SELECT * FROM plans ORDER BY price ASC');
+  return rows;
+}
+
+/** Cria um novo plano */
+export async function createPlan({ name, price, description, frequency, is_active, tipo, pais }) {
+  const { rows } = await pool.query(
+    `INSERT INTO plans (name, price, description, frequency, is_active, tipo, pais)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING *`,
+    [name, price, description, frequency, is_active, tipo, pais]
+  );
+  return rows[0];
+}
+
+/** Exclui um plano existente */
+export async function deletePlan(planId) {
+  await pool.query('DELETE FROM plans WHERE id = $1', [planId]);
 }

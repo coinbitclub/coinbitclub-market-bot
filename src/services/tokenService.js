@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { pool } from './dbMigrations.js';
+import { addUserMessage } from '../database.js';
 
 export function generateTokens(payload) {
   const access = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '15m' });
