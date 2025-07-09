@@ -1,4 +1,4 @@
-// index.js atualizado com todas as rotas registradas
+// src/index.js
 import express from 'express';
 import 'express-async-errors';
 import 'dotenv/config';
@@ -9,7 +9,6 @@ import YAML from 'yamljs';
 import path from 'path';
 import { collectDefaultMetrics, register, Histogram } from 'prom-client';
 import iconv from 'iconv-lite';
-import AWS from 'aws-sdk';
 
 iconv.aliases = iconv.aliases || {};
 iconv.aliases['UTF-8'] = ['utf-8'];
@@ -29,7 +28,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from './database.js';
 
-// Rotas externas
+// Rotas
 import adminRoutes from './routes/admin.js';
 import affiliateRoutes from './routes/affiliate.js';
 import aiRoutes from './routes/ai.js';
@@ -56,22 +55,22 @@ if (process.env.NODE_ENV === 'production' && !process.env.PORT) {
   console.error('ERRO: PORT não definida!');
   process.exit(1);
 }
-
 if (!process.env.WEBHOOK_TOKEN) {
   console.error('ERRO: WEBHOOK_TOKEN não definida.');
   process.exit(1);
 }
-
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN;
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 
+// AWS Lambda: envio de mensagens
 let sendText = async () => {
   if (process.env.NODE_ENV !== 'test') {
-    console.warn('[sendText] AWS_REGION or LAMBDA_SEND_TEXT_FN ausente');
+    console.warn('[sendText] AWS_REGION ou LAMBDA_SEND_TEXT_FN ausente');
   }
 };
 
 if (process.env.AWS_REGION && process.env.LAMBDA_SEND_TEXT_FN && process.env.NODE_ENV !== 'test') {
+  const { default: AWS } = await import('aws-sdk');
   AWS.config.update({ region: process.env.AWS_REGION });
   const lambda = new AWS.Lambda();
   sendText = async ({ to, message }) => {
@@ -84,6 +83,7 @@ if (process.env.AWS_REGION && process.env.LAMBDA_SEND_TEXT_FN && process.env.NOD
   };
 }
 
+// Middlewares globais
 app.use(cors({
   origin: FRONTEND_URL,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -116,14 +116,20 @@ if (process.env.NODE_ENV === 'test') {
   });
 }
 
+// Métricas Prometheus
 collectDefaultMetrics();
-const httpDuration = new Histogram({ name: 'http_request_duration_seconds', help: 'HTTP duration', labelNames: ['method', 'route', 'code'] });
+const httpDuration = new Histogram({
+  name: 'http_request_duration_seconds',
+  help: 'HTTP duration',
+  labelNames: ['method', 'route', 'code']
+});
 app.use((req, res, next) => {
   const end = httpDuration.startTimer();
   res.on('finish', () => end({ method: req.method, route: req.route?.path || req.path, code: res.statusCode }));
   next();
 });
 
+// Rotas simples
 app.get('/', (_req, res) => res.send('🚀 Bot ativo!'));
 app.get(['/health', '/healthz'], (_req, res) => res.send('OK'));
 app.get('/metrics', async (_req, res) => {
@@ -131,9 +137,11 @@ app.get('/metrics', async (_req, res) => {
   res.send(await register.metrics());
 });
 
+// Documentação
 const swaggerDoc = YAML.load(path.resolve('docs/swagger.yaml'));
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
+// Webhooks
 function getWebhookToken(req) {
   if (req.query.token) return req.query.token;
   const auth = req.headers.authorization;
@@ -177,21 +185,7 @@ app.post('/webhook/dominance', async (req, res, next) => {
   }
 });
 
-const JWT_SECRET = process.env.JWT_SECRET || 'troque_para_uma_chave_secreta';
-function ensureAuth(req, res, next) {
-  const auth = req.headers.authorization;
-  if (!auth) return res.status(401).json({ error: 'Sem token' });
-  const token = auth.split(' ')[1];
-  try {
-    const { userId } = jwt.verify(token, JWT_SECRET);
-    req.userId = userId;
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-}
-
-// Registro centralizado de rotas externas
+// Rotas externas
 app.use('/admin', adminRoutes);
 app.use('/affiliate', affiliateRoutes);
 app.use('/ai', aiRoutes);
@@ -210,12 +204,14 @@ app.use('/subscriptions', subscriptionRoutes);
 app.use('/trading', tradingRoutes);
 app.use('/user', userRoutes);
 
+// Erro geral
 app.use((err, _req, res, _next) => {
   console.error('ERRO GERAL:', err.stack || err);
   const status = err.status || (err instanceof SyntaxError ? 400 : 500);
   res.status(status).json({ error: err.message });
 });
 
+// Startup
 if (process.env.NODE_ENV !== 'test') {
   (async () => {
     console.log('Iniciando migrações de DB...');
