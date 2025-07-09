@@ -20,10 +20,12 @@ export async function getUserByEmail(email) {
 }
 
 export async function getUserById(userId) {
+  console.log('[🔍 getUserById] Recebido:', userId);
   const { rows } = await pool.query(
-    'SELECT * FROM users WHERE id = $1',
+    'SELECT id, nome, sobrenome, email, telefone, pais, created_at FROM users WHERE id = $1',
     [userId]
   );
+  console.log('[📦 Resultado DB]', rows);
   return rows[0] || null;
 }
 

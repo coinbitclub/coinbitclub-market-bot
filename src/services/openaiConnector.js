@@ -1,21 +1,19 @@
-import { Configuration, OpenAIApi } from "openai";
+import OpenAI from 'openai';
 
-const openai = new OpenAIApi(
-  new Configuration({
-    apiKey: process.env.OPENAI_API_KEY
-  })
-);
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 export async function callOpenAI(prompt) {
   try {
-    const response = await openai.createChatCompletion({
-      model: "gpt-4o", // Ou "gpt-4" se quiser reduzir custo
-      messages: [{ role: "user", content: prompt }],
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o', // ou gpt-4
+      messages: [{ role: 'user', content: prompt }],
       max_tokens: 650
     });
-    return response.data.choices[0].message.content;
+    return response.choices[0].message.content;
   } catch (err) {
-    console.error("Erro ao consultar OpenAI:", err.message, prompt);
+    console.error('Erro ao consultar OpenAI:', err.message, prompt);
     throw err;
   }
 }

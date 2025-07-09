@@ -3,7 +3,6 @@ import {
   registerUser,
   loginUser,
   forgotPassword,
-  getUserById,
   updateUser,
   saveCredentials,
   getOperations,
@@ -16,14 +15,22 @@ import {
   requestWithdrawal
 } from '../services/userService.js';
 
+import { getUserById } from '../database.js';
+
 /**
- * Registra novo usuário
+ * Consulta perfil do usuário
  */
-export async function register(req, res, next) {
+export async function getProfile(req, res, next) {
   try {
-    const user = await registerUser(req.body);
-    res.status(201).json(user);
+    console.log('🔍 req.user.id =', req.user?.id);
+    const user = await getUserById(req.user.id);
+    if (!user) {
+      console.warn('⚠️ Usuário não encontrado com id =', req.user.id);
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+    res.json(user);
   } catch (err) {
+    console.error('❌ Erro em getProfile:', err);
     next(err);
   }
 }
@@ -44,25 +51,12 @@ export async function login(req, res, next) {
 }
 
 /**
- * Recuperação de senha (stub)
+ * Recuperação de senha
  */
 export async function forgot(req, res, next) {
   try {
     const response = await forgotPassword(req.body.email);
     res.json(response);
-  } catch (err) {
-    next(err);
-  }
-}
-
-/**
- * Consulta perfil do usuário
- */
-export async function getProfile(req, res, next) {
-  try {
-    const user = await getUserById(req.user.id);
-    if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
-    res.json(user);
   } catch (err) {
     next(err);
   }

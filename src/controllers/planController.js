@@ -1,10 +1,8 @@
-src/controllers/planController.js
-js
-CopiarEditar
-import { listPlans, createPlan, deletePlan } from '../services/planService.js';
+import { listPlans, createPlan, deletePlan } from "../services/planService.js";
 
 export async function getPlans(req, res) {
-  res.json(await listPlans());
+  const plans = await listPlans();
+  res.json(plans);
 }
 
 export async function addPlan(req, res) {
@@ -14,5 +12,5 @@ export async function addPlan(req, res) {
 
 export async function removePlan(req, res) {
   await deletePlan(req.params.id);
-  res.status(204).send();
+  res.sendStatus(204);
 }

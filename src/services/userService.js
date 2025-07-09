@@ -1,5 +1,3 @@
-// backend/src/services/userService.js
-
 import { pool } from "../services/db.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -65,18 +63,22 @@ export async function loginUser({ email, senha }) {
 
 // Recuperação de senha (stub)
 export async function forgotPassword(email) {
-  // Implementar envio de e-mail
   return { ok: true, message: "Em breve você receberá instruções no seu e-mail." };
 }
 
 // Consulta dados do usuário
 export async function getUserById(id) {
+  console.log('[🔍 getUserById] ID recebido:', id);
+
   const { rows } = await pool.query(
     `SELECT id, nome, sobrenome, email, telefone, pais, created_at
-       FROM users
-       WHERE id = $1`,
+     FROM users
+     WHERE id = $1`,
     [id]
   );
+
+  console.log('[🧪 Resultado SELECT]', rows);
+
   return rows[0] || null;
 }
 
@@ -197,4 +199,14 @@ export async function requestWithdrawal(userId, amount) {
     [userId, amount]
   );
   return { ok: true };
+}
+
+// Consulta usuário por email
+export async function getUserByEmail(email) {
+  const { rows } = await pool.query(
+    `SELECT id, nome, sobrenome, email, telefone, pais, password_hash, role
+     FROM users WHERE email = $1`,
+    [email]
+  );
+  return rows[0] || null;
 }

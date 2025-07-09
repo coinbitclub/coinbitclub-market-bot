@@ -8,7 +8,7 @@
     "start": "cross-env NODE_ENV=production node -r dotenv/config src/index.js",
     "build": "echo \"No build step needed for pure Node.js; migrate only\"",
     "lint": "eslint \"src/**/*.js\" \"src/**/*.mjs\"",
-    "test": "cross-env NODE_ENV=test jest --runInBand --detectOpenHandles --forceExit",
+    "test": "cross-env NODE_ENV=test dotenv -e .env.test -- jest --runInBand --detectOpenHandles --forceExit",
     "test:profile": "node tests/profile.test.js",
     "bot": "node -r dotenv/config src/tradingBot.js",
     "train": "node -r dotenv/config src/trainModel.js",
@@ -16,9 +16,9 @@
     "migrate": "node-pg-migrate up --pattern \"^202[0-9]+.*\\\\.js$\""
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.842.0",
     "@babel/core": "^7.28.0",
     "@sentry/node": "^7.48.0",
-    "aws-sdk": "^2.1692.0",
     "axios": "^1.10.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^2.2.0",
@@ -31,15 +31,18 @@
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.0",
     "node-cron": "^4.2.0",
+    "openai": "^5.8.3",
     "pg": "^8.10.0",
     "pino": "^9.7.0",
     "prom-client": "^14.1.0",
+    "stripe": "^18.3.0",
     "swagger-ui-express": "^4.6.3",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.0",
     "cross-env": "^7.0.3",
+    "dotenv-cli": "^8.0.0",
     "eslint": "^8.0.0",
     "jest": "^29.6.1",
     "nock": "^14.0.5",
