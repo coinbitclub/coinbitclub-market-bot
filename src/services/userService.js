@@ -69,16 +69,13 @@ export async function forgotPassword(email) {
 // Consulta dados do usuário
 export async function getUserById(id) {
   console.log('[🔍 getUserById] ID recebido:', id);
-
   const { rows } = await pool.query(
     `SELECT id, nome, sobrenome, email, telefone, pais, created_at
      FROM users
      WHERE id = $1`,
     [id]
   );
-
   console.log('[🧪 Resultado SELECT]', rows);
-
   return rows[0] || null;
 }
 
@@ -210,6 +207,7 @@ export async function getUserByEmail(email) {
   );
   return rows[0] || null;
 }
+
 export async function getTradeHistory(userId) {
   const { rows } = await pool.query(
     `SELECT * FROM user_operations WHERE user_id = $1 ORDER BY opened_at DESC LIMIT 50`,
@@ -218,4 +216,27 @@ export async function getTradeHistory(userId) {
   return rows;
 }
 
+// ✅ NOVA FUNÇÃO — status do usuário (assinatura ativa + saldo atual)
+export async function getUserStatus(userId) {
+  const assinatura = await pool.query(
+    `SELECT tipo_plano, criado_em, is_active
+     FROM user_subscriptions
+     WHERE user_id = $1 AND is_active = TRUE
+     ORDER BY criado_em DESC LIMIT 1`,
+    [userId]
+  );
 
+  const financeiro = await pool.query(
+    `SELECT saldo_apos
+     FROM user_financial
+     WHERE user_id = $1
+     ORDER BY data DESC LIMIT 1`,
+    [userId]
+  );
+
+  return {
+    assinatura_ativa: !!assinatura.rowCount,
+    plano: assinatura.rows[0]?.tipo_plano || null,
+    saldo_pre_pago: financeiro.rows[0]?.saldo_apos || 0
+  };
+}
