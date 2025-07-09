@@ -9,6 +9,7 @@ import YAML from 'yamljs';
 import path from 'path';
 import { collectDefaultMetrics, register, Histogram } from 'prom-client';
 import iconv from 'iconv-lite';
+import AWS from 'aws-sdk'; // ✅ Substituição do await import
 
 iconv.aliases = iconv.aliases || {};
 iconv.aliases['UTF-8'] = ['utf-8'];
@@ -28,7 +29,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from './database.js';
 
-// Rotas
 import adminRoutes from './routes/admin.js';
 import affiliateRoutes from './routes/affiliate.js';
 import aiRoutes from './routes/ai.js';
@@ -62,7 +62,6 @@ if (!process.env.WEBHOOK_TOKEN) {
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN;
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 
-// AWS Lambda: envio de mensagens
 let sendText = async () => {
   if (process.env.NODE_ENV !== 'test') {
     console.warn('[sendText] AWS_REGION ou LAMBDA_SEND_TEXT_FN ausente');
@@ -70,7 +69,6 @@ let sendText = async () => {
 };
 
 if (process.env.AWS_REGION && process.env.LAMBDA_SEND_TEXT_FN && process.env.NODE_ENV !== 'test') {
-  const { default: AWS } = await import('aws-sdk');
   AWS.config.update({ region: process.env.AWS_REGION });
   const lambda = new AWS.Lambda();
   sendText = async ({ to, message }) => {
@@ -83,7 +81,6 @@ if (process.env.AWS_REGION && process.env.LAMBDA_SEND_TEXT_FN && process.env.NOD
   };
 }
 
-// Middlewares globais
 app.use(cors({
   origin: FRONTEND_URL,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -116,7 +113,6 @@ if (process.env.NODE_ENV === 'test') {
   });
 }
 
-// Métricas Prometheus
 collectDefaultMetrics();
 const httpDuration = new Histogram({
   name: 'http_request_duration_seconds',
@@ -129,7 +125,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rotas simples
 app.get('/', (_req, res) => res.send('🚀 Bot ativo!'));
 app.get(['/health', '/healthz'], (_req, res) => res.send('OK'));
 app.get('/metrics', async (_req, res) => {
@@ -137,11 +132,9 @@ app.get('/metrics', async (_req, res) => {
   res.send(await register.metrics());
 });
 
-// Documentação
 const swaggerDoc = YAML.load(path.resolve('docs/swagger.yaml'));
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
-// Webhooks
 function getWebhookToken(req) {
   if (req.query.token) return req.query.token;
   const auth = req.headers.authorization;
@@ -185,7 +178,7 @@ app.post('/webhook/dominance', async (req, res, next) => {
   }
 });
 
-// Rotas externas
+// Registro de rotas externas
 app.use('/admin', adminRoutes);
 app.use('/affiliate', affiliateRoutes);
 app.use('/ai', aiRoutes);
@@ -204,14 +197,12 @@ app.use('/subscriptions', subscriptionRoutes);
 app.use('/trading', tradingRoutes);
 app.use('/user', userRoutes);
 
-// Erro geral
 app.use((err, _req, res, _next) => {
   console.error('ERRO GERAL:', err.stack || err);
   const status = err.status || (err instanceof SyntaxError ? 400 : 500);
   res.status(status).json({ error: err.message });
 });
 
-// Startup
 if (process.env.NODE_ENV !== 'test') {
   (async () => {
     console.log('Iniciando migrações de DB...');

@@ -210,3 +210,12 @@ export async function getUserByEmail(email) {
   );
   return rows[0] || null;
 }
+// No final de src/services/userService.js
+export async function getTradeHistory(userId) {
+  const { rows } = await pool.query(
+    `SELECT * FROM user_operations WHERE user_id = $1 ORDER BY opened_at DESC LIMIT 50`,
+    [userId]
+  );
+  return rows;
+}
+
