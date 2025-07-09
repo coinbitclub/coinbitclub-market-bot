@@ -11,11 +11,9 @@ import { collectDefaultMetrics, register, Histogram } from 'prom-client';
 import iconv from 'iconv-lite';
 import AWS from 'aws-sdk';
 
-// Normaliza "UTF-8"
 iconv.aliases = iconv.aliases || {};
 iconv.aliases['UTF-8'] = ['utf-8'];
 
-// Migrações e serviços
 import {
   ensureSignalsTable,
   ensureCointarsTable,
@@ -192,13 +190,6 @@ function ensureAuth(req, res, next) {
     return res.status(401).json({ error: 'Token inválido' });
   }
 }
-
-// Rotas diretas de autenticação e usuário
-app.post('/auth/register', async (req, res) => { ... });
-app.post('/auth/login', async (req, res) => { ... });
-app.get('/user/signals', ensureAuth, async (req, res) => { ... });
-app.get('/user/profile', ensureAuth, async (req, res, next) => { ... });
-app.post('/notify/text', ensureAuth, async (req, res, next) => { ... });
 
 // Registro centralizado de rotas externas
 app.use('/admin', adminRoutes);
