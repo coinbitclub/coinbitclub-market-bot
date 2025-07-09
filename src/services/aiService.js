@@ -1,19 +1,20 @@
 import { callOpenAI } from "./openaiConnector.js";
-import { getUserSettings, getTradeHistory, getUserStatus } from "./userService.js";
+import { getRisks, getTradeHistory, getUserStatus } from "./userService.js";
 import { logAiAction } from "./logService.js";
 
 // HEAD TRADER: Aprovação/reprovação de sinais antes de operar
 export async function orderDecision(req, res) {
   try {
     const { userId, signal, contexto } = req.body;
-    const userSettings = await getUserSettings(userId);
+    const riscos = await getRisks(userId);
+    const userSettings = riscos.custom || riscos.defaults;
 
     // Prompt padrão CoinbitClub, incluindo seus critérios, sizing, TP/SL etc.
     const prompt = `
 Você é o Head Trader do CoinbitClub. Use os critérios do CoinbitClub SEMPRE:
-- Sizing: ${userSettings.sizing || '8%'}
-- Take Profit: ${userSettings.tp || '3%'}
-- Stop Loss: ${userSettings.sl || '-1.8%'}
+- Sizing: ${userSettings.capitalPct || '8%'}
+- Take Profit: 3%
+- Stop Loss: ${userSettings.stopPct || '-1.8%'}
 - Ativos permitidos: ${userSettings.ativos || 'BTCUSDT,ETHUSDT'}
 - Só opere em modo produção se assinatura ativa e saldo; senão, modo testnet.
 
