@@ -68,14 +68,12 @@ export async function forgotPassword(email) {
 
 // Consulta dados do usuário
 export async function getUserById(id) {
-  console.log('[🔍 getUserById] ID recebido:', id);
   const { rows } = await pool.query(
     `SELECT id, nome, sobrenome, email, telefone, pais, created_at
      FROM users
      WHERE id = $1`,
     [id]
   );
-  console.log('[🧪 Resultado SELECT]', rows);
   return rows[0] || null;
 }
 
@@ -238,5 +236,18 @@ export async function getUserStatus(userId) {
     assinatura_ativa: !!assinatura.rowCount,
     plano: assinatura.rows[0]?.tipo_plano || null,
     saldo_pre_pago: financeiro.rows[0]?.saldo_apos || 0
+  };
+}
+
+// ✅ NOVA FUNÇÃO — configurações operacionais usadas pela IA
+export async function getUserSettings(userId) {
+  const riscos = await getRisks(userId);
+  const settings = riscos.custom || riscos.defaults;
+
+  return {
+    sizing: `${settings.capitalPct}%`,
+    tp: '3%',
+    sl: `-${settings.stopPct}%`,
+    ativos: 'BTCUSDT,ETHUSDT'
   };
 }
