@@ -1,3 +1,4 @@
+// index.js atualizado com todas as rotas registradas
 import express from 'express';
 import 'express-async-errors';
 import 'dotenv/config';
@@ -10,10 +11,11 @@ import { collectDefaultMetrics, register, Histogram } from 'prom-client';
 import iconv from 'iconv-lite';
 import AWS from 'aws-sdk';
 
-// ————— Normaliza “UTF-8” maiúsculo —————
+// Normaliza "UTF-8"
 iconv.aliases = iconv.aliases || {};
 iconv.aliases['UTF-8'] = ['utf-8'];
 
+// Migrações e serviços
 import {
   ensureSignalsTable,
   ensureCointarsTable,
@@ -29,40 +31,49 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from './database.js';
 
-const app = express();
+// Rotas externas
+import adminRoutes from './routes/admin.js';
+import affiliateRoutes from './routes/affiliate.js';
+import aiRoutes from './routes/ai.js';
+import authRoutes from './routes/auth.js';
+import balanceRoutes from './routes/balances.js';
+import dashboardRoutes from './routes/dashboard.js';
+import dominanceRoutes from './routes/dominance.js';
+import fearGreedRoutes from './routes/fearGreed.js';
+import fetchRoutes from './routes/fetch.js';
+import integrationsRoutes from './routes/integrations.js';
+import marketRoutes from './routes/market.js';
+import notificationsRoutes from './routes/notifications.js';
+import planRoutes from './routes/planRoutes.js';
+import stripeRoutes from './routes/stripeRoutes.js';
+import subscriptionRoutes from './routes/subscriptionRoutes.js';
+import tradingRoutes from './routes/trading.js';
+import userRoutes from './routes/user.js';
 
-// ————— Proxy Trust —————
+const app = express();
 app.set('trust proxy', 1);
 
-// ————— PORT & Ambiente —————
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8080;
 if (process.env.NODE_ENV === 'production' && !process.env.PORT) {
   console.error('ERRO: PORT não definida!');
   process.exit(1);
 }
 
-// ————— WEBHOOK_TOKEN —————
 if (!process.env.WEBHOOK_TOKEN) {
-  console.error('ERRO: variável de ambiente WEBHOOK_TOKEN não definida.');
+  console.error('ERRO: WEBHOOK_TOKEN não definida.');
   process.exit(1);
 }
+
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN;
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 
-// ————— AWS Lambda para envio de texto (sem mais crash no import) —————
 let sendText = async () => {
   if (process.env.NODE_ENV !== 'test') {
-    console.warn(
-      '[sendText] AWS_REGION or LAMBDA_SEND_TEXT_FN missing — invocation skipped'
-    );
+    console.warn('[sendText] AWS_REGION or LAMBDA_SEND_TEXT_FN ausente');
   }
 };
 
-if (
-  process.env.AWS_REGION &&
-  process.env.LAMBDA_SEND_TEXT_FN &&
-  process.env.NODE_ENV !== 'test'
-) {
+if (process.env.AWS_REGION && process.env.LAMBDA_SEND_TEXT_FN && process.env.NODE_ENV !== 'test') {
   AWS.config.update({ region: process.env.AWS_REGION });
   const lambda = new AWS.Lambda();
   sendText = async ({ to, message }) => {
@@ -75,81 +86,46 @@ if (
   };
 }
 
-// ————— Segurança & CORS —————
-app.use(
-  cors({
-    origin: FRONTEND_URL,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+app.use(cors({
+  origin: FRONTEND_URL,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.options('*', cors());
 
-// ————— Rate Limiting —————
-const generalLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 60,
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req) => req.path.startsWith('/webhook'),
-});
+const generalLimiter = rateLimit({ windowMs: 60000, max: 60, skip: req => req.path.startsWith('/webhook') });
+const authLimiter = rateLimit({ windowMs: 60000, max: 10 });
+const webhookLimiter = rateLimit({ windowMs: 60000, max: 1000 });
+
 app.use(generalLimiter);
-
-const authLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
 app.use('/auth/login', authLimiter);
-
-const webhookLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 1000,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
 app.use(['/webhook/signal', '/webhook/dominance'], webhookLimiter);
 
-// ————— Body Parser & Webhook Handshake —————
 if (process.env.NODE_ENV === 'test') {
   app.use(express.json({ limit: '200kb', strict: false }));
 } else {
   app.use((req, res, next) => {
     if (req.headers['content-type']) {
-      req.headers['content-type'] = req.headers['content-type'].replace(
-        /charset\s*=\s*"?UTF-8"?/i,
-        'charset=utf-8'
-      );
+      req.headers['content-type'] = req.headers['content-type'].replace(/charset\s*=\s*"?UTF-8"?/i, 'charset=utf-8');
     }
-
     const isWebhook = req.method === 'POST' && req.path.startsWith('/webhook');
     const len = req.headers['content-length'];
     if (isWebhook && (!len || len === '0')) {
       req.body = {};
       return next();
     }
-
     express.json({ limit: '200kb', strict: false })(req, res, next);
   });
 }
 
-// ————— Métricas —————
 collectDefaultMetrics();
-const httpDuration = new Histogram({
-  name: 'http_request_duration_seconds',
-  help: 'Duração das requisições HTTP',
-  labelNames: ['method', 'route', 'code'],
-});
+const httpDuration = new Histogram({ name: 'http_request_duration_seconds', help: 'HTTP duration', labelNames: ['method', 'route', 'code'] });
 app.use((req, res, next) => {
   const end = httpDuration.startTimer();
-  res.on('finish', () => {
-    end({ method: req.method, route: req.route?.path || req.path, code: res.statusCode });
-  });
+  res.on('finish', () => end({ method: req.method, route: req.route?.path || req.path, code: res.statusCode }));
   next();
 });
 
-// ————— Health & Metrics —————
 app.get('/', (_req, res) => res.send('🚀 Bot ativo!'));
 app.get(['/health', '/healthz'], (_req, res) => res.send('OK'));
 app.get('/metrics', async (_req, res) => {
@@ -157,11 +133,9 @@ app.get('/metrics', async (_req, res) => {
   res.send(await register.metrics());
 });
 
-// ————— Swagger UI —————
 const swaggerDoc = YAML.load(path.resolve('docs/swagger.yaml'));
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
-// ————— Helper para Webhook Token —————
 function getWebhookToken(req) {
   if (req.query.token) return req.query.token;
   const auth = req.headers.authorization;
@@ -169,7 +143,6 @@ function getWebhookToken(req) {
   return null;
 }
 
-// ————— Webhook SIGNAL —————
 app.post('/webhook/signal', async (req, res, next) => {
   if (getWebhookToken(req) !== WEBHOOK_TOKEN)
     return res.status(401).json({ error: 'Token inválido' });
@@ -188,7 +161,6 @@ app.post('/webhook/signal', async (req, res, next) => {
   }
 });
 
-// ————— Webhook DOMINANCE —————
 app.post('/webhook/dominance', async (req, res, next) => {
   if (getWebhookToken(req) !== WEBHOOK_TOKEN)
     return res.status(401).json({ error: 'Token inválido' });
@@ -207,7 +179,6 @@ app.post('/webhook/dominance', async (req, res, next) => {
   }
 });
 
-// ————— Autenticação JWT —————
 const JWT_SECRET = process.env.JWT_SECRET || 'troque_para_uma_chave_secreta';
 function ensureAuth(req, res, next) {
   const auth = req.headers.authorization;
@@ -222,72 +193,38 @@ function ensureAuth(req, res, next) {
   }
 }
 
-// ————— Rotas de Usuário —————
-app.post('/auth/register', async (req, res) => {
-  const { nome, sobrenome, email, password, telefone, pais } = req.body;
-  const hashed = await bcrypt.hash(password, 10);
-  const sql =
-    'INSERT INTO users(nome, sobrenome, email, password_hash, telefone, pais) VALUES($1,$2,$3,$4,$5,$6) RETURNING id';
-  const { rows } = await pool.query(sql, [nome, sobrenome, email, hashed, telefone, pais]);
-  res.status(201).json({ id: rows[0].id });
-});
-app.post('/auth/login', async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password)
-    return res.status(400).json({ error: 'Email e senha são obrigatórios' });
-  const { rows } = await pool.query(
-    'SELECT id,password_hash FROM users WHERE email=$1',
-    [email]
-  );
-  if (!rows.length) return res.status(401).json({ error: 'Credenciais inválidas' });
-  const valid = await bcrypt.compare(password, rows[0].password_hash);
-  if (!valid) return res.status(401).json({ error: 'Credenciais inválidas' });
-  const token = jwt.sign({ userId: rows[0].id }, JWT_SECRET, { expiresIn: '8h' });
-  res.json({ token });
-});
-app.get('/user/signals', ensureAuth, async (req, res) => {
-  const { rows } = await pool.query(
-    'SELECT * FROM signals WHERE user_id=$1 ORDER BY timestamp DESC',
-    [req.userId]
-  );
-  res.json(rows);
-});
-app.get('/user/profile', ensureAuth, async (req, res, next) => {
-  try {
-    const sql = `
-      SELECT id, nome AS name, sobrenome AS surname, email, telefone AS phone, pais AS country
-      FROM users
-      WHERE id=$1
-    `;
-    const { rows } = await pool.query(sql, [req.userId]);
-    if (!rows[0]) return res.status(404).json({ error: 'Usuário não encontrado' });
-    res.json(rows[0]);
-  } catch (err) {
-    next(err);
-  }
-});
+// Rotas diretas de autenticação e usuário
+app.post('/auth/register', async (req, res) => { ... });
+app.post('/auth/login', async (req, res) => { ... });
+app.get('/user/signals', ensureAuth, async (req, res) => { ... });
+app.get('/user/profile', ensureAuth, async (req, res, next) => { ... });
+app.post('/notify/text', ensureAuth, async (req, res, next) => { ... });
 
-// ————— Envio de Texto via invoke —————
-app.post('/notify/text', ensureAuth, async (req, res, next) => {
-  const { to, message } = req.body;
-  if (!to || !message)
-    return res.status(400).json({ error: 'to e message são obrigatórios' });
-  try {
-    await sendText({ to, message });
-    res.json({ ok: true });
-  } catch (err) {
-    next(err);
-  }
-});
+// Registro centralizado de rotas externas
+app.use('/admin', adminRoutes);
+app.use('/affiliate', affiliateRoutes);
+app.use('/ai', aiRoutes);
+app.use('/auth', authRoutes);
+app.use('/balances', balanceRoutes);
+app.use('/dashboard', dashboardRoutes);
+app.use('/dominance', dominanceRoutes);
+app.use('/feargreed', fearGreedRoutes);
+app.use('/fetch', fetchRoutes);
+app.use('/integrations', integrationsRoutes);
+app.use('/market', marketRoutes);
+app.use('/notifications', notificationsRoutes);
+app.use('/plans', planRoutes);
+app.use('/stripe', stripeRoutes);
+app.use('/subscriptions', subscriptionRoutes);
+app.use('/trading', tradingRoutes);
+app.use('/user', userRoutes);
 
-// ————— Erro Global —————
 app.use((err, _req, res, _next) => {
   console.error('ERRO GERAL:', err.stack || err);
   const status = err.status || (err instanceof SyntaxError ? 400 : 500);
   res.status(status).json({ error: err.message });
 });
 
-// ————— Startup —————
 if (process.env.NODE_ENV !== 'test') {
   (async () => {
     console.log('Iniciando migrações de DB...');
