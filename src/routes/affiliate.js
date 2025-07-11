@@ -1,4 +1,4 @@
-// src/routes/affiliate.js
+﻿// src/routes/affiliate.js
 import express from 'express';
 import Joi from 'joi';
 import { validate } from '../middleware/validatePayload.js';
@@ -7,7 +7,7 @@ import * as affiliateService from '../services/affiliateService.js';
 
 const router = express.Router();
 
-// ──── Area do Afiliado (Usuário autenticado) ────
+// â”€â”€â”€â”€ Area do Afiliado (UsuÃ¡rio autenticado) â”€â”€â”€â”€
 router.use(isUser);
 
 // GET /affiliate/profile
@@ -33,7 +33,7 @@ router.put(
         sobrenome: Joi.string(),
         telefone: Joi.string(),
         pais: Joi.string(),
-        // outros campos editáveis
+        // outros campos editÃ¡veis
       })
     })
   ),
@@ -86,7 +86,7 @@ router.get(
   }
 );
 
-// ──── Area do Admin ────
+// â”€â”€â”€â”€ Area do Admin â”€â”€â”€â”€
 router.use(isAdmin);
 
 // GET /affiliate/ (listar afiliados)
@@ -132,7 +132,7 @@ router.put(
       params: Joi.object({ id: Joi.number().integer().required() }),
       body: Joi.object({
         code: Joi.string(),
-        // possíveis campos para edição
+        // possÃ­veis campos para ediÃ§Ã£o
       })
     })
   ),
@@ -178,7 +178,7 @@ router.get(
   }
 );
 
-// POST /affiliate/:id/credit (lançamento manual)
+// POST /affiliate/:id/credit (lanÃ§amento manual)
 router.post(
   '/:id/credit',
   validate(

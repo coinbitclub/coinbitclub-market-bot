@@ -2,11 +2,15 @@
 import express from 'express'
 import cors from 'cors'
 import morgan from 'morgan'
+import path from 'path'
 import dotenv from 'dotenv'
 import rateLimit from 'express-rate-limit'
 
-// Carrega variáveis de ambiente de .env
-dotenv.config()
+// carrega .env.<NODE_ENV>, ex .env.test quando NODE_ENV=test
+dotenv.config({
+  path: path.resolve(process.cwd(), `.env.${process.env.NODE_ENV}`),
+  override: true,      // sobrescreve qualquer variável já carregada
+})
 
 // Importa conexão com banco
 import { pool } from './database.js'

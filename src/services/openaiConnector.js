@@ -1,41 +1,36 @@
-const useMock = process.env.USE_MOCK_AI === 'true';
+// === src/services/openaiConnector.js ===
+import OpenAI from 'openai';
+const openai = new OpenAI();
 
-export async function callOpenAI(prompt, fallbackKey = 'result') {
-  if (useMock) {
-    const { callOpenAI: mockCall } = await import('../ia/mocks/mockOpenAI.js');
-    const response = await mockCall(prompt);
+export async function callOpenAI(prompt) {
+// TODO: substituir mock pelo cliente oficial (v3)
+console.log('[🧪 MOCK OPENAI] Prompt:', prompt.slice(0, 200));
 
-    return typeof response === 'string'
-      ? { [fallbackKey]: response }
-      : { [fallbackKey]: { ...response } };
-  }
-
-  const OpenAI = (await import('openai')).default;
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-  });
-
-  try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 800,
-      temperature: 0.3
-    });
-
-    let content = response?.choices?.[0]?.message?.content?.trim();
-    if (!content) return { [fallbackKey]: 'SEM RESPOSTA' };
-
-    content = content.replace(/```json|```/g, '').trim();
-
-    try {
-      const parsed = JSON.parse(content);
-      return typeof parsed === 'object' ? parsed : { [fallbackKey]: parsed };
-    } catch {
-      return { [fallbackKey]: content };
-    }
-  } catch (err) {
-    console.error('[OpenAI Error]', err.message, '\nPrompt:', prompt);
-    return { [fallbackKey]: 'ERRO AO CONSULTAR IA' };
-  }
+// mocks para testes
+if (/Head Trader/.test(prompt)) {
+return {
+decisao: 'OPERAR',
+justificativa: 'Mock IA operando.',
+sizing: '5%',
+tp: '3%',
+sl: '-1.8%',
+modo: 'testnet'
+};
+}
+if (/racional/.test(prompt)) {
+return { mensagem: 'Mock: racional da operação.' };
+}
+if (/overtrading|duplicidade/.test(prompt)) {
+return { duplicidade: false, justificativa: 'Nenhuma duplicidade.' };
+}
+if (/antifraude|suspeito/.test(prompt)) {
+return { suspeito: false, justificativa: 'Nenhum comportamento suspeito.' };
+}
+if (/logs? resolver|LogID/.test(prompt)) {
+return { acao: 'ignorar', justificativa: 'Log irrelevante.' };
+}
+if (/monitor de risco|Trade:/.test(prompt)) {
+return { acao: 'manter posição', justificativa: 'Mercado em tendência.' };
+}
+return { fallback: true, justificativa: 'Prompt não reconhecido.' };
 }

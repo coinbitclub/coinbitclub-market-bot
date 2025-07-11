@@ -23,7 +23,7 @@ export async function callOpenAI(prompt) {
     };
   }
 
-  if (prompt.includes('antifraude')) {
+  if (prompt.includes('antifraude') || prompt.includes('suspeito')) {
     return {
       suspeito: false,
       justificativa: 'Nenhum comportamento suspeito.'
@@ -37,12 +37,15 @@ export async function callOpenAI(prompt) {
     };
   }
 
-  if (prompt.includes('monitorPosition')) {
+  if (prompt.includes('monitoramento')) {
     return {
-      acao: 'manter',
-      justificativa: 'Mock: manter posição.'
+      acao: 'manter posição',
+      justificativa: 'Mercado segue em tendência.'
     };
   }
 
-  return {};
+  return {
+    fallback: true,
+    justificativa: 'Prompt não reconhecido no mock.'
+  };
 }

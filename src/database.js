@@ -1,12 +1,9 @@
 import pkg from 'pg';
 const { Pool } = pkg;
 
-// Configuração do pool de conexão
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_SSL === 'true'
-    ? { rejectUnauthorized: false }
-    : false,
+  ssl: { rejectUnauthorized: false }
 });
 
 // ========== USUÁRIO ==========
@@ -21,8 +18,8 @@ export async function getUserByEmail(email) {
 export async function getUserById(userId) {
   const { rows } = await pool.query(
     `SELECT id, nome, sobrenome, email, telefone, pais, created_at
-     FROM users
-     WHERE id = $1`,
+       FROM users
+      WHERE id = $1`,
     [userId]
   );
   return rows[0] || null;
@@ -47,9 +44,9 @@ export async function updateUser(userId, data) {
   values.push(userId);
   const sql = `
     UPDATE users
-    SET ${updates.join(', ')}, updated_at = NOW()
-    WHERE id = $${idx}
-    RETURNING *`;
+       SET ${updates.join(', ')}, updated_at = NOW()
+     WHERE id = $${idx}
+     RETURNING *`;
   const { rows } = await pool.query(sql, values);
   return rows[0];
 }
@@ -58,8 +55,8 @@ export async function updateUser(userId, data) {
 export async function cleanExpiredTestUsers() {
   const { rowCount } = await pool.query(`
     DELETE FROM users
-    WHERE is_test_user = true
-      AND created_at < NOW() - INTERVAL '1 DAY'
+     WHERE is_test_user = true
+       AND created_at < NOW() - INTERVAL '1 DAY'
   `);
   return rowCount;
 }
@@ -67,8 +64,8 @@ export async function cleanExpiredTestUsers() {
 export async function cleanOldInactiveUsers() {
   const { rowCount } = await pool.query(`
     DELETE FROM users
-    WHERE is_test_user = false
-      AND updated_at < NOW() - INTERVAL '30 DAYS'
+     WHERE is_test_user = false
+       AND updated_at < NOW() - INTERVAL '30 DAYS'
   `);
   return rowCount;
 }
@@ -85,9 +82,10 @@ export async function addUserMessage(userId, message) {
 // ========== OPERAÇÕES ==========
 export async function getUserOperations(userId) {
   const { rows } = await pool.query(
-    `SELECT * FROM operations
-     WHERE user_id = $1
-     ORDER BY created_at DESC`,
+    `SELECT *
+       FROM user_operations
+      WHERE user_id = $1
+      ORDER BY created_at DESC`,
     [userId]
   );
   return rows;
@@ -97,22 +95,27 @@ export async function getUserOperations(userId) {
 export async function hasActiveSubscription(userId) {
   const { rows } = await pool.query(
     `SELECT 1
-     FROM subscriptions
-     WHERE user_id = $1
-       AND status = 'active'
-       AND expires_at > NOW()
-     LIMIT 1`,
+       FROM subscriptions
+      WHERE user_id = $1
+        AND status = 'active'
+        AND expires_at > NOW()
+      LIMIT 1`,
     [userId]
   );
   return rows.length > 0;
 }
 
-// ========== CREDENCIAIS - BINANCE ==========
+// ========== CREDENCIAIS – BINANCE ==========
 export async function getBinanceCredentials(userId) {
   const { rows } = await pool.query(
-    `SELECT api_key AS apiKey, api_secret AS apiSecret, testnet
-     FROM users
-     WHERE id = $1 AND exchange = 'binance'`,
+    `SELECT
+       exchange,
+       api_key    AS "apiKey",
+       api_secret AS "apiSecret",
+       testnet
+     FROM user_credentials
+     WHERE user_id = $1
+       AND exchange = 'binance'`,
     [userId]
   );
   return rows[0] || null;
@@ -120,19 +123,30 @@ export async function getBinanceCredentials(userId) {
 
 export async function saveBinanceCredentials(userId, apiKey, apiSecret, testnet) {
   await pool.query(
-    `UPDATE users
-     SET api_key = $1, api_secret = $2, testnet = $3, exchange = 'binance'
-     WHERE id = $4`,
-    [apiKey, apiSecret, testnet, userId]
+    `INSERT INTO user_credentials
+       (user_id, exchange, api_key, api_secret, testnet, created_at, updated_at)
+     VALUES ($1, 'binance', $2, $3, $4, NOW(), NOW())
+     ON CONFLICT (user_id, exchange)
+       DO UPDATE SET
+         api_key    = EXCLUDED.api_key,
+         api_secret = EXCLUDED.api_secret,
+         testnet    = EXCLUDED.testnet,
+         updated_at = NOW()`,
+    [userId, apiKey, apiSecret, testnet]
   );
 }
 
-// ========== CREDENCIAIS - BYBIT ==========
+// ========== CREDENCIAIS – BYBIT ==========
 export async function getBybitCredentials(userId) {
   const { rows } = await pool.query(
-    `SELECT api_key AS apiKey, api_secret AS apiSecret, testnet
-     FROM users
-     WHERE id = $1 AND exchange = 'bybit'`,
+    `SELECT
+       exchange,
+       api_key    AS "apiKey",
+       api_secret AS "apiSecret",
+       testnet
+     FROM user_credentials
+     WHERE user_id = $1
+       AND exchange = 'bybit'`,
     [userId]
   );
   return rows[0] || null;
@@ -140,9 +154,15 @@ export async function getBybitCredentials(userId) {
 
 export async function saveBybitCredentials(userId, apiKey, apiSecret, testnet) {
   await pool.query(
-    `UPDATE users
-     SET api_key = $1, api_secret = $2, testnet = $3, exchange = 'bybit'
-     WHERE id = $4`,
-    [apiKey, apiSecret, testnet, userId]
+    `INSERT INTO user_credentials
+       (user_id, exchange, api_key, api_secret, testnet, created_at, updated_at)
+     VALUES ($1, 'bybit', $2, $3, $4, NOW(), NOW())
+     ON CONFLICT (user_id, exchange)
+       DO UPDATE SET
+         api_key    = EXCLUDED.api_key,
+         api_secret = EXCLUDED.api_secret,
+         testnet    = EXCLUDED.testnet,
+         updated_at = NOW()`,
+    [userId, apiKey, apiSecret, testnet]
   );
 }

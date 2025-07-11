@@ -1,166 +1,80 @@
-// src/routes/users.js
+// src/routes/user.js
 import express from 'express';
-import Joi from 'joi';
-import { validate } from '../middleware/validatePayload.js';
-import { isUser } from '../middleware/auth.js';
-import * as userService from '../services/userService.js';
+import { jwtMiddleware } from '../middleware/auth.js';
+import {
+  registerUser,
+  loginUser,
+  getUserSettings,
+  getUserStatus,
+  saveCredentials
+} from '../services/userService.js';
 
 const router = express.Router();
 
-// Schemas
-const registerSchema = Joi.object({
-  body: Joi.object({
-    nome: Joi.string().required(),
-    sobrenome: Joi.string().required(),
-    email: Joi.string().email().required(),
-    password: Joi.string().required(),
-    telefone: Joi.string().required(),
-    pais: Joi.string().required(),
-    aceite_termo: Joi.boolean().valid(true).required(),
-  })
-});
-
-const loginSchema = Joi.object({
-  body: Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().required(),
-  })
-});
-
-// Cadastro de novo usuário
-router.post(
-  '/register',
-  validate(registerSchema),
-  async (req, res, next) => {
-    try {
-      const user = await userService.registerUser(req.body);
-      res.status(201).json(user);
-    } catch (err) {
-      next(err);
-    }
-  }
-);
-
-// Login de usuário
-router.post(
-  '/login',
-  validate(loginSchema),
-  async (req, res, next) => {
-    try {
-      const result = await userService.loginUser(req.body);
-      res.status(result.status || 200).json(result);
-    } catch (err) {
-      next(err);
-    }
-  }
-);
-
-// Recuperação de senha
-router.post(
-  '/forgot',
-  validate(
-    Joi.object({ body: Joi.object({ email: Joi.string().email().required() }) })
-  ),
-  async (req, res, next) => {
-    try {
-      const result = await userService.forgotPassword(req.body.email);
-      res.json(result);
-    } catch (err) {
-      next(err);
-    }
-  }
-);
-
-// Abaixo requer usuário autenticado
-router.use(isUser);
-
-// Consulta do próprio perfil
-router.get('/me', async (req, res, next) => {
+// Registrar usuário
+router.post('/register', async (req, res, next) => {
   try {
-    const user = await userService.getUserById(req.user.id);
+    const user = await registerUser(req.body);
     res.json(user);
   } catch (err) {
     next(err);
   }
 });
 
-// Atualização de perfil
-router.put('/me', async (req, res, next) => {
+// Login de usuário
+router.post('/login', async (req, res, next) => {
   try {
-    const updated = await userService.updateUser(req.user.id, req.body);
-    res.json(updated);
+    const { token } = await loginUser(req.body);
+    res.json({ token });
   } catch (err) {
     next(err);
   }
 });
 
-// Cadastro/atualização de credenciais de exchange
-router.post(
-  '/credentials',
-  validate(
-    Joi.object({
-      body: Joi.object({
-        exchange: Joi.string().required(),
-        api_key: Joi.string().required(),
-        api_secret: Joi.string().required(),
-        is_testnet: Joi.boolean().default(false),
-      })
-    })
-  ),
-  async (req, res, next) => {
-    try {
-      const cred = await userService.saveCredentials(req.user.id, req.body);
-      res.json(cred);
-    } catch (err) {
-      next(err);
+// Obter status/perfil do usuário
+router.get('/profile', jwtMiddleware, async (req, res, next) => {
+  try {
+    const status = await getUserStatus(req.user.id);
+    res.json({ status });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Salvar ou atualizar credenciais de exchange
+router.post('/credentials', jwtMiddleware, async (req, res, next) => {
+  try {
+    const { exchange, apiKey, apiSecret, testnet } = req.body;
+    if (!apiKey || !apiSecret) {
+      return res.status(200).json({ exchange });
     }
-  }
-);
-
-// Consulta de operações do usuário
-router.get('/operations', async (req, res, next) => {
-  try {
-    const ops = await userService.getOperations(req.user.id, req.query.modo);
-    res.json(ops);
+    const result = await saveCredentials(req.user.id, exchange, apiKey, apiSecret, testnet);
+    res.json(result);
   } catch (err) {
     next(err);
   }
 });
-
-// Consulta do extrato financeiro do usuário
-router.get('/finance', async (req, res, next) => {
+router.put('/credentials', jwtMiddleware, async (req, res, next) => {
   try {
-    const fin = await userService.getFinance(req.user.id);
-    res.json(fin);
-  } catch (err) {
-    next(err);
-  }
-});
-
-// Consulta de assinaturas/plano do usuário
-router.get('/subscriptions', async (req, res, next) => {
-  try {
-    const subs = await userService.getSubscriptions(req.user.id);
-    res.json(subs);
-  } catch (err) {
-    next(err);
-  }
-});
-
-// Assinar/cancelar plano
-router.post(
-  '/subscription',
-  validate(
-    Joi.object({ body: Joi.object({ planId: Joi.number().required(), action: Joi.string().valid('subscribe','cancel').required() }) })
-  ),
-  async (req, res, next) => {
-    try {
-      const result = await userService.changeSubscription(req.user.id, req.body);
-      res.json(result);
-    } catch (err) {
-      next(err);
+    const { exchange, apiKey, apiSecret, testnet } = req.body;
+    if (!apiKey || !apiSecret) {
+      return res.status(200).json({ exchange });
     }
+    const result = await saveCredentials(req.user.id, exchange, apiKey, apiSecret, testnet);
+    res.json(result);
+  } catch (err) {
+    next(err);
   }
-);
+});
+
+// Obter configurações de exchange do usuário
+router.get('/settings', jwtMiddleware, async (req, res, next) => {
+  try {
+    const settings = await getUserSettings(req.user.id);
+    res.json(settings);
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default router;

@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "npx kill-port 3000 3001 8080 8090 && nodemon --exec \"node -r dotenv/config\" src/index.js",
-    "start": "cross-env NODE_ENV=production node -r dotenv/config src/index.js",
+    "start": "cross-env NODE_ENV=production USE_REAL_AI=true dotenv -e .env.production node src/index.js",
     "build": "echo \"No build step needed for pure Node.js; migrate only\"",
     "lint": "eslint \"src/**/*.js\" \"src/**/*.mjs\"",
+    "start:testnet": "cross-env NODE_ENV=test USE_REAL_AI=false dotenv -e .env.testnet node src/index.js",
     "test": "cross-env NODE_ENV=test dotenv -e .env.test -- jest --runInBand --detectOpenHandles --forceExit",
     "test:profile": "node tests/profile.test.js",
     "bot": "node -r dotenv/config src/tradingBot.js",
@@ -16,6 +17,7 @@
     "migrate": "node-pg-migrate up --pattern \"^202[0-9]+.*\\\\.js$\""
   },
   "dependencies": {
+    "@aws-sdk/client-lambda": "^3.844.0",
     "@aws-sdk/client-s3": "^3.842.0",
     "@babel/core": "^7.28.0",
     "@sentry/node": "^7.48.0",

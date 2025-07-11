@@ -1,16 +1,58 @@
-// src/services/dbMigrations.js
-
 import { pool } from './db.js';
 
+export async function ensureUsersTable() {
+  // cria tabela users se não existir
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email TEXT NOT NULL UNIQUE,
+      password TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+  `);
+}
+
+export async function ensureOperationsTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS operations (
+      id SERIAL PRIMARY KEY
+    );
+  `);
+  await pool.query(`
+    ALTER TABLE operations
+      ADD COLUMN IF NOT EXISTS user_id    INTEGER     NOT NULL,
+      ADD COLUMN IF NOT EXISTS symbol     TEXT        NOT NULL,
+      ADD COLUMN IF NOT EXISTS side       TEXT        NOT NULL,
+      ADD COLUMN IF NOT EXISTS price      NUMERIC     NOT NULL,
+      ADD COLUMN IF NOT EXISTS quantity   NUMERIC,
+      ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
+  `);
+  await pool.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1
+          FROM information_schema.table_constraints
+         WHERE table_name='operations'
+           AND constraint_type='FOREIGN KEY'
+           AND constraint_name='operations_user_id_fkey'
+      ) THEN
+        ALTER TABLE operations
+          ADD CONSTRAINT operations_user_id_fkey
+          FOREIGN KEY (user_id) REFERENCES users(id)
+          ON DELETE CASCADE;
+      END IF;
+    END
+    $$;
+  `);
+}
+
 export async function ensureSignalsTable() {
-  // 1) cria tabela se não existir (com chave primária)
   await pool.query(`
     CREATE TABLE IF NOT EXISTS signals (
       id SERIAL PRIMARY KEY
     );
   `);
-
-  // 2) adiciona colunas ticker, price, side e received_at, se faltarem
   await pool.query(`
     ALTER TABLE signals
       ADD COLUMN IF NOT EXISTS ticker       TEXT        NOT NULL,
@@ -18,8 +60,6 @@ export async function ensureSignalsTable() {
       ADD COLUMN IF NOT EXISTS side         TEXT        NOT NULL,
       ADD COLUMN IF NOT EXISTS received_at  TIMESTAMPTZ NOT NULL DEFAULT now();
   `);
-
-  // 3) elimina a coluna antiga `symbol`, caso ainda exista
   await pool.query(`
     DO $$
     BEGIN
@@ -37,14 +77,11 @@ export async function ensureSignalsTable() {
 }
 
 export async function ensureCointarsTable() {
-  // 1) cria tabela cointars se não existir
   await pool.query(`
     CREATE TABLE IF NOT EXISTS cointars (
       id SERIAL PRIMARY KEY
     );
   `);
-
-  // 2) adiciona colunas btc_dom, eth_dom e timestamp, se faltarem
   await pool.query(`
     ALTER TABLE cointars
       ADD COLUMN IF NOT EXISTS btc_dom   NUMERIC     NOT NULL,
@@ -54,14 +91,11 @@ export async function ensureCointarsTable() {
 }
 
 export async function ensurePositionsTable() {
-  // 1) cria tabela positions se não existir
   await pool.query(`
     CREATE TABLE IF NOT EXISTS positions (
       id SERIAL PRIMARY KEY
     );
   `);
-
-  // 2) adiciona colunas necessárias, se faltarem
   await pool.query(`
     ALTER TABLE positions
       ADD COLUMN IF NOT EXISTS symbol       TEXT        NOT NULL,
@@ -74,8 +108,6 @@ export async function ensurePositionsTable() {
       ADD COLUMN IF NOT EXISTS exit_price   NUMERIC,
       ADD COLUMN IF NOT EXISTS closed_at    TIMESTAMPTZ;
   `);
-
-  // 3) constraint FK para user_id, se ainda não existir
   await pool.query(`
     DO $$
     BEGIN
@@ -97,14 +129,11 @@ export async function ensurePositionsTable() {
 }
 
 export async function ensureIndicatorsTable() {
-  // 1) cria tabela indicators se não existir
   await pool.query(`
     CREATE TABLE IF NOT EXISTS indicators (
       id SERIAL PRIMARY KEY
     );
   `);
-
-  // 2) adiciona colunas para EMA, RSI e Momentum, se faltarem
   await pool.query(`
     ALTER TABLE indicators
       ADD COLUMN IF NOT EXISTS symbol     TEXT        NOT NULL,
