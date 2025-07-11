@@ -6,6 +6,7 @@ import path from 'path'
 import dotenv from 'dotenv'
 import rateLimit from 'express-rate-limit'
 
+
 // carrega .env.<NODE_ENV>, ex .env.test quando NODE_ENV=test
 dotenv.config({
   path: path.resolve(process.cwd(), `.env.${process.env.NODE_ENV}`),
@@ -78,5 +79,18 @@ app.use((err, _req, res, _next) => {
     error: err.message || 'Erro interno do servidor.'
   })
 })
+
+// tests/healthz.test.js
+import request from 'supertest';
+import app from '../src/app.js'; // Ajuste o caminho conforme necessário
+
+describe('Healthcheck', () => {
+  it('should return status 200 and version', async () => {
+    const response = await request(app).get('/healthz');
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe('ok');
+    expect(response.body.version).toBeDefined();
+  });
+});
 
 export default app

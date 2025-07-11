@@ -38,12 +38,16 @@
     "pg": "^8.10.0",
     "pino": "^9.7.0",
     "prom-client": "^14.1.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.3",
     "stripe": "^18.3.0",
     "swagger-ui-express": "^4.6.3",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
     "babel-jest": "^30.0.4",
     "cross-env": "^7.0.3",
     "dotenv-cli": "^8.0.0",

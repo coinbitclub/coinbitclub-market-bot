@@ -1,26 +1,87 @@
 // src/services/exchangeConnector.js
-// Stub implementations for exchange connector used by aiRealService
+
+import Binance from 'binance-api-node'
+import { RestClient as BybitClient } from 'bybit-api'
+import {
+  getBinanceCredentials,
+  getBybitCredentials
+} from '../database.js'
 
 /**
- * Mock function to place an order on the exchange.
- * @param {string} userId
- * @param {object} orderDetails
- * @returns {Promise<object>} Order response
+ * Cria clientes Binance e Bybit configurados para o usuário.
+ * @param {number|string} userId
+ * @returns {Promise<{ binanceClient: import('binance-api-node').Binance, bybitClient: import('bybit-api').RestClient }>}
  */
-export async function placeOrder(userId, orderDetails) {
-  // TODO: replace with actual exchange API call
-  console.log(`Placing order for user ${userId}:`, orderDetails);
-  return { orderId: 'mock-order-id', status: 'placed' };
+export async function createExchangeClients(userId) {
+  // Busca credenciais no banco
+  const binanceCreds = await getBinanceCredentials(userId)
+  const bybitCreds   = await getBybitCredentials(userId)
+
+  if (!binanceCreds) {
+    throw new Error(`Credenciais Binance não encontradas para usuário ${userId}`)
+  }
+  if (!bybitCreds) {
+    throw new Error(`Credenciais Bybit não encontradas para usuário ${userId}`)
+  }
+
+  // Usa o flag testnet do registro
+  const useTestnetBinance = binanceCreds.testnet === true
+  const useTestnetBybit   = bybitCreds.testnet === true
+
+  // Inicializa clientes
+  const binanceClient = Binance({
+    apiKey: binanceCreds.apiKey,
+    apiSecret: binanceCreds.apiSecret,
+    test: useTestnetBinance  // true = testnet
+  })
+
+  const bybitClient = new BybitClient({
+    key:    bybitCreds.apiKey,
+    secret: bybitCreds.apiSecret,
+    testnet: useTestnetBybit
+  })
+
+  return { binanceClient, bybitClient }
 }
 
 /**
- * Mock function to cancel an order on the exchange.
- * @param {string} userId
- * @param {string} orderId
- * @returns {Promise<object>} Cancel response
+ * Coloca uma ordem na exchange especificada para o usuário.
+ * @param {number|string} userId
+ * @param {'binance'|'bybit'} exchange
+ * @param {object} orderParams Parâmetros conforme SDK (symbol, side, type, quantity, etc.)
+ * @returns {Promise<object>} Resposta da exchange
  */
-export async function cancelOrder(userId, orderId) {
-  // TODO: replace with actual exchange API call
-  console.log(`Cancelling order ${orderId} for user ${userId}`);
-  return { orderId, status: 'cancelled' };
+export async function placeOrder(userId, exchange, orderParams) {
+  const { binanceClient, bybitClient } = await createExchangeClients(userId)
+
+  if (exchange === 'binance') {
+    return binanceClient.order(orderParams)
+  }
+
+  if (exchange === 'bybit') {
+    return bybitClient.placeOrder(orderParams)
+  }
+
+  throw new Error(`Exchange inválida: ${exchange}`)
+}
+
+/**
+ * Cancela uma ordem na exchange especificada para o usuário.
+ * @param {number|string} userId
+ * @param {'binance'|'bybit'} exchange
+ * @param {object} cancelParams Parâmetros conforme SDK (symbol, orderId, etc.)
+ * @returns {Promise<object>} Resposta de cancelamento
+ */
+export async function cancelOrder(userId, exchange, cancelParams) {
+  const { binanceClient, bybitClient } = await createExchangeClients(userId)
+
+  if (exchange === 'binance') {
+    return binanceClient.cancelOrder(cancelParams)
+  }
+
+  if (exchange === 'bybit') {
+    return bybitClient.cancelOrder(cancelParams)
+  }
+
+  throw new Error(`Exchange inválida para cancelamento: ${exchange}`)
 }
