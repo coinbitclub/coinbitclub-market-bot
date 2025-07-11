@@ -1,47 +1,52 @@
 // src/services/exchangeConnector.js
 
-import Binance from 'binance-api-node'
-import { RestClient as BybitClient } from 'bybit-api'
+import Binance from 'binance-api-node';
+import bybitPkg from 'bybit-api';
+const { RestClient: BybitClient } = bybitPkg;
 import {
   getBinanceCredentials,
   getBybitCredentials
-} from '../database.js'
+} from '../database.js';
 
 /**
  * Cria clientes Binance e Bybit configurados para o usuário.
+ * Suporta ambientes de testnet e real, controlados por flag no DB ou por variável de ambiente global USE_TESTNET.
  * @param {number|string} userId
  * @returns {Promise<{ binanceClient: import('binance-api-node').Binance, bybitClient: import('bybit-api').RestClient }>}
  */
 export async function createExchangeClients(userId) {
   // Busca credenciais no banco
-  const binanceCreds = await getBinanceCredentials(userId)
-  const bybitCreds   = await getBybitCredentials(userId)
+  const binanceCreds = await getBinanceCredentials(userId);
+  const bybitCreds   = await getBybitCredentials(userId);
 
   if (!binanceCreds) {
-    throw new Error(`Credenciais Binance não encontradas para usuário ${userId}`)
+    throw new Error(`Credenciais Binance não encontradas para usuário ${userId}`);
   }
   if (!bybitCreds) {
-    throw new Error(`Credenciais Bybit não encontradas para usuário ${userId}`)
+    throw new Error(`Credenciais Bybit não encontradas para usuário ${userId}`);
   }
 
-  // Usa o flag testnet do registro
-  const useTestnetBinance = binanceCreds.testnet === true
-  const useTestnetBybit   = bybitCreds.testnet === true
+  // Override global via ENV: 'true' força testnet para ambas
+  const useTestnetEnv = process.env.USE_TESTNET === 'true';
+
+  // Determina se usa testnet por credenciais ou ENV
+  const useTestnetBinance = useTestnetEnv || binanceCreds.testnet === true;
+  const useTestnetBybit   = useTestnetEnv || bybitCreds.testnet === true;
 
   // Inicializa clientes
   const binanceClient = Binance({
     apiKey: binanceCreds.apiKey,
     apiSecret: binanceCreds.apiSecret,
-    test: useTestnetBinance  // true = testnet
-  })
+    test: useTestnetBinance
+  });
 
   const bybitClient = new BybitClient({
     key:    bybitCreds.apiKey,
     secret: bybitCreds.apiSecret,
     testnet: useTestnetBybit
-  })
+  });
 
-  return { binanceClient, bybitClient }
+  return { binanceClient, bybitClient };
 }
 
 /**
@@ -52,17 +57,15 @@ export async function createExchangeClients(userId) {
  * @returns {Promise<object>} Resposta da exchange
  */
 export async function placeOrder(userId, exchange, orderParams) {
-  const { binanceClient, bybitClient } = await createExchangeClients(userId)
+  const { binanceClient, bybitClient } = await createExchangeClients(userId);
 
   if (exchange === 'binance') {
-    return binanceClient.order(orderParams)
+    return binanceClient.order(orderParams);
   }
-
   if (exchange === 'bybit') {
-    return bybitClient.placeOrder(orderParams)
+    return bybitClient.placeOrder(orderParams);
   }
-
-  throw new Error(`Exchange inválida: ${exchange}`)
+  throw new Error(`Exchange inválida: ${exchange}`);
 }
 
 /**
@@ -73,15 +76,13 @@ export async function placeOrder(userId, exchange, orderParams) {
  * @returns {Promise<object>} Resposta de cancelamento
  */
 export async function cancelOrder(userId, exchange, cancelParams) {
-  const { binanceClient, bybitClient } = await createExchangeClients(userId)
+  const { binanceClient, bybitClient } = await createExchangeClients(userId);
 
   if (exchange === 'binance') {
-    return binanceClient.cancelOrder(cancelParams)
+    return binanceClient.cancelOrder(cancelParams);
   }
-
   if (exchange === 'bybit') {
-    return bybitClient.cancelOrder(cancelParams)
+    return bybitClient.cancelOrder(cancelParams);
   }
-
-  throw new Error(`Exchange inválida para cancelamento: ${exchange}`)
+  throw new Error(`Exchange inválida para cancelamento: ${exchange}`);
 }
