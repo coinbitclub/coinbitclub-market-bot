@@ -1,53 +1,51 @@
 ﻿// src/routes/operations.js
 import express from 'express';
-import { jwtMiddleware } from '../middleware/auth.js';
-import { pool } from '../services/db.js';
+import { jwtMiddleware } from '../middleware/jwtMiddleware.js';
+import { saveOperation, getOperationsByUser } from '../services/operationsService.js';
+import { validate } from '../middleware/validatePayload.js';
+import Joi from 'joi';
 
 const router = express.Router();
 
-// GET /user/operations (history from user_operations)
+// Validation schema
+const operationSchema = Joi.object({
+  exchange: Joi.string().required(),
+  operation_type: Joi.string().required(),
+  symbol: Joi.string().required(),
+  order_id: Joi.string().required(),
+  qty: Joi.number().required(),
+  price: Joi.number().required(),
+  leverage: Joi.number().required(),
+  pnl: Joi.number().required(),
+  status: Joi.string().required(),
+  opened_at: Joi.date().iso().required(),
+  closed_at: Joi.date().iso().optional().allow(null)
+});
+
+// GET /operations — histórico de operações do usuário
 router.get(
-  '/operations',
+  '/',
   jwtMiddleware,
   async (req, res, next) => {
     try {
-      const { rows } = await pool.query(
-        `SELECT
-           id,
-           exchange,
-           symbol,
-           side,
-           qty AS amount,
-           price,
-           opened_at AS created_at
-         FROM user_operations
-         WHERE user_id = $1
-         ORDER BY opened_at DESC`,
-        [req.user.id]
-      );
-      res.json(rows);
+      const ops = await getOperationsByUser(req.user.id);
+      res.json(ops);
     } catch (err) {
       next(err);
     }
   }
 );
 
-// POST /user/operations (persist to operations)
+// POST /operations — registra nova operação
 router.post(
-  '/operations',
+  '/',
   jwtMiddleware,
+  validate(operationSchema),
   async (req, res, next) => {
     try {
-      const { symbol, side, amount, price } = req.body;
-      const { rows } = await pool.query(
-        `INSERT INTO operations
-           (user_id, symbol, side, quantity, price)
-         VALUES
-           ($1, $2, $3, $4, $5)
-         RETURNING id`,
-        [req.user.id, symbol, side, amount, price]
-      );
-      res.status(201).json({ id: rows[0].id });
+      const params = { user_id: req.user.id, ...req.body };
+      const result = await saveOperation(params);
+      res.status(201).json(result);
     } catch (err) {
       next(err);
     }

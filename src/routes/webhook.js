@@ -12,13 +12,14 @@ router.post('/signal', async (req, res, next) => {
   if (token !== process.env.WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' });
   }
+
   let payload;
   try {
     payload = parseSignal(req.body);
   } catch (err) {
-    // payload inválido → 400
     return res.status(400).json({ error: err.message });
   }
+
   try {
     const { id } = await signalService.saveSignal(payload);
     return res.json({ ok: true, id });
@@ -33,13 +34,14 @@ router.post('/dominance', async (req, res, next) => {
   if (token !== process.env.WEBHOOK_TOKEN) {
     return res.status(401).json({ error: 'Token inválido' });
   }
+
   let payload;
   try {
     payload = parseDominance(req.body);
   } catch (err) {
-    // payload inválido → 400
     return res.status(400).json({ error: err.message });
   }
+
   try {
     const { id } = await signalService.saveDominance(payload);
     return res.json({ ok: true, id });

@@ -1,5 +1,4 @@
 // src/services/aiService.js
-
 import * as real from './aiRealService.js';
 import {
   orderDecision   as mockOrderDecision,
@@ -10,7 +9,6 @@ import {
   monitorPosition as mockMonitorPosition
 } from './aiMockService.js';
 
-// Escolhe impl real ou mock conforme env var
 const useReal = process.env.USE_REAL_AI === 'true';
 
 /**
@@ -54,3 +52,9 @@ export const logsResolver = useReal
 export const monitorPosition = useReal
   ? real.monitorPositionReal
   : mockMonitorPosition;
+
+/**
+ * Agendador diário de relatórios
+ * (sem mock: roda sempre o real)
+ */
+export const dailyReportJob = real.dailyReportJob;

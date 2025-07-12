@@ -1,22 +1,27 @@
-import express from "express";
-import * as signalService from "../services/signalService.js";
+// src/routes/signals.js
+import express from 'express';
+import { getRecentSignals, getRecentIndicators } from '../services/signalService.js';
 
 const router = express.Router();
 
-// Lista de sinais recentes
-router.get("/", async (req, res, next) => {
+// GET /signals
+router.get('/', async (req, res, next) => {
   try {
-    const signals = await signalService.getRecentSignals();
+    const signals = await getRecentSignals();
     res.json(signals);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
-// Lista de indicadores recentes
-router.get("/indicators", async (req, res, next) => {
+// GET /signals/indicators
+router.get('/indicators', async (req, res, next) => {
   try {
-    const indicators = await signalService.getRecentIndicators();
+    const indicators = await getRecentIndicators();
     res.json(indicators);
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default router;

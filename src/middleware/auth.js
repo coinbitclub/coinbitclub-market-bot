@@ -5,7 +5,9 @@ import jwt from "jsonwebtoken";
 export function isUser(req, res, next) {
   const auth = req.headers.authorization || "";
   const token = auth.replace(/^Bearer\s+/i, "");
-  if (!token) return res.status(401).json({ error: "Token não enviado" });
+  if (!token) {
+    return res.status(401).json({ error: "Token não enviado" });
+  }
   try {
     req.user = jwt.verify(token, process.env.JWT_SECRET);
     return next();

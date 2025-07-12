@@ -1,3 +1,4 @@
+// src/services/databaseService.js
 import pkg from 'pg';
 const { Pool } = pkg;
 
@@ -5,6 +6,15 @@ export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
+
+/**
+ * Executa uma query no PostgreSQL
+ * @param {string} text  – SQL com $1, $2…
+ * @param {any[]} params – valores para cada placeholder
+ */
+export async function query(text, params) {
+  return pool.query(text, params);
+}
 
 // ========== USUÁRIO ==========
 export async function getUserByEmail(email) {
@@ -25,31 +35,7 @@ export async function getUserById(userId) {
   return rows[0] || null;
 }
 
-export async function updateUser(userId, data) {
-  const keys = ['nome', 'sobrenome', 'telefone', 'pais'];
-  const updates = [];
-  const values = [];
-  let idx = 1;
 
-  for (const key of keys) {
-    if (data[key] !== undefined) {
-      updates.push(`${key} = $${idx}`);
-      values.push(data[key]);
-      idx++;
-    }
-  }
-
-  if (updates.length === 0) throw new Error('Nenhum campo para atualizar.');
-
-  values.push(userId);
-  const sql = `
-    UPDATE users
-       SET ${updates.join(', ')}, updated_at = NOW()
-     WHERE id = $${idx}
-     RETURNING *`;
-  const { rows } = await pool.query(sql, values);
-  return rows[0];
-}
 
 // ========== LIMPEZAS ==========
 export async function cleanExpiredTestUsers() {

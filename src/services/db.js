@@ -7,7 +7,12 @@ import {
   getBybitCredentials,
   saveBinanceCredentials,
   saveBybitCredentials,
-  getUserOperations
+  getUserOperations,
+  createPasswordResetToken,
+  getPasswordResetToken,
+  deletePasswordResetToken,
+  createEmailConfirmationToken,
+  confirmUserEmail
 } from '../database.js';
 
 export {
@@ -18,5 +23,10 @@ export {
   getBybitCredentials,
   saveBinanceCredentials,
   saveBybitCredentials,
-  getUserOperations
+  getUserOperations,
+  createPasswordResetToken,
+  getPasswordResetToken,
+  deletePasswordResetToken,
+  createEmailConfirmationToken,
+  confirmUserEmail
 };

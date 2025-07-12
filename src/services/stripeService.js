@@ -1,3 +1,4 @@
+// src/services/stripeService.js
 import Stripe from "stripe";
 import { updateUserBalance } from "./balanceService.js";
 import { setUserPlan } from "./planService.js";
@@ -19,8 +20,8 @@ export async function createCheckoutSession(userId, amount, currency) {
       }
     ],
     mode: "payment",
-    success_url: process.env.FRONTEND_URL + "/dashboard?success=1",
-    cancel_url: process.env.FRONTEND_URL + "/dashboard?cancel=1",
+    success_url: `${process.env.FRONTEND_URL}/dashboard?success=1`,
+    cancel_url: `${process.env.FRONTEND_URL}/dashboard?cancel=1`,
     metadata: { userId }
   });
   return session.url;
@@ -39,15 +40,25 @@ export async function handleStripeWebhook(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Depósito via Checkout
-  if (event.type === "checkout.session.completed") {
-    const { userId } = event.data.object.metadata;
-    const valor = event.data.object.amount_total / 100;
-    const moeda = event.data.object.currency.toUpperCase();
-    await updateUserBalance(userId, valor, "Depósito via Stripe", "deposito", event.data.object.id);
-  }
+  const session = event.data.object;
 
-  // Adicione aqui tratamento para assinaturas, payouts, etc
+  if (event.type === "checkout.session.completed") {
+    const { userId, planId } = session.metadata || {};
+
+    if (session.mode === "payment") {
+      const valor = session.amount_total / 100;
+      const moeda = session.currency.toUpperCase();
+      await updateUserBalance(
+        userId,
+        valor,
+        "Depósito via Stripe",
+        "deposito",
+        session.id
+      );
+    } else if (session.mode === "subscription" && planId) {
+      await setUserPlan(userId, planId);
+    }
+  }
 
   res.json({ received: true });
 }

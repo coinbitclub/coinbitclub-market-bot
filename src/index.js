@@ -35,12 +35,13 @@ import integrationsRoutes from './routes/integrations.js';
 import marketRoutes from './routes/market.js';
 import notificationsRoutes from './routes/notifications.js';
 import planRoutes from './routes/planRoutes.js';
-import stripeRoutes from './routes/stripeRoutes.js';
+import stripeRoutes, { webhookHandler as stripeWebhookHandler } from './routes/stripeRoutes.js';
 import subscriptionRoutes from './routes/subscriptionRoutes.js';
 import tradingRoutes from './routes/trading.js';
 import operationsRoutes from './routes/operations.js';
 import userRoutes from './routes/user.js';
-import aiRoutes from './routes/ai.js';
+import botRoutes from './routes/botRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
 import aiTestRoutes from './routes/aiTestRoutes.js';
 
 const app = express();
@@ -70,7 +71,7 @@ const webhookLimiter = rateLimit({ windowMs: 60_000, max: 1_000 });
 
 app.use(generalLimiter);
 app.use('/auth/login', authLimiter);
-app.use(['/webhook/signal','/webhook/dominance'], webhookLimiter);
+app.use(['/webhook/signal','/webhook/dominance','/stripe/webhook'], webhookLimiter);
 
 // ---- Body parser ----
 app.use(express.json({ limit: '200kb', strict: false }));
@@ -146,6 +147,13 @@ app.post('/webhook/dominance', async (req, res, next) => {
   }
 });
 
+// ---- Stripe webhook ----
+app.post(
+  '/stripe/webhook',
+  express.raw({ type: 'application/json' }),
+  stripeWebhookHandler
+);
+
 // ---- Main routes ----
 app.use('/admin',        adminRoutes);
 app.use('/affiliate',    affiliateRoutes);
@@ -164,7 +172,9 @@ app.use('/subscriptions',subscriptionRoutes);
 app.use('/trading',      tradingRoutes);
 app.use('/user',         userRoutes);
 app.use('/user',         operationsRoutes);
-// Rotas de IA: teste (usa body) em test, real com JWT em prod
+// Bot control (start/stop/status)
+app.use('/operations',   jwtMiddleware, botRoutes);
+// IA routes
 if (process.env.NODE_ENV === 'test') {
   app.use('/ai', aiTestRoutes);
 } else {
