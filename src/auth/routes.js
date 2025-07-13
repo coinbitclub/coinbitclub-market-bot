@@ -1,7 +1,11 @@
 import express from 'express';
 import { register, login, requestPasswordReset, resetPassword } from './service.js';
 import { validateBody } from '../common/validation.js';
+<<<<<<< HEAD
 import Joi from '@hapi/joi';
+=======
+import Joi from 'joi';
+>>>>>>> aacf3516e63892bec79e9806af8daf54878b8cb5
 const router = express.Router();
 
 const registerSchema = Joi.object({ email: Joi.string().email().required(), password: Joi.string().min(8).required() });

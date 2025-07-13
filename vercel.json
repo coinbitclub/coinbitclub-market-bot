@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "src": "coinbitclub-frontend-premium-main/package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/coinbitclub-frontend-premium-main/$1"
+    }
+  ]
+}
