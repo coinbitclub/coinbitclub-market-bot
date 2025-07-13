@@ -2,6 +2,8 @@ import { getDB } from '../common/db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
+import express from 'express';
+import { authMiddleware } from '../common/auth.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 export async function register({ email, password }) {

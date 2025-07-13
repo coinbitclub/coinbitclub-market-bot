@@ -1,4 +1,3 @@
-// src/common/auth.js
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
@@ -20,4 +19,20 @@ export function authMiddleware(req, res, next) {
   } catch {
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
+}
+
+// Alias para compatibilidade com jwtMiddleware
+export const jwtMiddleware = authMiddleware;
+
+/**
+ * Middleware que exige uma role específica.
+ * @param {string} role
+ */
+export function requireRole(role) {
+  return (req, res, next) => {
+    if (!req.user || req.user.role !== role) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    next();
+  };
 }
