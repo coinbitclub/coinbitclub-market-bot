@@ -1,13 +1,25 @@
+// src/common/db.js
 import Knex from 'knex';
-<<<<<<< HEAD
-import config from '../../knexfile.js';
-=======
-import knexfile from '../knexfile.js';
->>>>>>> aacf3516e63892bec79e9806af8daf54878b8cb5
-let knex;
+import knexConfig from '../../knexfile.js';
+
+let db;
+
+/**
+ * Inicializa a conexão com o banco usando o NODE_ENV (default "development")
+ */
 export async function initDB() {
-  knex = Knex(knexfile[process.env.NODE_ENV || 'development']);
+  const env = process.env.NODE_ENV || 'development';
+  db = Knex(knexConfig[env]);
   console.log('✅ DB initialized');
-  return knex;
+  return db;
 }
-export function getDB() { return knex; }
+
+/**
+ * Retorna a instância já inicializada do knex
+ */
+export function getDB() {
+  if (!db) {
+    throw new Error('Database not initialized. Call initDB() first.');
+  }
+  return db;
+}
