@@ -1,6 +1,12 @@
 FROM node:18-alpine
+
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 COPY . .
-CMD ["npm", "run", "start"]
+
+# Expõe a porta que o Express está ouvindo
+EXPOSE 8080
+
+# Comando de inicialização
+CMD ["npm", "start"]

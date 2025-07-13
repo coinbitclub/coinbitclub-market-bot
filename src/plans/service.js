@@ -1,7 +1,7 @@
 import { getDB } from '../common/db.js';
 
 /**
- * Lista todos os planos ativos
+ * Lista todos os planos ativos.
  */
 export async function listPlans(req, res, next) {
   try {
@@ -13,7 +13,7 @@ export async function listPlans(req, res, next) {
 }
 
 /**
- * Cria um novo plano
+ * Cria um novo plano.
  */
 export async function createPlan(req, res, next) {
   try {
@@ -27,7 +27,7 @@ export async function createPlan(req, res, next) {
 }
 
 /**
- * Atualiza um plano existente pelo ID
+ * Atualiza um plano existente pelo ID.
  */
 export async function updatePlan(req, res, next) {
   try {
@@ -42,7 +42,7 @@ export async function updatePlan(req, res, next) {
 }
 
 /**
- * Marca um plano como inativo
+ * Marca um plano como inativo.
  */
 export async function deletePlan(req, res, next) {
   try {
