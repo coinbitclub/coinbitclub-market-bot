@@ -8,7 +8,7 @@
     "db:setup": "knex migrate:latest && knex seed:run",
     "infra:up": "docker-compose up -d",
     "infra:down": "docker-compose down -v",
-    "start": "node backend/api-gateway/index.js",
+     "start": "node backend/api-gateway/index.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
     "migrate": "knex migrate:latest --env development",
     "seed": "knex seed:run --env development"
