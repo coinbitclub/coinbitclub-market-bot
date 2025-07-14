@@ -1,16 +1,17 @@
-# Dockerfile
-FROM node:18-alpine
+FROM node:18
 
-# Define o diretório de trabalho
+# define o diretório de trabalho
 WORKDIR /usr/src/app
 
-# Copia package.json e package-lock.json e instala dependências
+# copia package.json e instala dependências
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --only=production
 
-# Copia todo o restante do código (incluindo src/)
+# copia todo o resto do código
 COPY . .
 
-# Expõe a porta (caso use outra, ajuste aqui)
+# expõe a porta que você usa (confira se bate com process.env.PORT)
 EXPOSE 8080
-CMD ["npm", "start"]
+
+# ajusta o comando de start para o entrypoint correto
+CMD ["node", "backend/api-gateway/index.js"]
