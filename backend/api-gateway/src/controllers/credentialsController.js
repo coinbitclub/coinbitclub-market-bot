@@ -1,10 +1,17 @@
 import express from 'express';
 import { db } from '../../../common/db.js';
+import { validate, credentialSchema } from '../../../common/validation.js';
 
 const router = express.Router();
 
 router.post('/', async (req, res) => {
-  await db('user_credentials').insert({ user_id: req.body.userId, ...req.body });
+  let data;
+  try {
+    data = validate(credentialSchema, req.body);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+  await db('user_credentials').insert({ user_id: data.userId, ...data });
   res.status(201).end();
 });
 
