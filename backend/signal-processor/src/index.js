@@ -1,4 +1,4 @@
-import amqp from 'amqplib';
+import { consume } from './rabbitmq.js';
 import { processSignal } from './processor.js';
 import '../../common/env.js';
 import logger from '../../common/logger.js';
@@ -6,13 +6,8 @@ import express from 'express';
 import { initMetrics } from '../../common/metrics.js';
 
 async function start() {
-  const conn = await amqp.connect(process.env.AMQP_URL || 'amqp://localhost');
-  const channel = await conn.createChannel();
-  await channel.assertQueue('webhook.received');
-  channel.consume('webhook.received', async msg => {
-    const content = JSON.parse(msg.content.toString());
+  await consume('webhook.received', async (content) => {
     await processSignal(content);
-    channel.ack(msg);
   });
 }
 
