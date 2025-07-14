@@ -1,4 +1,4 @@
-import amqp from 'amqplib';
+import { consume } from './rabbitmq.js';
 import { recordExecution } from './ledger.js';
 import '../../common/env.js';
 import logger from '../../common/logger.js';
@@ -6,13 +6,8 @@ import express from 'express';
 import { initMetrics } from '../../common/metrics.js';
 
 async function start() {
-  const conn = await amqp.connect(process.env.AMQP_URL || 'amqp://localhost');
-  const channel = await conn.createChannel();
-  await channel.assertQueue('order.executed');
-  channel.consume('order.executed', async msg => {
-    const exec = JSON.parse(msg.content.toString());
+  await consume('order.executed', async (exec) => {
     await recordExecution(exec);
-    channel.ack(msg);
   });
 }
 
