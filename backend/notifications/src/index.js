@@ -4,9 +4,12 @@ import { setupSSE, broadcast } from './sseNotifier.js';
 import express from 'express';
 import logger from '../../common/logger.js';
 import '../../common/env.js';
+import { initMetrics } from '../../common/metrics.js';
 
 const app = express();
 setupSSE(app);
+app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+app.get('/metrics', initMetrics);
 
 async function start() {
   const conn = await amqp.connect(process.env.AMQP_URL || 'amqp://localhost');
