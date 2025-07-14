@@ -3,18 +3,31 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { db } from '../../../common/db.js';
 import { sendResetEmail } from '../services/emailService.js';
+import { validate, authSchema } from '../../../common/validation.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function register(req, res) {
-  const { email, password } = req.body;
+  let data;
+  try {
+    data = validate(authSchema, req.body);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+  const { email, password } = data;
   const hash = await bcrypt.hash(password, 10);
   const [user] = await db('users').insert({ email, password_hash: hash }).returning('*');
   res.status(201).json({ id: user.id, email: user.email });
 }
 
 export async function login(req, res) {
-  const { email, password } = req.body;
+  let data;
+  try {
+    data = validate(authSchema, req.body);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+  const { email, password } = data;
   const user = await db('users').where({ email }).first();
   if (!user || !(await bcrypt.compare(password, user.password_hash))) {
     return res.status(401).json({ error: 'Invalid credentials' });
