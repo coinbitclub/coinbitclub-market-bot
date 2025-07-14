@@ -13,10 +13,7 @@ export const db = createClient();
 
 const breaker = new CircuitBreaker(
   async (sql, params) => db.raw(sql, params),
-  {
-    errorThresholdPercentage: 50,
-    resetTimeout: 10000,
-  }
+  { errorThresholdPercentage: 50, resetTimeout: 10000 },
 );
 
 export async function ensureConnection() {
@@ -28,7 +25,7 @@ export async function ensureConnection() {
       retries: 5,
       minTimeout: 500,
       onRetry: (err) => logger.warn({ err }, 'db connection retry'),
-    }
+    },
   );
 }
 
