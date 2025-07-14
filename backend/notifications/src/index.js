@@ -10,6 +10,7 @@ const app = express();
 setupSSE(app);
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 app.get('/metrics', initMetrics);
+app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 
 async function start() {
   const conn = await amqp.connect(process.env.AMQP_URL || 'amqp://localhost');
