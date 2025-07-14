@@ -1,19 +1,12 @@
-import amqp from 'amqplib';
+import { publish } from './rabbitmq.js';
 import { db } from '../../common/db.js';
 import { getFearAndGreed, getBtcDominance } from './coinStatsClient.js';
-
-let channel;
-
-async function connect() {
-  const conn = await amqp.connect(process.env.AMQP_URL || 'amqp://localhost');
-  channel = await conn.createChannel();
-}
 
 export function listenWebhooks(app) {
   app.post('/webhook/tradingview', async (req, res) => {
     const payload = req.body;
     const [id] = await db('raw_webhook').insert({ source: 'tradingview', type: 'entry', raw_data: payload, received_at: new Date() }).returning('id');
-    await channel.publish('', 'webhook.received', Buffer.from(JSON.stringify({ id })));
+    await publish('webhook.received', { id });
     res.json({ ok: true });
   });
 
@@ -23,6 +16,4 @@ export function listenWebhooks(app) {
     await db('cointars').insert({ fear_greed_index: fg, btc_dominance: dom, timestamp: new Date() });
     res.json({ ok: true });
   });
-
-  connect();
 }
