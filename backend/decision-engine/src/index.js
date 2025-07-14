@@ -3,6 +3,8 @@ import { evaluate } from './rulesEngine.js';
 import { aiFallback } from './aiFallback.js';
 import '../../common/env.js';
 import logger from '../../common/logger.js';
+import express from 'express';
+import { initMetrics } from '../../common/metrics.js';
 
 async function start() {
   const conn = await amqp.connect(process.env.AMQP_URL || 'amqp://localhost');
@@ -23,3 +25,9 @@ async function start() {
 start().catch(err => {
   logger.error({ err }, 'decision engine failed');
 });
+
+const app = express();
+app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+app.get('/metrics', initMetrics);
+const port = process.env.PORT || 9011;
+app.listen(port, () => logger.info(`Decision engine running on ${port}`));
