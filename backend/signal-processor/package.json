@@ -1,0 +1,10 @@
+{
+  "name": "signal-processor",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "dependencies": {
+    "amqplib": "^0.8.0",
+    "knex": "^2.4.2"
+  }
+}
