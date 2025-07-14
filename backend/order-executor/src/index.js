@@ -31,5 +31,6 @@ start().catch((err) => {
 const app = express();
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 app.get('/metrics', initMetrics);
+app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 const port = process.env.PORT || 9013;
 app.listen(port, () => logger.info(`Order executor running on ${port}`));
