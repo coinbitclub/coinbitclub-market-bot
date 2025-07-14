@@ -1,4 +1,4 @@
-import amqp from 'amqplib';
+import { consume } from './rabbitmq.js';
 import { sendEmail } from './emailNotifier.js';
 import { setupSSE, broadcast } from './sseNotifier.js';
 import express from 'express';
@@ -13,14 +13,9 @@ app.get('/metrics', initMetrics);
 app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 
 async function start() {
-  const conn = await amqp.connect(process.env.AMQP_URL || 'amqp://localhost');
-  const channel = await conn.createChannel();
-  await channel.assertQueue('order.executed');
-  channel.consume('order.executed', async msg => {
-    const order = JSON.parse(msg.content.toString());
+  await consume('order.executed', async (order) => {
     await sendEmail(order);
     broadcast('order.executed', order);
-    channel.ack(msg);
     logger.info({ order }, 'notification sent');
   });
 }
