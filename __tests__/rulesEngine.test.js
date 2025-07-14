@@ -1,4 +1,4 @@
-import { evaluate } from '../decision-engine/src/rulesEngine.js';
+import { evaluate } from '../backend/decision-engine/src/rulesEngine.js';
 
 describe('rulesEngine', () => {
   test('returns buy decision', () => {
