@@ -1,5 +1,6 @@
 import knex from 'knex';
 import retry from 'async-retry';
+import CircuitBreaker from 'opossum';
 import logger from './logger.js';
 
 const createClient = () =>
@@ -10,35 +11,32 @@ const createClient = () =>
 
 export const db = createClient();
 
+const breaker = new CircuitBreaker(
+  async (sql, params) => db.raw(sql, params),
+  {
+    errorThresholdPercentage: 50,
+    resetTimeout: 10000,
+  }
+);
+
 export async function ensureConnection() {
   await retry(
     async () => {
-      await db.raw('select 1');
+      await query('select 1');
     },
     {
       retries: 5,
       minTimeout: 500,
       onRetry: (err) => logger.warn({ err }, 'db connection retry'),
-    },
+    }
   );
 }
 
-let failureCount = 0;
-let open = false;
-
-export async function query(...args) {
-  if (open) throw new Error('circuit open');
+export async function query(sql, params) {
   try {
-    const result = await db(...args);
-    failureCount = 0;
-    return result;
+    return await breaker.fire(sql, params);
   } catch (err) {
-    failureCount += 1;
-    if (failureCount >= 5) {
-      open = true;
-      setTimeout(() => (open = false), 10000);
-      logger.error({ err }, 'db circuit opened');
-    }
+    logger.error({ err }, 'db query failed');
     throw err;
   }
 }
