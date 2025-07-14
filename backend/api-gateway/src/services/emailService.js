@@ -1,12 +1,14 @@
+import logger from '../../../common/logger.js';
+
 let nodemailerModule;
 try {
   nodemailerModule = await import('nodemailer');
 } catch (err) {
-  console.warn('nodemailer not installed, using console logger');
+  logger.warn('nodemailer not installed, using console logger');
   nodemailerModule = {
     createTransport: () => ({
       async sendMail(opts) {
-        console.log('Mock email', opts);
+        logger.info({ opts }, 'Mock email');
       }
     })
   };
