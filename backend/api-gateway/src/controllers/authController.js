@@ -14,9 +14,9 @@ export async function register(req, res) {
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
-  const { email, password } = data;
+  const { email, password, name } = data;
   const hash = await bcrypt.hash(password, 10);
-  const [user] = await db('users').insert({ email, password_hash: hash }).returning('*');
+  const [user] = await db('users').insert({ email, password_hash: hash, name }).returning('*');
   res.status(201).json({ id: user.id, email: user.email });
 }
 
@@ -33,15 +33,17 @@ export async function login(req, res) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
   const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
-  res.json({ token });
+  const refreshToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '7d' });
+  res.json({ token, refreshToken, user: { id: user.id, name: user.name, email: user.email } });
 }
 
-export async function refreshToken(req, res) {
+export async function refresh(req, res) {
   try {
     const { token } = req.body;
     const payload = jwt.verify(token, JWT_SECRET);
     const newToken = jwt.sign({ id: payload.id }, JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token: newToken });
+    const refreshToken = jwt.sign({ id: payload.id }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token: newToken, refreshToken });
   } catch (err) {
     res.status(401).json({ error: 'invalid token' });
   }
@@ -55,7 +57,7 @@ export async function resetPassword(req, res) {
 const router = express.Router();
 router.post('/register', register);
 router.post('/login', login);
-router.post('/refresh', refreshToken);
+router.post('/refresh', refresh);
 router.post('/reset-password', resetPassword);
 
 export default router;
