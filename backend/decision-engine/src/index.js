@@ -1,4 +1,4 @@
-import amqp from 'amqplib';
+import { consume, publish } from './rabbitmq.js';
 import { evaluate } from './rulesEngine.js';
 import { aiFallback } from './aiFallback.js';
 import '../../common/env.js';
@@ -7,27 +7,16 @@ import express from 'express';
 import { initMetrics } from '../../common/metrics.js';
 
 async function start() {
-  const conn = await amqp.connect(process.env.AMQP_URL || 'amqp://localhost');
-  const channel = await conn.createChannel();
-  await channel.assertQueue('signal.filtered');
-  await channel.assertQueue('order.request');
-  channel.consume('signal.filtered', async msg => {
+  await consume('signal.filtered', async (signal) => {
     try {
-      const signal = JSON.parse(msg.content.toString());
       let decision = evaluate(signal);
       if (!decision) {
         decision = await aiFallback(signal);
       }
-      
+      await publish('order.request', decision);
     } catch (err) {
       logger.warn({ err }, 'discarding unrecognized message');
-    } finally {
-      channel.ack(msg);
-
-    
     }
-    channel.sendToQueue('order.request', Buffer.from(JSON.stringify(decision)));
- 
   });
 }
 
