@@ -1,11 +1,11 @@
 import 'dotenv/config';
-import '../../common/env.js';
+import '../common/env.js';
 import express from 'express';
 import cors from 'cors';
-import routes from './routes.js';
-import { setupScheduler } from './scheduler.js';
-import { initMetrics } from './metrics.js';
-import logger from '../../common/logger.js';
+import routes from './src/routes.js';
+import { setupScheduler } from './src/scheduler.js';
+import { initMetrics } from './src/metrics.js';
+import logger from '../common/logger.js';
 
 const app = express();
 app.use(cors());
