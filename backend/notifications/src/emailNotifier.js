@@ -1,12 +1,14 @@
+import logger from '../../common/logger.js';
+
 let nodemailerModule;
 try {
   nodemailerModule = await import('nodemailer');
 } catch (err) {
-  console.warn('nodemailer not installed, using console logger');
+  logger.warn('nodemailer not installed, using console logger');
   nodemailerModule = {
     createTransport: () => ({
       async sendMail(opts) {
-        console.log('Mock email', opts);
+        logger.info({ opts }, 'Mock email');
       }
     })
   };
@@ -22,11 +24,11 @@ const transporter = nodemailerModule.createTransport({
   }
 });
 
-export async function sendEmail(order) {
+export async function sendEmail(info) {
   await transporter.sendMail({
     from: process.env.SMTP_FROM,
-    to: order.email,
-    subject: 'Order Executed',
-    text: JSON.stringify(order)
+    to: info.to,
+    subject: info.subject,
+    text: info.message
   });
 }
