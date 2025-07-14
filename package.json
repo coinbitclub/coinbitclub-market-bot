@@ -9,7 +9,9 @@
     "infra:up": "docker-compose up -d",
     "infra:down": "docker-compose down -v",
     "start": "node src/index.js",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "migrate": "knex migrate:latest --env development",
+    "seed": "knex seed:run --env development"
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
@@ -20,11 +22,13 @@
     "dotenv": "^16.0.0",
     "express": "^4.18.2",
     "helmet": "^6.0.1",
+    "joi": "^17.13.3",
     "jsonwebtoken": "^8.5.1",
     "knex": "^2.4.2",
     "nanoid": "^5.1.5",
     "node-cron": "^4.2.1",
     "pg": "^8.7.3",
+    "sqlite3": "^5.1.7",
     "stripe": "^11.0.0",
     "winston": "^3.8.2"
   }

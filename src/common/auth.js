@@ -1,27 +1,35 @@
+// src/common/auth.js
+import 'dotenv/config';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+// Garante JWT_SECRET e fallback para dev
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  console.warn('⚠️ JWT_SECRET não definido em env. Usando segredo padrão de desenvolvimento.');
+  return 'dev-secret';
+})();
 
 /**
  * Middleware de autenticação JWT.
- * Lê o token do header Authorization e popula req.user.
+ * Lê token de Authorization header e popula req.user com payload.
  */
 export function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   const token = authHeader.split(' ')[1];
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
-    next();
-  } catch {
+    return next();
+  } catch (err) {
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 }
 
-// Alias para compatibilidade com jwtMiddleware
+/**
+ * Alias para compatibilidade com jwtMiddleware.
+ */
 export const jwtMiddleware = authMiddleware;
 
 /**
@@ -33,6 +41,6 @@ export function requireRole(role) {
     if (!req.user || req.user.role !== role) {
       return res.status(403).json({ error: 'Forbidden' });
     }
-    next();
+    return next();
   };
 }
