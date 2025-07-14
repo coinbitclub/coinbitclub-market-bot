@@ -1,6 +1,8 @@
 import amqp from 'amqplib';
 import { evaluate } from './rulesEngine.js';
 import { aiFallback } from './aiFallback.js';
+import '../../common/env.js';
+import logger from '../../common/logger.js';
 
 async function start() {
   const conn = await amqp.connect(process.env.AMQP_URL || 'amqp://localhost');
@@ -18,4 +20,6 @@ async function start() {
   });
 }
 
-start();
+start().catch(err => {
+  logger.error({ err }, 'decision engine failed');
+});
