@@ -12,13 +12,22 @@ async function start() {
   await channel.assertQueue('signal.filtered');
   await channel.assertQueue('order.request');
   channel.consume('signal.filtered', async msg => {
-    const signal = JSON.parse(msg.content.toString());
-    let decision = evaluate(signal);
-    if (!decision) {
-      decision = await aiFallback(signal);
+    try {
+      const signal = JSON.parse(msg.content.toString());
+      let decision = evaluate(signal);
+      if (!decision) {
+        decision = await aiFallback(signal);
+      }
+      
+    } catch (err) {
+      logger.warn({ err }, 'discarding unrecognized message');
+    } finally {
+      channel.ack(msg);
+
+    
     }
     channel.sendToQueue('order.request', Buffer.from(JSON.stringify(decision)));
-    channel.ack(msg);
+ 
   });
 }
 
@@ -29,5 +38,6 @@ start().catch(err => {
 const app = express();
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 app.get('/metrics', initMetrics);
+app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 const port = process.env.PORT || 9011;
 app.listen(port, () => logger.info(`Decision engine running on ${port}`));
