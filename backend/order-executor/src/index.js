@@ -1,15 +1,27 @@
-import amqp from 'amqplib';
 import { executeOrder } from './executor.js';
+import logger from '../../common/logger.js';
+import '../../common/env.js';
+
+import { ensureConnection } from '../../common/db.js';
+import { getChannel } from './rabbitmq.js';
 
 async function start() {
-  const conn = await amqp.connect(process.env.AMQP_URL || 'amqp://localhost');
-  const channel = await conn.createChannel();
+  await ensureConnection();
+  const channel = await getChannel();
   await channel.assertQueue('order.request');
-  channel.consume('order.request', async msg => {
-    const order = JSON.parse(msg.content.toString());
-    await executeOrder(order);
-    channel.ack(msg);
+  channel.consume('order.request', async (msg) => {
+    try {
+      const order = JSON.parse(msg.content.toString());
+      await executeOrder(order);
+      channel.ack(msg);
+    } catch (err) {
+      logger.error({ err }, 'order processing failed');
+      channel.nack(msg, false, false);
+    }
   });
 }
 
-start();
+start().catch((err) => {
+  logger.error({ err }, 'executor failed to start');
+  process.exit(1);
+});
