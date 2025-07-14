@@ -2,6 +2,8 @@ import amqp from 'amqplib';
 import { sendEmail } from './emailNotifier.js';
 import { setupSSE, broadcast } from './sseNotifier.js';
 import express from 'express';
+import logger from '../../common/logger.js';
+import '../../common/env.js';
 
 const app = express();
 setupSSE(app);
@@ -15,6 +17,7 @@ async function start() {
     await sendEmail(order);
     broadcast('order.executed', order);
     channel.ack(msg);
+    logger.info({ order }, 'notification sent');
   });
 }
 
