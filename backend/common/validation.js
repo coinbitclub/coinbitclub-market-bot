@@ -21,7 +21,8 @@ export const coinStatsSchema = Joi.object({
 
 export const authSchema = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().required()
+  password: Joi.string().required(),
+  name: Joi.string().optional()
 });
 
 export const credentialSchema = Joi.object({
