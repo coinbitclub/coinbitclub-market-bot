@@ -22,3 +22,23 @@ export async function ensureConnection() {
     },
   );
 }
+
+let failureCount = 0;
+let open = false;
+
+export async function query(...args) {
+  if (open) throw new Error('circuit open');
+  try {
+    const result = await db(...args);
+    failureCount = 0;
+    return result;
+  } catch (err) {
+    failureCount += 1;
+    if (failureCount >= 5) {
+      open = true;
+      setTimeout(() => (open = false), 10000);
+      logger.error({ err }, 'db circuit opened');
+    }
+    throw err;
+  }
+}
