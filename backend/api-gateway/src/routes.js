@@ -5,7 +5,7 @@ import credentials from './controllers/credentialsController.js';
 import cointars from './controllers/cointarsController.js';
 import dashboard from './controllers/dashboardController.js';
 import orders from './controllers/ordersController.js';
-import admin from '../../admin-panel/src/index.js';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const router = express.Router();
 
@@ -15,6 +15,6 @@ router.use('/credentials', credentials);
 router.use('/cointars', cointars);
 router.use('/dashboard', dashboard);
 router.use('/orders', orders);
-router.use('/admin', admin);
+router.use('/admin', createProxyMiddleware({ target: 'http://admin-panel:3000' }));
 
 export default router;
