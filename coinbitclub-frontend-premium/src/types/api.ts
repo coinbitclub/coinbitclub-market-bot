@@ -53,3 +53,8 @@ export interface Report {
   id: string
   url: string
 }
+
+export interface EventMessage {
+  id: string
+  message: string
+}
