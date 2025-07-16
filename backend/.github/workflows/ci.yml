@@ -1,18 +1,22 @@
+# .github/workflows/ci.yml
+
 name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build-and-test:
     name: Build, Test & Coverage
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/api-gateway
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -23,29 +27,30 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        working-directory: backend/api-gateway
-        run: npm install
+        run: npm ci
 
       - name: Run tests with coverage
-        working-directory: backend/api-gateway
         run: npm test -- --coverage
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: backend/api-gateway/coverage
+          path: coverage
 
   code-scanning:
     name: CodeQL Analysis
     needs: build-and-test
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
+        with:
+          languages: javascript
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v2
