@@ -13,31 +13,29 @@ jobs:
   build-and-test:
     name: Build, Test & Coverage
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        # aponte para onde está o package.json do API Gateway
-        working-directory: backend/api-gateway
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js 18.x
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
       - name: Install dependencies
+        working-directory: backend/api-gateway
         run: npm ci
 
       - name: Run tests with coverage
+        working-directory: backend/api-gateway
         run: npm test -- --coverage
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage
+          path: backend/api-gateway/coverage
 
   code-scanning:
     name: CodeQL Analysis
