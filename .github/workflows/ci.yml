@@ -13,7 +13,8 @@ jobs:
     name: Build, Lint & Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -27,7 +28,7 @@ jobs:
       - name: Lint & Prettier check
         working-directory: backend/api-gateway
         run: |
-          npm run lint
+          npx eslint "src/**/*.js"
           npx prettier --check "src/**/*.js"
 
       - name: Run Tests with Coverage
@@ -45,7 +46,8 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
