@@ -12,6 +12,9 @@ jobs:
   build-and-test:
     name: Build, Lint & Test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/api-gateway
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -22,29 +25,29 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        working-directory: backend/api-gateway
-        run: npm install
+        run: npm ci
 
       - name: Lint & Prettier check
-        working-directory: backend/api-gateway
         run: |
           npx eslint "src/**/*.js"
           npx prettier --check "src/**/*.js"
 
       - name: Run Tests with Coverage
-        working-directory: backend/api-gateway
         run: npm test -- --coverage
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: backend/api-gateway/coverage
+          path: coverage
 
   code-scanning:
     name: CodeQL Analysis
     needs: build-and-test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/api-gateway
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
