@@ -12,5 +12,7 @@ jobs:
           node-version: 18
       - run: npm install -g knex
       - run: npm ci
+        working-directory: backend/api-gateway
       - run: knex migrate:latest
+        working-directory: backend/api-gateway
       - run: echo 'deploy'
