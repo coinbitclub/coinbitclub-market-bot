@@ -1,0 +1,78 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files: []
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # API Gateway
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:3000']
+    metrics_path: /metrics
+    scrape_interval: 5s
+
+  # Signal Ingestor
+  - job_name: 'signal-ingestor'
+    static_configs:
+      - targets: ['signal-ingestor:9001']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  # Signal Processor
+  - job_name: 'signal-processor'
+    static_configs:
+      - targets: ['signal-processor:8080']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  # Decision Engine
+  - job_name: 'decision-engine'
+    static_configs:
+      - targets: ['decision-engine:8080']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  # Order Executor
+  - job_name: 'order-executor'
+    static_configs:
+      - targets: ['order-executor:8080']
+    metrics_path: /metrics
+    scrape_interval: 5s
+
+  # Accounting Service
+  - job_name: 'accounting'
+    static_configs:
+      - targets: ['accounting:8080']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Notifications Service
+  - job_name: 'notifications'
+    static_configs:
+      - targets: ['notifications:8080']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Admin Panel
+  - job_name: 'admin-panel'
+    static_configs:
+      - targets: ['admin-panel:9015']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # PostgreSQL Exporter (if we add one later)
+  # - job_name: 'postgres'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+
+  # RabbitMQ Management (has built-in metrics)
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+    metrics_path: /metrics
+    scrape_interval: 30s

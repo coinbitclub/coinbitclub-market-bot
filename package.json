@@ -1,0 +1,37 @@
+{
+  "name": "coinbitclub-market-bot",
+  "version": "1.0.0",
+  "description": "Trading platform with AI and automation",
+  "type": "module",
+  "scripts": {
+    "start": "concurrently \"npm run start:api-gateway\" \"npm run start:frontend\"",
+    "dev": "concurrently \"npm run dev:api-gateway\" \"npm run dev:frontend\"",
+    "dev:api-gateway": "cd backend/api-gateway && npm run dev",
+    "dev:frontend": "cd coinbitclub-frontend-premium && npm run dev",
+    "dev:decision-engine": "cd backend/decision-engine && npm run dev",
+    "dev:signal-processor": "cd backend/signal-processor && npm run dev",
+    "dev:signal-ingestor": "cd backend/signal-ingestor && npm run dev",
+    "dev:order-executor": "cd backend/order-executor && npm run dev",
+    "dev:notifications": "cd backend/notifications && npm run dev",
+    "dev:accounting": "cd backend/accounting && npm run dev",
+    "dev:admin-panel": "cd backend/admin-panel && npm run dev",
+    "install:all": "npm install && cd backend/api-gateway && npm install && cd ../.. && cd coinbitclub-frontend-premium && npm install",
+    "start:api-gateway": "cd backend/api-gateway && npm start",
+    "start:frontend": "cd coinbitclub-frontend-premium && npm start",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend/api-gateway && npm test",
+    "test:frontend": "cd coinbitclub-frontend-premium && npm test"
+  },
+  "dependencies": {
+    "async-retry": "^1.3.3",
+    "axios": "^1.10.0",
+    "joi": "^17.13.3",
+    "knex": "^3.1.0",
+    "opossum": "^9.0.0",
+    "pg": "^8.16.3",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+coverage/
+# Ignora apenas .env, mas permite versionar .env.production
+.env
+!backend/api-gateway/.env.production
+frontend/.env
+.vercel

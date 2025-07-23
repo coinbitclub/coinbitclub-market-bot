@@ -1,0 +1,42 @@
+import { useState, useEffect } from 'react';
+
+// Componente para renderizar data apenas no cliente
+const ClientDate = () => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <>Data atual: --/--/---- --:--:--</>;
+  }
+
+  return <>Data atual: {new Date().toLocaleString()}</>;
+};
+
+export default function TestBasic() {
+  return (
+    <div style={{ 
+      padding: '20px', 
+      backgroundColor: '#000', 
+      color: '#fff', 
+      minHeight: '100vh',
+      fontSize: '24px'
+    }}>
+      <h1>TESTE BÁSICO - Se você está vendo isso, o Next.js está funcionando!</h1>
+      <p><ClientDate /></p>
+      <button onClick={() => alert('Botão funcionando!')}>
+        Clique aqui para testar JavaScript
+      </button>
+      
+      <div style={{ marginTop: '20px', border: '1px solid #fff', padding: '10px' }}>
+        <h2>Informações do Sistema:</h2>
+        <ul>
+          <li>Window location: {typeof window !== 'undefined' ? window.location.href : 'Server side'}</li>
+          <li>User agent: {typeof window !== 'undefined' ? navigator.userAgent : 'Server side'}</li>
+        </ul>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,117 @@
+import { NextPage } from 'next';
+import Head from 'next/head';
+
+const TestPage: NextPage = () => {
+  return (
+    <>
+      <Head>
+        <title>Teste - CoinBitClub</title>
+      </Head>
+
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #050506 0%, #0a0a0b 25%, #1a1a1c 50%, #050506 100%)',
+        color: '#FAFBFD',
+        fontFamily: "'Inter', sans-serif",
+        padding: '2rem',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <h1 style={{
+          fontSize: '3rem',
+          fontWeight: '900',
+          background: 'linear-gradient(135deg, #05A74E, #6EA297)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          marginBottom: '2rem'
+        }}>
+          🚀 Sistema Funcionando!
+        </h1>
+        
+        <p style={{
+          fontSize: '1.5rem',
+          color: '#AFB4B1',
+          textAlign: 'center',
+          marginBottom: '2rem'
+        }}>
+          Se você está vendo esta página, o frontend está rodando corretamente!
+        </p>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '1rem',
+          width: '100%',
+          maxWidth: '800px'
+        }}>
+          <a href="/" style={{
+            padding: '1rem',
+            background: 'rgba(5, 167, 78, 0.1)',
+            border: '1px solid rgba(5, 167, 78, 0.3)',
+            borderRadius: '12px',
+            textAlign: 'center',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }}>
+            🏠 Página Principal
+          </a>
+          
+          <a href="/user/credentials" style={{
+            padding: '1rem',
+            background: 'rgba(5, 167, 78, 0.1)',
+            border: '1px solid rgba(5, 167, 78, 0.3)',
+            borderRadius: '12px',
+            textAlign: 'center',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }}>
+            🔐 Credenciais
+          </a>
+          
+          <a href="/financial/dashboard" style={{
+            padding: '1rem',
+            background: 'rgba(5, 167, 78, 0.1)',
+            border: '1px solid rgba(5, 167, 78, 0.3)',
+            borderRadius: '12px',
+            textAlign: 'center',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }}>
+            💰 Dashboard Financeiro
+          </a>
+          
+          <a href="/system/monitoring" style={{
+            padding: '1rem',
+            background: 'rgba(5, 167, 78, 0.1)',
+            border: '1px solid rgba(5, 167, 78, 0.3)',
+            borderRadius: '12px',
+            textAlign: 'center',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }}>
+            🖥️ Monitoramento
+          </a>
+        </div>
+
+        <div style={{
+          marginTop: '3rem',
+          padding: '1rem',
+          background: 'rgba(5, 167, 78, 0.1)',
+          borderRadius: '12px',
+          border: '1px solid rgba(5, 167, 78, 0.2)',
+          textAlign: 'center'
+        }}>
+          <p style={{ margin: 0, color: '#6EA297' }}>
+            ✅ Frontend rodando na porta 3005<br/>
+            🔧 Backend disponível na porta 8080<br/>
+            🎯 Sistema totalmente operacional
+          </p>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default TestPage;

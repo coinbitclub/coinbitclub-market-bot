@@ -1,0 +1,11 @@
+{
+  "name": "signal-ingestor",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "amqplib": "^0.8.0",
+    "axios": "^1.3.4"
+  }
+}

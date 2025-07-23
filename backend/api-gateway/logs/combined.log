@@ -1,0 +1,14 @@
+{"level":"warn","message":"SMTP configuration missing, emails will be logged only","service":"coinbitclub-backend","timestamp":"2025-07-17T12:50:07.086Z"}
+{"level":"warn","message":{"attempt":1,"err":{}},"service":"coinbitclub-backend","timestamp":"2025-07-17T12:50:07.436Z"}
+{"level":"warn","message":{"attempt":2,"err":{}},"service":"coinbitclub-backend","timestamp":"2025-07-17T12:50:08.821Z"}
+{"level":"warn","message":{"attempt":3,"err":{}},"service":"coinbitclub-backend","timestamp":"2025-07-17T12:50:11.809Z"}
+{"level":"warn","message":{"attempt":4,"err":{}},"service":"coinbitclub-backend","timestamp":"2025-07-17T12:50:16.839Z"}
+{"level":"warn","message":{"attempt":5,"err":{}},"service":"coinbitclub-backend","timestamp":"2025-07-17T12:50:21.853Z"}
+{"level":"error","message":{"error":{}},"service":"coinbitclub-backend","timestamp":"2025-07-17T12:50:26.877Z"}
+{"level":"warn","message":"SMTP configuration missing, emails will be logged only","service":"coinbitclub-backend","timestamp":"2025-07-17T13:13:51.406Z"}
+{"level":"warn","message":{"attempt":1,"err":{}},"service":"coinbitclub-backend","timestamp":"2025-07-17T13:13:51.884Z"}
+{"level":"warn","message":{"attempt":2,"err":{}},"service":"coinbitclub-backend","timestamp":"2025-07-17T13:13:53.051Z"}
+{"level":"warn","message":{"attempt":3,"err":{}},"service":"coinbitclub-backend","timestamp":"2025-07-17T13:13:55.246Z"}
+{"level":"warn","message":{"attempt":4,"err":{}},"service":"coinbitclub-backend","timestamp":"2025-07-17T13:14:00.241Z"}
+{"level":"warn","message":{"attempt":5,"err":{}},"service":"coinbitclub-backend","timestamp":"2025-07-17T13:14:05.252Z"}
+{"level":"error","message":{"error":{}},"service":"coinbitclub-backend","timestamp":"2025-07-17T13:14:10.265Z"}

@@ -1,0 +1,86 @@
+import { NextPage } from 'next';
+import Head from 'next/head';
+import Link from 'next/link';
+
+const PrivacyPage: NextPage = () => {
+  return (
+    <>
+      <Head>
+        <title>Política de Privacidade - CoinBitClub</title>
+        <meta name="description" content="Política de Privacidade do CoinBitClub" />
+      </Head>
+      
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #000000 0%, #111111 100%)',
+        color: '#FFFFFF',
+        fontFamily: "'Inter', sans-serif",
+        padding: '2rem'
+      }}>
+        <div style={{
+          maxWidth: '800px',
+          margin: '0 auto',
+          background: 'rgba(0, 0, 0, 0.9)',
+          border: '2px solid #FFD700',
+          borderRadius: '16px',
+          padding: '2rem'
+        }}>
+          <h1 style={{
+            fontSize: '2rem',
+            fontWeight: '700',
+            background: 'linear-gradient(45deg, #FFD700, #FFA500)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            marginBottom: '2rem',
+            textAlign: 'center'
+          }}>
+            Política de Privacidade
+          </h1>
+
+          <div style={{ lineHeight: '1.6', color: '#CCCCCC' }}>
+            <h2 style={{ color: '#FFD700', marginTop: '2rem' }}>1. Coleta de Dados</h2>
+            <p>Coletamos apenas as informações necessárias para fornecer nossos serviços, incluindo nome, email, telefone e dados de trading.</p>
+
+            <h2 style={{ color: '#FFD700', marginTop: '2rem' }}>2. Uso das Informações</h2>
+            <p>Suas informações são utilizadas exclusivamente para:</p>
+            <ul>
+              <li>Fornecer acesso à plataforma</li>
+              <li>Processar transações</li>
+              <li>Enviar notificações importantes</li>
+              <li>Melhorar nossos serviços</li>
+            </ul>
+
+            <h2 style={{ color: '#FFD700', marginTop: '2rem' }}>3. Proteção de Dados</h2>
+            <p>Utilizamos criptografia de ponta e seguimos as melhores práticas de segurança para proteger suas informações.</p>
+
+            <h2 style={{ color: '#FFD700', marginTop: '2rem' }}>4. Compartilhamento</h2>
+            <p>Não vendemos, alugamos ou compartilhamos suas informações pessoais com terceiros, exceto quando necessário para o funcionamento dos serviços.</p>
+
+            <h2 style={{ color: '#FFD700', marginTop: '2rem' }}>5. Seus Direitos</h2>
+            <p>Você tem o direito de acessar, corrigir ou excluir suas informações pessoais a qualquer momento.</p>
+
+            <h2 style={{ color: '#FFD700', marginTop: '2rem' }}>6. Contato</h2>
+            <p>Para questões sobre privacidade, entre em contato: privacy@coinbitclub.com</p>
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+            <Link href="/signup" style={{
+              display: 'inline-block',
+              padding: '1rem 2rem',
+              background: 'linear-gradient(45deg, #FFD700, #FFA500)',
+              color: '#000000',
+              textDecoration: 'none',
+              borderRadius: '8px',
+              fontWeight: '600',
+              transition: 'transform 0.2s'
+            }}>
+              Voltar ao Cadastro
+            </Link>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default PrivacyPage;

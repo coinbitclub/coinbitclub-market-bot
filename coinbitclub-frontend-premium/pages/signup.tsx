@@ -1,0 +1,418 @@
+import { NextPage } from 'next';
+import Head from 'next/head';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+
+interface SignupForm {
+  fullName: string;
+  email: string;
+  phone: string;
+  country: string;
+  password: string;
+  confirmPassword: string;
+  termsAccepted: boolean;
+}
+
+const countries = [
+  'Brasil', 'Argentina', 'Chile', 'Colômbia', 'Peru', 'Uruguai', 'Paraguai',
+  'Estados Unidos', 'Canadá', 'México', 'Portugal', 'Espanha', 'França',
+  'Alemanha', 'Reino Unido', 'Itália', 'Outros'
+];
+
+const SignupPage: NextPage = () => {
+  const [mounted, setMounted] = useState(false);
+  const [form, setForm] = useState<SignupForm>({
+    fullName: '',
+    email: '',
+    phone: '',
+    country: '',
+    password: '',
+    confirmPassword: '',
+    termsAccepted: false
+  });
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const validateForm = (): boolean => {
+    const newErrors: {[key: string]: string} = {};
+
+    if (!form.fullName.trim()) {
+      newErrors.fullName = 'Nome completo é obrigatório';
+    } else if (form.fullName.trim().length < 3) {
+      newErrors.fullName = 'Nome deve ter pelo menos 3 caracteres';
+    }
+
+    if (!form.email.trim()) {
+      newErrors.email = 'Email é obrigatório';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = 'Email inválido';
+    }
+
+    if (!form.phone.trim()) {
+      newErrors.phone = 'Telefone é obrigatório';
+    } else if (!/^\+?[\d\s\-\(\)]{10,}$/.test(form.phone)) {
+      newErrors.phone = 'Telefone inválido';
+    }
+
+    if (!form.country) {
+      newErrors.country = 'País é obrigatório';
+    }
+
+    if (!form.password) {
+      newErrors.password = 'Senha é obrigatória';
+    } else if (form.password.length < 8) {
+      newErrors.password = 'Senha deve ter pelo menos 8 caracteres';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(form.password)) {
+      newErrors.password = 'Senha deve conter maiúscula, minúscula e número';
+    }
+
+    if (form.password !== form.confirmPassword) {
+      newErrors.confirmPassword = 'Senhas não coincidem';
+    }
+
+    if (!form.termsAccepted) {
+      newErrors.termsAccepted = 'Você deve aceitar os termos de uso';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      // Aqui será a integração com o backend
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: form.fullName,
+          email: form.email,
+          phone: form.phone,
+          country: form.country,
+          password: form.password
+        }),
+      });
+
+      if (response.ok) {
+        alert('Cadastro realizado com sucesso! Verificar seu email.');
+        // Redirect para login ou dashboard
+      } else {
+        const errorData = await response.json();
+        setErrors({ submit: errorData.message || 'Erro no cadastro' });
+      }
+    } catch (error) {
+      console.log('Signup simulated - redirecting to trial dashboard');
+      // Simulação para desenvolvimento
+      window.location.href = '/dashboard?trial=true';
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: keyof SignupForm, value: string | boolean) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  if (!mounted) {
+    return <div>Carregando...</div>;
+  }
+
+  return (
+    <>
+      <Head>
+        <title>Cadastro - CoinBitClub</title>
+        <meta name="description" content="Cadastre-se no CoinBitClub e comece seu teste gratuito de 7 dias" />
+      </Head>
+      
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #000000 0%, #111111 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem',
+        fontFamily: "'Inter', sans-serif"
+      }}>
+        <div style={{
+          width: '100%',
+          maxWidth: '500px',
+          background: 'rgba(0, 0, 0, 0.9)',
+          border: '2px solid #FFD700',
+          borderRadius: '16px',
+          padding: '2rem',
+          boxShadow: '0 20px 40px rgba(255, 215, 0, 0.3)'
+        }}>
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <h1 style={{
+              fontSize: '2rem',
+              fontWeight: '700',
+              background: 'linear-gradient(45deg, #FFD700, #FFA500)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              marginBottom: '0.5rem'
+            }}>
+              ⚡ CoinBitClub
+            </h1>
+            <p style={{ color: '#CCCCCC', fontSize: '1rem' }}>
+              Comece seu teste gratuito de 7 dias
+            </p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {/* Nome Completo */}
+            <div>
+              <label style={{ color: '#FFD700', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem', display: 'block' }}>
+                Nome Completo *
+              </label>
+              <input
+                type="text"
+                value={form.fullName}
+                onChange={(e) => handleInputChange('fullName', e.target.value)}
+                placeholder="Seu nome completo"
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: `2px solid ${errors.fullName ? '#FF4444' : '#333333'}`,
+                  borderRadius: '8px',
+                  color: '#FFFFFF',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.3s'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#FFD700'}
+                onBlur={(e) => e.target.style.borderColor = errors.fullName ? '#FF4444' : '#333333'}
+              />
+              {errors.fullName && <span style={{ color: '#FF4444', fontSize: '0.75rem' }}>{errors.fullName}</span>}
+            </div>
+
+            {/* Email */}
+            <div>
+              <label style={{ color: '#FFD700', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem', display: 'block' }}>
+                Email *
+              </label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="seu@email.com"
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: `2px solid ${errors.email ? '#FF4444' : '#333333'}`,
+                  borderRadius: '8px',
+                  color: '#FFFFFF',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.3s'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#FFD700'}
+                onBlur={(e) => e.target.style.borderColor = errors.email ? '#FF4444' : '#333333'}
+              />
+              {errors.email && <span style={{ color: '#FF4444', fontSize: '0.75rem' }}>{errors.email}</span>}
+            </div>
+
+            {/* Telefone */}
+            <div>
+              <label style={{ color: '#FFD700', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem', display: 'block' }}>
+                Telefone *
+              </label>
+              <input
+                type="tel"
+                value={form.phone}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
+                placeholder="+55 (11) 99999-9999"
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: `2px solid ${errors.phone ? '#FF4444' : '#333333'}`,
+                  borderRadius: '8px',
+                  color: '#FFFFFF',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.3s'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#FFD700'}
+                onBlur={(e) => e.target.style.borderColor = errors.phone ? '#FF4444' : '#333333'}
+              />
+              {errors.phone && <span style={{ color: '#FF4444', fontSize: '0.75rem' }}>{errors.phone}</span>}
+            </div>
+
+            {/* País */}
+            <div>
+              <label style={{ color: '#FFD700', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem', display: 'block' }}>
+                País *
+              </label>
+              <select
+                value={form.country}
+                onChange={(e) => handleInputChange('country', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: `2px solid ${errors.country ? '#FF4444' : '#333333'}`,
+                  borderRadius: '8px',
+                  color: '#FFFFFF',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.3s'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#FFD700'}
+                onBlur={(e) => e.target.style.borderColor = errors.country ? '#FF4444' : '#333333'}
+              >
+                <option value="" style={{ background: '#000000' }}>Selecione seu país</option>
+                {countries.map(country => (
+                  <option key={country} value={country} style={{ background: '#000000' }}>
+                    {country}
+                  </option>
+                ))}
+              </select>
+              {errors.country && <span style={{ color: '#FF4444', fontSize: '0.75rem' }}>{errors.country}</span>}
+            </div>
+
+            {/* Senha */}
+            <div>
+              <label style={{ color: '#FFD700', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem', display: 'block' }}>
+                Senha *
+              </label>
+              <input
+                type="password"
+                value={form.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                placeholder="Mínimo 8 caracteres"
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: `2px solid ${errors.password ? '#FF4444' : '#333333'}`,
+                  borderRadius: '8px',
+                  color: '#FFFFFF',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.3s'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#FFD700'}
+                onBlur={(e) => e.target.style.borderColor = errors.password ? '#FF4444' : '#333333'}
+              />
+              {errors.password && <span style={{ color: '#FF4444', fontSize: '0.75rem' }}>{errors.password}</span>}
+            </div>
+
+            {/* Confirmar Senha */}
+            <div>
+              <label style={{ color: '#FFD700', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem', display: 'block' }}>
+                Confirmar Senha *
+              </label>
+              <input
+                type="password"
+                value={form.confirmPassword}
+                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                placeholder="Confirme sua senha"
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: `2px solid ${errors.confirmPassword ? '#FF4444' : '#333333'}`,
+                  borderRadius: '8px',
+                  color: '#FFFFFF',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.3s'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#FFD700'}
+                onBlur={(e) => e.target.style.borderColor = errors.confirmPassword ? '#FF4444' : '#333333'}
+              />
+              {errors.confirmPassword && <span style={{ color: '#FF4444', fontSize: '0.75rem' }}>{errors.confirmPassword}</span>}
+            </div>
+
+            {/* Aceitar Termos */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <input
+                type="checkbox"
+                checked={form.termsAccepted}
+                onChange={(e) => handleInputChange('termsAccepted', e.target.checked)}
+                style={{
+                  marginTop: '0.25rem',
+                  transform: 'scale(1.2)',
+                  accentColor: '#FFD700'
+                }}
+              />
+              <label style={{ color: '#CCCCCC', fontSize: '0.875rem', lineHeight: '1.4' }}>
+                Eu aceito os{' '}
+                <Link href="/terms" style={{ color: '#FFD700', textDecoration: 'underline' }}>
+                  Termos de Uso
+                </Link>
+                {' '}e{' '}
+                <Link href="/privacy" style={{ color: '#FFD700', textDecoration: 'underline' }}>
+                  Política de Privacidade
+                </Link>
+              </label>
+            </div>
+            {errors.termsAccepted && <span style={{ color: '#FF4444', fontSize: '0.75rem' }}>{errors.termsAccepted}</span>}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: '100%',
+                padding: '1rem',
+                background: loading ? '#666666' : 'linear-gradient(45deg, #FFD700, #FFA500)',
+                color: '#000000',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: '700',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'transform 0.2s',
+                transform: loading ? 'none' : 'scale(1)',
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) (e.target as HTMLElement).style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) (e.target as HTMLElement).style.transform = 'scale(1)';
+              }}
+            >
+              {loading ? 'Criando conta...' : 'Iniciar Teste Gratuito de 7 Dias'}
+            </button>
+
+            {errors.submit && (
+              <div style={{ color: '#FF4444', textAlign: 'center', fontSize: '0.875rem' }}>
+                {errors.submit}
+              </div>
+            )}
+          </form>
+
+          {/* Footer */}
+          <div style={{ textAlign: 'center', marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid #333333' }}>
+            <p style={{ color: '#CCCCCC', fontSize: '0.875rem' }}>
+              Já tem uma conta?{' '}
+              <Link href="/login" style={{ color: '#FFD700', textDecoration: 'underline', fontWeight: '600' }}>
+                Fazer Login
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default SignupPage;

@@ -1,0 +1,43 @@
+{
+  "name": "coinbitclub-market-bot-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "workspaces": [
+    "api-gateway",
+    "signal-ingestor",
+    "signal-processor", 
+    "decision-engine",
+    "order-executor",
+    "accounting",
+    "notifications",
+    "admin-panel"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm run install:workspaces",
+    "install:workspaces": "npm install --workspaces",
+    "build": "npm run build --workspaces",
+    "start": "npm run start --workspaces",
+    "dev": "concurrently \"npm run dev --workspace=api-gateway\" \"npm run dev --workspace=signal-ingestor\" \"npm run dev --workspace=signal-processor\" \"npm run dev --workspace=decision-engine\" \"npm run dev --workspace=order-executor\" \"npm run dev --workspace=accounting\" \"npm run dev --workspace=notifications\" \"npm run dev --workspace=admin-panel\"",
+    "test": "npm run test --workspaces",
+    "db:migrate": "npm run db:migrate --workspace=api-gateway",
+    "db:seed": "npm run db:seed --workspace=api-gateway",
+    "db:setup": "npm run db:setup --workspace=api-gateway",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.29.1",
+    "nodemon": "^3.0.2",
+    "cross-env": "^7.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

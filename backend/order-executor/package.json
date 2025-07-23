@@ -1,0 +1,11 @@
+{
+  "name": "order-executor",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "dependencies": {
+    "amqplib": "^0.8.0",
+    "ccxt": "^4.0.71",
+    "express": "^4.18.2"
+  }
+}

@@ -1,0 +1,545 @@
+import { NextPage } from 'next';
+import Head from 'next/head';
+import { useState, useEffect } from 'react';
+
+const BotConfig: NextPage = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  const [config, setConfig] = useState({
+    riskLevel: 'moderate',
+    maxTrade: 5,
+    dailyLimit: 50000,
+    stopLoss: 2,
+    takeProfit: 5,
+    activeStrategies: ['scalping', 'swing'],
+    tradingPairs: ['BTC/USDT', 'ETH/USDT', 'ADA/USDT'],
+    notifications: {
+      email: true,
+      sms: false,
+      telegram: true
+    }
+  });
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Carregar configurações do backend ao abrir a página
+  useEffect(() => {
+    const fetchConfig = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('/api/bot/config', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setConfig(data);
+        } else {
+          setError('Erro ao carregar configurações do bot.');
+        }
+      } catch (err) {
+        setError('Erro de conexão ao carregar configurações.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchConfig();
+  }, []);
+
+  const handleSaveConfig = async () => {
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const response = await fetch('/api/bot/config', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(config)
+      });
+      if (response.ok) {
+        setSuccess('Configurações salvas com sucesso!');
+      } else {
+        setError('Erro ao salvar configurações.');
+      }
+    } catch (error) {
+      setError('Erro de conexão ao salvar configurações.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const containerStyle = {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #050506 0%, #0a0a0b 25%, #1a1a1c 50%, #050506 100%)',
+    color: '#FAFBFD',
+    fontFamily: "'Inter', sans-serif"
+  };
+
+  const headerStyle = {
+    background: 'rgba(5, 167, 78, 0.05)',
+    backdropFilter: 'blur(20px)',
+    borderBottom: '1px solid rgba(5, 167, 78, 0.1)',
+    padding: isMobile ? '1rem' : '1.5rem 2rem',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    position: 'sticky' as const,
+    top: 0,
+    zIndex: 100
+  };
+
+  const mainContentStyle = {
+    maxWidth: '800px',
+    margin: '0 auto',
+    padding: isMobile ? '2rem 1rem' : '3rem 2rem'
+  };
+
+  const sectionStyle = {
+    background: 'rgba(5, 167, 78, 0.05)',
+    border: '1px solid rgba(5, 167, 78, 0.2)',
+    borderRadius: '20px',
+    padding: '2rem',
+    backdropFilter: 'blur(20px)',
+    marginBottom: '2rem'
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '0.875rem 1rem',
+    background: 'rgba(5, 167, 78, 0.1)',
+    border: '1px solid rgba(5, 167, 78, 0.3)',
+    borderRadius: '12px',
+    color: '#FAFBFD',
+    fontSize: '1rem',
+    outline: 'none'
+  };
+
+  const buttonStyle = {
+    background: 'linear-gradient(135deg, #05A74E, #6EA297)',
+    color: '#FAFBFD',
+    padding: '1rem 2rem',
+    borderRadius: '50px',
+    border: 'none',
+    fontSize: '1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 10px 30px rgba(5, 167, 78, 0.3)'
+  };
+
+  return (
+    <>
+      <Head>
+        <title>Configurações do Bot - CoinBitClub MarketBot</title>
+      </Head>
+
+      <div style={containerStyle}>
+        <header style={headerStyle}>
+          <div style={{
+            fontSize: isMobile ? '1.25rem' : '1.5rem',
+            fontWeight: '800',
+            background: 'linear-gradient(135deg, #05A74E, #6EA297)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            🤖 Configurações do Bot
+          </div>
+          <a href="/dashboard-simple" style={{
+            color: '#AFB4B1',
+            textDecoration: 'none',
+            fontSize: '0.875rem'
+          }}>
+            ← Voltar ao Dashboard
+          </a>
+        </header>
+
+        <main style={mainContentStyle}>
+          <div style={{ textAlign: 'center' as const, marginBottom: '2rem' }}>
+            {loading && (
+              <div style={{ color: '#05A74E', fontWeight: 600, marginBottom: '1rem' }}>Carregando configurações...</div>
+            )}
+            {error && (
+              <div style={{ color: '#ff4d4f', fontWeight: 600, marginBottom: '1rem' }}>{error}</div>
+            )}
+            {success && (
+              <div style={{ color: '#05A74E', fontWeight: 600, marginBottom: '1rem' }}>{success}</div>
+            )}
+          </div>
+          <div style={{
+            textAlign: 'center' as const,
+            marginBottom: '3rem'
+          }}>
+            <h1 style={{
+              fontSize: isMobile ? '2.5rem' : '3rem',
+              fontWeight: '900',
+              lineHeight: '1.1',
+              marginBottom: '1rem',
+              background: 'linear-gradient(135deg, #FAFBFD 0%, #6EA297 50%, #05A74E 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>
+              Configurar MarketBot
+            </h1>
+            <p style={{
+              fontSize: '1.125rem',
+              color: '#AFB4B1',
+              lineHeight: '1.6'
+            }}>
+              Ajuste as estratégias e parâmetros de risco do seu bot
+            </p>
+          </div>
+
+          {/* Configurações de Risco */}
+          <section style={sectionStyle}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: '700',
+              marginBottom: '1.5rem',
+              color: '#05A74E'
+            }}>
+              ⚠️ Gestão de Risco
+            </h2>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+              gap: '1.5rem'
+            }}>
+              <div>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                  color: '#AFB4B1',
+                  fontSize: '0.875rem'
+                }}>
+                  Nível de Risco
+                </label>
+                <select
+                  value={config.riskLevel}
+                  onChange={(e) => setConfig({...config, riskLevel: e.target.value})}
+                  style={inputStyle}
+                  disabled={loading || saving}
+                >
+                  <option value="conservative">Conservador</option>
+                  <option value="moderate">Moderado</option>
+                  <option value="aggressive">Agressivo</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                  color: '#AFB4B1',
+                  fontSize: '0.875rem'
+                }}>
+                  Máximo por Trade (%)
+                </label>
+                <input
+                  type="number"
+                  value={config.maxTrade}
+                  onChange={(e) => setConfig({...config, maxTrade: parseInt(e.target.value)})}
+                  style={inputStyle}
+                  min="1"
+                  max="10"
+                  disabled={loading || saving}
+                />
+              </div>
+
+              <div>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                  color: '#AFB4B1',
+                  fontSize: '0.875rem'
+                }}>
+                  Limite Diário (R$)
+                </label>
+                <input
+                  type="number"
+                  value={config.dailyLimit}
+                  onChange={(e) => setConfig({...config, dailyLimit: parseInt(e.target.value)})}
+                  style={inputStyle}
+                  min="1000"
+                  step="1000"
+                  disabled={loading || saving}
+                />
+              </div>
+
+              <div>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                  color: '#AFB4B1',
+                  fontSize: '0.875rem'
+                }}>
+                  Stop Loss (%)
+                </label>
+                <input
+                  type="number"
+                  value={config.stopLoss}
+                  onChange={(e) => setConfig({...config, stopLoss: parseInt(e.target.value)})}
+                  style={inputStyle}
+                  min="1"
+                  max="10"
+                  step="0.5"
+                  disabled={loading || saving}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Estratégias de Trading */}
+          <section style={sectionStyle}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: '700',
+              marginBottom: '1.5rem',
+              color: '#05A74E'
+            }}>
+              📊 Estratégias de Trading
+            </h2>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+              gap: '1rem'
+            }}>
+              {[
+                { id: 'scalping', name: 'Scalping', desc: 'Trades rápidos (1-5min)' },
+                { id: 'swing', name: 'Swing Trading', desc: 'Posições de médio prazo' },
+                { id: 'arbitrage', name: 'Arbitragem', desc: 'Diferença entre exchanges' },
+                { id: 'grid', name: 'Grid Trading', desc: 'Ordens em grade' }
+              ].map(strategy => (
+                <div
+                  key={strategy.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    padding: '1rem',
+                    background: config.activeStrategies.includes(strategy.id) 
+                      ? 'rgba(5, 167, 78, 0.2)' 
+                      : 'rgba(15, 45, 37, 0.1)',
+                    border: `1px solid ${config.activeStrategies.includes(strategy.id) 
+                      ? 'rgba(5, 167, 78, 0.5)' 
+                      : 'rgba(110, 162, 151, 0.2)'}`,
+                    borderRadius: '12px',
+                    cursor: loading || saving ? 'not-allowed' : 'pointer',
+                    opacity: loading || saving ? 0.6 : 1
+                  }}
+                  onClick={() => {
+                    if (loading || saving) return;
+                    const strategies = config.activeStrategies.includes(strategy.id)
+                      ? config.activeStrategies.filter(s => s !== strategy.id)
+                      : [...config.activeStrategies, strategy.id];
+                    setConfig({...config, activeStrategies: strategies});
+                  }}
+                >
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '4px',
+                    background: config.activeStrategies.includes(strategy.id) 
+                      ? '#05A74E' 
+                      : 'transparent',
+                    border: '2px solid #05A74E',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {config.activeStrategies.includes(strategy.id) && (
+                      <div style={{color: '#FAFBFD', fontSize: '12px'}}>✓</div>
+                    )}
+                  </div>
+                  <div>
+                    <div style={{fontWeight: '600', color: '#FAFBFD'}}>
+                      {strategy.name}
+                    </div>
+                    <div style={{fontSize: '0.875rem', color: '#AFB4B1'}}>
+                      {strategy.desc}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Pares de Trading */}
+          <section style={sectionStyle}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: '700',
+              marginBottom: '1.5rem',
+              color: '#05A74E'
+            }}>
+              💰 Pares de Trading
+            </h2>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+              gap: '1rem'
+            }}>
+              {[
+                'BTC/USDT', 'ETH/USDT', 'ADA/USDT', 
+                'DOT/USDT', 'LINK/USDT', 'BNB/USDT'
+              ].map(pair => (
+                <div
+                  key={pair}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    padding: '0.875rem',
+                    background: config.tradingPairs.includes(pair) 
+                      ? 'rgba(5, 167, 78, 0.2)' 
+                      : 'rgba(15, 45, 37, 0.1)',
+                    border: `1px solid ${config.tradingPairs.includes(pair) 
+                      ? 'rgba(5, 167, 78, 0.5)' 
+                      : 'rgba(110, 162, 151, 0.2)'}`,
+                    borderRadius: '12px',
+                    cursor: loading || saving ? 'not-allowed' : 'pointer',
+                    opacity: loading || saving ? 0.6 : 1,
+                    fontSize: '0.875rem',
+                    fontWeight: '600'
+                  }}
+                  onClick={() => {
+                    if (loading || saving) return;
+                    const pairs = config.tradingPairs.includes(pair)
+                      ? config.tradingPairs.filter(p => p !== pair)
+                      : [...config.tradingPairs, pair];
+                    setConfig({...config, tradingPairs: pairs});
+                  }}
+                >
+                  <div style={{
+                    width: '12px',
+                    height: '12px',
+                    borderRadius: '50%',
+                    background: config.tradingPairs.includes(pair) ? '#05A74E' : '#AFB4B1'
+                  }}></div>
+                  {pair}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Notificações */}
+          <section style={sectionStyle}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: '700',
+              marginBottom: '1.5rem',
+              color: '#05A74E'
+            }}>
+              🔔 Notificações
+            </h2>
+
+            <div style={{
+              display: 'grid',
+              gap: '1rem'
+            }}>
+              {[
+                { key: 'email', name: 'Email', icon: '📧' },
+                { key: 'sms', name: 'SMS', icon: '📱' },
+                { key: 'telegram', name: 'Telegram', icon: '💬' }
+              ].map(notif => (
+                <div
+                  key={notif.key}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '1rem',
+                    background: 'rgba(15, 45, 37, 0.1)',
+                    border: '1px solid rgba(110, 162, 151, 0.2)',
+                    borderRadius: '12px'
+                  }}
+                >
+                  <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+                    <span style={{fontSize: '1.5rem'}}>{notif.icon}</span>
+                    <span style={{fontWeight: '600'}}>{notif.name}</span>
+                  </div>
+                  <div
+                    style={{
+                      width: '50px',
+                      height: '28px',
+                      borderRadius: '14px',
+                      background: config.notifications[notif.key] ? '#05A74E' : '#AFB4B1',
+                      position: 'relative' as const,
+                      cursor: loading || saving ? 'not-allowed' : 'pointer',
+                      opacity: loading || saving ? 0.6 : 1,
+                      transition: 'all 0.3s ease'
+                    }}
+                    onClick={() => {
+                      if (loading || saving) return;
+                      setConfig({
+                        ...config,
+                        notifications: {
+                          ...config.notifications,
+                          [notif.key]: !config.notifications[notif.key]
+                        }
+                      });
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        borderRadius: '50%',
+                        background: '#FAFBFD',
+                        position: 'absolute' as const,
+                        top: '3px',
+                        left: config.notifications[notif.key] ? '25px' : '3px',
+                        transition: 'all 0.3s ease'
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Botão Salvar */}
+          <div style={{textAlign: 'center' as const, marginTop: '3rem'}}>
+            <button
+              onClick={handleSaveConfig}
+              style={buttonStyle}
+              disabled={loading || saving}
+              onMouseEnter={(e) => {
+                if (loading || saving) return;
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 15px 40px rgba(5, 167, 78, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                if (loading || saving) return;
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 10px 30px rgba(5, 167, 78, 0.3)';
+              }}
+            >
+              {saving ? 'Salvando...' : '💾 Salvar Configurações'}
+            </button>
+          </div>
+        </main>
+      </div>
+    </>
+  );
+};
+
+export default BotConfig;

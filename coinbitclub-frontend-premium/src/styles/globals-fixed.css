@@ -1,0 +1,188 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* RESET FORÇADO */
+* {
+  box-sizing: border-box !important;
+}
+
+*:not(style) {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html {
+  font-family: 'Inter', sans-serif !important;
+  background: #050506 !important;
+  color: #FAFBFD !important;
+  height: 100% !important;
+}
+
+body {
+  font-family: 'Inter', sans-serif !important;
+  background: #050506 !important;
+  color: #FAFBFD !important;
+  min-height: 100vh !important;
+  line-height: 1.5 !important;
+}
+
+/* CORES FORÇADAS */
+.bg-brand-dark { background-color: #050506 !important; }
+.bg-brand-primary { background-color: #05A74E !important; }
+.bg-brand-secondary { background-color: #4B4D52 !important; }
+.bg-brand-accent { background-color: #6EA297 !important; }
+.bg-brand-light { background-color: #FAFBFD !important; }
+.bg-brand-neutral { background-color: #AFB4B1 !important; }
+
+.text-brand-dark { color: #050506 !important; }
+.text-brand-primary { color: #05A74E !important; }
+.text-brand-secondary { color: #4B4D52 !important; }
+.text-brand-accent { color: #6EA297 !important; }
+.text-brand-light { color: #FAFBFD !important; }
+.text-brand-neutral { color: #AFB4B1 !important; }
+
+/* TIPOGRAFIA PREMIUM */
+.font-inter { font-family: 'Inter', sans-serif !important; }
+.font-mono { font-family: 'Roboto Mono', monospace !important; }
+
+/* UTILITÁRIOS CUSTOMIZADOS */
+.container-premium {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 2rem !important;
+}
+
+.card-premium {
+  background: rgba(75, 77, 82, 0.3) !important;
+  border: 1px solid rgba(175, 180, 177, 0.1) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.button-premium {
+  background: #05A74E !important;
+  color: #FAFBFD !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.button-premium:hover {
+  background: #4B4D52 !important;
+  transform: translateY(-1px) !important;
+}
+
+.button-secondary {
+  background: #FAFBFD !important;
+  color: #050506 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.button-secondary:hover {
+  background: #AFB4B1 !important;
+}
+
+/* GRADIENTES */
+.gradient-premium {
+  background: linear-gradient(135deg, #05A74E 0%, #6EA297 100%) !important;
+}
+
+.gradient-dark {
+  background: linear-gradient(180deg, #050506 0%, #4B4D52 100%) !important;
+}
+
+/* SHADOWS */
+.shadow-premium {
+  box-shadow: 0 10px 25px rgba(5, 167, 78, 0.2) !important;
+}
+
+.shadow-dark {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* SCROLLBAR CUSTOMIZADO */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #4B4D52;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #05A74E;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6EA297;
+}
+
+/* REMOVER ESTILOS CONFLITANTES */
+a {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+button {
+  background: none !important;
+  border: none !important;
+  font-family: inherit !important;
+}
+
+/* OVERRIDE TAILWIND CLASSES */
+.min-h-screen {
+  min-height: 100vh !important;
+  background: #050506 !important;
+}
+
+.container {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 2rem !important;
+}
+
+.text-white {
+  color: #FAFBFD !important;
+}
+
+.bg-gray-900, .bg-gray-800, .bg-gray-700 {
+  background: #050506 !important;
+}
+
+/* FORÇAR CORES NOS ELEMENTOS */
+div, span, p, h1, h2, h3, h4, h5, h6 {
+  color: inherit !important;
+}
+
+/* ANIMAÇÕES */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease-out !important;
+}
+
+@keyframes pulse-green {
+  0%, 100% { background-color: #05A74E; }
+  50% { background-color: #6EA297; }
+}
+
+.animate-pulse-green {
+  animation: pulse-green 2s infinite !important;
+}

@@ -1,0 +1,47 @@
+export default function TestPage() {
+  return (
+    <div style={{
+      background: '#000',
+      color: '#fff',
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <h1 style={{ color: '#FFD700', fontSize: '3rem', marginBottom: '2rem' }}>
+        🚀 CoinBitClub
+      </h1>
+      <p style={{ color: '#00BFFF', fontSize: '1.5rem', marginBottom: '2rem' }}>
+        Servidor funcionando perfeitamente!
+      </p>
+      <div style={{ display: 'flex', gap: '1rem' }}>
+        <button style={{
+          background: '#FFD700',
+          color: '#000',
+          padding: '1rem 2rem',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '1rem',
+          fontWeight: 'bold',
+          cursor: 'pointer'
+        }}>
+          Teste 1
+        </button>
+        <button style={{
+          background: '#00BFFF',
+          color: '#000',
+          padding: '1rem 2rem',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '1rem',
+          fontWeight: 'bold',
+          cursor: 'pointer'
+        }}>
+          Teste 2
+        </button>
+      </div>
+    </div>
+  );
+}
