@@ -80,8 +80,12 @@ fi
 # 4. Deploy automático (se configurado)
 echo "🚀 Iniciando deploy..."
 
-# Verifica se existe configuração do Vercel
-if [ -f "vercel.json" ] || [ -f ".vercel/project.json" ]; then
+# Verifica se existe configuração do Railway
+if [ -f "railway.json" ]; then
+    echo "🚄 Fazendo deploy no Railway..."
+    railway login
+    railway up
+elif [ -f "vercel.json" ] || [ -f ".vercel/project.json" ]; then
     echo "📡 Fazendo deploy no Vercel..."
     npx vercel --prod
 elif [ -f "netlify.toml" ]; then
