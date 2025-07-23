@@ -1,13 +1,39 @@
-# Dockerfile para CoinbitClub Market Bot - Railway Deploy
+# CoinbitClub Market Bot - Railway Dockerfile
 FROM node:18-alpine
-
-# Instalar ferramentas necessárias
-RUN apk add --no-cache git
 
 # Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar package.json do projeto raiz se existir
+# Instalar dependências globais necessárias
+RUN npm install -g pm2
+
+# Copiar todos os arquivos do projeto
+COPY . .
+
+# Instalar dependências do frontend
+WORKDIR /app/coinbitclub-frontend-premium
+RUN npm install
+RUN npm run build
+
+# Instalar dependências do backend API Gateway
+WORKDIR /app/backend/api-gateway
+RUN npm install
+
+# Voltar para raiz
+WORKDIR /app
+
+# Criar script de inicialização
+RUN echo '#!/bin/sh\n\
+echo "🚀 Iniciando CoinbitClub Market Bot..."\n\
+cd /app/backend/api-gateway\n\
+echo "📡 Iniciando API Gateway na porta $PORT"\n\
+npm start' > start.sh && chmod +x start.sh
+
+# Expor porta
+EXPOSE $PORT
+
+# Comando para iniciar
+CMD ["./start.sh"]
 COPY package*.json ./
 
 # Instalar dependências do projeto raiz (se houver)
