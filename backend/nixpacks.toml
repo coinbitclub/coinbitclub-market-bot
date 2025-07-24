@@ -1,0 +1,11 @@
+[providers]
+
+[build]
+command = "npm install --production --prefix=api-gateway"
+
+[start]
+cmd = "cd api-gateway && npm start"
+
+[variables]
+NODE_ENV = "production"
+PORT = "3000"
