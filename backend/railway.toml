@@ -1,6 +1,9 @@
 [build]
 builder = "NIXPACKS"
 
+[nixpacks]
+configFile = "nixpacks.toml"
+
 [deploy]
 healthcheckPath = "/health"
 healthcheckTimeout = 300

@@ -1,10 +1,11 @@
 [providers]
+node = "18"
 
 [build]
-command = "npm install --production --prefix=api-gateway"
+command = "cd api-gateway && npm install --production"
 
 [start]
-cmd = "cd api-gateway && npm start"
+cmd = "cd api-gateway && node src/index.js"
 
 [variables]
 NODE_ENV = "production"
