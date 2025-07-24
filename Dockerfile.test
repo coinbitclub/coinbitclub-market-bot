@@ -1,0 +1,18 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copiar tudo primeiro
+COPY . .
+
+# Mudar para o diretório do api-gateway
+WORKDIR /app/backend/api-gateway
+
+# Instalar dependências
+RUN npm install --only=production
+
+# Expor porta
+EXPOSE 8081
+
+# Comando de inicialização
+CMD ["npm", "start"]

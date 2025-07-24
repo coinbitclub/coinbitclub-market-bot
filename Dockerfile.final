@@ -1,0 +1,23 @@
+# Dockerfile para Railway - Abordagem Simplificada
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copiar todo o diretório backend
+COPY backend/ ./backend/
+
+# Debug - listar arquivos copiados
+RUN ls -la ./backend/
+RUN ls -la ./backend/api-gateway/ || echo "api-gateway directory not found"
+
+# Mudar para o diretório do api-gateway
+WORKDIR /app/backend/api-gateway
+
+# Instalar dependências
+RUN npm install --only=production
+
+# Expor porta
+EXPOSE 8081
+
+# Iniciar aplicação
+CMD ["npm", "start"]

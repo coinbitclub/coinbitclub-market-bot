@@ -1,0 +1,19 @@
+# Dockerfile para Railway - Versão Simplificada
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copiar apenas o que precisamos
+COPY backend/api-gateway/package*.json ./
+
+# Instalar dependências
+RUN npm ci --omit=dev
+
+# Copiar código do api-gateway
+COPY backend/api-gateway ./
+
+# Expor porta
+EXPOSE 8081
+
+# Iniciar aplicação
+CMD ["npm", "start"]

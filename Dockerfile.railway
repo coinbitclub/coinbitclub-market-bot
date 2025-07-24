@@ -1,0 +1,19 @@
+# Dockerfile para Railway - Nova Versão
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copiar package.json
+COPY backend/api-gateway/package.json ./package.json
+
+# Instalar dependências
+RUN npm install --only=production
+
+# Copiar código do api-gateway
+COPY backend/api-gateway ./
+
+# Expor porta
+EXPOSE 8081
+
+# Iniciar aplicação
+CMD ["npm", "start"]

@@ -4,7 +4,7 @@
   "description": "Trading platform with AI and automation",
   "type": "module",
   "scripts": {
-    "start": "concurrently \"npm run start:api-gateway\" \"npm run start:frontend\"",
+    "start": "cd backend/api-gateway && npm start",
     "dev": "concurrently \"npm run dev:api-gateway\" \"npm run dev:frontend\"",
     "dev:api-gateway": "cd backend/api-gateway && npm run dev",
     "dev:frontend": "cd coinbitclub-frontend-premium && npm run dev",
