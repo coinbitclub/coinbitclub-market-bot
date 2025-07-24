@@ -1,19 +1,30 @@
-# Dockerfile para Railway - Nova Versão
+# Dockerfile para Railway - Com Debug Total
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Copiar package.json
-COPY backend/api-gateway/package.json ./package.json
+# Copiar toda a estrutura backend
+COPY backend/ ./backend/
 
-# Instalar dependências
-RUN npm install --only=production
+# Debug - listar tudo que foi copiado
+RUN echo "=== Conteúdo do backend ===" && ls -la ./backend/
+RUN echo "=== Conteúdo do api-gateway ===" && ls -la ./backend/api-gateway/
+RUN echo "=== Procurando package.json ===" && find ./backend -name "package.json" -type f
 
-# Copiar código do api-gateway
-COPY backend/api-gateway ./
+# Ir para o diretório api-gateway
+WORKDIR /app/backend/api-gateway
 
-# Expor porta
+# Debug final - verificar diretório atual
+RUN echo "=== Diretório atual ===" && pwd && ls -la
+
+# Tentar instalar dependências apenas se package.json existir
+RUN if [ -f package.json ]; then \
+      echo "package.json encontrado, instalando dependências..."; \
+      npm install --only=production; \
+    else \
+      echo "❌ package.json NÃO encontrado!"; \
+      exit 1; \
+    fi
+
 EXPOSE 8081
-
-# Iniciar aplicação
 CMD ["npm", "start"]
