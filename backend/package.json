@@ -15,8 +15,10 @@
   "scripts": {
     "install:all": "npm install && npm run install:workspaces",
     "install:workspaces": "npm install --workspaces",
-    "build": "npm run build --workspaces",
-    "start": "npm run start --workspaces",
+    "build": "cd api-gateway && npm install --production",
+    "start": "cd api-gateway && node src/index.js",
+    "start:production": "cd api-gateway && node src/index.js",
+    "start:workspaces": "npm run start --workspaces",
     "dev": "concurrently \"npm run dev --workspace=api-gateway\" \"npm run dev --workspace=signal-ingestor\" \"npm run dev --workspace=signal-processor\" \"npm run dev --workspace=decision-engine\" \"npm run dev --workspace=order-executor\" \"npm run dev --workspace=accounting\" \"npm run dev --workspace=notifications\" \"npm run dev --workspace=admin-panel\"",
     "test": "npm run test --workspaces",
     "db:migrate": "npm run db:migrate --workspace=api-gateway",
