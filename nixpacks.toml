@@ -1,0 +1,15 @@
+[phases.setup]
+nixPkgs = ["nodejs", "npm"]
+
+[phases.install]
+cmds = ["cd backend/api-gateway && npm ci --only=production"]
+
+[phases.build]
+cmds = []
+
+[start]
+cmd = "cd backend/api-gateway && npm start"
+
+[[env]]
+name = "NODE_ENV"
+value = "production"
