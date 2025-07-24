@@ -1,6 +1,7 @@
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import {
   UserGroupIcon,
   MagnifyingGlassIcon,
@@ -18,7 +19,9 @@ import {
   LinkIcon,
   GiftIcon,
   ArrowTrendingUpIcon,
-  DocumentArrowDownIcon
+  DocumentArrowDownIcon,
+  PencilIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import AdminLayout from '../../src/components/AdminLayout';
 import { useNotifications } from '../../src/contexts/NotificationContext.simple';
@@ -27,31 +30,47 @@ interface Affiliate {
   id: string;
   name: string;
   email: string;
-  status: 'active' | 'inactive' | 'suspended' | 'pending';
-  plan: 'BASIC' | 'PREMIUM' | 'VIP';
-  created_at: string;
-  last_login: string;
-  total_invested: number;
-  total_profit: number;
-  referrals_count: number;
-  total_commissions: number;
-  commission_rate: number;
-  pending_commissions: number;
-  paid_commissions: number;
-  referral_link: string;
   phone?: string;
   country?: string;
-  isVip?: boolean;
-  vipCommissionRate?: number;
+  account_type: 'testnet' | 'live';
+  affiliate_code: string;
+  total_referrals: number;
+  total_commissions: number;
+  status: 'active' | 'inactive' | 'suspended' | 'pending';
+  created_at: string;
+  last_login?: string;
+}
+
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
 }
 
 const AffiliatesAdmin: NextPage = () => {
+  const router = useRouter();
   const { addNotification } = useNotifications();
-  const [activeTab, setActiveTab] = useState<'overview' | 'referrals' | 'commissions'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'manage' | 'create'>('overview');
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    page: 1,
+    limit: 20,
+    total: 0,
+    pages: 0
+  });
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingAffiliate, setEditingAffiliate] = useState<Affiliate | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    country: 'BR',
+    accountType: 'testnet'
+  });
 
   const cardStyle = {
     background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(17, 17, 17, 0.9))',
@@ -63,56 +82,200 @@ const AffiliatesAdmin: NextPage = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    checkAuth();
+    fetchAffiliates();
   }, []);
 
-  const fetchData = async () => {
+  const checkAuth = () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/auth/login');
+      return;
+    }
+  };
+
+  const fetchAffiliates = async (page = 1) => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
       
-      // Mock data para fallback
-      const mockAffiliates: Affiliate[] = [
-        {
-          id: '1',
-          name: 'Pedro Afiliado',
-          email: 'pedro@afiliado.com',
-          status: 'active',
-          plan: 'PREMIUM',
-          created_at: '2024-01-10T10:30:00Z',
-          last_login: '2024-01-20T09:15:00Z',
-          total_invested: 3000,
-          total_profit: 450,
-          referrals_count: 8,
-          total_commissions: 1200,
-          commission_rate: 15,
-          pending_commissions: 350,
-          paid_commissions: 850,
-          referral_link: 'https://coinbitclub.com/ref/pedro123',
-          phone: '+5511999888777',
-          country: 'Brasil'
-        },
-        {
-          id: '2',
-          name: 'Ana Marketing',
-          email: 'ana@marketing.com',
-          status: 'active',
-          plan: 'VIP',
-          created_at: '2024-01-05T14:20:00Z',
-          last_login: '2024-01-20T11:30:00Z',
-          total_invested: 8000,
-          total_profit: 1800,
-          referrals_count: 15,
-          total_commissions: 2500,
-          commission_rate: 20,
-          pending_commissions: 600,
-          paid_commissions: 1900,
-          referral_link: 'https://coinbitclub.com/ref/ana456',
-          phone: '+5511888777666',
-          country: 'Brasil'
+      const response = await fetch(`http://localhost:9997/api/admin/affiliates?page=${page}&limit=20`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-      ];
-      
-      setAffiliates(mockAffiliates);
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        router.push('/auth/login');
+        return;
+      }
+
+      if (response.status === 403) {
+        addNotification({
+          type: 'error',
+          title: 'Acesso negado',
+          message: 'Privilégios de administrador requeridos'
+        });
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setAffiliates(data.affiliates || []);
+        setPagination(data.pagination || { page: 1, limit: 20, total: 0, pages: 0 });
+      } else {
+        addNotification({
+          type: 'error',
+          title: 'Erro',
+          message: 'Erro ao carregar afiliados'
+        });
+        
+        // Fallback com dados mock
+        setAffiliates([
+          {
+            id: '1',
+            name: 'Pedro Silva',
+            email: 'pedro@exemplo.com',
+            phone: '+5511999888777',
+            country: 'BR',
+            account_type: 'testnet',
+            affiliate_code: 'AFF001',
+            total_referrals: 5,
+            total_commissions: 250.50,
+            status: 'active',
+            created_at: '2024-01-15T10:30:00Z'
+          },
+          {
+            id: '2',
+            name: 'Ana Costa',
+            email: 'ana@exemplo.com',
+            phone: '+5511888777666',
+            country: 'BR',
+            account_type: 'live',
+            affiliate_code: 'AFF002',
+            total_referrals: 12,
+            total_commissions: 1250.75,
+            status: 'active',
+            created_at: '2024-01-10T14:20:00Z'
+          }
+        ]);
+        setPagination({ page: 1, limit: 20, total: 2, pages: 1 });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar afiliados:', error);
+      addNotification({
+        type: 'error',
+        title: 'Erro de conexão',
+        message: 'Não foi possível conectar ao servidor'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateAffiliate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:9997/api/admin/affiliates', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        addNotification({
+          type: 'success',
+          title: 'Afiliado criado',
+          message: `Código: ${data.affiliate.affiliateCode} | Senha: ${data.affiliate.tempPassword}`
+        });
+        setShowCreateForm(false);
+        setFormData({ name: '', email: '', phone: '', country: 'BR', accountType: 'testnet' });
+        fetchAffiliates();
+      } else {
+        addNotification({
+          type: 'error',
+          title: 'Erro',
+          message: data.error || 'Erro ao criar afiliado'
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao criar afiliado:', error);
+      addNotification({
+        type: 'error',
+        title: 'Erro',
+        message: 'Erro de conexão'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleStatus = async (affiliateId: string, currentStatus: string) => {
+    const action = currentStatus === 'active' ? 'deactivate' : 'activate';
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:9997/api/admin/affiliates/${affiliateId}/toggle`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        addNotification({
+          type: 'success',
+          title: 'Status alterado',
+          message: `Afiliado ${action === 'activate' ? 'ativado' : 'desativado'} com sucesso`
+        });
+        fetchAffiliates();
+      } else {
+        addNotification({
+          type: 'error',
+          title: 'Erro',
+          message: data.error || 'Erro ao alterar status'
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao alterar status:', error);
+      addNotification({
+        type: 'error',
+        title: 'Erro',
+        message: 'Erro de conexão'
+      });
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
+  const filteredAffiliates = affiliates.filter(affiliate => {
+    const matchesSearch = affiliate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         affiliate.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         affiliate.affiliate_code.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || affiliate.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
       
       addNotification({
         type: 'success',
