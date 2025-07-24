@@ -15,11 +15,20 @@ import financialController from './controllers/financialController.js';
 import docsController from './controllers/docsController.js';
 import { authenticateToken, requireRole } from './middleware/auth.js';
 
+// Import do novo controlador Railway integrado
+const adminRailwayController = require('./controllers/adminRailwayController.js');
+
 const router = express.Router();
 
 // Public routes
 router.use('/auth', auth);
 router.use('/docs', docsController);
+
+// Public dashboard demo route (no auth required)
+router.get('/dashboard/admin-demo', async (req, res, next) => {
+  const { getAdminDashboardDemo } = await import('./controllers/dashboardController.js');
+  getAdminDashboardDemo(req, res, next);
+});
 
 // Protected routes (require authentication)
 router.use(authenticateToken);
@@ -40,5 +49,8 @@ router.use('/financial', financialController);
 
 // Admin routes (require admin role)
 router.use('/admin', requireRole('admin'), adminController);
+
+// Admin Railway routes (integração completa com PostgreSQL Railway)
+router.use('/admin/railway', adminRailwayController);
 
 export default router;

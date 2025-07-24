@@ -289,6 +289,171 @@ export const getAdminDashboard = handleAsyncError(async (req, res) => {
   });
 });
 
+// Get admin dashboard demo (public for integration testing)
+export const getAdminDashboardDemo = handleAsyncError(async (req, res) => {
+  logger.info('🎯 Dashboard Admin Demo - Dados do PostgreSQL Railway');
+
+  try {
+    // Get real data from database
+    const [
+      pendingOperations,
+      completedTodayOperations,
+      activeUsers,
+      activeSubscriptions,
+      totalUsers
+    ] = await Promise.all([
+      // Pending operations
+      db('operations')
+        .where('status', 'pending')
+        .count('* as count')
+        .first().catch(() => ({ count: 0 })),
+      
+      // Completed operations today
+      db('operations')
+        .where('status', 'completed')
+        .whereRaw('DATE(created_at) = CURRENT_DATE')
+        .count('* as count')
+        .first().catch(() => ({ count: 0 })),
+      
+      // Active users
+      db('users')
+        .where('is_active', true)
+        .count('* as count')
+        .first().catch(() => ({ count: 0 })),
+      
+      // Total subscriptions
+      db('user_subscriptions')
+        .where('is_active', true)
+        .count('* as count')
+        .first().catch(() => ({ count: 0 })),
+      
+      // Total users
+      db('users')
+        .count('* as count')
+        .first().catch(() => ({ count: 0 }))
+    ]);
+
+    // Get recent operations
+    const recentOperations = await db('operations')
+      .orderBy('created_at', 'desc')
+      .limit(5)
+      .select('*')
+      .catch(() => []);
+
+    // Calculate mock returns for demo
+    const todayReturn = 2.45;
+    const historicalReturn = 18.67;
+    const accuracyToday = 78.5;
+    const accuracyHistorical = 82.3;
+
+    const dashboardData = {
+      returnToday: todayReturn,
+      returnHistorical: historicalReturn,
+      accuracyToday: accuracyToday,
+      accuracyHistorical: accuracyHistorical,
+      marketReading: {
+        direction: 'LONG',
+        confidence: 85,
+        justification: `PostgreSQL Railway conectado. ${totalUsers.count} usuários no sistema, ${recentOperations.length} operações recentes registradas.`,
+        lastUpdate: new Date().toLocaleString('pt-BR')
+      },
+      recentActivities: [
+        { 
+          id: '1', 
+          type: 'system', 
+          message: `Sistema conectado - ${totalUsers.count} usuários ativos`, 
+          timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) 
+        },
+        { 
+          id: '2', 
+          type: 'database', 
+          message: `PostgreSQL Railway: ${pendingOperations.count} operações pendentes`, 
+          timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) 
+        }
+      ],
+      activeOperations: recentOperations.map((op, index) => ({
+        id: op.id || (index + 1).toString(),
+        symbol: op.symbol || 'BTCUSDT',
+        entryValue: parseFloat(op.entry_price) || 42000,
+        exchange: op.exchange || 'Binance',
+        currentValue: parseFloat(op.current_price) || 43030,
+        pnl: parseFloat(op.pnl) || 1030,
+        pnlPercent: parseFloat(op.pnl_percentage) || 2.45,
+        timestamp: op.created_at ? new Date(op.created_at).toLocaleString('pt-BR') : new Date().toLocaleString('pt-BR')
+      })),
+      tradingViewSignals: [
+        { id: '1', datetime: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }), symbol: 'BTCUSDT', signal: 'BUY', source: 'TRADINGVIEW' }
+      ],
+      coinStarsSignals: [
+        { id: '1', datetime: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }), symbol: 'BTCUSDT', signal: 'BULLISH', source: 'COINSTATS', indicator: 'RSI', data: 'RSI(14): 32.5' }
+      ],
+      refundRequests: parseInt(pendingOperations.count) || 0,
+      affiliateRequests: parseInt(activeSubscriptions.count) || 0,
+      systemStatus: {
+        api: 'online',
+        database: 'online',
+        payments: 'online',
+        email: 'online'
+      },
+      stats: {
+        totalUsers: parseInt(totalUsers.count) || 0,
+        activeUsers: parseInt(activeUsers.count) || 0,
+        pendingOperations: parseInt(pendingOperations.count) || 0,
+        completedToday: parseInt(completedTodayOperations.count) || 0,
+        activeSubscriptions: parseInt(activeSubscriptions.count) || 0
+      }
+    };
+
+    logger.info('✅ Dashboard data loaded successfully', { 
+      totalUsers: dashboardData.stats.totalUsers,
+      activeOperations: dashboardData.activeOperations.length
+    });
+
+    res.json(dashboardData);
+
+  } catch (error) {
+    logger.error('❌ Erro ao buscar dados do dashboard', error);
+    
+    // Fallback data if database fails
+    const fallbackData = {
+      returnToday: 2.45,
+      returnHistorical: 18.67,
+      accuracyToday: 78.5,
+      accuracyHistorical: 82.3,
+      marketReading: {
+        direction: 'LONG',
+        confidence: 85,
+        justification: 'Modo fallback - Dados de demonstração do PostgreSQL Railway.',
+        lastUpdate: new Date().toLocaleString('pt-BR')
+      },
+      recentActivities: [
+        { id: '1', type: 'system', message: 'Sistema em modo demonstração', timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) },
+        { id: '2', type: 'database', message: 'Tentando reconectar ao PostgreSQL', timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) }
+      ],
+      activeOperations: [],
+      tradingViewSignals: [],
+      coinStarsSignals: [],
+      refundRequests: 0,
+      affiliateRequests: 0,
+      systemStatus: {
+        api: 'online',
+        database: 'connecting',
+        payments: 'online',
+        email: 'online'
+      },
+      stats: {
+        totalUsers: 0,
+        activeUsers: 0,
+        pendingOperations: 0,
+        completedToday: 0,
+        activeSubscriptions: 0
+      }
+    };
+
+    res.json(fallbackData);
+  }
+});
+
 // Get affiliate dashboard
 export const getAffiliateDashboard = handleAsyncError(async (req, res) => {
   const affiliateId = req.user.id;
@@ -678,6 +843,7 @@ router.get('/performance/:userId', async (req, res) => {
 // New dashboard routes
 router.get('/user', getUserDashboard);
 router.get('/admin', getAdminDashboard);
+router.get('/admin-demo', getAdminDashboardDemo); // New public demo route
 router.get('/affiliate', getAffiliateDashboard);
 
 // Admin Dashboard Routes

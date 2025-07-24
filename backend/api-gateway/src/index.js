@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import '../../common/env.js';
 import express from 'express';
 import cors from 'cors';
@@ -59,6 +61,10 @@ app.use(collectHttpMetrics);
 // Health check endpoint
 app.get('/health', healthEndpoint);
 app.get('/metrics', initMetrics);
+
+// Rotas diretas para dados reais do PostgreSQL (desenvolvimento)
+import realDataRoutes from './routes/realDataRoutes.js';
+app.use('/api', realDataRoutes);
 
 // API routes
 app.use('/api', routes);
