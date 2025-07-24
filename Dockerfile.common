@@ -1,16 +1,16 @@
-# Dockerfile para Railway - Versão Simplificada
+# Dockerfile para Railway - Com Common
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Copiar arquivos common necessários
-COPY backend/common ./common/
-
-# Copiar apenas o que precisamos do api-gateway
+# Copiar package.json do api-gateway
 COPY backend/api-gateway/package*.json ./
 
 # Instalar dependências
 RUN npm ci --omit=dev
+
+# Copiar arquivos common necessários
+COPY backend/common ./common/
 
 # Copiar código do api-gateway
 COPY backend/api-gateway ./

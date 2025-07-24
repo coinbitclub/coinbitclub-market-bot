@@ -1,0 +1,20 @@
+# Dockerfile para Railway - Muito Simples
+FROM node:18-alpine
+
+# Copiar tudo
+COPY . /app
+
+# Ir para api-gateway
+WORKDIR /app/backend/api-gateway
+
+# Instalar dependências
+RUN npm install --only=production
+
+# Debug - verificar se tudo está certo
+RUN pwd && ls -la src/
+
+# Expor porta
+EXPOSE 8081
+
+# Iniciar aplicação usando caminho absoluto
+CMD ["node", "/app/backend/api-gateway/src/index.js"]

@@ -1,0 +1,19 @@
+# Dockerfile para Railway - Versão Funcionando
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copiar todo o diretório backend primeiro
+COPY backend/ ./backend/
+
+# Ir para o diretório api-gateway e instalar dependências
+WORKDIR /app/backend/api-gateway
+
+# Verificar se package.json existe e instalar dependências
+RUN ls -la && npm install --only=production
+
+# Expor porta
+EXPOSE 8081
+
+# Iniciar aplicação
+CMD ["npm", "start"]

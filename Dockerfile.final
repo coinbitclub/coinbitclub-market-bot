@@ -1,14 +1,10 @@
-# Dockerfile para Railway - Abordagem Simplificada
+# Dockerfile para Railway - Versão Final
 FROM node:18-alpine
 
 WORKDIR /app
 
 # Copiar todo o diretório backend
 COPY backend/ ./backend/
-
-# Debug - listar arquivos copiados
-RUN ls -la ./backend/
-RUN ls -la ./backend/api-gateway/ || echo "api-gateway directory not found"
 
 # Mudar para o diretório do api-gateway
 WORKDIR /app/backend/api-gateway

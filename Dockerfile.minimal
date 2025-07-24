@@ -2,14 +2,14 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Garante que o Docker veja o package.json
-COPY backend/api-gateway/package.json ./
+# Copiar toda a estrutura backend preservando hierarquia
+COPY backend/ ./backend/
 
-# Instala apenas as dependências de produção
+# Ir para o diretório api-gateway
+WORKDIR /app/backend/api-gateway
+
+# Instalar dependências
 RUN npm install --only=production
-
-# Agora copia o restante dos arquivos
-COPY backend/api-gateway/ .
 
 EXPOSE 8081
 CMD ["npm", "start"]
