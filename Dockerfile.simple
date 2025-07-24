@@ -3,20 +3,23 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copiar arquivos common necessários
+# Copiar arquivos common necessários primeiro
 COPY backend/common ./common/
 
-# Copiar apenas o que precisamos do api-gateway
+# Copiar package.json do api-gateway
 COPY backend/api-gateway/package*.json ./
 
 # Instalar dependências
 RUN npm ci --omit=dev
 
-# Copiar código do api-gateway
-COPY backend/api-gateway ./
+# Copiar todo código do api-gateway (incluindo src/)
+COPY backend/api-gateway/ ./
 
 # Expor porta
-EXPOSE 8081
+EXPOSE $PORT
+
+# Verificar estrutura (debug)
+RUN ls -la && ls -la src/
 
 # Iniciar aplicação
 CMD ["npm", "start"]
