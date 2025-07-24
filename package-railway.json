@@ -1,0 +1,24 @@
+{
+  "name": "coinbitclub-market-bot-railway",
+  "version": "1.0.0",
+  "description": "CoinBitClub Market Bot - Railway Deploy",
+  "type": "module",
+  "main": "backend/api-gateway/src/index.js",
+  "scripts": {
+    "start": "cd backend/api-gateway && npm start",
+    "railway:start": "cd backend/api-gateway && node src/index.js",
+    "build": "echo 'No build required'",
+    "install:gateway": "cd backend/api-gateway && npm ci --omit=dev"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/coinbitclub/coinbitclub-market-bot.git"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
