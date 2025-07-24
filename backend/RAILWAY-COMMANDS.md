@@ -1,19 +1,18 @@
 # 🚀 Comandos Rápidos para Deploy no Railway
 
-## Setup Inicial
+## Conectar ao Projeto Existente
 ```bash
 # 1. Login no Railway
 railway login
 
-# 2. Criar projeto
-railway create coinbitclub-market-bot
+# 2. Conectar ao projeto existente
+railway link coinbitclub-market-bot
 
-# 3. Adicionar PostgreSQL
-railway add postgresql
+# 3. Verificar status
+railway status
 
-# 4. Configurar variáveis básicas
-chmod +x setup-railway-env.sh
-./setup-railway-env.sh
+# 4. Ver variáveis existentes
+railway variables
 ```
 
 ## Deploy

@@ -12,7 +12,20 @@ if ! command -v railway &> /dev/null; then
     exit 1
 fi
 
-echo "📝 Configurando variáveis de ambiente essenciais..."
+# Verificar se está conectado a um projeto
+if ! railway status &> /dev/null; then
+    echo "❌ Não conectado a um projeto Railway. Execute: railway link coinbitclub-market-bot"
+    exit 1
+fi
+
+echo "📋 Variáveis existentes:"
+railway variables
+
+echo ""
+echo "📝 Configurando/Atualizando variáveis de ambiente essenciais..."
+
+# Configurações básicas (só se não existirem)
+echo "🔧 Configurando variáveis básicas..."
 
 # Configurações básicas
 railway variables set NODE_ENV=production

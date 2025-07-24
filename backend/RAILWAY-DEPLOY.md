@@ -24,28 +24,35 @@ O sistema é composto por **8 microserviços**:
 
 ## 🚀 Passos para Deploy
 
-### 1. Setup Inicial
+### 1. Conectar ao Projeto Existente
 
 ```bash
-# Clone o repositório
+# Clone o repositório (se necessário)
 git clone <seu-repositorio>
 cd coinbitclub-market-bot/backend
 
 # Login no Railway
 railway login
 
-# Criar novo projeto
-railway create coinbitclub-market-bot
+# Conectar ao projeto existente
+railway link coinbitclub-market-bot
+
+# Ou usar o script automatizado
+chmod +x connect-railway.sh
+./connect-railway.sh
 ```
 
-### 2. Configurar Banco de Dados
+### 2. Verificar Configurações Existentes
 
 ```bash
-# Adicionar PostgreSQL
-railway add postgresql
+# Verificar status do projeto
+railway status
 
-# Verificar se DATABASE_URL foi criada automaticamente
+# Verificar variáveis existentes
 railway variables
+
+# Verificar se PostgreSQL já está configurado
+railway services
 ```
 
 ### 3. Configurar Variáveis de Ambiente

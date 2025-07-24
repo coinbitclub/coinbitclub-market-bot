@@ -17,6 +17,7 @@ import { authenticateToken, requireRole } from './middleware/auth.js';
 
 // Import do novo controlador Railway integrado
 const adminRailwayController = require('./controllers/adminRailwayController.js');
+const userRoutes = require('./routes/userRoutes.js');
 
 const router = express.Router();
 
@@ -52,5 +53,8 @@ router.use('/admin', requireRole('admin'), adminController);
 
 // Admin Railway routes (integração completa com PostgreSQL Railway)
 router.use('/admin/railway', adminRailwayController);
+
+// User and Affiliate routes (integração Railway)
+router.use('/api', userRoutes);
 
 export default router;
