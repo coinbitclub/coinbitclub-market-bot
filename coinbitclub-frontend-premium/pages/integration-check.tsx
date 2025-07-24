@@ -104,7 +104,7 @@ export default function IntegrationCheck() {
 
     // Test 2: Database Connection (simulated)
     try {
-      const dbTest = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/test/db`);
+      const dbTest = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8085'}/api/test/db`);
       results.database = {
         success: dbTest.ok,
         status: dbTest.status,
@@ -339,7 +339,7 @@ export default function IntegrationCheck() {
             <div>
               <strong>API Base URL:</strong> 
               <code style={{ marginLeft: '0.5rem', color: '#FFD700' }}>
-                {process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}
+                {process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8085'}
               </code>
             </div>
             <div>

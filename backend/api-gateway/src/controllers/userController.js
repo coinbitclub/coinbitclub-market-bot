@@ -620,10 +620,19 @@ const getAffiliateDashboard = async (req, res) => {
       SELECT affiliate_code FROM user_profiles WHERE user_id = $1
     `, [userId]);
 
-    const affiliateCode = affiliateResult.rows[0]?.affiliate_code;
+    let affiliateCode = affiliateResult.rows[0]?.affiliate_code;
 
+    // Se não tiver código, gerar um
     if (!affiliateCode) {
-      return res.status(400).json({ error: 'Código de afiliado não encontrado' });
+      affiliateCode = `AFF${Date.now()}`;
+      try {
+        await pool.query(`
+          UPDATE user_profiles SET affiliate_code = $1 WHERE user_id = $2
+        `, [affiliateCode, userId]);
+      } catch (updateError) {
+        // Se não conseguir atualizar, usar um código temporário
+        affiliateCode = `TEMP_AFF_${userId}`;
+      }
     }
 
     // Buscar indicados
@@ -785,8 +794,284 @@ const requestCommissionPayment = async (req, res) => {
   }
 };
 
+// ===== ÁREA DE ADMINISTRAÇÃO =====
+
+// Middleware para verificar se é admin
+const authenticateAdmin = async (req, res, next) => {
+  try {
+    // Primeiro fazer autenticação normal
+    await authenticateUser(req, res, () => {});
+    
+    // Verificar se é admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Acesso negado - privilégios de administrador requeridos' });
+    }
+    
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Erro na autenticação de admin' });
+  }
+};
+
+// Listar todos os afiliados
+const getAffiliates = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, status = 'all' } = req.query;
+    const offset = (page - 1) * limit;
+
+    let whereCondition = "u.role = 'affiliate'";
+    let params = [];
+
+    if (status === 'active') {
+      whereCondition += " AND up.account_type != 'testnet'";
+    } else if (status === 'testnet') {
+      whereCondition += " AND up.account_type = 'testnet'";
+    }
+
+    const affiliatesResult = await pool.query(`
+      SELECT 
+        u.id, u.name, u.email, u.created_at,
+        up.country, up.phone, up.account_type, up.affiliate_code,
+        COUNT(referrals.id) as total_referrals,
+        COALESCE(SUM(ac.amount), 0) as total_commissions
+      FROM users u
+      LEFT JOIN user_profiles up ON u.id = up.user_id
+      LEFT JOIN user_profiles referrals ON referrals.affiliate_code = up.affiliate_code
+      LEFT JOIN affiliate_commissions ac ON ac.affiliate_id = u.id AND ac.status = 'paid'
+      WHERE ${whereCondition}
+      GROUP BY u.id, u.name, u.email, u.created_at, up.country, up.phone, up.account_type, up.affiliate_code
+      ORDER BY u.created_at DESC
+      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+    `, [...params, limit, offset]);
+
+    const countResult = await pool.query(`
+      SELECT COUNT(*) as total 
+      FROM users u 
+      LEFT JOIN user_profiles up ON u.id = up.user_id 
+      WHERE ${whereCondition}
+    `, params);
+
+    res.json({
+      success: true,
+      affiliates: affiliatesResult.rows,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: parseInt(countResult.rows[0].total),
+        pages: Math.ceil(countResult.rows[0].total / limit)
+      }
+    });
+
+  } catch (error) {
+    console.error('Erro ao buscar afiliados:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
+// Criar novo afiliado (Admin)
+const createAffiliate = async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    await client.query('BEGIN');
+    
+    const { 
+      name, 
+      email, 
+      password = 'affiliate123', // Senha padrão para afiliados criados pelo admin
+      phone, 
+      country = 'BR',
+      accountType = 'testnet'
+    } = req.body;
+
+    // Verificar se email já existe
+    const existingUser = await client.query(
+      'SELECT id FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (existingUser.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Email já cadastrado' });
+    }
+
+    // Hash da senha
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Inserir usuário como afiliado
+    const userResult = await client.query(`
+      INSERT INTO users (name, email, password, role, created_at, updated_at)
+      VALUES ($1, $2, $3, 'affiliate', NOW(), NOW())
+      RETURNING id, name, email, role
+    `, [name, email, hashedPassword]);
+
+    const user = userResult.rows[0];
+
+    // Gerar código de afiliado único
+    const affiliateCode = `AFF${Date.now()}${user.id.substring(0, 4)}`;
+
+    // Criar perfil do afiliado
+    await client.query(`
+      INSERT INTO user_profiles (
+        user_id, country, phone, account_type, 
+        affiliate_code, created_at, updated_at
+      )
+      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+    `, [
+      user.id, 
+      country, 
+      phone, 
+      accountType,
+      affiliateCode
+    ]);
+
+    // Criar registro de saldo inicial
+    await client.query(`
+      INSERT INTO user_balances (
+        user_id, exchange, environment, balance, balance_type, last_updated
+      )
+      VALUES 
+        ($1, 'binance', 'testnet', 0.00, 'demo', NOW()),
+        ($1, 'bybit', 'testnet', 0.00, 'demo', NOW())
+    `, [user.id]);
+
+    await client.query('COMMIT');
+
+    // Log da criação
+    await pool.query(`
+      INSERT INTO system_logs (level, service, message, details, user_id, ip_address)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `, [
+      'INFO',
+      'Admin-Management',
+      'Novo afiliado criado pelo admin',
+      `Admin criou afiliado ${email} com código ${affiliateCode}`,
+      req.user.id,
+      req.ip
+    ]);
+
+    res.status(201).json({
+      success: true,
+      affiliate: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        affiliateCode,
+        accountType,
+        tempPassword: password // Retornar senha temporária para o admin informar ao afiliado
+      },
+      message: 'Afiliado criado com sucesso'
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Erro ao criar afiliado:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  } finally {
+    client.release();
+  }
+};
+
+// Atualizar dados do afiliado (Admin)
+const updateAffiliate = async (req, res) => {
+  try {
+    const { affiliateId } = req.params;
+    const { name, email, phone, country, accountType, status } = req.body;
+
+    // Verificar se o afiliado existe
+    const affiliateResult = await pool.query(
+      "SELECT * FROM users WHERE id = $1 AND role = 'affiliate'",
+      [affiliateId]
+    );
+
+    if (affiliateResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Afiliado não encontrado' });
+    }
+
+    // Atualizar dados básicos do usuário
+    await pool.query(`
+      UPDATE users SET 
+        name = $1, 
+        email = $2, 
+        updated_at = NOW()
+      WHERE id = $3
+    `, [name, email, affiliateId]);
+
+    // Atualizar perfil do afiliado
+    await pool.query(`
+      UPDATE user_profiles SET 
+        phone = $1, 
+        country = $2, 
+        account_type = $3,
+        updated_at = NOW()
+      WHERE user_id = $4
+    `, [phone, country, accountType, affiliateId]);
+
+    // Log da atualização
+    await pool.query(`
+      INSERT INTO system_logs (level, service, message, details, user_id)
+      VALUES ($1, $2, $3, $4, $5)
+    `, [
+      'INFO',
+      'Admin-Management',
+      'Dados do afiliado atualizados',
+      `Admin atualizou dados do afiliado ${email}`,
+      req.user.id
+    ]);
+
+    res.json({ 
+      success: true, 
+      message: 'Dados do afiliado atualizados com sucesso' 
+    });
+
+  } catch (error) {
+    console.error('Erro ao atualizar afiliado:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
+// Desativar/Ativar afiliado (Admin)
+const toggleAffiliateStatus = async (req, res) => {
+  try {
+    const { affiliateId } = req.params;
+    const { action } = req.body; // 'activate' ou 'deactivate'
+
+    const newStatus = action === 'activate' ? 'active' : 'inactive';
+
+    await pool.query(`
+      UPDATE user_profiles SET 
+        status = $1,
+        updated_at = NOW()
+      WHERE user_id = $2
+    `, [newStatus, affiliateId]);
+
+    // Log da ação
+    await pool.query(`
+      INSERT INTO system_logs (level, service, message, details, user_id)
+      VALUES ($1, $2, $3, $4, $5)
+    `, [
+      'INFO',
+      'Admin-Management',
+      `Afiliado ${action === 'activate' ? 'ativado' : 'desativado'}`,
+      `Admin ${action === 'activate' ? 'ativou' : 'desativou'} afiliado ID: ${affiliateId}`,
+      req.user.id
+    ]);
+
+    res.json({ 
+      success: true, 
+      message: `Afiliado ${action === 'activate' ? 'ativado' : 'desativado'} com sucesso` 
+    });
+
+  } catch (error) {
+    console.error('Erro ao alterar status do afiliado:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
 module.exports = {
   authenticateUser,
+  authenticateAdmin,
   loginUser,
   registerUser,
   getUserDashboard,
@@ -796,5 +1081,10 @@ module.exports = {
   updateUserSettings,
   getAffiliateDashboard,
   getAffiliateCommissions,
-  requestCommissionPayment
+  requestCommissionPayment,
+  // Admin functions
+  getAffiliates,
+  createAffiliate,
+  updateAffiliate,
+  toggleAffiliateStatus
 };

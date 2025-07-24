@@ -1,0 +1,618 @@
+import { NextPage } from 'next';
+import Head from 'next/head';
+import { useState, useEffect } from 'react';
+import {
+  UserGroupIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  ShieldCheckIcon,
+  EyeIcon,
+  BanknotesIcon,
+  ChartBarIcon,
+  XCircleIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  ExclamationTriangleIcon
+} from '@heroicons/react/24/outline';
+import AdminLayout from '../../src/components/AdminLayout';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  status: 'active' | 'inactive' | 'suspended' | 'pending';
+  plan: 'BASIC' | 'PREMIUM' | 'VIP';
+  created_at: string;
+  last_login: string;
+  total_invested: number;
+  total_profit: number;
+  referrals_count: number;
+  total_commissions: number;
+  kyc_status: 'pending' | 'approved' | 'rejected' | 'not_submitted';
+  two_factor_enabled: boolean;
+  subscription_expires: string | null;
+  phone?: string;
+  country?: string;
+}
+
+const UsersAdmin: NextPage = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [planFilter, setPlanFilter] = useState<string>('all');
+
+  const cardStyle = {
+    background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(17, 17, 17, 0.9))',
+    border: '1px solid rgba(255, 215, 0, 0.3)',
+    borderRadius: '16px',
+    padding: '1.5rem',
+    backdropFilter: 'blur(10px)',
+    boxShadow: '0 0 20px rgba(255, 215, 0, 0.1)',
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      // Mock data - integração real será feita aqui
+      const mockUsers: User[] = [
+        {
+          id: '1',
+          name: 'João Silva',
+          email: 'joao@email.com',
+          status: 'active',
+          plan: 'PREMIUM',
+          created_at: '2024-01-15T10:30:00Z',
+          last_login: '2024-01-20T09:15:00Z',
+          total_invested: 5000,
+          total_profit: 750,
+          referrals_count: 3,
+          total_commissions: 450,
+          kyc_status: 'approved',
+          two_factor_enabled: true,
+          subscription_expires: '2024-02-15T00:00:00Z',
+          phone: '+5511999999999',
+          country: 'Brasil'
+        },
+        {
+          id: '2',
+          name: 'Maria Santos',
+          email: 'maria@email.com',
+          status: 'active',
+          plan: 'VIP',
+          created_at: '2024-01-10T14:20:00Z',
+          last_login: '2024-01-20T11:30:00Z',
+          total_invested: 15000,
+          total_profit: 2250,
+          referrals_count: 8,
+          total_commissions: 1200,
+          kyc_status: 'approved',
+          two_factor_enabled: true,
+          subscription_expires: '2024-03-10T00:00:00Z',
+          phone: '+5511888888888',
+          country: 'Brasil'
+        },
+        {
+          id: '3',
+          name: 'Carlos Mendes',
+          email: 'carlos@email.com',
+          status: 'pending',
+          plan: 'BASIC',
+          created_at: '2024-01-18T16:45:00Z',
+          last_login: '2024-01-19T08:00:00Z',
+          total_invested: 500,
+          total_profit: 25,
+          referrals_count: 0,
+          total_commissions: 0,
+          kyc_status: 'pending',
+          two_factor_enabled: false,
+          subscription_expires: '2024-02-18T00:00:00Z',
+          phone: '+5511777777777',
+          country: 'Brasil'
+        },
+        {
+          id: '4',
+          name: 'Ana Costa',
+          email: 'ana@email.com',
+          status: 'suspended',
+          plan: 'PREMIUM',
+          created_at: '2024-01-05T09:15:00Z',
+          last_login: '2024-01-15T15:20:00Z',
+          total_invested: 3000,
+          total_profit: -150,
+          referrals_count: 1,
+          total_commissions: 75,
+          kyc_status: 'rejected',
+          two_factor_enabled: false,
+          subscription_expires: '2024-02-05T00:00:00Z',
+          phone: '+5511666666666',
+          country: 'Brasil'
+        }
+      ];
+      
+      setUsers(mockUsers);
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <CheckCircleIcon className="w-5 h-5 text-green-400" />;
+      case 'pending':
+        return <ClockIcon className="w-5 h-5 text-yellow-400" />;
+      case 'suspended':
+        return <XCircleIcon className="w-5 h-5 text-red-400" />;
+      case 'inactive':
+        return <ExclamationTriangleIcon className="w-5 h-5 text-gray-400" />;
+      default:
+        return <ClockIcon className="w-5 h-5 text-gray-400" />;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const baseClasses = 'px-2 py-1 rounded text-xs font-medium';
+    switch (status) {
+      case 'active': return `${baseClasses} bg-green-900/50 text-green-300 border border-green-700`;
+      case 'pending': return `${baseClasses} bg-yellow-900/50 text-yellow-300 border border-yellow-700`;
+      case 'suspended': return `${baseClasses} bg-red-900/50 text-red-300 border border-red-700`;
+      case 'inactive': return `${baseClasses} bg-gray-900/50 text-gray-300 border border-gray-700`;
+      default: return `${baseClasses} bg-gray-900/50 text-gray-300 border border-gray-700`;
+    }
+  };
+
+  const getPlanBadge = (plan: string) => {
+    const baseClasses = 'px-2 py-1 rounded text-xs font-medium';
+    switch (plan) {
+      case 'VIP': return `${baseClasses} bg-purple-900/50 text-purple-300 border border-purple-700`;
+      case 'PREMIUM': return `${baseClasses} bg-blue-900/50 text-blue-300 border border-blue-700`;
+      case 'BASIC': return `${baseClasses} bg-gray-900/50 text-gray-300 border border-gray-700`;
+      default: return `${baseClasses} bg-gray-900/50 text-gray-300 border border-gray-700`;
+    }
+  };
+
+  const getKycStatusIcon = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return <ShieldCheckIcon className="w-4 h-4 text-green-400" />;
+      case 'pending':
+        return <ClockIcon className="w-4 h-4 text-yellow-400" />;
+      case 'rejected':
+        return <XCircleIcon className="w-4 h-4 text-red-400" />;
+      default:
+        return <ExclamationTriangleIcon className="w-4 h-4 text-gray-400" />;
+    }
+  };
+
+  const updateUserStatus = async (userId: string, newStatus: string) => {
+    try {
+      // Aqui seria feita a integração real com a API
+      setUsers(prev => prev.map(user => 
+        user.id === userId ? { ...user, status: newStatus as any } : user
+      ));
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+    
+    try {
+      // Aqui seria feita a integração real com a API
+      setUsers(prev => prev.filter(user => user.id !== userId));
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error);
+    }
+  };
+
+  const filteredUsers = users.filter(user => {
+    if (statusFilter !== 'all' && user.status !== statusFilter) return false;
+    if (planFilter !== 'all' && user.plan !== planFilter) return false;
+    if (searchTerm && !user.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !user.email.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    return true;
+  });
+
+  const activeUsers = users.filter(u => u.status === 'active').length;
+  const pendingUsers = users.filter(u => u.status === 'pending').length;
+  const totalRevenue = users.reduce((sum, u) => sum + u.total_invested, 0);
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto mb-4"></div>
+            <p className="text-white">Carregando usuários...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  return (
+    <>
+      <Head>
+        <title>Gestão de Usuários - Administração CoinBitClub</title>
+      </Head>
+      
+      <AdminLayout title="Usuários">
+        <div className="min-h-screen" style={{ 
+          background: 'linear-gradient(135deg, #000000 0%, #111111 100%)',
+          color: '#FFFFFF',
+          fontFamily: "'Inter', sans-serif"
+        }}>
+          
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold mb-2" style={{
+                  background: 'linear-gradient(45deg, #FFD700, #FF69B4)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}>
+                  Gestão de Usuários
+                </h1>
+                <p className="text-gray-400">Controle completo dos usuários da plataforma</p>
+              </div>
+              
+              <button
+                onClick={() => setShowUserModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-black rounded-lg hover:bg-yellow-400 transition-colors"
+              >
+                <PlusIcon className="w-5 h-5" />
+                Novo Usuário
+              </button>
+            </div>
+          </div>
+
+          {/* Estatísticas */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div style={cardStyle}>
+              <h3 className="text-lg font-semibold mb-2 text-green-400">Usuários Ativos</h3>
+              <p className="text-2xl font-bold text-white">{activeUsers}</p>
+              <p className="text-sm text-gray-400">De {users.length} total</p>
+            </div>
+            
+            <div style={cardStyle}>
+              <h3 className="text-lg font-semibold mb-2 text-yellow-400">Pendentes</h3>
+              <p className="text-2xl font-bold text-white">{pendingUsers}</p>
+              <p className="text-sm text-gray-400">Aguardando aprovação</p>
+            </div>
+            
+            <div style={cardStyle}>
+              <h3 className="text-lg font-semibold mb-2 text-blue-400">Receita Total</h3>
+              <p className="text-2xl font-bold text-white">R$ {totalRevenue.toLocaleString('pt-BR')}</p>
+              <p className="text-sm text-gray-400">Investido pelos usuários</p>
+            </div>
+            
+            <div style={cardStyle}>
+              <h3 className="text-lg font-semibold mb-2 text-purple-400">Usuários VIP</h3>
+              <p className="text-2xl font-bold text-white">{users.filter(u => u.plan === 'VIP').length}</p>
+              <p className="text-sm text-gray-400">Plano premium</p>
+            </div>
+          </div>
+
+          {/* Filtros */}
+          <div style={cardStyle} className="mb-6">
+            <div className="flex items-center gap-4 mb-4">
+              <FunnelIcon className="w-5 h-5 text-yellow-400" />
+              <h3 className="text-lg font-semibold text-white">Filtros</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Buscar</label>
+                <div className="relative">
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Nome ou e-mail..."
+                    className="w-full pl-10 pr-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                >
+                  <option value="all">Todos</option>
+                  <option value="active">Ativo</option>
+                  <option value="pending">Pendente</option>
+                  <option value="suspended">Suspenso</option>
+                  <option value="inactive">Inativo</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Plano</label>
+                <select
+                  value={planFilter}
+                  onChange={(e) => setPlanFilter(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                >
+                  <option value="all">Todos</option>
+                  <option value="BASIC">Básico</option>
+                  <option value="PREMIUM">Premium</option>
+                  <option value="VIP">VIP</option>
+                </select>
+              </div>
+              
+              <div className="flex items-end">
+                <button
+                  onClick={fetchUsers}
+                  className="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
+                >
+                  Atualizar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabela de Usuários */}
+          <div style={cardStyle}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">
+                Usuários ({filteredUsers.length})
+              </h3>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    <th className="text-left p-3 text-gray-300">Usuário</th>
+                    <th className="text-left p-3 text-gray-300">Status</th>
+                    <th className="text-left p-3 text-gray-300">Plano</th>
+                    <th className="text-left p-3 text-gray-300">KYC</th>
+                    <th className="text-left p-3 text-gray-300">Investido</th>
+                    <th className="text-left p-3 text-gray-300">Lucro</th>
+                    <th className="text-left p-3 text-gray-300">Referidos</th>
+                    <th className="text-left p-3 text-gray-300">Último Login</th>
+                    <th className="text-left p-3 text-gray-300">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((user) => (
+                    <tr key={user.id} className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-3">
+                        <div>
+                          <p className="text-white font-semibold">{user.name}</p>
+                          <p className="text-xs text-gray-400">{user.email}</p>
+                          <p className="text-xs text-gray-500">ID: {user.id}</p>
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(user.status)}
+                          <span className={getStatusBadge(user.status)}>
+                            {user.status.toUpperCase()}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <span className={getPlanBadge(user.plan)}>
+                          {user.plan}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1">
+                          {getKycStatusIcon(user.kyc_status)}
+                          <span className="text-xs capitalize">{user.kyc_status}</span>
+                        </div>
+                      </td>
+                      <td className="p-3 text-gray-300">R$ {user.total_invested.toLocaleString('pt-BR')}</td>
+                      <td className="p-3">
+                        <span className={user.total_profit >= 0 ? 'text-green-400' : 'text-red-400'}>
+                          R$ {user.total_profit.toLocaleString('pt-BR')}
+                        </span>
+                      </td>
+                      <td className="p-3 text-gray-300">{user.referrals_count}</td>
+                      <td className="p-3 text-gray-400 text-xs">
+                        {new Date(user.last_login).toLocaleDateString('pt-BR')}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setSelectedUser(user)}
+                            className="p-1 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors"
+                            title="Visualizar"
+                          >
+                            <EyeIcon className="w-4 h-4" />
+                          </button>
+                          
+                          {user.status === 'pending' && (
+                            <button
+                              onClick={() => updateUserStatus(user.id, 'active')}
+                              className="p-1 bg-green-600 text-white rounded hover:bg-green-500 transition-colors"
+                              title="Aprovar"
+                            >
+                              <CheckCircleIcon className="w-4 h-4" />
+                            </button>
+                          )}
+                          
+                          {user.status === 'active' && (
+                            <button
+                              onClick={() => updateUserStatus(user.id, 'suspended')}
+                              className="p-1 bg-yellow-600 text-white rounded hover:bg-yellow-500 transition-colors"
+                              title="Suspender"
+                            >
+                              <ExclamationTriangleIcon className="w-4 h-4" />
+                            </button>
+                          )}
+                          
+                          <button
+                            onClick={() => deleteUser(user.id)}
+                            className="p-1 bg-red-600 text-white rounded hover:bg-red-500 transition-colors"
+                            title="Excluir"
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {filteredUsers.length === 0 && (
+              <div className="text-center py-8">
+                <UserGroupIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-300 mb-2">Nenhum usuário encontrado</h3>
+                <p className="text-gray-500">Não há usuários para os filtros selecionados.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Modal de Detalhes do Usuário */}
+          {selectedUser && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div style={cardStyle} className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-white">Detalhes do Usuário</h3>
+                  <button
+                    onClick={() => setSelectedUser(null)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <XCircleIcon className="w-6 h-6" />
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Informações Pessoais */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-4">Informações Pessoais</h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Nome</label>
+                        <p className="text-white">{selectedUser.name}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">E-mail</label>
+                        <p className="text-white">{selectedUser.email}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Telefone</label>
+                        <p className="text-white">{selectedUser.phone || 'Não informado'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">País</label>
+                        <p className="text-white">{selectedUser.country || 'Não informado'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status e Configurações */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-4">Status e Configurações</h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Status da Conta</label>
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(selectedUser.status)}
+                          <span className={getStatusBadge(selectedUser.status)}>
+                            {selectedUser.status.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Plano</label>
+                        <span className={getPlanBadge(selectedUser.plan)}>
+                          {selectedUser.plan}
+                        </span>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Status KYC</label>
+                        <div className="flex items-center gap-2">
+                          {getKycStatusIcon(selectedUser.kyc_status)}
+                          <span className="text-white capitalize">{selectedUser.kyc_status}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">2FA</label>
+                        <span className={selectedUser.two_factor_enabled ? 'text-green-400' : 'text-red-400'}>
+                          {selectedUser.two_factor_enabled ? 'Ativado' : 'Desativado'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dados Financeiros */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-4">Dados Financeiros</h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Total Investido</label>
+                        <p className="text-white font-semibold">R$ {selectedUser.total_invested.toLocaleString('pt-BR')}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Lucro Total</label>
+                        <p className={`font-semibold ${selectedUser.total_profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          R$ {selectedUser.total_profit.toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Comissões Recebidas</label>
+                        <p className="text-green-400 font-semibold">R$ {selectedUser.total_commissions.toLocaleString('pt-BR')}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Datas e Atividade */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-white mb-4">Atividade</h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Data de Cadastro</label>
+                        <p className="text-white">{new Date(selectedUser.created_at).toLocaleString('pt-BR')}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Último Login</label>
+                        <p className="text-white">{new Date(selectedUser.last_login).toLocaleString('pt-BR')}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Assinatura Expira</label>
+                        <p className="text-white">
+                          {selectedUser.subscription_expires 
+                            ? new Date(selectedUser.subscription_expires).toLocaleDateString('pt-BR')
+                            : 'Não aplicável'
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Referidos</label>
+                        <p className="text-white">{selectedUser.referrals_count} usuários</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </AdminLayout>
+    </>
+  );
+};
+
+export default UsersAdmin;

@@ -1,0 +1,23 @@
+"use client";
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+
+export default function AdminIndex() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redireciona automaticamente para o dashboard conectado com banco real
+    router.replace('/admin/dashboard-connected');
+  }, [router]);
+
+  return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
+        <p className="text-white mt-4">Redirecionando para Dashboard Conectado...</p>
+        <p className="text-gray-400 text-sm mt-2">Sistema refatorado com banco PostgreSQL real</p>
+      </div>
+    </div>
+  );
+}

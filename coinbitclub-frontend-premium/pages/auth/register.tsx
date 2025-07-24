@@ -184,8 +184,8 @@ const RegisterPage: NextPage = () => {
     setLoading(true);
 
     try {
-      // Tenta primeiro a API simples
-      const response = await fetch('/api/auth/register-simple', {
+      // Tenta primeiro a API do Railway com redirecionamento automático
+      const response = await fetch('http://localhost:9997/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -202,23 +202,43 @@ const RegisterPage: NextPage = () => {
 
       if (response.ok) {
         const data = await response.json();
+        
+        // Salvar dados no localStorage
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        router.push('/dashboard?welcome=true');
+        
+        // Redirecionamento automático baseado no papel do usuário
+        if (data.redirectUrl) {
+          // API retorna a URL de redirecionamento baseada no papel
+          router.push(data.redirectUrl + '?welcome=true');
+        } else {
+          // Fallback - determinar redirecionamento pelo papel do usuário
+          const userRole = data.user?.role || 'user';
+          switch (userRole) {
+            case 'admin':
+              router.push('/admin/dashboard?welcome=true');
+              break;
+            case 'affiliate':
+              router.push('/affiliate/dashboard?welcome=true');
+              break;
+            default:
+              router.push('/user/dashboard?welcome=true');
+          }
+        }
       } else {
-        // Se a API simples falhar, tenta a API original
-        const fallbackResponse = await fetch('/api/auth/register', {
+        // Se a API do Railway falhar, tenta a API simples
+        const fallbackResponse = await fetch('/api/auth/register-simple', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            fullName: formData.fullName,
+            name: formData.fullName,
             phone: formData.phone,
             country: formData.country,
             email: formData.email,
             password: formData.password,
-            affiliateCode: formData.affiliateCode || 'Coinbitclub',
+            referralCode: formData.affiliateCode || 'Coinbitclub',
           }),
         });
 
@@ -226,14 +246,61 @@ const RegisterPage: NextPage = () => {
           const data = await fallbackResponse.json();
           localStorage.setItem('token', data.token);
           localStorage.setItem('user', JSON.stringify(data.user));
-          router.push('/dashboard?welcome=true');
+          
+          // Redirecionamento baseado no papel
+          const userRole = data.user?.role || 'user';
+          switch (userRole) {
+            case 'admin':
+              router.push('/admin/dashboard?welcome=true');
+              break;
+            case 'affiliate':
+              router.push('/affiliate/dashboard?welcome=true');
+              break;
+            default:
+              router.push('/user/dashboard?welcome=true');
+          }
         } else {
-          const errorData = await fallbackResponse.json();
-          setError(errorData.message || 'Erro ao criar conta');
+          // Última tentativa com API original
+          const originalResponse = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              fullName: formData.fullName,
+              phone: formData.phone,
+              country: formData.country,
+              email: formData.email,
+              password: formData.password,
+              affiliateCode: formData.affiliateCode || 'Coinbitclub',
+            }),
+          });
+
+          if (originalResponse.ok) {
+            const data = await originalResponse.json();
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            
+            // Redirecionamento baseado no papel
+            const userRole = data.user?.role || 'user';
+            switch (userRole) {
+              case 'admin':
+                router.push('/admin/dashboard?welcome=true');
+                break;
+              case 'affiliate':
+                router.push('/affiliate/dashboard?welcome=true');
+                break;
+              default:
+                router.push('/user/dashboard?welcome=true');
+            }
+          } else {
+            const errorData = await originalResponse.json();
+            setError(errorData.message || 'Erro ao criar conta');
+          }
         }
       }
     } catch (err) {
-      // Fallback para desenvolvimento - simular cadastro
+      // Fallback para desenvolvimento - simular cadastro como usuário
       console.log('API not available, simulating registration...');
       localStorage.setItem('token', 'mock-token');
       localStorage.setItem('user', JSON.stringify({ 
@@ -242,10 +309,11 @@ const RegisterPage: NextPage = () => {
         fullName: formData.fullName,
         phone: formData.phone,
         country: formData.country,
+        role: 'user',
         isAdmin: false,
         trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
       }));
-      router.push('/dashboard?welcome=true&trial=true');
+      router.push('/user/dashboard?welcome=true&trial=true');
     } finally {
       setLoading(false);
     }

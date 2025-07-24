@@ -10,7 +10,7 @@ export default function TestIntegration() {
     // Teste do backend
     const testBackend = async () => {
       try {
-        const response = await fetch('http://localhost:8080/health');
+        const response = await fetch('http://localhost:8085/health');
         if (response.ok) {
           setBackendStatus('✅ Backend OK');
         } else {
@@ -115,7 +115,7 @@ export default function TestIntegration() {
           <h2>Informações do Sistema</h2>
           <div style={{ fontSize: '0.9rem', color: '#B0B3B8' }}>
             <div>Frontend: Next.js no localhost:3006</div>
-            <div>Backend: Node.js no localhost:8080</div>
+            <div>Backend: Node.js no localhost:8085</div>
             <div>Browser: {typeof window !== 'undefined' ? window.navigator.userAgent : 'N/A'}</div>
             <div>Timestamp: {new Date().toLocaleString('pt-BR')}</div>
           </div>

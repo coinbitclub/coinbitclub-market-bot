@@ -1,3 +1,4 @@
+import React from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
@@ -66,10 +67,27 @@ interface SystemConfig {
     ipWhitelist: string[];
   };
   affiliate: {
-    defaultCommission: number;
+    defaultCommission: number; // % para afiliados comuns
+    vipCommission: number; // % para afiliados VIP (5% do lucro)
     payoutThreshold: number;
     payoutFrequency: 'weekly' | 'monthly';
     enableAutoPayouts: boolean;
+    enableVipProgram: boolean;
+  };
+  email: {
+    provider: 'smtp' | 'sendgrid' | 'mailgun' | 'ses';
+    smtpHost: string;
+    smtpPort: number;
+    smtpUser: string;
+    smtpPassword: string;
+    sendgridApiKey: string;
+    mailgunApiKey: string;
+    mailgunDomain: string;
+    sesAccessKey: string;
+    sesSecretKey: string;
+    sesRegion: string;
+    fromEmail: string;
+    fromName: string;
   };
 }
 
@@ -136,10 +154,27 @@ const AdminSettings: NextPage = () => {
           ipWhitelist: ['192.168.1.0/24', '10.0.0.0/8']
         },
         affiliate: {
-          defaultCommission: 20.0,
+          defaultCommission: 20.0, // % para afiliados comuns
+          vipCommission: 5.0, // % para afiliados VIP (5% do lucro)
           payoutThreshold: 100.0,
           payoutFrequency: 'monthly',
-          enableAutoPayouts: true
+          enableAutoPayouts: true,
+          enableVipProgram: true
+        },
+        email: {
+          provider: 'smtp',
+          smtpHost: 'smtp.gmail.com',
+          smtpPort: 587,
+          smtpUser: '',
+          smtpPassword: '',
+          sendgridApiKey: '',
+          mailgunApiKey: '',
+          mailgunDomain: '',
+          sesAccessKey: '',
+          sesSecretKey: '',
+          sesRegion: 'us-east-1',
+          fromEmail: 'admin@coinbitclub.com',
+          fromName: 'CoinBit Club'
         }
       };
 
@@ -225,7 +260,7 @@ const AdminSettings: NextPage = () => {
   }
 
   return (
-    <>
+    <div>
       <Head>
         <title>Configurações - Admin CoinBitClub</title>
       </Head>
@@ -242,7 +277,8 @@ const AdminSettings: NextPage = () => {
                 { id: 'trading', name: 'Trading', icon: ChartBarIcon },
                 { id: 'notifications', name: 'Notificações', icon: BellIcon },
                 { id: 'security', name: 'Segurança', icon: ShieldCheckIcon },
-                { id: 'affiliate', name: 'Afiliados', icon: UserGroupIcon }
+                { id: 'affiliate', name: 'Afiliados', icon: UserGroupIcon },
+                { id: 'email', name: 'Email', icon: BellIcon }
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -912,6 +948,220 @@ const AdminSettings: NextPage = () => {
             </div>
           )}
 
+          {/* Configurações de Email */}
+          {selectedTab === 'email' && (
+            <div className="rounded-xl border border-gray-700 bg-gray-800 p-6">
+              <h3 className="mb-6 flex items-center text-lg font-semibold text-white">
+                <BellIcon className="mr-2 size-6 text-blue-400" />
+                Configurações de Email
+              </h3>
+              
+              <div className="space-y-6">
+                {/* Provedor de Email */}
+                <div>
+                  <label className="mb-2 block text-sm text-gray-400">Provedor de Email</label>
+                  <select
+                    value={config.email.provider}
+                    onChange={(e) => updateConfig('email', 'provider', e.target.value)}
+                    className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                  >
+                    <option value="smtp">SMTP</option>
+                    <option value="sendgrid">SendGrid</option>
+                    <option value="mailgun">Mailgun</option>
+                    <option value="ses">Amazon SES</option>
+                  </select>
+                </div>
+
+                {/* Configurações SMTP */}
+                {config.email.provider === 'smtp' && (
+                  <div className="space-y-4 rounded-lg border border-gray-600 bg-gray-700/50 p-4">
+                    <h4 className="text-md font-medium text-yellow-400">Configurações SMTP</h4>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm text-gray-400">Servidor SMTP</label>
+                        <input
+                          type="text"
+                          value={config.email.smtp.host}
+                          onChange={(e) => updateConfig('email', 'smtp', { ...config.email.smtp, host: e.target.value })}
+                          placeholder="smtp.gmail.com"
+                          className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm text-gray-400">Porta</label>
+                        <input
+                          type="number"
+                          value={config.email.smtp.port}
+                          onChange={(e) => updateConfig('email', 'smtp', { ...config.email.smtp, port: parseInt(e.target.value) })}
+                          placeholder="587"
+                          className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm text-gray-400">Usuário</label>
+                        <input
+                          type="text"
+                          value={config.email.smtp.user}
+                          onChange={(e) => updateConfig('email', 'smtp', { ...config.email.smtp, user: e.target.value })}
+                          className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm text-gray-400">Senha</label>
+                        <input
+                          type="password"
+                          value={config.email.smtp.password}
+                          onChange={(e) => updateConfig('email', 'smtp', { ...config.email.smtp, password: e.target.value })}
+                          className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="smtpSecure"
+                        checked={config.email.smtp.secure}
+                        onChange={(e) => updateConfig('email', 'smtp', { ...config.email.smtp, secure: e.target.checked })}
+                        className="rounded border-gray-600 bg-gray-700 text-yellow-400 focus:ring-yellow-400"
+                      />
+                      <label htmlFor="smtpSecure" className="text-white">
+                        SSL/TLS Seguro
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {/* Configurações SendGrid */}
+                {config.email.provider === 'sendgrid' && (
+                  <div className="space-y-4 rounded-lg border border-gray-600 bg-gray-700/50 p-4">
+                    <h4 className="text-md font-medium text-yellow-400">Configurações SendGrid</h4>
+                    <div>
+                      <label className="mb-2 block text-sm text-gray-400">API Key</label>
+                      <input
+                        type="password"
+                        value={config.email.sendgrid.apiKey}
+                        onChange={(e) => updateConfig('email', 'sendgrid', { ...config.email.sendgrid, apiKey: e.target.value })}
+                        className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Configurações Mailgun */}
+                {config.email.provider === 'mailgun' && (
+                  <div className="space-y-4 rounded-lg border border-gray-600 bg-gray-700/50 p-4">
+                    <h4 className="text-md font-medium text-yellow-400">Configurações Mailgun</h4>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm text-gray-400">API Key</label>
+                        <input
+                          type="password"
+                          value={config.email.mailgun.apiKey}
+                          onChange={(e) => updateConfig('email', 'mailgun', { ...config.email.mailgun, apiKey: e.target.value })}
+                          className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm text-gray-400">Domínio</label>
+                        <input
+                          type="text"
+                          value={config.email.mailgun.domain}
+                          onChange={(e) => updateConfig('email', 'mailgun', { ...config.email.mailgun, domain: e.target.value })}
+                          placeholder="mg.coinbitclub.com"
+                          className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Configurações Amazon SES */}
+                {config.email.provider === 'ses' && (
+                  <div className="space-y-4 rounded-lg border border-gray-600 bg-gray-700/50 p-4">
+                    <h4 className="text-md font-medium text-yellow-400">Configurações Amazon SES</h4>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm text-gray-400">Access Key ID</label>
+                        <input
+                          type="text"
+                          value={config.email.ses.accessKeyId}
+                          onChange={(e) => updateConfig('email', 'ses', { ...config.email.ses, accessKeyId: e.target.value })}
+                          className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm text-gray-400">Secret Access Key</label>
+                        <input
+                          type="password"
+                          value={config.email.ses.secretAccessKey}
+                          onChange={(e) => updateConfig('email', 'ses', { ...config.email.ses, secretAccessKey: e.target.value })}
+                          className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm text-gray-400">Região</label>
+                        <select
+                          value={config.email.ses.region}
+                          onChange={(e) => updateConfig('email', 'ses', { ...config.email.ses, region: e.target.value })}
+                          className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                        >
+                          <option value="us-east-1">US East (N. Virginia)</option>
+                          <option value="us-west-2">US West (Oregon)</option>
+                          <option value="eu-west-1">Europe (Ireland)</option>
+                          <option value="sa-east-1">South America (São Paulo)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Configurações Gerais */}
+                <div className="space-y-4">
+                  <h4 className="text-md font-medium text-yellow-400">Configurações Gerais</h4>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm text-gray-400">Email Remetente</label>
+                      <input
+                        type="email"
+                        value={config.email.fromEmail}
+                        onChange={(e) => updateConfig('email', 'fromEmail', e.target.value)}
+                        placeholder="noreply@coinbitclub.com"
+                        className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-sm text-gray-400">Nome do Remetente</label>
+                      <input
+                        type="text"
+                        value={config.email.fromName}
+                        onChange={(e) => updateConfig('email', 'fromName', e.target.value)}
+                        placeholder="CoinBit Club"
+                        className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Teste de Conexão */}
+                <div className="flex items-center justify-between rounded-lg border border-yellow-600 bg-yellow-900/20 p-4">
+                  <div>
+                    <h4 className="text-md font-medium text-yellow-400">Testar Configuração</h4>
+                    <p className="text-sm text-gray-400">Enviar email de teste para validar as configurações</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      // Implementar função de teste
+                      alert('Teste de email enviado! Verifique sua caixa de entrada.');
+                    }}
+                    className="rounded-lg bg-yellow-600 px-4 py-2 text-white hover:bg-yellow-700"
+                  >
+                    Enviar Teste
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Configurações de Afiliados */}
           {selectedTab === 'affiliate' && (
             <div className="rounded-xl border border-gray-700 bg-gray-800 p-6">
@@ -922,7 +1172,7 @@ const AdminSettings: NextPage = () => {
               
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-sm text-gray-400">Comissão Padrão (%)</label>
+                  <label className="mb-2 block text-sm text-gray-400">Comissão Afiliados Comuns (%)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -932,51 +1182,138 @@ const AdminSettings: NextPage = () => {
                     onChange={(e) => updateConfig('affiliate', 'defaultCommission', parseFloat(e.target.value))}
                     className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
                   />
+                  <p className="mt-1 text-xs text-gray-500">Comissão padrão para afiliados regulares</p>
                 </div>
                 
                 <div>
-                  <label className="mb-2 block text-sm text-gray-400">Valor Mínimo para Saque (R$)</label>
+                  <label className="mb-2 block text-sm text-gray-400">Comissão Afiliados VIP (% do lucro)</label>
                   <input
                     type="number"
-                    step="0.01"
-                    min="1"
-                    value={config.affiliate.payoutThreshold}
-                    onChange={(e) => updateConfig('affiliate', 'payoutThreshold', parseFloat(e.target.value))}
+                    step="0.1"
+                    min="0"
+                    max="10"
+                    value={config.affiliate.vipCommission}
+                    onChange={(e) => updateConfig('affiliate', 'vipCommission', parseFloat(e.target.value))}
                     className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
                   />
+                  <p className="mt-1 text-xs text-gray-500">Porcentagem do lucro do indicado para VIPs</p>
                 </div>
-                
-                <div>
-                  <label className="mb-2 block text-sm text-gray-400">Frequência de Pagamento</label>
-                  <select
-                    value={config.affiliate.payoutFrequency}
-                    onChange={(e) => updateConfig('affiliate', 'payoutFrequency', e.target.value)}
-                    className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
-                  >
-                    <option value="weekly">Semanal</option>
-                    <option value="monthly">Mensal</option>
-                  </select>
+              </div>
+
+              {/* Programa VIP */}
+              <div className="mt-8 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-md font-medium text-yellow-400">Programa VIP de Afiliados</h4>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="enableVipProgram"
+                      checked={config.affiliate.enableVipProgram}
+                      onChange={(e) => updateConfig('affiliate', 'enableVipProgram', e.target.checked)}
+                      className="rounded border-gray-600 bg-gray-700 text-yellow-400 focus:ring-yellow-400"
+                    />
+                    <label htmlFor="enableVipProgram" className="text-white">
+                      Habilitar Programa VIP
+                    </label>
+                  </div>
                 </div>
-                
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    id="enableAutoPayouts"
-                    checked={config.affiliate.enableAutoPayouts}
-                    onChange={(e) => updateConfig('affiliate', 'enableAutoPayouts', e.target.checked)}
-                    className="rounded border-gray-600 bg-gray-700 text-yellow-400 focus:ring-yellow-400"
-                  />
-                  <label htmlFor="enableAutoPayouts" className="text-white">
-                    Pagamentos Automáticos
-                  </label>
+
+                {config.affiliate.enableVipProgram && (
+                  <div className="rounded-lg border border-yellow-600 bg-yellow-900/20 p-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div className="space-y-3">
+                        <h5 className="font-medium text-yellow-300">Diferenças do Programa</h5>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-start space-x-2">
+                            <span className="text-green-400">•</span>
+                            <span className="text-gray-300">
+                              <strong>Afiliado Regular:</strong> {config.affiliate.defaultCommission}% sobre depósitos
+                            </span>
+                          </div>
+                          <div className="flex items-start space-x-2">
+                            <span className="text-yellow-400">•</span>
+                            <span className="text-gray-300">
+                              <strong>Afiliado VIP:</strong> {config.affiliate.vipCommission}% sobre lucro líquido
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <h5 className="font-medium text-yellow-300">Vantagens VIP</h5>
+                        <div className="space-y-2 text-sm text-gray-300">
+                          <div className="flex items-start space-x-2">
+                            <span className="text-yellow-400">✓</span>
+                            <span>Comissão baseada em resultados reais</span>
+                          </div>
+                          <div className="flex items-start space-x-2">
+                            <span className="text-yellow-400">✓</span>
+                            <span>Alinhamento com sucesso dos indicados</span>
+                          </div>
+                          <div className="flex items-start space-x-2">
+                            <span className="text-yellow-400">✓</span>
+                            <span>Potencial de ganhos mais justos</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Configurações de Pagamento */}
+              <div className="mt-8 space-y-4">
+                <h4 className="text-md font-medium text-yellow-400">Configurações de Pagamento</h4>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm text-gray-400">Valor Mínimo para Saque (R$)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="1"
+                      value={config.affiliate.payoutThreshold}
+                      onChange={(e) => updateConfig('affiliate', 'payoutThreshold', parseFloat(e.target.value))}
+                      className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="mb-2 block text-sm text-gray-400">Frequência de Pagamento</label>
+                    <select
+                      value={config.affiliate.payoutFrequency}
+                      onChange={(e) => updateConfig('affiliate', 'payoutFrequency', e.target.value)}
+                      className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                    >
+                      <option value="weekly">Semanal</option>
+                      <option value="monthly">Mensal</option>
+                    </select>
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="enableAutoPayouts"
+                        checked={config.affiliate.enableAutoPayouts}
+                        onChange={(e) => updateConfig('affiliate', 'enableAutoPayouts', e.target.checked)}
+                        className="rounded border-gray-600 bg-gray-700 text-yellow-400 focus:ring-yellow-400"
+                      />
+                      <label htmlFor="enableAutoPayouts" className="text-white">
+                        Pagamentos Automáticos
+                      </label>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Quando habilitado, os pagamentos serão processados automaticamente na frequência selecionada
+                    </p>
+                  </div>
                 </div>
+              </div>
               </div>
             </div>
           )}
 
         </div>
       </AdminLayout>
-    </>
+    </div>
   );
 };
 

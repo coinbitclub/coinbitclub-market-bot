@@ -19,6 +19,7 @@ import {
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
+import NotificationContainer from './NotificationContainer';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -46,10 +47,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Administra
   const menuItems = [
     {
       name: 'Dashboard',
-      href: '/admin/dashboard',
+      href: '/admin/dashboard-connected',
       icon: ChartBarIcon,
       description: 'Painel principal com análise em tempo real',
-      current: router.pathname === '/admin/dashboard' || router.pathname === '/admin'
+      current: router.pathname === '/admin/dashboard-connected' || router.pathname === '/admin'
     },
     {
       name: 'Alertas',
@@ -60,10 +61,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Administra
     },
     {
       name: 'Operações',
-      href: '/admin/operations',
+      href: '/admin/operacoes',
       icon: ArrowTrendingUpIcon,
       description: 'Histórico de trades e operações',
-      current: router.pathname === '/admin/operations'
+      current: router.pathname === '/admin/operacoes'
     },
     {
       name: 'Acertos',
@@ -74,10 +75,17 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Administra
     },
     {
       name: 'Contabilidade',
-      href: '/admin/accounting',
+      href: '/admin/contabilidade',
       icon: CalculatorIcon,
       description: 'Relatórios financeiros e receitas',
-      current: router.pathname === '/admin/accounting'
+      current: router.pathname === '/admin/contabilidade'
+    },
+    {
+      name: 'Despesas',
+      href: '/admin/despesas',
+      icon: CurrencyDollarIcon,
+      description: 'Gestão de despesas operacionais',
+      current: router.pathname === '/admin/despesas'
     },
     {
       name: 'Logs',
@@ -201,7 +209,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Administra
     <div style={containerStyle}>
       <header style={headerStyle}>
         <nav style={navStyle}>
-          <Link href="/admin/dashboard" style={logoStyle}>
+          <Link href="/admin/dashboard-connected" style={logoStyle}>
             ⚡ CoinBitClub Admin
           </Link>
           
@@ -242,6 +250,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title = 'Administra
       <main style={mainContentStyle}>
         {children}
       </main>
+
+      {/* Sistema de Notificações */}
+      <NotificationContainer />
     </div>
   );
 };

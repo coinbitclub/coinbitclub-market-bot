@@ -1,0 +1,550 @@
+import React, { useState, useEffect } from 'react';
+import { NextPage } from 'next';
+import Head from 'next/head';
+import {
+  ChartBarIcon,
+  DocumentArrowDownIcon,
+  CalendarIcon,
+  CurrencyDollarIcon,
+  TrophyIcon,
+  UserGroupIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
+  ClockIcon,
+  BanknotesIcon
+} from '@heroicons/react/24/outline';
+import AdminLayout from '../../src/components/AdminLayout';
+import { affiliateService, accountingService, systemService, downloadFile } from '../../src/services/api';
+import { useNotifications } from '../../src/contexts/NotificationContext';
+
+interface ReportData {
+  financial: {
+    totalRevenue: number;
+    totalExpenses: number;
+    netProfit: number;
+    monthlyGrowth: number;
+    profitMargin: number;
+  };
+  affiliates: {
+    totalAffiliates: number;
+    activeAffiliates: number;
+    vipAffiliates: number;
+    totalCommissionsPaid: number;
+    pendingCommissions: number;
+    topAffiliates: Array<{
+      id: string;
+      name: string;
+      totalCommissions: number;
+      referralsCount: number;
+      isVip: boolean;
+    }>;
+  };
+  trading: {
+    totalTrades: number;
+    successfulTrades: number;
+    successRate: number;
+    totalVolume: number;
+    averageProfit: number;
+    bestPair: string;
+    worstPair: string;
+  };
+  users: {
+    totalUsers: number;
+    activeUsers: number;
+    newUsersThisMonth: number;
+    totalDeposits: number;
+    totalWithdrawals: number;
+    averageBalance: number;
+  };
+}
+
+const ReportsPage: NextPage = () => {
+  const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState('month');
+  const [dateRange, setDateRange] = useState({
+    startDate: '',
+    endDate: ''
+  });
+  const [generatingReport, setGeneratingReport] = useState<string | null>(null);
+  const { addNotification } = useNotifications();
+
+  const cardStyle = {
+    background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(17, 17, 17, 0.9))',
+    border: '1px solid rgba(255, 215, 0, 0.3)',
+    borderRadius: '16px',
+    padding: '1.5rem',
+    backdropFilter: 'blur(10px)',
+    boxShadow: '0 0 20px rgba(255, 215, 0, 0.1)',
+  };
+
+  useEffect(() => {
+    fetchReportData();
+  }, [selectedPeriod]);
+
+  const fetchReportData = async () => {
+    try {
+      setLoading(true);
+      
+      // Simular dados de relatório - substituir por chamadas reais à API
+      const mockData: ReportData = {
+        financial: {
+          totalRevenue: 125000.50,
+          totalExpenses: 45000.30,
+          netProfit: 79999.20,
+          monthlyGrowth: 15.7,
+          profitMargin: 64.0
+        },
+        affiliates: {
+          totalAffiliates: 42,
+          activeAffiliates: 38,
+          vipAffiliates: 8,
+          totalCommissionsPaid: 15420.80,
+          pendingCommissions: 2340.50,
+          topAffiliates: [
+            { id: '1', name: 'Pedro Afiliado', totalCommissions: 3200.00, referralsCount: 15, isVip: true },
+            { id: '2', name: 'Maria Silva', totalCommissions: 2800.50, referralsCount: 12, isVip: true },
+            { id: '3', name: 'João Santos', totalCommissions: 2100.75, referralsCount: 18, isVip: false },
+            { id: '4', name: 'Ana Costa', totalCommissions: 1950.00, referralsCount: 10, isVip: true },
+            { id: '5', name: 'Carlos Lima', totalCommissions: 1750.25, referralsCount: 14, isVip: false }
+          ]
+        },
+        trading: {
+          totalTrades: 2847,
+          successfulTrades: 1896,
+          successRate: 66.6,
+          totalVolume: 1250000.00,
+          averageProfit: 28.15,
+          bestPair: 'BTC/USDT',
+          worstPair: 'ETH/BNB'
+        },
+        users: {
+          totalUsers: 156,
+          activeUsers: 134,
+          newUsersThisMonth: 23,
+          totalDeposits: 89500.00,
+          totalWithdrawals: 34200.00,
+          averageBalance: 1250.75
+        }
+      };
+
+      setReportData(mockData);
+    } catch (error) {
+      console.error('Erro ao carregar dados do relatório:', error);
+      addNotification({
+        type: 'error',
+        title: 'Erro ao Carregar Relatório',
+        message: 'Não foi possível carregar os dados do relatório'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateReport = async (type: string) => {
+    try {
+      setGeneratingReport(type);
+      
+      let blob: Blob;
+      let filename: string;
+
+      switch (type) {
+        case 'financial':
+          blob = await accountingService.exportReport('financial', selectedPeriod);
+          filename = `relatorio-financeiro-${selectedPeriod}-${new Date().toISOString().split('T')[0]}.pdf`;
+          break;
+        case 'affiliates':
+          blob = await affiliateService.generateReport('all', selectedPeriod);
+          filename = `relatorio-afiliados-${selectedPeriod}-${new Date().toISOString().split('T')[0]}.pdf`;
+          break;
+        case 'complete':
+          // Simular geração de relatório completo
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          blob = new Blob(['Relatório Completo Simulado'], { type: 'application/pdf' });
+          filename = `relatorio-completo-${selectedPeriod}-${new Date().toISOString().split('T')[0]}.pdf`;
+          break;
+        default:
+          throw new Error('Tipo de relatório inválido');
+      }
+
+      downloadFile(blob, filename);
+      
+      addNotification({
+        type: 'success',
+        title: 'Relatório Gerado',
+        message: `Relatório ${type === 'financial' ? 'financeiro' : type === 'affiliates' ? 'de afiliados' : 'completo'} foi baixado com sucesso`
+      });
+    } catch (error) {
+      console.error('Erro ao gerar relatório:', error);
+      addNotification({
+        type: 'error',
+        title: 'Erro ao Gerar Relatório',
+        message: 'Não foi possível gerar o relatório. Tente novamente.'
+      });
+    } finally {
+      setGeneratingReport(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto mb-4"></div>
+            <p className="text-white">Carregando relatórios...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  return (
+    <AdminLayout>
+      <Head>
+        <title>Relatórios Detalhados - CoinBit Club</title>
+      </Head>
+
+      <div className="min-h-screen p-4">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <ChartBarIcon className="w-8 h-8 text-yellow-400" />
+                <div>
+                  <h1 className="text-3xl font-bold text-white">Relatórios Detalhados</h1>
+                  <p className="text-gray-400">Análise completa do desempenho do sistema</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <select
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                  className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500"
+                >
+                  <option value="week">Última Semana</option>
+                  <option value="month">Último Mês</option>
+                  <option value="quarter">Último Trimestre</option>
+                  <option value="year">Último Ano</option>
+                  <option value="custom">Período Personalizado</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Período Personalizado */}
+          {selectedPeriod === 'custom' && (
+            <div style={cardStyle} className="mb-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Período Personalizado</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Data Inicial</label>
+                  <input
+                    type="date"
+                    value={dateRange.startDate}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Data Final</label>
+                  <input
+                    type="date"
+                    value={dateRange.endDate}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={fetchReportData}
+                    className="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-500 transition-colors"
+                  >
+                    Aplicar Filtro
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Resumo Financeiro */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+            <div style={cardStyle}>
+              <div className="flex items-center gap-3">
+                <ArrowTrendingUpIcon className="w-8 h-8 text-green-400" />
+                <div>
+                  <p className="text-gray-400 text-sm">Receita Total</p>
+                  <p className="text-xl font-bold text-green-400">
+                    R$ {reportData?.financial.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div style={cardStyle}>
+              <div className="flex items-center gap-3">
+                <ArrowTrendingDownIcon className="w-8 h-8 text-red-400" />
+                <div>
+                  <p className="text-gray-400 text-sm">Despesas</p>
+                  <p className="text-xl font-bold text-red-400">
+                    R$ {reportData?.financial.totalExpenses.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div style={cardStyle}>
+              <div className="flex items-center gap-3">
+                <CurrencyDollarIcon className="w-8 h-8 text-yellow-400" />
+                <div>
+                  <p className="text-gray-400 text-sm">Lucro Líquido</p>
+                  <p className="text-xl font-bold text-yellow-400">
+                    R$ {reportData?.financial.netProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div style={cardStyle}>
+              <div className="flex items-center gap-3">
+                <TrophyIcon className="w-8 h-8 text-blue-400" />
+                <div>
+                  <p className="text-gray-400 text-sm">Crescimento</p>
+                  <p className="text-xl font-bold text-blue-400">
+                    +{reportData?.financial.monthlyGrowth}%
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div style={cardStyle}>
+              <div className="flex items-center gap-3">
+                <ChartBarIcon className="w-8 h-8 text-purple-400" />
+                <div>
+                  <p className="text-gray-400 text-sm">Margem</p>
+                  <p className="text-xl font-bold text-purple-400">
+                    {reportData?.financial.profitMargin}%
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Relatórios Detalhados */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Relatório de Afiliados */}
+            <div style={cardStyle}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white flex items-center">
+                  <UserGroupIcon className="w-6 h-6 mr-2 text-purple-400" />
+                  Desempenho de Afiliados
+                </h3>
+                <button
+                  onClick={() => generateReport('affiliates')}
+                  disabled={generatingReport === 'affiliates'}
+                  className="flex items-center gap-2 px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-500 transition-colors disabled:opacity-50"
+                >
+                  {generatingReport === 'affiliates' ? (
+                    <ClockIcon className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <DocumentArrowDownIcon className="w-4 h-4" />
+                  )}
+                  Exportar
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                    <p className="text-2xl font-bold text-purple-400">{reportData?.affiliates.totalAffiliates}</p>
+                    <p className="text-sm text-gray-400">Total de Afiliados</p>
+                  </div>
+                  <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                    <p className="text-2xl font-bold text-yellow-400">{reportData?.affiliates.vipAffiliates}</p>
+                    <p className="text-sm text-gray-400">Afiliados VIP</p>
+                  </div>
+                </div>
+
+                <div className="text-center p-3 bg-green-900/20 rounded-lg border border-green-700">
+                  <p className="text-2xl font-bold text-green-400">
+                    R$ {reportData?.affiliates.totalCommissionsPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-sm text-gray-400">Comissões Pagas</p>
+                </div>
+
+                <div>
+                  <h4 className="text-md font-medium text-gray-300 mb-3">Top 5 Afiliados</h4>
+                  <div className="space-y-2">
+                    {reportData?.affiliates.topAffiliates.map((affiliate, index) => (
+                      <div key={affiliate.id} className="flex items-center justify-between p-2 bg-gray-800/30 rounded">
+                        <div className="flex items-center gap-2">
+                          <span className="text-yellow-400 font-bold">#{index + 1}</span>
+                          <span className="text-white">{affiliate.name}</span>
+                          {affiliate.isVip && (
+                            <span className="px-2 py-1 bg-purple-900/50 text-purple-300 rounded text-xs">VIP</span>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-green-400 font-semibold">
+                            R$ {affiliate.totalCommissions.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </p>
+                          <p className="text-xs text-gray-400">{affiliate.referralsCount} indicações</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Relatório de Trading */}
+            <div style={cardStyle}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white flex items-center">
+                  <BanknotesIcon className="w-6 h-6 mr-2 text-green-400" />
+                  Performance de Trading
+                </h3>
+                <button
+                  onClick={() => generateReport('trading')}
+                  disabled={generatingReport === 'trading'}
+                  className="flex items-center gap-2 px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors disabled:opacity-50"
+                >
+                  {generatingReport === 'trading' ? (
+                    <ClockIcon className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <DocumentArrowDownIcon className="w-4 h-4" />
+                  )}
+                  Exportar
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                    <p className="text-2xl font-bold text-blue-400">{reportData?.trading.totalTrades}</p>
+                    <p className="text-sm text-gray-400">Total de Trades</p>
+                  </div>
+                  <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                    <p className="text-2xl font-bold text-green-400">{reportData?.trading.successRate}%</p>
+                    <p className="text-sm text-gray-400">Taxa de Sucesso</p>
+                  </div>
+                </div>
+
+                <div className="text-center p-3 bg-green-900/20 rounded-lg border border-green-700">
+                  <p className="text-2xl font-bold text-green-400">
+                    R$ {reportData?.trading.totalVolume.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-sm text-gray-400">Volume Total Negociado</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="p-3 bg-blue-900/20 rounded-lg border border-blue-700">
+                    <p className="text-sm text-gray-400">Lucro Médio por Trade</p>
+                    <p className="text-lg font-bold text-blue-400">R$ {reportData?.trading.averageProfit}</p>
+                  </div>
+                  <div className="p-3 bg-green-900/20 rounded-lg border border-green-700">
+                    <p className="text-sm text-gray-400">Melhor Par</p>
+                    <p className="text-lg font-bold text-green-400">{reportData?.trading.bestPair}</p>
+                  </div>
+                  <div className="p-3 bg-red-900/20 rounded-lg border border-red-700">
+                    <p className="text-sm text-gray-400">Pior Par</p>
+                    <p className="text-lg font-bold text-red-400">{reportData?.trading.worstPair}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Relatório de Usuários */}
+          <div style={cardStyle} className="mb-6">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+              <UserGroupIcon className="w-6 h-6 mr-2 text-blue-400" />
+              Análise de Usuários
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                <p className="text-xl font-bold text-blue-400">{reportData?.users.totalUsers}</p>
+                <p className="text-sm text-gray-400">Total de Usuários</p>
+              </div>
+              <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                <p className="text-xl font-bold text-green-400">{reportData?.users.activeUsers}</p>
+                <p className="text-sm text-gray-400">Usuários Ativos</p>
+              </div>
+              <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                <p className="text-xl font-bold text-yellow-400">{reportData?.users.newUsersThisMonth}</p>
+                <p className="text-sm text-gray-400">Novos este Mês</p>
+              </div>
+              <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                <p className="text-xl font-bold text-green-400">
+                  R$ {(reportData?.users.totalDeposits || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
+                </p>
+                <p className="text-sm text-gray-400">Depósitos Totais</p>
+              </div>
+              <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                <p className="text-xl font-bold text-red-400">
+                  R$ {(reportData?.users.totalWithdrawals || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
+                </p>
+                <p className="text-sm text-gray-400">Saques Totais</p>
+              </div>
+              <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                <p className="text-xl font-bold text-purple-400">
+                  R$ {reportData?.users.averageBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+                <p className="text-sm text-gray-400">Saldo Médio</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Botões de Relatórios Completos */}
+          <div style={cardStyle}>
+            <h3 className="text-lg font-semibold text-white mb-4">Gerar Relatórios Completos</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <button
+                onClick={() => generateReport('financial')}
+                disabled={generatingReport === 'financial'}
+                className="flex items-center justify-center gap-3 p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50"
+              >
+                {generatingReport === 'financial' ? (
+                  <ClockIcon className="w-5 h-5 animate-spin" />
+                ) : (
+                  <ChartBarIcon className="w-5 h-5" />
+                )}
+                Relatório Financeiro Detalhado
+              </button>
+
+              <button
+                onClick={() => generateReport('affiliates')}
+                disabled={generatingReport === 'affiliates'}
+                className="flex items-center justify-center gap-3 p-4 bg-purple-600 text-white rounded-lg hover:bg-purple-500 transition-colors disabled:opacity-50"
+              >
+                {generatingReport === 'affiliates' ? (
+                  <ClockIcon className="w-5 h-5 animate-spin" />
+                ) : (
+                  <UserGroupIcon className="w-5 h-5" />
+                )}
+                Relatório de Afiliados Completo
+              </button>
+
+              <button
+                onClick={() => generateReport('complete')}
+                disabled={generatingReport === 'complete'}
+                className="flex items-center justify-center gap-3 p-4 bg-yellow-600 text-white rounded-lg hover:bg-yellow-500 transition-colors disabled:opacity-50"
+              >
+                {generatingReport === 'complete' ? (
+                  <ClockIcon className="w-5 h-5 animate-spin" />
+                ) : (
+                  <DocumentArrowDownIcon className="w-5 h-5" />
+                )}
+                Relatório Executivo Completo
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </AdminLayout>
+  );
+};
+
+export default ReportsPage;

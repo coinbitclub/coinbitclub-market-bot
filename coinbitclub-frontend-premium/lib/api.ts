@@ -48,7 +48,7 @@ export interface TradePosition {
 
 // Configuração da API baseada no ambiente
 const API_CONFIG: ApiConfig = {
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8085',
   timeout: 30000, // 30 segundos
   retries: 3
 };

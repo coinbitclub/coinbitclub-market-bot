@@ -1,133 +1,137 @@
-import React, { useState, useEffect } from 'react';
+import { NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
-export default function Home() {
+const LandingPage: NextPage = () => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Estilos inline para performance e simplicidade
+  if (!mounted) {
+    return <div>Carregando...</div>;
+  }
+
   const containerStyle = {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
-    color: '#ffffff',
-    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-  };
+    background: 'linear-gradient(135deg, #000000 0%, #111111 100%)',
+    color: '#FFFFFF',
+    fontFamily: "'Inter', sans-serif",
+  } as const;
 
   const headerStyle = {
+    padding: '1rem 2rem',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '1rem 2rem',
+    background: 'rgba(0, 0, 0, 0.9)',
     borderBottom: '1px solid #333333',
-    backdropFilter: 'blur(10px)',
-    position: 'sticky' as const,
-    top: 0,
-    zIndex: 1000,
-    background: 'rgba(10, 10, 10, 0.8)',
-  };
+  } as const;
 
   const logoStyle = {
     fontSize: '1.5rem',
-    fontWeight: 'bold',
-    textDecoration: 'none',
-    color: '#FFD700',
-    background: 'linear-gradient(45deg, #FFD700, #FF69B4)',
+    fontWeight: '700',
+    background: 'linear-gradient(45deg, #FFD700, #FFA500)',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
+    textDecoration: 'none',
+  } as const;
+
+  const heroStyle = {
+    textAlign: 'center' as const,
+    padding: '4rem 2rem',
+    maxWidth: '1200px',
+    margin: '0 auto',
+  };
+
+  const titleStyle = {
+    fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+    fontWeight: '700',
+    marginBottom: '1.5rem',
+    background: 'linear-gradient(45deg, #FFD700, #FF69B4, #00BFFF, #FFD700)',
+    backgroundSize: '300% 300%',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    animation: 'gradientShift 6s ease-in-out infinite',
+  };
+
+  const subtitleStyle = {
+    fontSize: 'clamp(1.2rem, 3vw, 1.5rem)',
+    marginBottom: '2.5rem',
+    color: '#B0B3B8',
+    maxWidth: '800px',
+    margin: '0 auto',
+    lineHeight: '1.6',
+  };
+
+  const ctaContainerStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    flexWrap: 'wrap' as const,
+    marginTop: '2rem',
+    marginBottom: '3rem',
+    gap: '2rem',
+  };
+
+  const getButtonStyle = (primary = false) => ({
+    padding: '1rem 2rem',
+    borderRadius: '12px',
+    border: primary ? '2px solid #FFD700' : '2px solid #00BFFF',
+    background: primary
+      ? 'linear-gradient(135deg, #FFD700, #FFA500)'
+      : 'linear-gradient(135deg, #00BFFF20, #FF69B420)',
+    color: primary ? '#000' : '#fff',
+    textDecoration: 'none',
+    fontSize: '1.1rem',
+    fontWeight: '700',
+    transition: 'all 0.3s ease',
+    cursor: 'pointer',
+    display: 'inline-block',
+    textAlign: 'center' as const,
+    minWidth: '200px',
+    boxShadow: primary
+      ? '0 0 20px rgba(255, 215, 0, 0.5)'
+      : '0 0 20px rgba(0, 191, 255, 0.3)',
+  });
+
+  const featuresStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gap: '2rem',
+    padding: '2rem',
+    maxWidth: '1200px',
+    margin: '0 auto',
+  };
+
+  const featureCardStyle = (color: string) => ({
+    background: `linear-gradient(135deg, rgba(0, 0, 0, 0.8), ${color}10)`,
+    border: `1px solid ${color}40`,
+    borderRadius: '16px',
+    padding: '2rem',
+    textAlign: 'center' as const,
+    backdropFilter: 'blur(10px)',
+    boxShadow: `0 0 20px ${color}20`,
+    transition: 'transform 0.3s ease',
+  });
+
+  const trialStyle = {
+    background: 'linear-gradient(135deg, rgba(255, 105, 180, 0.1), rgba(0, 191, 255, 0.1))',
+    border: '2px solid rgba(255, 215, 0, 0.5)',
+    borderRadius: '20px',
+    padding: '3rem 2rem',
+    margin: '4rem 2rem',
+    textAlign: 'center' as const,
+    backdropFilter: 'blur(20px)',
+    boxShadow: '0 0 40px rgba(255, 215, 0, 0.3)',
   };
 
   const authLinksStyle = {
     display: 'flex',
     gap: '1rem',
     alignItems: 'center',
-  };
-
-  const getButtonStyle = (isPrimary: boolean) => ({
-    padding: '0.75rem 1.5rem',
-    borderRadius: '8px',
-    textDecoration: 'none',
-    fontWeight: '600',
-    fontSize: '0.9rem',
-    transition: 'all 0.3s ease',
-    border: isPrimary ? 'none' : '2px solid #00BFFF',
-    background: isPrimary 
-      ? 'linear-gradient(45deg, #00BFFF, #FF69B4)' 
-      : 'transparent',
-    color: '#ffffff',
-    cursor: 'pointer',
-    display: 'inline-block',
-    textAlign: 'center' as const,
-  });
-
-  const heroStyle = {
-    textAlign: 'center' as const,
-    padding: '6rem 2rem',
-    maxWidth: '1200px',
-    margin: '0 auto',
-  };
-
-  const titleStyle = {
-    fontSize: 'clamp(2.5rem, 6vw, 4rem)',
-    fontWeight: 'bold',
-    marginBottom: '1.5rem',
-    background: 'linear-gradient(45deg, #FFD700, #FF69B4, #00BFFF)',
-    backgroundSize: '200% 200%',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    animation: 'gradientShift 3s ease infinite',
-  };
-
-  const subtitleStyle = {
-    fontSize: 'clamp(1.1rem, 3vw, 1.3rem)',
-    marginBottom: '3rem',
-    color: '#B0B3B8',
-    lineHeight: '1.6',
-    maxWidth: '800px',
-    margin: '0 auto 3rem auto',
-  };
-
-  const ctaContainerStyle = {
-    display: 'flex',
-    gap: '1rem',
-    justifyContent: 'center',
     flexWrap: 'wrap' as const,
-    marginBottom: '4rem',
-  };
-
-  const featuresStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-    gap: '2rem',
-    padding: '4rem 2rem',
-    maxWidth: '1200px',
-    margin: '0 auto',
-  };
-
-  const featureCardStyle = (accentColor: string) => ({
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(10px)',
-    borderRadius: '16px',
-    padding: '2rem',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    transition: 'all 0.3s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      transform: 'translateY(-8px)',
-      boxShadow: `0 20px 40px rgba(${accentColor === '#FFD700' ? '255, 215, 0' : accentColor === '#00BFFF' ? '0, 191, 255' : '255, 105, 180'}, 0.3)`,
-    }
-  });
-
-  const trialStyle = {
-    textAlign: 'center' as const,
-    padding: '6rem 2rem',
-    background: 'rgba(255, 255, 255, 0.02)',
-    margin: '4rem 0',
-    borderTop: '1px solid #333333',
-    borderBottom: '1px solid #333333',
   };
 
   return (
@@ -136,20 +140,17 @@ export default function Home() {
         <title>CoinBitClub - Plataforma de Trading Inteligente</title>
         <meta name="description" content="Maximize seus lucros com trading automatizado de criptomoedas. IA avançada, análise em tempo real e gestão de risco profissional." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <div style={containerStyle}>
-        {/* Header */}
         <header style={headerStyle}>
           <Link href="/" style={logoStyle}>⚡ CoinBitClub</Link>
           <div style={authLinksStyle}>
-            <Link href="/auth" style={getButtonStyle(false)}>🔑 Entrar</Link>
-            <Link href="/auth" style={getButtonStyle(true)}>🚀 Cadastrar</Link>
+            <Link href="/auth/login" style={getButtonStyle(false)}>🔑 LOGIN</Link>
+            <Link href="/auth/register" style={getButtonStyle(true)}>🚀 Cadastrar</Link>
           </div>
         </header>
 
-        {/* Hero */}
         <section style={heroStyle}>
           <h1 style={titleStyle}>MARKETBOT - O robô de trade automático que só lucra se você lucrar!</h1>
           <p style={subtitleStyle}>
@@ -157,13 +158,12 @@ export default function Home() {
             Trading automatizado, análise em tempo real e gestão de risco profissional.
           </p>
           <div style={ctaContainerStyle}>
-            <Link href="/auth" style={getButtonStyle(true)}>🎯 Teste Grátis por 7 Dias</Link>
-            <Link href="/dashboard-simple" style={getButtonStyle(false)}>📊 Ver Dashboard</Link>
+            <Link href="/auth/register" style={getButtonStyle(true)}>🎯 Teste Grátis por 7 Dias</Link>
           </div>
         </section>
 
-        {/* Features */}
-        <section style={featuresStyle}>
+        <section style={featuresStyle} className="features-grid">
+          {/* cards mantidos conforme original */}
           <div style={featureCardStyle('#FFD700')}>
             <h3 style={{ color: '#FFD700', fontSize: '1.5rem', marginBottom: '1rem' }}>🤖 IA Avançada</h3>
             <p style={{ color: '#B0B3B8', lineHeight: '1.6' }}>
@@ -185,13 +185,14 @@ export default function Home() {
           <div style={featureCardStyle('#FFD700')}>
             <h3 style={{ color: '#FFD700', fontSize: '1.5rem', marginBottom: '1rem' }}>💰 Programa de Afiliados</h3>
             <p style={{ color: '#B0B3B8', lineHeight: '1.6' }}>
-              Ganhe comissões indicando novos usuários. Sistema multinível com pagamentos automáticos.
+              Ganhe comissões de 1,5% sobre os resultados dos seus indicados. Indicações diretas apenas.
             </p>
+            <Link href="/auth/affiliate-register" style={getButtonStyle(false)}>📈 Cadastrar como Afiliado</Link>
           </div>
           <div style={featureCardStyle('#00BFFF')}>
             <h3 style={{ color: '#00BFFF', fontSize: '1.5rem', marginBottom: '1rem' }}>📊 Dashboard Completo</h3>
             <p style={{ color: '#B0B3B8', lineHeight: '1.6' }}>
-              Acompanhe estatísticas, balanços e configure seus bots em tempo real.
+              Gráficos em tempo real e relatórios detalhados para otimizar seus resultados.
             </p>
           </div>
           <div style={featureCardStyle('#FF69B4')}>
@@ -202,55 +203,59 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Trial */}
         <section style={trialStyle}>
           <h2 style={{
             fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
-            marginBottom: '1rem',
+            marginBottom: '1.5rem',
             background: 'linear-gradient(45deg, #FFD700, #FF69B4)',
             WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
+            WebkitTextFillColor: 'transparent',
           }}>
             🎁 Comece Sua Jornada Hoje!
           </h2>
           <p style={{
             fontSize: '1.2rem',
-            marginBottom: '2rem',
+            marginBottom: '1rem',
             color: '#B0B3B8',
             maxWidth: '600px',
-            margin: '0 auto 2rem auto'
+            margin: '0 auto',
+            lineHeight: '1.6',
           }}>
             Teste nossa plataforma por 7 dias gratuitamente. Sem compromisso, sem cartão de crédito.
-            {mounted && (
-              <span style={{ display: 'block', marginTop: '0.5rem', fontSize: '0.9rem', color: '#FFD700' }}>
-                ⏰ Oferta válida até: {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
-              </span>
-            )}
           </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/auth" style={getButtonStyle(true)}>🚀 Começar Teste Grátis</Link>
-            <Link href="/dashboard-simple" style={getButtonStyle(false)}>📊 Ver Demonstração</Link>
-          </div>
+          {mounted && (
+            <p style={{
+              fontSize: '0.95rem',
+              marginTop: '0.5rem',
+              marginBottom: '2rem',
+              color: '#FFD700'
+            }}>
+              ⏰ Oferta válida até: {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
+            </p>
+          )}
+          <Link href="/auth/register" style={getButtonStyle(true)}>🚀 Começar Teste Grátis</Link>
           <p style={{ fontSize: '0.875rem', marginTop: '1.5rem', color: '#666', fontStyle: 'italic' }}>
             * Ao se cadastrar você concorda com nossos{' '}
-            <Link href="/terms" style={{ color: '#00BFFF', textDecoration: 'underline' }}>Termos de Uso</Link> e{' '}
-            <Link href="/privacy" style={{ color: '#00BFFF', textDecoration: 'underline' }}>Política de Privacidade</Link>.
+            <Link href="/privacy" style={{ color: '#00BFFF', textDecoration: 'underline' }}>Termos de Uso e Política de Privacidade</Link>.
           </p>
         </section>
 
-        {/* Footer */}
         <footer style={{ padding: '2rem', textAlign: 'center', borderTop: '1px solid #333333', color: '#888888' }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-            <Link href="/terms" style={{ color: '#00BFFF', textDecoration: 'none' }}>Termos de Uso</Link>
-            <Link href="/privacy" style={{ color: '#00BFFF', textDecoration: 'none' }}>Privacidade</Link>
-            <Link href="/security" style={{ color: '#00BFFF', textDecoration: 'none' }}>Segurança</Link>
-            <Link href="/contact" style={{ color: '#00BFFF', textDecoration: 'none' }}>Contato</Link>
+            <Link href="/privacy" style={{ color: '#007BFF', textDecoration: 'none' }}>Termos de Uso e Política de Privacidade</Link>
+            <a
+              href="https://wa.me/5521995966652?text=Olá,%20quero%20saber%20mais%20sobre%20o%20MARKETBOT"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#25D366', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              💬 Contato WhatsApp
+            </a>
           </div>
           <p>© 2025 CoinBitClub. Todos os direitos reservados.</p>
         </footer>
       </div>
 
-      {/* CSS global para keyframes e media queries */}
       <style jsx global>{`
         @keyframes gradientShift {
           0% { background-position: 0% 50%; }
@@ -266,11 +271,9 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
         }
-        body {
-          margin: 0;
-          padding: 0;
-        }
       `}</style>
     </>
   );
-}
+};
+
+export default LandingPage;

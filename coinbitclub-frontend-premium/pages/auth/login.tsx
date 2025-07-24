@@ -99,9 +99,12 @@ const LoginPage: NextPage = () => {
     setLoading(true);
     setError('');
 
+    console.log('🔍 Tentando login:', { email, passwordLength: password.length });
+
     try {
-      // Tenta primeiro a API local para desenvolvimento
-      const response = await fetch('/api/auth/login', {
+      // Tenta primeiro a API do Railway com redirecionamento automático
+      console.log('🚀 Tentando API Railway...');
+      const response = await fetch('http://localhost:9997/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,25 +112,40 @@ const LoginPage: NextPage = () => {
         body: JSON.stringify({ email, password }),
       });
 
+      console.log('📡 Resposta API Railway:', response.status, response.statusText);
+
       if (response.ok) {
         const data = await response.json();
         const token = data.token;
         const user = data.user;
         
+        console.log('✅ Login bem-sucedido:', { role: user.role, redirectUrl: data.redirectUrl });
+        
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         
-        // Direcionar conforme o role do usuário
-        if (user.role === 'admin') {
-          router.push('/admin/dashboard');
-        } else if (user.role === 'affiliate') {
-          router.push('/dashboard?affiliate=true');
+        // Redirecionamento automático baseado no papel do usuário
+        if (data.redirectUrl) {
+          // API retorna a URL de redirecionamento baseada no papel
+          router.push(data.redirectUrl);
         } else {
-          router.push('/dashboard');
+          // Fallback - determinar redirecionamento pelo papel do usuário
+          const userRole = user.role || 'user';
+          switch (userRole) {
+            case 'admin':
+              router.push('/admin/dashboard');
+              break;
+            case 'affiliate':
+              router.push('/affiliate/dashboard');
+              break;
+            default:
+              router.push('/user/dashboard');
+          }
         }
       } else {
-        // Se a API local falhar, tenta o backend
-        const backendResponse = await fetch('http://localhost:8081/api/auth/login', {
+        // Se a API do Railway falhar, tenta a API local
+        console.log('🔄 Tentando API local...');
+        const localResponse = await fetch('/api/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -135,27 +153,65 @@ const LoginPage: NextPage = () => {
           body: JSON.stringify({ email, password }),
         });
 
-        if (backendResponse.ok) {
-          const data = await backendResponse.json();
-          const token = data.tokens?.accessToken || data.token;
-          localStorage.setItem('token', token);
-          localStorage.setItem('user', JSON.stringify(data.user));
+        if (localResponse.ok) {
+          const data = await localResponse.json();
+          const token = data.token;
+          const user = data.user;
           
-          // Direcionar conforme o role do usuário
-          if (data.user.role === 'admin') {
-            router.push('/admin/dashboard');
-          } else if (data.user.role === 'affiliate') {
-            router.push('/dashboard?affiliate=true');
-          } else {
-            router.push('/dashboard');
+          console.log('✅ Login local bem-sucedido:', { role: user.role });
+          
+          localStorage.setItem('token', token);
+          localStorage.setItem('user', JSON.stringify(user));
+          
+          // Redirecionamento baseado no papel
+          const userRole = user.role || 'user';
+          switch (userRole) {
+            case 'admin':
+              router.push('/admin/dashboard');
+              break;
+            case 'affiliate':
+              router.push('/affiliate/dashboard');
+              break;
+            default:
+              router.push('/user/dashboard');
           }
         } else {
-          const errorData = await backendResponse.json();
-          setError(errorData.error || errorData.message || 'Erro ao fazer login');
+          // Última tentativa com o backend
+          const backendResponse = await fetch('http://localhost:8085/api/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+          });
+
+          if (backendResponse.ok) {
+            const data = await backendResponse.json();
+            const token = data.tokens?.accessToken || data.token;
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            
+            // Redirecionamento baseado no papel
+            const userRole = data.user.role || 'user';
+            switch (userRole) {
+              case 'admin':
+                router.push('/admin/dashboard');
+                break;
+              case 'affiliate':
+                router.push('/affiliate/dashboard');
+                break;
+              default:
+                router.push('/user/dashboard');
+            }
+          } else {
+            const errorData = await backendResponse.json();
+            console.log('❌ Erro backend:', errorData);
+            setError(errorData.error || errorData.message || 'Erro ao fazer login');
+          }
         }
       }
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('💥 Login error:', err);
       setError('Erro de conexão. Verifique se os serviços estão rodando.');
     } finally {
       setLoading(false);

@@ -218,32 +218,42 @@ export default function SystemSettings() {
           {/* Header */}
           <div className="bg-white shadow-sm border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between items-center py-6">
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Configurações do Sistema</h1>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Gestão completa das configurações da plataforma
-                  </p>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <button
-                    onClick={handleSave}
-                    disabled={loading}
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {loading ? <FiRefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <FiSave className="mr-2 h-4 w-4" />}
-                    Salvar Configurações
-                  </button>
+              <div className="py-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Configurações do Sistema</h1>
+                    <p className="mt-2 text-sm text-gray-600">
+                      Gerencie todas as configurações da plataforma CoinBitClub
+                    </p>
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={handleSave}
+                      disabled={loading}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                    >
+                      <FiSave className="h-4 w-4 mr-2" />
+                      {loading ? 'Salvando...' : 'Salvar Tudo'}
+                    </button>
+                    <button
+                      onClick={() => mutate()}
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <FiRefreshCw className="h-4 w-4 mr-2" />
+                      Recarregar
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Main Content */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="bg-white shadow rounded-lg">
-              {/* Tabs */}
+              {/* Tab Navigation */}
               <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8 px-6">
+                <nav className="flex -mb-px space-x-8">
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
@@ -291,8 +301,8 @@ export default function SystemSettings() {
                     </div>
 
                     <div className="space-y-4">
-                      {renderToggle('maintenance_mode', 'Modo de Manutenção', 'Ativar para desabilitar acesso de usuários')}
-                      {renderToggle('debug_mode', 'Modo Debug', 'Ativar logs detalhados para desenvolvimento')}
+                      {renderToggle('maintenance_mode', 'Modo de Manutenção', 'Desabilita o acesso de usuários ao sistema')}
+                      {renderToggle('debug_mode', 'Modo Debug', 'Exibe informações detalhadas para depuração')}
                     </div>
                   </div>
                 )}
@@ -303,16 +313,16 @@ export default function SystemSettings() {
                     <h3 className="text-lg font-medium text-gray-900">Configurações de Trading</h3>
                     
                     <div className="space-y-4">
-                      {renderToggle('trading_enabled', 'Trading Habilitado', 'Ativar/desativar funcionalidades de trading')}
-                      {renderToggle('risk_management_enabled', 'Gestão de Risco', 'Ativar controles automáticos de risco')}
+                      {renderToggle('trading_enabled', 'Trading Habilitado', 'Permite que usuários façam trades')}
+                      {renderToggle('risk_management_enabled', 'Gerenciamento de Risco', 'Aplica regras automáticas de risco')}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {renderInput('min_investment', 'Investimento Mínimo (USD)', 'number', '10')}
                       {renderInput('max_investment', 'Investimento Máximo (USD)', 'number', '10000')}
-                      {renderInput('default_leverage', 'Leverage Padrão', 'number', '10')}
+                      {renderInput('default_leverage', 'Alavancagem Padrão', 'number', '1')}
                       {renderInput('stop_loss_percentage', 'Stop Loss (%)', 'number', '5')}
-                      {renderInput('take_profit_percentage', 'Take Profit (%)', 'number', '15')}
+                      {renderInput('take_profit_percentage', 'Take Profit (%)', 'number', '10')}
                     </div>
                   </div>
                 )}
@@ -322,36 +332,18 @@ export default function SystemSettings() {
                   <div className="space-y-6">
                     <h3 className="text-lg font-medium text-gray-900">Configurações de Pagamento</h3>
                     
+                    <div className="space-y-4">
+                      {renderToggle('pix_enabled', 'PIX Habilitado', 'Permite pagamentos via PIX')}
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {renderInput('stripe_public_key', 'Stripe Public Key', 'text', 'pk_...', true)}
-                      {renderInput('stripe_secret_key', 'Stripe Secret Key', 'text', 'sk_...', true)}
+                      {renderInput('stripe_public_key', 'Stripe Public Key', 'text', '', true)}
+                      {renderInput('stripe_secret_key', 'Stripe Secret Key', 'text', '', true)}
                       {renderInput('paypal_client_id', 'PayPal Client ID', 'text', '', true)}
                       {renderInput('paypal_secret', 'PayPal Secret', 'text', '', true)}
-                    </div>
-
-                    <div className="space-y-4">
-                      {renderToggle('pix_enabled', 'PIX Habilitado', 'Ativar pagamentos via PIX')}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {renderInput('minimum_withdrawal', 'Saque Mínimo (USD)', 'number', '50')}
-                      {renderInput('maximum_withdrawal', 'Saque Máximo (USD)', 'number', '50000')}
-                      {renderInput('withdrawal_fee_percentage', 'Taxa de Saque (%)', 'number', '2.5')}
-                    </div>
-
-                    <div className="flex space-x-4">
-                      <button
-                        onClick={() => handleTestConnection('stripe')}
-                        className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200"
-                      >
-                        Testar Stripe
-                      </button>
-                      <button
-                        onClick={() => handleTestConnection('paypal')}
-                        className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200"
-                      >
-                        Testar PayPal
-                      </button>
+                      {renderInput('maximum_withdrawal', 'Saque Máximo (USD)', 'number', '5000')}
+                      {renderInput('withdrawal_fee_percentage', 'Taxa de Saque (%)', 'number', '2')}
                     </div>
                   </div>
                 )}
@@ -364,11 +356,13 @@ export default function SystemSettings() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {renderInput('smtp_host', 'SMTP Host', 'text', 'smtp.gmail.com')}
                       {renderInput('smtp_port', 'SMTP Port', 'number', '587')}
-                      {renderInput('smtp_username', 'SMTP Username', 'text', 'user@gmail.com')}
+                      {renderInput('smtp_username', 'SMTP Username', 'text', '')}
                       {renderInput('smtp_password', 'SMTP Password', 'text', '', true)}
+                      {renderInput('from_email', 'Email Remetente', 'email', 'noreply@coinbitclub.com')}
+                      {renderInput('from_name', 'Nome Remetente', 'text', 'CoinBitClub')}
                       
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Criptografia</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Criptografia SMTP</label>
                         <select
                           value={settings.smtp_encryption || ''}
                           onChange={(e) => updateSetting('smtp_encryption', e.target.value)}
@@ -379,17 +373,17 @@ export default function SystemSettings() {
                           <option value="">Nenhuma</option>
                         </select>
                       </div>
-                      
-                      {renderInput('from_email', 'Email Remetente', 'email', 'noreply@coinbitclub.com')}
-                      {renderInput('from_name', 'Nome Remetente', 'text', 'CoinBitClub')}
                     </div>
 
-                    <button
-                      onClick={() => handleTestConnection('email')}
-                      className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200"
-                    >
-                      Testar Configuração de Email
-                    </button>
+                    <div className="pt-4">
+                      <button
+                        onClick={() => handleTestConnection('email')}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      >
+                        <FiMail className="h-4 w-4 mr-2" />
+                        Testar Conexão Email
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -399,22 +393,17 @@ export default function SystemSettings() {
                     <h3 className="text-lg font-medium text-gray-900">Configurações de Afiliados</h3>
                     
                     <div className="space-y-4">
-                      {renderToggle('affiliate_enabled', 'Programa de Afiliados', 'Ativar sistema de afiliação')}
-                      {renderToggle('multi_tier_enabled', 'Multi-Tier', 'Ativar comissões em múltiplos níveis')}
+                      {renderToggle('affiliate_enabled', 'Sistema de Afiliados', 'Habilita o programa de afiliados')}
+                      {renderToggle('multi_tier_enabled', 'Multi-nível', 'Permite afiliados de múltiplos níveis')}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {renderInput('default_commission_rate', 'Taxa de Comissão Padrão (%)', 'number', '10')}
+                      {renderInput('default_commission_rate', 'Comissão Padrão (%)', 'number', '10')}
                       {renderInput('minimum_payout', 'Pagamento Mínimo (USD)', 'number', '100')}
-                      {renderInput('cookie_duration_days', 'Duração do Cookie (dias)', 'number', '30')}
+                      {renderInput('cookie_duration_days', 'Duração Cookie (dias)', 'number', '30')}
+                      {renderInput('tier_2_commission', 'Comissão Nível 2 (%)', 'number', '5')}
+                      {renderInput('tier_3_commission', 'Comissão Nível 3 (%)', 'number', '2')}
                     </div>
-
-                    {settings.multi_tier_enabled && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {renderInput('tier_2_commission', 'Comissão Tier 2 (%)', 'number', '5')}
-                        {renderInput('tier_3_commission', 'Comissão Tier 3 (%)', 'number', '2')}
-                      </div>
-                    )}
                   </div>
                 )}
 
@@ -424,22 +413,15 @@ export default function SystemSettings() {
                     <h3 className="text-lg font-medium text-gray-900">Configurações de IA</h3>
                     
                     <div className="space-y-4">
-                      {renderToggle('ai_analysis_enabled', 'Análise de IA', 'Ativar análises automáticas por IA')}
+                      {renderToggle('ai_analysis_enabled', 'Análise por IA', 'Habilita análises automáticas por IA')}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {renderInput('openai_api_key', 'OpenAI API Key', 'text', 'sk-...', true)}
+                      {renderInput('openai_api_key', 'OpenAI API Key', 'text', '', true)}
                       {renderInput('claude_api_key', 'Claude API Key', 'text', '', true)}
-                      {renderInput('max_signals_per_day', 'Máx. Sinais por Dia', 'number', '50')}
-                      {renderInput('confidence_threshold', 'Threshold de Confiança (%)', 'number', '75')}
+                      {renderInput('max_signals_per_day', 'Máx. Sinais/dia', 'number', '50')}
+                      {renderInput('confidence_threshold', 'Limite de Confiança (%)', 'number', '70')}
                     </div>
-
-                    <button
-                      onClick={() => handleTestConnection('ai')}
-                      className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200"
-                    >
-                      Testar APIs de IA
-                    </button>
                   </div>
                 )}
 
@@ -449,17 +431,15 @@ export default function SystemSettings() {
                     <h3 className="text-lg font-medium text-gray-900">Configurações de Notificações</h3>
                     
                     <div className="space-y-4">
-                      {renderToggle('email_notifications', 'Notificações por Email', 'Enviar notificações via email')}
-                      {renderToggle('sms_notifications', 'Notificações por SMS', 'Enviar notificações via SMS')}
-                      {renderToggle('push_notifications', 'Push Notifications', 'Notificações push no navegador')}
-                      {renderToggle('telegram_notifications', 'Notificações Telegram', 'Enviar via Telegram Bot')}
+                      {renderToggle('email_notifications', 'Notificações por Email', 'Envia notificações por email')}
+                      {renderToggle('sms_notifications', 'Notificações por SMS', 'Envia notificações por SMS')}
+                      {renderToggle('push_notifications', 'Notificações Push', 'Envia notificações push')}
+                      {renderToggle('telegram_notifications', 'Notificações Telegram', 'Envia notificações via Telegram')}
                     </div>
 
-                    {settings.telegram_notifications && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {renderInput('telegram_bot_token', 'Telegram Bot Token', 'text', '', true)}
-                      </div>
-                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {renderInput('telegram_bot_token', 'Token do Bot Telegram', 'text', '', true)}
+                    </div>
                   </div>
                 )}
 
@@ -469,29 +449,16 @@ export default function SystemSettings() {
                     <h3 className="text-lg font-medium text-gray-900">Configurações de Segurança</h3>
                     
                     <div className="space-y-4">
-                      {renderToggle('two_factor_enabled', 'Autenticação 2FA', 'Forçar 2FA para todos os usuários')}
-                      {renderToggle('require_password_symbols', 'Símbolos em Senhas', 'Exigir símbolos especiais nas senhas')}
-                      {renderToggle('ip_whitelist_enabled', 'Whitelist de IPs', 'Restringir acesso por IP')}
+                      {renderToggle('two_factor_enabled', 'Autenticação 2FA', 'Exige autenticação de dois fatores')}
+                      {renderToggle('require_password_symbols', 'Símbolos na Senha', 'Exige símbolos nas senhas')}
+                      {renderToggle('ip_whitelist_enabled', 'Lista Branca de IPs', 'Restringe acesso por IP')}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {renderInput('session_timeout_minutes', 'Timeout de Sessão (min)', 'number', '60')}
-                      {renderInput('max_login_attempts', 'Máx. Tentativas de Login', 'number', '5')}
-                      {renderInput('password_min_length', 'Tamanho Min. Senha', 'number', '8')}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {renderInput('session_timeout_minutes', 'Timeout Sessão (min)', 'number', '60')}
+                      {renderInput('max_login_attempts', 'Máx. Tentativas Login', 'number', '5')}
+                      {renderInput('password_min_length', 'Tamanho Mín. Senha', 'number', '8')}
                     </div>
-
-                    {settings.ip_whitelist_enabled && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">IPs Permitidos</label>
-                        <textarea
-                          value={settings.allowed_ips?.join('\n') || ''}
-                          onChange={(e) => updateSetting('allowed_ips', e.target.value.split('\n').filter(ip => ip.trim()))}
-                          rows={5}
-                          placeholder="Digite um IP por linha&#10;192.168.1.1&#10;10.0.0.1"
-                          className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      </div>
-                    )}
                   </div>
                 )}
 

@@ -77,20 +77,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const { email, password } = req.body;
+    
+    console.log('🔍 LOGIN ATTEMPT:', { email, passwordLength: password?.length });
 
     if (!email || !password) {
+      console.log('❌ Missing credentials');
       return res.status(400).json({ message: 'Email e senha são obrigatórios' });
     }
 
     // Encontrar usuário
     const user = users.find(u => u.email === email);
     if (!user) {
+      console.log('❌ User not found:', email);
       return res.status(401).json({ message: 'Credenciais inválidas' });
     }
+    
+    console.log('✅ User found:', { email: user.email, role: user.role });
 
     // Verificar senha
     const isValidPassword = await bcrypt.compare(password, user.password);
+    console.log('🔐 Password check:', { isValid: isValidPassword });
+    
     if (!isValidPassword) {
+      console.log('❌ Invalid password for:', email);
       return res.status(401).json({ message: 'Credenciais inválidas' });
     }
 
