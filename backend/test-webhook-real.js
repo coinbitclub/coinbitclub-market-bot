@@ -5,7 +5,7 @@ import axios from 'axios';
 
 // Configurações do teste
 const RAILWAY_URL = 'https://coinbitclub-market-bot-production.up.railway.app';
-const LOCAL_URL = 'http://localhost:3001';
+const LOCAL_URL = 'http://localhost:3003';
 const WEBHOOK_ENDPOINT = '/api/webhooks/tradingview';
 const WEBHOOK_SECRET = 'coinbitclub_webhook_secret_2024';
 
