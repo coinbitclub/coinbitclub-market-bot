@@ -189,19 +189,92 @@ export async function up(knex) {
   await knex.schema.createTable('operation_logs', table => {
     table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
     table.integer('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
-    table.string('operation_type').notNullable(); // 'trade_open', 'trade_close', 'balance_check'
+    table.string('operation_type').notNullable(); // 'trade', 'copy_trade', 'signal', etc.
+    table.enum('operation_direction', ['debit', 'credit']).notNullable();
+    table.decimal('amount', 15, 2).notNullable();
     table.decimal('balance_before', 15, 2).notNullable();
-    table.decimal('balance_after', 15, 2).nullable();
-    table.decimal('amount_used', 15, 2).nullable();
+    table.decimal('balance_after', 15, 2).notNullable();
     table.string('currency', 3).defaultTo('BRL');
     table.boolean('allowed').notNullable(); // Se a operação foi permitida
     table.text('reason').nullable(); // Motivo se não foi permitida
+    table.text('description').nullable();
     table.jsonb('metadata').nullable();
     table.timestamps(true, true);
     
     table.index(['user_id', 'created_at']);
     table.index(['operation_type']);
     table.index(['allowed']);
+    table.index(['currency', 'created_at']);
+  });
+
+  // Tabela de alertas do sistema
+  await knex.schema.createTable('system_alerts', table => {
+    table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+    table.enum('type', ['reconciliation_discrepancy', 'high_failure_rate', 'suspicious_activity', 'system_error']).notNullable();
+    table.enum('severity', ['low', 'medium', 'high', 'critical']).notNullable();
+    table.string('title').notNullable();
+    table.text('message').notNullable();
+    table.jsonb('data').nullable();
+    table.boolean('resolved').defaultTo(false);
+    table.integer('resolved_by').nullable().references('id').inTable('users');
+    table.timestamp('resolved_at').nullable();
+    table.timestamps(true, true);
+    
+    table.index(['type', 'severity']);
+    table.index(['resolved', 'created_at']);
+  });
+
+  // Tabela para armazenar snapshots de saldo Stripe
+  await knex.schema.createTable('stripe_balance_snapshots', table => {
+    table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+    table.jsonb('available_balance').notNullable(); // Saldo disponível por moeda
+    table.jsonb('pending_balance').notNullable(); // Saldo pendente por moeda
+    table.decimal('total_available_brl', 15, 2).defaultTo(0);
+    table.decimal('total_available_usd', 15, 2).defaultTo(0);
+    table.decimal('total_pending_brl', 15, 2).defaultTo(0);
+    table.decimal('total_pending_usd', 15, 2).defaultTo(0);
+    table.timestamp('snapshot_date').notNullable();
+    table.timestamps(true, true);
+    
+    table.index(['snapshot_date']);
+  });
+
+  // Tabela para relatórios diários automáticos
+  await knex.schema.createTable('daily_reports', table => {
+    table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+    table.date('report_date').notNullable().unique();
+    table.string('report_type').notNullable(); // 'financial_daily', 'operational_daily'
+    table.jsonb('report_data').notNullable();
+    table.enum('status', ['generating', 'completed', 'failed']).defaultTo('completed');
+    table.timestamps(true, true);
+    
+    table.index(['report_date', 'report_type']);
+  });
+
+  // Tabela para relatórios semanais
+  await knex.schema.createTable('weekly_reports', table => {
+    table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+    table.date('week_start').notNullable();
+    table.date('week_end').notNullable();
+    table.string('report_type').notNullable();
+    table.jsonb('report_data').notNullable();
+    table.enum('status', ['generating', 'completed', 'failed']).defaultTo('completed');
+    table.timestamps(true, true);
+    
+    table.unique(['week_start', 'report_type']);
+  });
+
+  // Tabela para relatórios mensais
+  await knex.schema.createTable('monthly_reports', table => {
+    table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+    table.date('month_start').notNullable();
+    table.date('month_end').notNullable();
+    table.string('report_type').notNullable();
+    table.jsonb('report_data').notNullable();
+    table.enum('status', ['generating', 'completed', 'failed']).defaultTo('completed');
+    table.timestamps(true, true);
+    
+    table.unique(['month_start', 'report_type']);
   });
 
   // Inserir configurações padrão
@@ -299,6 +372,11 @@ export async function up(knex) {
  * @returns { Promise<void> }
  */
 export async function down(knex) {
+  await knex.schema.dropTableIfExists('monthly_reports');
+  await knex.schema.dropTableIfExists('weekly_reports');
+  await knex.schema.dropTableIfExists('daily_reports');
+  await knex.schema.dropTableIfExists('stripe_balance_snapshots');
+  await knex.schema.dropTableIfExists('system_alerts');
   await knex.schema.dropTableIfExists('operation_logs');
   await knex.schema.dropTableIfExists('financial_reports');
   await knex.schema.dropTableIfExists('currency_settings');

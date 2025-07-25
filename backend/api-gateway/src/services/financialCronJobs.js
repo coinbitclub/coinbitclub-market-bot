@@ -70,6 +70,91 @@ export class FinancialCronJobs {
    * Reconciliação com sistema existente
    */
   static setupReconciliation() {
+    // Reconciliação automática diária às 2:00 AM
+    cron.schedule('0 2 * * *', async () => {
+      try {
+        logger.info('Executando reconciliação automática diária');
+        
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(0, 0, 0, 0);
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const results = await ReconciliationService.reconcilePayments(yesterday, today);
+        
+        logger.info({ results }, 'Reconciliação automática concluída');
+        
+        // Gerar relatório se houver discrepâncias
+        if (results.discrepancies > 0) {
+          await ReconciliationService.generateReconciliationReport(yesterday, today);
+        }
+
+      } catch (error) {
+        logger.error({ error }, 'Erro na reconciliação automática');
+      }
+    });
+
+    // Snapshot de saldo Stripe a cada 4 horas
+    cron.schedule('0 */4 * * *', async () => {
+      try {
+        logger.info('Capturando snapshot do saldo Stripe');
+        await this.captureStripeBalanceSnapshot();
+      } catch (error) {
+        logger.error('Erro ao capturar snapshot Stripe:', error);
+      }
+    });
+
+    logger.info('Cron de reconciliação agendado: diário às 2h e snapshots a cada 4h');
+  }
+
+  /**
+   * Capturar snapshot do saldo Stripe
+   */
+  static async captureStripeBalanceSnapshot() {
+    try {
+      const FinancialControlService = await import('./financialControlService.js');
+      const balance = await FinancialControlService.FinancialControlService.getStripeBalance();
+
+      // Calcular totais por moeda
+      let totalAvailableBRL = 0;
+      let totalAvailableUSD = 0;
+      let totalPendingBRL = 0;
+      let totalPendingUSD = 0;
+
+      balance.available.forEach(b => {
+        if (b.currency === 'BRL') totalAvailableBRL += b.amount;
+        if (b.currency === 'USD') totalAvailableUSD += b.amount;
+      });
+
+      balance.pending.forEach(b => {
+        if (b.currency === 'BRL') totalPendingBRL += b.amount;
+        if (b.currency === 'USD') totalPendingUSD += b.amount;
+      });
+
+      // Salvar snapshot
+      await db('stripe_balance_snapshots').insert({
+        available_balance: JSON.stringify(balance.available),
+        pending_balance: JSON.stringify(balance.pending),
+        total_available_brl: totalAvailableBRL,
+        total_available_usd: totalAvailableUSD,
+        total_pending_brl: totalPendingBRL,
+        total_pending_usd: totalPendingUSD,
+        snapshot_date: new Date()
+      });
+
+      logger.info('Snapshot do saldo Stripe capturado com sucesso');
+
+    } catch (error) {
+      logger.error('Erro ao capturar snapshot do saldo Stripe:', error);
+    }
+  }
+
+  /**
+   * Relatórios automáticos melhorados
+   */
+  static setupReports() {
 
     // Reconciliação automática diária às 2:00 AM
     cron.schedule('0 2 * * *', async () => {

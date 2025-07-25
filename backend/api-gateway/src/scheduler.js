@@ -1,8 +1,10 @@
 import cron from 'node-cron';
 import { getFearAndGreed, getBtcDominance } from '../../../signal-ingestor/src/coinStatsClient.js';
+import { FinancialCronJobs } from './services/financialCronJobs.js';
 import { db } from '../../../common/db.js';
 
 export function setupScheduler() {
+  // Cron jobs existentes
   cron.schedule('*/30 * * * *', async () => {
     const fg = await getFearAndGreed();
     const dom = await getBtcDominance();
@@ -13,4 +15,7 @@ export function setupScheduler() {
     await db('raw_webhook').del();
     await db('signals').del();
   });
+
+  // Inicializar cron jobs financeiros
+  FinancialCronJobs.init();
 }
