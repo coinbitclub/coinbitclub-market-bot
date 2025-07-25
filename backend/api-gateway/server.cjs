@@ -853,16 +853,6 @@ app.use((error, req, res, next) => {
   });
 });
 
-// ===== ROTA 404 =====
-app.use((req, res) => {
-  res.status(404).json({
-    error: 'Endpoint não encontrado',
-    path: req.path,
-    method: req.method,
-    availableEndpoints: '/api/test'
-  });
-});
-
 // ===== WEBHOOK TRADINGVIEW ENDPOINT =====
 app.post('/api/webhooks/tradingview', async (req, res) => {
   console.log('📡 WEBHOOK TRADINGVIEW RECEBIDO');
@@ -952,6 +942,16 @@ app.get('/api/health', (req, res) => {
     service: 'coinbitclub-market-bot',
     database: 'connected',
     timestamp: new Date().toISOString()
+  });
+});
+
+// ===== ROTA 404 - DEVE SER A ÚLTIMA =====
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Endpoint não encontrado',
+    path: req.path,
+    method: req.method,
+    availableEndpoints: '/api/test'
   });
 });
 
