@@ -239,14 +239,14 @@ class TestRunner {
         throw new Error('Balance do usuário não criado');
       }
 
-      // Verificar settings
-      const settingsResult = await client.query(
-        'SELECT * FROM user_trading_settings WHERE user_id = $1',
+      // Verificar se balances foram criados
+      const userBalanceResult = await client.query(
+        'SELECT * FROM user_balances WHERE user_id = $1',
         [user.id]
       );
 
-      if (settingsResult.rows.length === 0) {
-        throw new Error('Settings do usuário não criados');
+      if (userBalanceResult.rows.length === 0) {
+        throw new Error('Balance do usuário não criado');
       }
 
       // Se for afiliado, verificar tabela de afiliados
@@ -267,8 +267,8 @@ class TestRunner {
 
       // Verificar subscription trial
       const subscriptionResult = await client.query(
-        'SELECT * FROM subscriptions WHERE user_id = $1 AND is_trial = true',
-        [user.id]
+        'SELECT * FROM subscriptions WHERE user_id = $1 AND plan_type = $2',
+        [user.id, 'trial']
       );
 
       if (subscriptionResult.rows.length === 0) {
@@ -298,7 +298,6 @@ class TestRunner {
         // Deletar em ordem correta (foreign keys)
         await client.query('DELETE FROM subscriptions WHERE user_id = $1', [userId]);
         await client.query('DELETE FROM affiliates WHERE user_id = $1', [userId]);
-        await client.query('DELETE FROM user_trading_settings WHERE user_id = $1', [userId]);
         await client.query('DELETE FROM user_balances WHERE user_id = $1', [userId]);
         await client.query('DELETE FROM users WHERE id = $1', [userId]);
       }

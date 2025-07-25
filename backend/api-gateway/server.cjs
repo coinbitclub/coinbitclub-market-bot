@@ -936,6 +936,20 @@ app.get('/api/status', (req, res) => {
   });
 });
 
+// ===== ROOT ENDPOINT PARA DIAGNÓSTICO =====
+app.get('/', (req, res) => {
+  res.json({
+    service: 'CoinBitClub Market Bot',
+    status: 'online',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      status: '/api/status', 
+      webhook: '/api/webhooks/tradingview'
+    }
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',

@@ -43,21 +43,27 @@ const LoginPage: NextPage = () => {
       if (response.ok) {
         console.log('✅ Login successful:', data);
         
-        // Salvar token no localStorage
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        // Salvar token no localStorage (usando as chaves corretas para o DashboardLayout)
+        localStorage.setItem('auth_token', data.token);
+        localStorage.setItem('user_data', JSON.stringify(data.user));
 
         // Redirecionar baseado no tipo de usuário
-        switch (data.user.type) {
+        const userType = data.user.userType || data.user.type || data.user.user_type;
+        console.log('User type detected:', userType);
+        
+        switch (userType) {
           case 'admin':
-            router.push('/admin/dashboard-real');
+            console.log('Redirecting to admin dashboard');
+            router.push('/admin/dashboard');
             break;
           case 'affiliate':
+            console.log('Redirecting to affiliate dashboard');
             router.push('/affiliate/dashboard');
             break;
           case 'user':
           default:
-            router.push('/user/dashboard');
+            console.log('Redirecting to user dashboard');
+            router.push('/dashboard');
             break;
         }
       } else {

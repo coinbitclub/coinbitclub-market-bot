@@ -141,6 +141,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       email: user.email,
       phone: user.phone,
       type: user.user_type,
+      user_type: user.user_type, // Adicionar compatibilidade
+      userType: user.user_type,   // Mais compatibilidade
       isActive: user.is_active,
       isEmailVerified: user.is_email_verified,
       createdAt: user.created_at,
