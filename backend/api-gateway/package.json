@@ -4,7 +4,7 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "start": "node ../../test-user-api-server.cjs",
+    "start": "node server.cjs",
     "dev": "nodemon src/index.js",
     "migrate": "knex migrate:latest",
     "db:migrate": "knex migrate:latest",
