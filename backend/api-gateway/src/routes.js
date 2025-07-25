@@ -24,6 +24,11 @@ import { authenticateToken, requireRole } from './middleware/auth.js';
 const adminRailwayController = require('./controllers/adminRailwayController.js');
 const userRoutes = require('./routes/userRoutes.js');
 
+// Import das novas rotas do sistema de pagamentos
+const catalogRoutes = require('../../routes/catalog.js');
+const adminFinancialRoutes = require('../../routes/adminFinancial.js');
+const stripeProductRoutes = require('../../routes/stripeProducts.js');
+
 const router = express.Router();
 
 // Public routes
@@ -76,5 +81,14 @@ router.use('/admin/railway', adminRailwayController);
 
 // User and Affiliate routes (integração Railway)
 router.use('/api', userRoutes);
+
+// Catalog and Product routes (sistema de produtos e checkout)
+router.use('/catalog', catalogRoutes);
+
+// Admin Financial routes (dashboard administrativo financeiro)
+router.use('/admin/financial', requireRole('admin'), adminFinancialRoutes);
+
+// Stripe Product routes (gerenciamento de produtos Stripe)
+router.use('/stripe', stripeProductRoutes);
 
 export default router;

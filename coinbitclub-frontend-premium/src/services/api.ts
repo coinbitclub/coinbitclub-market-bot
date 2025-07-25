@@ -262,8 +262,18 @@ export const settingsService = {
     return response.data;
   },
 
+  async getSystemConfig() {
+    const response = await api.get('/admin/system-config');
+    return response.data;
+  },
+
   async updateConfig(section: string, data: any) {
     const response = await api.patch(`/settings/${section}`, data);
+    return response.data;
+  },
+
+  async updateSystemConfig(config: any) {
+    const response = await api.put('/admin/system-config', config);
     return response.data;
   },
 

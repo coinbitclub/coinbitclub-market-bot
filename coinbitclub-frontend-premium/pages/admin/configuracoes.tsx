@@ -15,7 +15,6 @@ import {
 } from '@heroicons/react/24/outline';
 import AdminLayout from '../../src/components/AdminLayout';
 import { settingsService } from '../../src/services/api';
-import { FormValidator, systemConfigValidator } from '../../src/utils/validation';
 import { useNotifications } from '../../src/contexts/NotificationContext.simple';
 
 interface SystemConfig {
@@ -73,10 +72,18 @@ const ConfiguracoesAdmin: NextPage = () => {
       setLoading(true);
       const configData = await settingsService.getSystemConfig();
       setConfig(configData);
-      addNotification('Configurações carregadas com sucesso', 'success');
+      addNotification({
+        type: 'success',
+        title: 'Sucesso',
+        message: 'Configurações carregadas com sucesso'
+      });
     } catch (error) {
       console.error('Erro ao buscar configurações:', error);
-      addNotification('Erro ao carregar configurações. Usando dados locais.', 'warning');
+      addNotification({
+        type: 'warning',
+        title: 'Aviso',
+        message: 'Erro ao carregar configurações. Usando dados locais.'
+      });
       
       // Fallback para dados mockados
       const mockConfig: SystemConfig = {
@@ -121,22 +128,34 @@ const ConfiguracoesAdmin: NextPage = () => {
 
     setSaving(true);
     try {
-      // Validar configurações
-      const validator = new FormValidator(systemConfigValidator);
-      const validation = validator.validate(config);
-      
-      if (!validation.isValid) {
-        setValidationErrors(validation.errors);
-        addNotification('Erro na validação dos dados', 'error');
+      // Validação básica simplificada
+      if (!config.tradingViewApiKey || !config.coinStatsApiKey) {
+        setValidationErrors([
+          { field: 'tradingViewApiKey', message: 'API Key TradingView é obrigatória' },
+          { field: 'coinStatsApiKey', message: 'API Key CoinStats é obrigatória' }
+        ]);
+        addNotification({
+          type: 'error',
+          title: 'Erro',
+          message: 'Erro na validação dos dados'
+        });
         return;
       }
 
       setValidationErrors([]);
       await settingsService.updateSystemConfig(config);
-      addNotification('Configurações salvas com sucesso!', 'success');
+      addNotification({
+        type: 'success',
+        title: 'Sucesso',
+        message: 'Configurações salvas com sucesso!'
+      });
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
-      addNotification('Erro ao salvar configurações', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Erro',
+        message: 'Erro ao salvar configurações'
+      });
     } finally {
       setSaving(false);
     }

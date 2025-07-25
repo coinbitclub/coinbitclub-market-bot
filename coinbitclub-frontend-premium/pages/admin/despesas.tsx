@@ -288,7 +288,12 @@ const ExpensesManagement: NextPage = () => {
         await expenseService.update(editingExpense.id, expenseData);
         setExpenses(prev => prev.map(exp => 
           exp.id === editingExpense.id 
-            ? { ...exp, ...expenseData } 
+            ? { 
+                ...exp, 
+                ...expenseData,
+                status: expenseData.status as 'PENDING' | 'CANCELLED' | 'COMPLETED',
+                subscriptionType: expenseData.subscriptionType as 'monthly' | 'quarterly' | 'yearly'
+              } 
             : exp
         ));
         

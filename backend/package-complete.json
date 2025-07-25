@@ -1,0 +1,75 @@
+{
+  "name": "coinbitclub-backend",
+  "version": "1.0.0",
+  "description": "Sistema completo de pagamentos e gerenciamento financeiro CoinBitClub",
+  "main": "api-gateway/index.js",
+  "scripts": {
+    "start": "node api-gateway/index.js",
+    "dev": "nodemon api-gateway/index.js",
+    "migrate": "node migrate.js",
+    "init-catalog": "node scripts/init-catalog.js",
+    "setup": "npm run migrate && npm run init-catalog",
+    "setup-full": "npm install && npm run migrate && npm run init-catalog && npm start",
+    "test": "npm run test:api",
+    "test:api": "curl http://localhost:3000/api/catalog/public",
+    "test:health": "curl http://localhost:3000/health",
+    "stripe:sync": "node -e \"require('./services/productCatalogService').ProductCatalogService().syncWithStripe()\"",
+    "db:reset": "npm run migrate:rollback && npm run migrate",
+    "migrate:rollback": "knex migrate:rollback --all",
+    "seed": "knex seed:run",
+    "logs": "pm2 logs coinbitclub-backend",
+    "monitor": "pm2 monit",
+    "deploy": "railway up",
+    "docs": "node -e \"console.log('📄 Documentação: README-SISTEMA-COMPLETO.md')\"",
+    "help": "node -e \"console.log('\\n🚀 CoinBitClub Commands:\\n\\n📦 npm run setup-full  - Setup completo\\n🌐 npm start           - Iniciar servidor\\n🔧 npm run migrate      - Executar migrações\\n📋 npm run init-catalog - Inicializar produtos\\n🧪 npm test            - Testar API\\n📊 npm run logs        - Ver logs\\n📄 npm run docs        - Ver documentação\\n')\""
+  },
+  "keywords": [
+    "stripe",
+    "payments",
+    "cryptocurrency",
+    "trading",
+    "affiliate",
+    "dashboard",
+    "postgresql",
+    "express"
+  ],
+  "author": "CoinBitClub Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "stripe": "^14.0.0",
+    "knex": "^3.0.1",
+    "pg": "^8.11.3",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "morgan": "^1.10.0",
+    "express-validator": "^7.0.1",
+    "express-rate-limit": "^6.10.0",
+    "dotenv": "^16.3.1",
+    "axios": "^1.5.0",
+    "node-cron": "^3.0.2",
+    "winston": "^3.10.0",
+    "moment": "^2.29.4",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "@types/node": "^20.6.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/coinbitclub/market-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/coinbitclub/market-bot/issues"
+  },
+  "homepage": "https://coinbitclub.com"
+}

@@ -80,8 +80,7 @@ const AdminDashboardReal: NextPage = () => {
   const testBackendConnection = async () => {
     try {
       const response = await fetch('http://localhost:8085/health', {
-        method: 'GET',
-        timeout: 5000
+        method: 'GET'
       });
       
       if (response.ok) {

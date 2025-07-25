@@ -365,6 +365,100 @@ export async function up(knex) {
       payment_methods: JSON.stringify(['card', 'crypto'])
     }
   ]);
+
+  // Tabela de produtos Stripe
+  await knex.schema.createTable('stripe_products', table => {
+    table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+    table.string('stripe_product_id').notNullable().unique();
+    table.string('name').notNullable();
+    table.text('description').nullable();
+    table.enum('type', ['subscription', 'prepaid', 'one_time']).notNullable();
+    table.jsonb('features').nullable(); // Lista de recursos
+    table.boolean('is_active').defaultTo(true);
+    table.jsonb('metadata').nullable();
+    table.timestamps(true, true);
+    
+    table.index(['type', 'is_active']);
+    table.index(['stripe_product_id']);
+  });
+
+  // Tabela de preços Stripe
+  await knex.schema.createTable('stripe_prices', table => {
+    table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+    table.uuid('product_id').notNullable().references('id').inTable('stripe_products').onDelete('CASCADE');
+    table.string('stripe_price_id').notNullable().unique();
+    table.decimal('amount', 15, 2).notNullable();
+    table.string('currency', 3).notNullable();
+    table.string('interval').nullable(); // month, year para assinaturas
+    table.integer('interval_count').defaultTo(1);
+    table.integer('trial_period_days').defaultTo(0);
+    table.boolean('is_active').defaultTo(true);
+    table.string('nickname').nullable();
+    table.jsonb('metadata').nullable();
+    table.timestamps(true, true);
+    
+    table.index(['product_id', 'is_active']);
+    table.index(['stripe_price_id']);
+    table.index(['currency', 'amount']);
+  });
+
+  // Tabela de sessões de checkout
+  await knex.schema.createTable('checkout_sessions', table => {
+    table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+    table.string('stripe_session_id').notNullable().unique();
+    table.integer('user_id').nullable().references('id').inTable('users').onDelete('SET NULL');
+    table.uuid('price_id').notNullable().references('id').inTable('stripe_prices');
+    table.enum('status', ['open', 'complete', 'expired']).defaultTo('open');
+    table.decimal('amount', 15, 2).notNullable();
+    table.string('currency', 3).notNullable();
+    table.string('stripe_payment_intent_id').nullable();
+    table.string('stripe_subscription_id').nullable();
+    table.timestamp('completed_at').nullable();
+    table.timestamp('expires_at').nullable();
+    table.jsonb('metadata').nullable();
+    table.timestamps(true, true);
+    
+    table.index(['stripe_session_id']);
+    table.index(['user_id', 'status']);
+    table.index(['status', 'created_at']);
+  });
+
+  // Tabela de códigos promocionais
+  await knex.schema.createTable('promotional_codes', table => {
+    table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+    table.string('code').notNullable().unique();
+    table.string('stripe_coupon_id').nullable();
+    table.string('stripe_promotion_code_id').nullable();
+    table.enum('discount_type', ['percentage', 'fixed_amount']).notNullable();
+    table.decimal('discount_value', 15, 2).notNullable(); // % ou valor fixo
+    table.string('currency', 3).nullable(); // Para descontos de valor fixo
+    table.integer('max_redemptions').nullable();
+    table.integer('times_redeemed').defaultTo(0);
+    table.timestamp('valid_from').nullable();
+    table.timestamp('valid_until').nullable();
+    table.boolean('is_active').defaultTo(true);
+    table.text('description').nullable();
+    table.jsonb('applicable_products').nullable(); // IDs dos produtos aplicáveis
+    table.timestamps(true, true);
+    
+    table.index(['code', 'is_active']);
+    table.index(['valid_from', 'valid_until']);
+  });
+
+  // Tabela de uso de códigos promocionais
+  await knex.schema.createTable('promotional_code_usage', table => {
+    table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+    table.uuid('promotional_code_id').notNullable().references('id').inTable('promotional_codes').onDelete('CASCADE');
+    table.integer('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
+    table.uuid('checkout_session_id').nullable().references('id').inTable('checkout_sessions');
+    table.decimal('discount_applied', 15, 2).notNullable();
+    table.string('currency', 3).notNullable();
+    table.timestamps(true, true);
+    
+    table.index(['promotional_code_id']);
+    table.index(['user_id']);
+    table.unique(['promotional_code_id', 'user_id']); // Um usuário só pode usar um código uma vez
+  });
 }
 
 /**
@@ -372,6 +466,11 @@ export async function up(knex) {
  * @returns { Promise<void> }
  */
 export async function down(knex) {
+  await knex.schema.dropTableIfExists('promotional_code_usage');
+  await knex.schema.dropTableIfExists('promotional_codes');
+  await knex.schema.dropTableIfExists('checkout_sessions');
+  await knex.schema.dropTableIfExists('stripe_prices');
+  await knex.schema.dropTableIfExists('stripe_products');
   await knex.schema.dropTableIfExists('monthly_reports');
   await knex.schema.dropTableIfExists('weekly_reports');
   await knex.schema.dropTableIfExists('daily_reports');

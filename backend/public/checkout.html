@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBitClub - Checkout</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .product-card {
+            border: 2px solid #f0f0f0;
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .product-card.popular::before {
+            content: "MAIS POPULAR";
+            position: absolute;
+            top: 15px;
+            right: -30px;
+            background: #ff6b6b;
+            color: white;
+            padding: 5px 40px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transform: rotate(45deg);
+        }
+
+        .product-type {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .product-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .product-description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .prices {
+            margin-bottom: 20px;
+        }
+
+        .price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .price:hover {
+            background: #e9ecef;
+        }
+
+        .price.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .price-info {
+            flex: 1;
+        }
+
+        .price-amount {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .price-interval {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .features li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .features li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .checkout-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .promo-code {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .promo-code input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .promo-code input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .apply-promo-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CoinBitClub</h1>
+            <p>Escolha seu plano e comece a operar hoje mesmo</p>
+        </div>
+
+        <div class="content">
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Carregando produtos...</p>
+            </div>
+
+            <div id="error" class="error"></div>
+            <div id="success" class="success"></div>
+
+            <div id="products-container" class="products-grid">
+                <!-- Produtos serão carregados aqui -->
+            </div>
+
+            <div class="promo-code">
+                <h3>Tem um código promocional?</h3>
+                <input type="text" id="promo-code" placeholder="Digite seu código promocional">
+                <button class="apply-promo-btn" onclick="applyPromoCode()">Aplicar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api'; // Ajustar conforme necessário
+        let selectedPrice = null;
+        let appliedPromoCode = null;
+
+        // Carregar produtos ao inicializar
+        document.addEventListener('DOMContentLoaded', loadProducts);
+
+        async function loadProducts() {
+            showLoading(true);
+            hideMessages();
+
+            try {
+                const response = await fetch(`${API_BASE}/products?include_prices=true`);
+                const data = await response.json();
+
+                if (data.success) {
+                    renderProducts(data.data);
+                } else {
+                    showError('Erro ao carregar produtos: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar produtos:', error);
+                showError('Erro de conexão. Tente novamente.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function renderProducts(products) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
+
+            products.forEach((product, index) => {
+                const isPopular = index === 1; // Marcar segundo produto como popular
+                const productCard = createProductCard(product, isPopular);
+                container.appendChild(productCard);
+            });
+        }
+
+        function createProductCard(product, isPopular = false) {
+            const card = document.createElement('div');
+            card.className = `product-card ${isPopular ? 'popular' : ''}`;
+
+            const features = product.features || [
+                'Acesso completo à plataforma',
+                'Sinais de trading em tempo real',
+                'Suporte 24/7',
+                'Relatórios detalhados'
+            ];
+
+            const typeLabels = {
+                'subscription': 'Assinatura',
+                'prepaid': 'Pré-pago',
+                'one_time': 'Pagamento único'
+            };
+
+            card.innerHTML = `
+                <div class="product-type">${typeLabels[product.type] || product.type}</div>
+                <h3 class="product-name">${product.name}</h3>
+                <p class="product-description">${product.description || 'Descrição não disponível'}</p>
+                
+                <div class="prices">
+                    ${product.prices.map(price => `
+                        <div class="price" onclick="selectPrice('${price.id}', '${product.id}')">
+                            <div class="price-info">
+                                <div class="price-amount">
+                                    ${formatCurrency(price.amount, price.currency)}
+                                </div>
+                                ${price.interval ? `<div class="price-interval">por ${price.interval === 'month' ? 'mês' : price.interval}</div>` : ''}
+                                ${price.trial_period_days > 0 ? `<div class="price-interval">${price.trial_period_days} dias grátis</div>` : ''}
+                            </div>
+                            <input type="radio" name="price" value="${price.id}" style="display: none;">
+                        </div>
+                    `).join('')}
+                </div>
+
+                <ul class="features">
+                    ${features.map(feature => `<li>${feature}</li>`).join('')}
+                </ul>
+
+                <button class="checkout-btn" onclick="proceedToCheckout()" disabled>
+                    Selecione um preço
+                </button>
+            `;
+
+            return card;
+        }
+
+        function selectPrice(priceId, productId) {
+            selectedPrice = { priceId, productId };
+            
+            // Remover seleção anterior
+            document.querySelectorAll('.price').forEach(p => p.classList.remove('selected'));
+            
+            // Adicionar seleção atual
+            event.currentTarget.classList.add('selected');
+            
+            // Atualizar botões
+            document.querySelectorAll('.checkout-btn').forEach(btn => {
+                btn.disabled = false;
+                btn.textContent = 'Prosseguir para Pagamento';
+            });
+        }
+
+        async function proceedToCheckout() {
+            if (!selectedPrice) {
+                showError('Por favor, selecione um preço.');
+                return;
+            }
+
+            showLoading(true);
+            hideMessages();
+
+            try {
+                const payload = {
+                    price_id: selectedPrice.priceId,
+                    success_url: window.location.origin + '/success?session_id={CHECKOUT_SESSION_ID}',
+                    cancel_url: window.location.href
+                };
+
+                if (appliedPromoCode) {
+                    payload.promotional_code = appliedPromoCode;
+                }
+
+                const response = await fetch(`${API_BASE}/checkout/create-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Redirecionar para checkout do Stripe
+                    window.location.href = data.data.checkout_url;
+                } else {
+                    showError('Erro ao criar sessão de checkout: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Erro no checkout:', error);
+                showError('Erro de conexão. Tente novamente.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function applyPromoCode() {
+            const promoInput = document.getElementById('promo-code');
+            const code = promoInput.value.trim();
+
+            if (!code) {
+                showError('Digite um código promocional.');
+                return;
+            }
+
+            // Aqui você pode validar o código com o backend
+            appliedPromoCode = code;
+            showSuccess(`Código promocional "${code}" aplicado!`);
+            promoInput.disabled = true;
+        }
+
+        function formatCurrency(amount, currency) {
+            const symbols = {
+                'BRL': 'R$',
+                'USD': '$',
+                'EUR': '€'
+            };
+
+            return `${symbols[currency] || currency} ${parseFloat(amount).toFixed(2)}`;
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            const success = document.getElementById('success');
+            success.textContent = message;
+            success.style.display = 'block';
+        }
+
+        function hideMessages() {
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+        }
+
+        // Detectar retorno de checkout bem-sucedido
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+
+        if (sessionId) {
+            showSuccess('Pagamento realizado com sucesso! Processando...');
+            
+            // Verificar status da sessão
+            fetch(`${API_BASE}/checkout/session/${sessionId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data.status === 'complete') {
+                        showSuccess('Pagamento confirmado! Bem-vindo à CoinBitClub!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao verificar sessão:', error);
+                });
+        }
+    </script>
+</body>
+</html>

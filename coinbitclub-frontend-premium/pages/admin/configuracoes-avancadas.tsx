@@ -15,7 +15,7 @@ import {
   XMarkIcon,
   PowerIcon,
   CommandLineIcon,
-  DatabaseIcon,
+  CircleStackIcon,
   BellIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
@@ -598,7 +598,7 @@ const ConfiguracoesAvancadas: NextPage = () => {
               disabled={processing === 'backup_now'}
               className="p-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg text-white hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50"
             >
-              <DatabaseIcon className="h-6 w-6 mx-auto mb-2" />
+              <CircleStackIcon className="h-6 w-6 mx-auto mb-2" />
               <span className="text-sm font-medium">Backup Manual</span>
             </button>
             

@@ -175,7 +175,7 @@ const AdminDashboardRealData: NextPage = () => {
         refundRequests: 0,
         affiliateRequests: 0,
         systemStatus: {
-          api: 'connecting',
+          api: 'online',
           database: 'online',
           payments: 'online',
           email: 'online'
