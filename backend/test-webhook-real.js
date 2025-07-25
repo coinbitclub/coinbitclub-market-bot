@@ -5,7 +5,7 @@ import axios from 'axios';
 
 // Configurações do teste
 const RAILWAY_URL = 'https://coinbitclub-market-bot-production.up.railway.app';
-const LOCAL_URL = 'http://localhost:3000';
+const LOCAL_URL = 'http://localhost:3001';
 const WEBHOOK_ENDPOINT = '/api/webhooks/tradingview';
 const WEBHOOK_SECRET = 'coinbitclub_webhook_secret_2024';
 
@@ -107,9 +107,9 @@ async function testWebhookSignal(signal, baseUrl) {
     console.log(`\n🧪 TESTANDO: ${signal.name}`);
     console.log('━'.repeat(60));
     
+    const startTime = Date.now();
+    
     try {
-        const startTime = Date.now();
-        
         const response = await axios.post(
             `${baseUrl}${WEBHOOK_ENDPOINT}`,
             signal.payload,

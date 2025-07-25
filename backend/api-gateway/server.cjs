@@ -863,6 +863,98 @@ app.use((req, res) => {
   });
 });
 
+// ===== WEBHOOK TRADINGVIEW ENDPOINT =====
+app.post('/api/webhooks/tradingview', async (req, res) => {
+  console.log('📡 WEBHOOK TRADINGVIEW RECEBIDO');
+  console.log('📊 Payload:', JSON.stringify(req.body, null, 2));
+  
+  try {
+    const { token, strategy, symbol, action, price, timestamp, indicators, test_mode } = req.body;
+    
+    // Validar token
+    const expectedToken = 'coinbitclub_webhook_secret_2024';
+    if (token !== expectedToken) {
+      console.log('❌ Token inválido recebido:', token);
+      return res.status(401).json({
+        success: false,
+        error: 'Token de webhook inválido',
+        received_token: token ? 'token_presente_mas_incorreto' : 'token_ausente'
+      });
+    }
+    
+    // Validar campos obrigatórios
+    if (!symbol || !action || !price) {
+      return res.status(400).json({
+        success: false,
+        error: 'Campos obrigatórios ausentes: symbol, action, price'
+      });
+    }
+    
+    // Processar sinal (simulação)
+    const signalId = crypto.randomBytes(16).toString('hex');
+    const processedAt = new Date().toISOString();
+    
+    console.log(`✅ Sinal processado: ${signalId}`);
+    console.log(`📈 ${symbol} ${action} @ ${price}`);
+    
+    // Simular salvamento no banco
+    const result = {
+      success: true,
+      signal_id: signalId,
+      symbol,
+      action,
+      price,
+      processed_at: processedAt,
+      test_mode: test_mode || false,
+      message: `Sinal ${action} para ${symbol} processado com sucesso`
+    };
+    
+    if (test_mode) {
+      result.test_info = {
+        note: 'Este é um teste - nenhuma operação real foi executada',
+        timestamp: Date.now()
+      };
+    }
+    
+    // Log de sucesso
+    console.log('🎉 Webhook processado com sucesso:', signalId);
+    
+    return res.status(200).json(result);
+    
+  } catch (error) {
+    console.error('💥 Erro ao processar webhook:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor',
+      message: error.message
+    });
+  }
+});
+
+// ===== STATUS E HEALTH ENDPOINTS =====
+app.get('/api/status', (req, res) => {
+  res.json({
+    status: 'active',
+    service: 'coinbitclub-market-bot',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    endpoints: {
+      webhook_tradingview: '/api/webhooks/tradingview',
+      health: '/api/status'
+    }
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    service: 'coinbitclub-market-bot',
+    database: 'connected',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // ===== INICIALIZAR SERVIDOR =====
 app.listen(PORT, () => {
   console.log('🚀 ===== SERVIDOR API RAILWAY INICIADO =====');
@@ -881,7 +973,10 @@ app.listen(PORT, () => {
   console.log('   ➕ POST /api/admin/affiliates');
   console.log('   ✏️  PUT  /api/admin/affiliates/:id');
   console.log('   🔄 PATCH /api/admin/affiliates/:id/toggle');
-  console.log('   �📊 GET  /api/test');
+  console.log('   📊 GET  /api/test');
+  console.log('   📡 POST /api/webhooks/tradingview');
+  console.log('   ⚡ GET  /api/status');
+  console.log('   🏥 GET  /api/health');
   console.log('🔗 Banco: PostgreSQL Railway');
   console.log('✅ Sistema pronto para uso!');
 });

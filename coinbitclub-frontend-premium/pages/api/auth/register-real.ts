@@ -118,36 +118,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         [user.id]
       );
 
-      // Criar configurações de trading do usuário
+      // Criar configurações de trading do usuário (opcional - comentado por enquanto)
+      /*
       await client.query(
         `INSERT INTO user_trading_settings (user_id, max_leverage, max_stop_loss, max_percent_per_trade, is_active)
          VALUES ($1, 10, 5.0, 2.0, true)`,
         [user.id]
       );
+      */
 
       // Se for afiliado, criar registro na tabela de afiliados
       if (userType === 'affiliate') {
         // Gerar código de afiliado único
-        const affiliateCodeResult = await client.query('SELECT generate_affiliate_code() as code');
-        const affiliateCode = affiliateCodeResult.rows[0].code;
+        const affiliateCode = `CBC${Date.now().toString().slice(-6)}`;
 
         await client.query(
-          `INSERT INTO affiliates (user_id, affiliate_code, commission_rate, total_referrals, total_commission_earned, is_active)
-           VALUES ($1, $2, 10.00, 0, 0, true)`,
-          [user.id, affiliateCode]
+          `INSERT INTO affiliates (user_id, code, affiliate_code, commission_rate, is_active)
+           VALUES ($1, $2, $3, 0.10, true)`,
+          [user.id, affiliateCode, affiliateCode]
         );
 
         console.log('✅ Affiliate created with code:', affiliateCode);
       }
 
-      // Criar trial gratuito de 7 dias
+      // Criar subscription com plano válido existente
       const trialEndsAt = new Date();
       trialEndsAt.setDate(trialEndsAt.getDate() + 7);
 
+      // Usar plano Basic existente (ID conhecido do banco)
+      const basicPlanId = '042e6ad2-2517-4197-b5ec-1d6d2fca5745';
+
       await client.query(
-        `INSERT INTO subscriptions (user_id, plan_type, status, starts_at, ends_at, is_trial, trial_ends_at)
-         VALUES ($1, 'trial', 'active', NOW(), $2, true, $2)`,
-        [user.id, trialEndsAt]
+        `INSERT INTO subscriptions (user_id, plan_id, plan_type, status, trial_ends_at)
+         VALUES ($1, $2, 'trial', 'active', $3)`,
+        [user.id, basicPlanId, trialEndsAt]
       );
 
       console.log('✅ Trial subscription created');
