@@ -128,23 +128,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     orderExecutor: { status: 'online', lastUpdate: '10:35' }
   });
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMarketData(prev => ({
-        ...prev,
-        lastUpdate: new Date().toLocaleString('pt-BR')
-      }));
-
-      setOperations(prev => prev.map(op => 
-        op.status === 'ACTIVE' ? {
-          ...op,
-          profit: op.profit + (Math.random() - 0.5) * 10
-        } : op
-      ));
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
+  // Removido o useEffect problemático que causava loops
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setMarketData(prev => ({
+  //       ...prev,
+  //       lastUpdate: new Date().toLocaleString('pt-BR')
+  //     }));
+  //     setOperations(prev => prev.map(op => 
+  //       op.status === 'ACTIVE' ? {
+  //         ...op,
+  //         profit: op.profit + (Math.random() - 0.5) * 10
+  //       } : op
+  //     ));
+  //   }, 30000);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const getDirectionColor = (direction: string) => {
     switch (direction) {

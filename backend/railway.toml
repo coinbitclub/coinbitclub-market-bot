@@ -4,8 +4,8 @@ dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "cd api-gateway && npm start"
-healthcheckPath = "/api/health"
-healthcheckTimeout = 300
+# healthcheckPath = "/"
+# healthcheckTimeout = 300
 restartPolicyType = "always"
 
 [environments.production]
