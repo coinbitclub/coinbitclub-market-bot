@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const crypto = require('crypto');
 
 // Como o userController está em ES6, vou recriar as funções aqui mesmo
 const { Pool } = require('pg');
@@ -389,13 +390,251 @@ app.get('/api/admin/railway/logs/railway', (req, res) => {
 });
 
 // ===== ROTAS DE ADMINISTRAÇÃO DE AFILIADOS =====
-const { 
-  authenticateAdmin, 
-  getAffiliates, 
-  createAffiliate, 
-  updateAffiliate, 
-  toggleAffiliateStatus 
-} = require('./backend/api-gateway/src/controllers/userController.js');
+// Comentado: problema com ES6 modules
+// const { 
+//   authenticateAdmin, 
+//   getAffiliates, 
+//   createAffiliate, 
+//   updateAffiliate, 
+//   toggleAffiliateStatus 
+// } = require('./backend/api-gateway/src/controllers/userController.js');
+
+// Implementação das funções de admin diretamente
+const authenticateAdmin = async (req, res, next) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({ error: 'Token de acesso requerido' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+    
+    const result = await pool.query(`
+      SELECT * FROM users WHERE id = $1 AND role = 'admin'
+    `, [decoded.userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(403).json({ error: 'Acesso negado - privilégios de administrador requeridos' });
+    }
+
+    req.user = result.rows[0];
+    next();
+  } catch (error) {
+    console.error('Erro na autenticação admin:', error);
+    res.status(401).json({ error: 'Token inválido' });
+  }
+};
+
+const getAffiliates = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
+
+    console.log(`Admin ${req.user.email} listando afiliados - Página ${page}`);
+
+    // Buscar afiliados usando as tabelas corretas
+    const affiliatesResult = await pool.query(`
+      SELECT 
+        u.id,
+        u.name,
+        u.email,
+        u.created_at,
+        up.phone,
+        up.country,
+        COALESCE(up.account_type, 'testnet') as account_type,
+        COALESCE(a.code, 'N/A') as affiliate_code,
+        0 as total_referrals,
+        0 as total_commissions,
+        u.status::text as status
+      FROM users u
+      LEFT JOIN user_profiles up ON u.id = up.user_id
+      LEFT JOIN affiliates a ON u.id = a.user_id
+      WHERE u.role = 'affiliate'
+      ORDER BY u.created_at DESC
+      LIMIT $1 OFFSET $2
+    `, [limit, offset]);
+
+    // Contar total
+    const countResult = await pool.query(`
+      SELECT COUNT(*) as total FROM users WHERE role = 'affiliate'
+    `);
+
+    const total = parseInt(countResult.rows[0].total);
+    const pages = Math.ceil(total / limit);
+
+    res.json({
+      success: true,
+      affiliates: affiliatesResult.rows,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages
+      }
+    });
+
+  } catch (error) {
+    console.error('Erro ao listar afiliados:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    });
+  }
+};
+
+const createAffiliate = async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    await client.query('BEGIN');
+    
+    const { name, email, phone, country, accountType } = req.body;
+    
+    console.log(`Admin ${req.user.email} criando afiliado: ${name} (${email})`);
+
+    // Verificar se email já existe
+    const existingUser = await client.query(
+      'SELECT id FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (existingUser.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        success: false,
+        error: 'Email já cadastrado'
+      });
+    }
+
+    // Gerar código de afiliado único
+    const affiliateCode = 'AFF' + Date.now().toString().slice(-6);
+    
+    // Gerar senha temporária
+    const tempPassword = Math.random().toString(36).slice(-8);
+
+    // Criar usuário (sem account_type na tabela users)
+    const userResult = await client.query(`
+      INSERT INTO users (name, email, password, role, created_at, updated_at)
+      VALUES ($1, $2, $3, 'affiliate', NOW(), NOW())
+      RETURNING id, name, email
+    `, [name, email, tempPassword]);
+
+    const user = userResult.rows[0];
+
+    // Criar perfil com account_type
+    await client.query(`
+      INSERT INTO user_profiles (user_id, phone, country, account_type, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, NOW(), NOW())
+    `, [user.id, phone || null, country || 'BR', accountType]);
+
+    // Criar registro na tabela affiliates (usar 'code' ao invés de 'affiliate_code')
+    await client.query(`
+      INSERT INTO affiliates (user_id, code, created_at)
+      VALUES ($1, $2, NOW())
+    `, [user.id, affiliateCode]);
+
+    await client.query('COMMIT');
+
+    res.json({
+      success: true,
+      message: 'Afiliado criado com sucesso',
+      affiliate: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        affiliateCode,
+        tempPassword,
+        accountType
+      }
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Erro ao criar afiliado:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    });
+  } finally {
+    client.release();
+  }
+};
+
+const updateAffiliate = async (req, res) => {
+  try {
+    const { affiliateId } = req.params;
+    const { name, email, phone, country } = req.body;
+    
+    console.log(`Admin ${req.user.email} atualizando afiliado ${affiliateId}`);
+
+    // Atualizar usuário
+    await pool.query(`
+      UPDATE users 
+      SET name = $1, email = $2, updated_at = NOW()
+      WHERE id = $3 AND role = 'affiliate'
+    `, [name, email, affiliateId]);
+
+    // Atualizar perfil
+    await pool.query(`
+      UPDATE user_profiles 
+      SET phone = $1, country = $2, updated_at = NOW()
+      WHERE user_id = $3
+    `, [phone, country, affiliateId]);
+
+    res.json({
+      success: true,
+      message: 'Afiliado atualizado com sucesso'
+    });
+
+  } catch (error) {
+    console.error('Erro ao atualizar afiliado:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    });
+  }
+};
+
+const toggleAffiliateStatus = async (req, res) => {
+  try {
+    const { affiliateId } = req.params;
+    const { action } = req.body; // 'activate' ou 'deactivate'
+    
+    console.log(`Admin ${req.user.email} ${action === 'activate' ? 'ativando' : 'desativando'} afiliado ${affiliateId}`);
+
+    // Usar os valores corretos do enum user_status
+    const newStatus = action === 'activate' ? 'active' : 'inactive';
+
+    // Atualizar status na tabela users
+    await pool.query(`
+      UPDATE users 
+      SET status = $1::user_status, updated_at = NOW()
+      WHERE id = $2 AND role = 'affiliate'
+    `, [newStatus, affiliateId]);
+
+    // Também atualizar account_type no user_profiles se necessário
+    const newAccountType = action === 'activate' ? 'testnet' : 'inactive';
+    await pool.query(`
+      UPDATE user_profiles 
+      SET account_type = $1, updated_at = NOW()
+      WHERE user_id = $2
+    `, [newAccountType, affiliateId]);
+
+    res.json({
+      success: true,
+      message: `Afiliado ${action === 'activate' ? 'ativado' : 'desativado'} com sucesso`
+    });
+
+  } catch (error) {
+    console.error('Erro ao alterar status:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    });
+  }
+};
 
 // Listar afiliados (Admin)
 app.get('/api/admin/affiliates', authenticateAdmin, getAffiliates);
@@ -408,6 +647,166 @@ app.put('/api/admin/affiliates/:affiliateId', authenticateAdmin, updateAffiliate
 
 // Ativar/Desativar afiliado (Admin)
 app.patch('/api/admin/affiliates/:affiliateId/toggle', authenticateAdmin, toggleAffiliateStatus);
+
+// ===== FUNÇÕES DE RESET DE SENHA =====
+
+// Simular envio de email (para teste)
+const sendResetEmail = (email, resetToken) => {
+  console.log('\n📧 EMAIL SIMULADO - Reset de Senha:');
+  console.log(`Para: ${email}`);
+  console.log(`Token: ${resetToken}`);
+  console.log(`Link: http://localhost:3001/redefinir-senha?token=${resetToken}`);
+  console.log('⏰ Válido por: 1 hora\n');
+  return Promise.resolve(true);
+};
+
+// Solicitar reset de senha
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    console.log(`🔄 Solicitação de reset para: ${email}`);
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email é obrigatório' });
+    }
+
+    // Buscar usuário
+    const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const user = userResult.rows[0];
+
+    if (!user) {
+      // Não revelar se o email existe (segurança)
+      console.log(`⚠️ Email não encontrado: ${email}`);
+      return res.json({ 
+        message: 'Se uma conta com este email existir, um link de reset foi enviado' 
+      });
+    }
+
+    // Gerar token seguro
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    // Armazenar token no banco
+    await pool.query(
+      `UPDATE users 
+       SET password_reset_token = $1, 
+           password_reset_expires = $2, 
+           updated_at = NOW()
+       WHERE id = $3`,
+      [resetToken, resetTokenExpiry, user.id]
+    );
+
+    // Simular envio de email
+    await sendResetEmail(email, resetToken);
+
+    console.log(`✅ Token de reset gerado para usuário ID: ${user.id}`);
+
+    res.json({ 
+      message: 'Se uma conta com este email existir, um link de reset foi enviado',
+      success: true
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao solicitar reset:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
+// Redefinir senha com token
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword, confirmPassword } = req.body;
+    
+    console.log(`🔄 Confirmação de reset com token: ${token?.substring(0, 16)}...`);
+
+    if (!token || !newPassword || !confirmPassword) {
+      return res.status(400).json({ error: 'Token e senhas são obrigatórios' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: 'Senhas não coincidem' });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'Senha deve ter pelo menos 8 caracteres' });
+    }
+
+    // Buscar usuário pelo token
+    const userResult = await pool.query(
+      `SELECT * FROM users 
+       WHERE password_reset_token = $1 
+       AND password_reset_expires > NOW()`,
+      [token]
+    );
+
+    const user = userResult.rows[0];
+
+    if (!user) {
+      console.log(`⚠️ Token inválido ou expirado: ${token?.substring(0, 16)}...`);
+      return res.status(400).json({ error: 'Token inválido ou expirado' });
+    }
+
+    // Atualizar senha e limpar token (simplificado para teste)
+    await pool.query(
+      `UPDATE users 
+       SET password = $1,
+           password_reset_token = NULL,
+           password_reset_expires = NULL,
+           updated_at = NOW()
+       WHERE id = $2`,
+      [newPassword, user.id]
+    );
+
+    console.log(`✅ Senha resetada para usuário ID: ${user.id} (${user.email})`);
+
+    res.json({ 
+      message: 'Senha redefinida com sucesso',
+      success: true
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao resetar senha:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
+// Validar token de reset
+const validateResetToken = async (req, res) => {
+  try {
+    const { token } = req.body;
+    
+    if (!token) {
+      return res.status(400).json({ error: 'Token é obrigatório' });
+    }
+
+    // Buscar token válido
+    const userResult = await pool.query(
+      `SELECT id FROM users 
+       WHERE password_reset_token = $1 
+       AND password_reset_expires > NOW()`,
+      [token]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(400).json({ error: 'Token inválido ou expirado' });
+    }
+
+    res.json({ 
+      message: 'Token válido',
+      valid: true
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao validar token:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
+// ===== ROTAS DE RESET DE SENHA =====
+app.post('/auth/forgot-password', forgotPassword);
+app.post('/auth/reset-password', resetPassword);
+app.post('/auth/validate-reset-token', validateResetToken);
 
 // ===== ROTA DE TESTE =====
 app.get('/api/test', (req, res) => {
@@ -439,20 +838,6 @@ app.get('/api/test', (req, res) => {
         'POST /api/admin/affiliates',
         'PUT /api/admin/affiliates/:id',
         'PATCH /api/admin/affiliates/:id/toggle'
-      ]
-    }
-        'GET /api/user/plans',
-        'GET /api/user/settings',
-        'PUT /api/user/settings'
-      ],
-      affiliate: [
-        'GET /api/affiliate/dashboard',
-        'GET /api/affiliate/commissions',
-        'POST /api/affiliate/request-payment'
-      ],
-      admin: [
-        'GET /api/admin/railway/health',
-        'GET /api/admin/railway/logs/railway'
       ]
     }
   });

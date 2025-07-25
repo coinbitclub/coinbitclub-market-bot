@@ -240,7 +240,7 @@ export default function Auth() {
 
             {isLogin && (
               <div className="mt-3 text-center">
-                <Link href="/reset-password" className="text-slate-400 hover:text-slate-300 text-sm">
+                <Link href="/esqueci-senha" className="text-slate-400 hover:text-slate-300 text-sm">
                   Esqueceu sua senha?
                 </Link>
               </div>
