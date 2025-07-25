@@ -330,7 +330,6 @@ const getUserDashboard = async (req, res) => {
  */
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middlewares
 app.use(cors());
@@ -992,6 +991,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// ===== ENDPOINT HEALTHCHECK RAILWAY =====
+app.get('/health', (req, res) => {
+  console.log('🏥 Railway healthcheck solicitado em /health');
+  res.json({
+    status: 'healthy',
+    service: 'coinbitclub-market-bot',
+    database: 'connected',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    railway_healthcheck: true
+  });
+});
+
 // ===== ROTA 404 - DEVE SER A ÚLTIMA =====
 app.use((req, res) => {
   res.status(404).json({
@@ -1003,10 +1015,18 @@ app.use((req, res) => {
 });
 
 // ===== INICIALIZAR SERVIDOR =====
+const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
-app.listen(PORT, HOST, () => {
+
+console.log('🔍 DEBUG Railway PORT:');
+console.log('   process.env.PORT:', process.env.PORT);
+console.log('   PORT final usado:', PORT);
+console.log('   HOST usado:', HOST);
+
+const server = app.listen(PORT, HOST, () => {
   console.log('🚀 ===== SERVIDOR API RAILWAY INICIADO =====');
   console.log(`🌐 URL: http://${HOST}:${PORT}`);
+  console.log(`🌐 Railway PORT env: ${process.env.PORT}`);
   console.log('📋 Endpoints disponíveis:');
   console.log('   🔐 POST /api/auth/login');
   console.log('   📝 POST /api/auth/register');
@@ -1025,8 +1045,26 @@ app.listen(PORT, HOST, () => {
   console.log('   📡 POST /api/webhooks/tradingview');
   console.log('   ⚡ GET  /api/status');
   console.log('   🏥 GET  /api/health');
+  console.log('   🏥 GET  /health (Railway healthcheck)');
   console.log('🔗 Banco: PostgreSQL Railway');
   console.log('✅ Sistema pronto para uso!');
+});
+
+// Tratamento de erro do servidor
+server.on('error', (err) => {
+  console.error('❌ Erro no servidor:', err);
+  if (err.code === 'EADDRINUSE') {
+    console.error(`❌ Porta ${PORT} já está em uso`);
+  }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('📤 Recebido SIGTERM, encerrando servidor graciosamente...');
+  server.close(() => {
+    console.log('✅ Servidor encerrado');
+    process.exit(0);
+  });
 });
 
 module.exports = app;

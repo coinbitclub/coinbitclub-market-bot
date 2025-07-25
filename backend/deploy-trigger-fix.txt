@@ -1,0 +1,6 @@
+# Deploy trigger - Railway
+# Timestamp: 2025-07-25T23:20:15.000Z
+# Status: Fixing 502 error
+# Changes: Simplified server for debugging
+
+echo "Deploy triggered at $(date)"
