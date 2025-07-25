@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import DashboardLayout from '../../src/components/Layout/DashboardLayout';
-import AdminDashboard from '../../src/components/Dashboard/AdminDashboard';
+import AdminDashboardUltraSimple from '../../src/components/Dashboard/AdminDashboard-ultra-simple';
 
 interface User {
   id: string;
@@ -60,7 +60,7 @@ const AdminDashboardPage = () => {
 
   return (
     <DashboardLayout user={user}>
-      <AdminDashboard user={user} />
+      <AdminDashboardUltraSimple user={user} />
     </DashboardLayout>
   );
 };

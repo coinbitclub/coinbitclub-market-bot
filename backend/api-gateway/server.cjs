@@ -921,6 +921,39 @@ app.post('/api/webhooks/tradingview', async (req, res) => {
   }
 });
 
+// ===== WEBHOOK GENÉRICO PARA CAPTURAR ROTAS /webhook/* =====
+app.post('/webhook/:signal', async (req, res) => {
+  console.log(`📡 WEBHOOK GENÉRICO RECEBIDO - Rota: /webhook/${req.params.signal}`);
+  console.log('📊 Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('📊 Payload:', JSON.stringify(req.body, null, 2));
+  
+  try {
+    const signalId = crypto.randomBytes(16).toString('hex');
+    const processedAt = new Date().toISOString();
+    
+    console.log(`✅ Sinal genérico processado: ${signalId}`);
+    console.log(`📡 Rota: /webhook/${req.params.signal}`);
+    
+    const result = {
+      success: true,
+      signal_id: signalId,
+      route: `/webhook/${req.params.signal}`,
+      data_received: req.body,
+      processed_at: processedAt,
+      message: `Sinal da rota /webhook/${req.params.signal} processado com sucesso`
+    };
+    
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('💥 Erro no webhook genérico:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor',
+      message: error.message
+    });
+  }
+});
+
 // ===== STATUS E HEALTH ENDPOINTS =====
 app.get('/api/status', (req, res) => {
   res.json({
