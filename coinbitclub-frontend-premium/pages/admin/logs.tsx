@@ -49,26 +49,10 @@ const LogsAdmin: NextPage = () => {
     boxShadow: '0 0 20px rgba(255, 215, 0, 0.1)',
   };
 
-  // Função para buscar logs do Railway
+  // Função para buscar logs
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      
-      // Tentar buscar logs da API Railway integrada primeiro
-      const railwayResponse = await fetch('http://localhost:9999/api/admin/railway/logs/railway', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (railwayResponse.ok) {
-        const railwayData = await railwayResponse.json();
-        setLogs(railwayData.logs || []);
-        addNotification('✅ Logs carregados do banco Railway com sucesso!', 'success');
-        return;
-      }
-
-      // Fallback para API systemService
       const logsData = await systemService.getLogs({
         level: filter !== 'all' ? filter : undefined,
         service: serviceFilter !== 'all' ? serviceFilter : undefined,
@@ -141,18 +125,8 @@ const LogsAdmin: NextPage = () => {
     };
   }, [autoRefresh]);
 
-  const clearLogs = async () => {
+  const fetchLogs = async () => {
     try {
-      setLogs([]);
-      addNotification('Logs limpos com sucesso', 'success');
-    } catch (error) {
-      addNotification('Erro ao limpar logs', 'error');
-    }
-  };
-
-  const handleSearch = () => {
-    try {
-      setLoading(true);
       // Mock data - integração real será feita aqui
       const mockLogs: LogEntry[] = [
         {
@@ -281,32 +255,13 @@ const LogsAdmin: NextPage = () => {
     }
   };
 
-  // Funções de controle do sistema integradas com Railway
+  // Funções de controle do sistema
   const handleStopAllOperations = async () => {
     if (!confirm('⚠️ ATENÇÃO: Isso irá parar TODAS as operações de trading ativas. Tem certeza?')) return;
     
     try {
-      // Tentar API Railway primeiro
-      const response = await fetch('http://localhost:9999/api/admin/railway/emergency/stop-railway', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          reason: 'Parada de emergência solicitada pelo administrador via interface web'
-        })
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        alert('✅ Todas as operações foram interrompidas com sucesso no Railway Database!');
-        fetchLogs(); // Atualizar logs
-        return;
-      }
-
-      // Fallback para API original
-      const fallbackResponse = await fetch('/api/admin/emergency/stop-all', {
+      // Aqui seria feita a integração real com o backend
+      const response = await fetch('/api/admin/emergency/stop-all', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -314,9 +269,9 @@ const LogsAdmin: NextPage = () => {
         }
       });
       
-      if (fallbackResponse.ok) {
+      if (response.ok) {
         alert('✅ Todas as operações foram interrompidas com sucesso.');
-        fetchLogs();
+        fetchLogs(); // Atualizar logs
       } else {
         throw new Error('Falha ao parar operações');
       }
@@ -330,8 +285,7 @@ const LogsAdmin: NextPage = () => {
     if (!confirm('Deseja reiniciar o sistema de trading? Isso pode levar alguns minutos.')) return;
     
     try {
-      // Tentar API Railway primeiro
-      const response = await fetch('http://localhost:9999/api/admin/railway/emergency/restart-trading-railway', {
+      const response = await fetch('/api/admin/emergency/restart-trading', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -340,21 +294,6 @@ const LogsAdmin: NextPage = () => {
       });
       
       if (response.ok) {
-        alert('✅ Sistema de trading reiniciado com sucesso via Railway Database!');
-        fetchLogs();
-        return;
-      }
-
-      // Fallback para API original
-      const fallbackResponse = await fetch('/api/admin/emergency/restart-trading', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (fallbackResponse.ok) {
         alert('✅ Sistema de trading reiniciado com sucesso.');
         fetchLogs();
       } else {
@@ -392,8 +331,7 @@ const LogsAdmin: NextPage = () => {
 
   const handleSystemHealth = async () => {
     try {
-      // Tentar API Railway primeiro
-      const response = await fetch('http://localhost:9999/api/admin/railway/system/health-railway', {
+      const response = await fetch('/api/admin/system/health', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -401,40 +339,6 @@ const LogsAdmin: NextPage = () => {
       
       if (response.ok) {
         const healthData = await response.json();
-        const status = `
-🔍 STATUS DO SISTEMA (Railway Database Integrado):
-
-📊 Serviços:
-• Database: ${healthData.database || 'DESCONHECIDO'}
-• API Gateway: ${healthData.api_gateway || 'DESCONHECIDO'}
-• Trading Bot: ${healthData.trading_bot || 'DESCONHECIDO'}
-
-⚠️ Sistema:
-• Parada de Emergência: ${healthData.emergency_stop ? '🔴 ATIVADA' : '🟢 DESATIVADA'}
-• Alertas Críticos: ${healthData.critical_alerts || 0}
-• Erros Recentes: ${healthData.recent_errors || 0}
-
-💹 Configurações:
-• Alavancagem Máxima: ${healthData.max_leverage || 'N/A'}
-• Posição Mínima: ${healthData.min_position_size || 'N/A'}
-
-🕐 Última verificação: ${new Date(healthData.last_check).toLocaleString('pt-BR')}
-
-✅ SISTEMA INTEGRADO AO POSTGRESQL RAILWAY!
-        `;
-        alert(status);
-        return;
-      }
-
-      // Fallback para API original
-      const fallbackResponse = await fetch('/api/admin/system/health', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (fallbackResponse.ok) {
-        const healthData = await fallbackResponse.json();
         const status = `
 🔍 STATUS DO SISTEMA:
 
