@@ -1,6 +1,6 @@
 import cron from 'node-cron';
-import { getFearAndGreed, getBtcDominance } from '../../signal-ingestor/src/coinStatsClient.js';
-import { db } from '../../common/db.js';
+import { getFearAndGreed, getBtcDominance } from '../../../signal-ingestor/src/coinStatsClient.js';
+import { db } from '../../../common/db.js';
 
 export function setupScheduler() {
   cron.schedule('*/30 * * * *', async () => {

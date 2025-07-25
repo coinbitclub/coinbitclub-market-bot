@@ -1,8 +1,8 @@
-import '../../common/env.js';
+import '../../../common/env.js';
 import express from 'express';
 import cors from 'cors';
-import { ensureConnection } from '../../common/db.js';
-import logger from '../../common/logger.js';
+import { ensureConnection } from '../../../common/db.js';
+import logger from '../../../common/logger.js';
 
 console.log('Starting minimal test server...');
 

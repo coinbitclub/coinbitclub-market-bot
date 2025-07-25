@@ -1,0 +1,19 @@
+# Simple Docker setup for Railway
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy all files
+COPY . .
+
+# Install dependencies
+RUN npm install
+
+# Make sure we're using the right directory structure
+RUN cd backend/api-gateway && npm install
+
+# Expose port
+EXPOSE 3000
+
+# Start command - use the test user api server which is simpler
+CMD ["node", "test-user-api-server.cjs"]

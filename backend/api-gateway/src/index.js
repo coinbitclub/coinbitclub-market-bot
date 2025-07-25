@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import '../../common/env.js';
+import '../../../common/env.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -8,10 +8,10 @@ import rateLimit from 'express-rate-limit';
 
 import routes from './routes.js';
 import { setupScheduler } from './scheduler.js';
-import { initMetrics, healthEndpoint, collectHttpMetrics } from '../../common/metrics.js';
-import { ensureConnection } from '../../common/db.js';
-import logger from '../../common/logger.js';
-import { env } from '../../common/env.js';
+import { initMetrics, healthEndpoint, collectHttpMetrics } from '../../../common/metrics.js';
+import { ensureConnection } from '../../../common/db.js';
+import logger from '../../../common/logger.js';
+import { env } from '../../../common/env.js';
 
 const app = express();
 

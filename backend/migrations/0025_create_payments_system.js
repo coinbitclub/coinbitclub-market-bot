@@ -235,6 +235,61 @@ export async function up(knex) {
         ]
       }),
       description: 'Configurações de bônus para recarga pré-paga'
+    },
+    {
+      key: 'withdrawal_settings',
+      value: JSON.stringify({
+        auto_approval_limit: 1000,
+        business_hours_only: true,
+        max_daily_withdrawals: 5
+      }),
+      description: 'Configurações de saque automático'
+    }
+  ]);
+
+  // Inserir tiers de afiliados
+  await knex('affiliate_tiers').insert([
+    {
+      name: 'normal',
+      commission_rate: 0.015, // 1.5%
+      minimum_volume: 0,
+      benefits: JSON.stringify(['comissão_standard']),
+      is_active: true
+    },
+    {
+      name: 'vip',
+      commission_rate: 0.05, // 5%
+      minimum_volume: 10000,
+      benefits: JSON.stringify(['comissão_premium', 'suporte_prioritário', 'materiais_exclusivos']),
+      is_active: true
+    }
+  ]);
+
+  // Inserir configurações de moedas
+  await knex('currency_settings').insert([
+    {
+      currency: 'BRL',
+      country_code: 'BR',
+      minimum_balance: 100.00,
+      minimum_operation: 50.00,
+      withdrawal_fee_percentage: 0.02, // 2%
+      withdrawal_fee_fixed: 5.00,
+      minimum_withdrawal: 50.00,
+      prepaid_enabled: true,
+      subscription_enabled: true,
+      payment_methods: JSON.stringify(['card', 'pix', 'boleto'])
+    },
+    {
+      currency: 'USD',
+      country_code: 'US',
+      minimum_balance: 25.00,
+      minimum_operation: 15.00,
+      withdrawal_fee_percentage: 0.025, // 2.5%
+      withdrawal_fee_fixed: 2.00,
+      minimum_withdrawal: 20.00,
+      prepaid_enabled: true,
+      subscription_enabled: true,
+      payment_methods: JSON.stringify(['card', 'crypto'])
     }
   ]);
 }
@@ -244,7 +299,19 @@ export async function up(knex) {
  * @returns { Promise<void> }
  */
 export async function down(knex) {
+  await knex.schema.dropTableIfExists('operation_logs');
   await knex.schema.dropTableIfExists('financial_reports');
+  await knex.schema.dropTableIfExists('currency_settings');
+  
+  // Remover colunas adicionadas à tabela users
+  await knex.schema.table('users', table => {
+    table.dropColumn('affiliate_tier_id');
+    table.dropColumn('minimum_balance_required');
+    table.dropColumn('can_operate');
+  });
+  
+  await knex.schema.dropTableIfExists('affiliate_tiers');
+  await knex.schema.dropTableIfExists('withdrawal_requests');
   await knex.schema.dropTableIfExists('webhook_logs');
   await knex.schema.dropTableIfExists('payment_settings');
   await knex.schema.dropTableIfExists('prepaid_transactions');
