@@ -166,7 +166,13 @@ export default function AffiliateCommissions() {
       // Fallback para dados vazios
       setCommissions([]);
       setPayouts([]);
-      setSummary({});
+      setSummary({
+        totalEarned: 0,
+        totalPaid: 0,
+        pendingAmount: 0,
+        thisMonth: 0,
+        thisYear: 0
+      });
     } finally {
       setLoading(false);
     }
