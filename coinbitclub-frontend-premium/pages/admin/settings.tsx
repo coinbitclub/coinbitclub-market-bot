@@ -981,8 +981,8 @@ const AdminSettings: NextPage = () => {
                         <label className="mb-2 block text-sm text-gray-400">Servidor SMTP</label>
                         <input
                           type="text"
-                          value={config.email.smtp.host}
-                          onChange={(e) => updateConfig('email', 'smtp', { ...config.email.smtp, host: e.target.value })}
+                          value={config.email.smtpHost}
+                          onChange={(e) => updateConfig('email', 'smtpHost', e.target.value)}
                           placeholder="smtp.gmail.com"
                           className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
                         />
@@ -991,8 +991,8 @@ const AdminSettings: NextPage = () => {
                         <label className="mb-2 block text-sm text-gray-400">Porta</label>
                         <input
                           type="number"
-                          value={config.email.smtp.port}
-                          onChange={(e) => updateConfig('email', 'smtp', { ...config.email.smtp, port: parseInt(e.target.value) })}
+                          value={config.email.smtpPort}
+                          onChange={(e) => updateConfig('email', 'smtpPort', parseInt(e.target.value))}
                           placeholder="587"
                           className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
                         />
@@ -1001,8 +1001,8 @@ const AdminSettings: NextPage = () => {
                         <label className="mb-2 block text-sm text-gray-400">Usuário</label>
                         <input
                           type="text"
-                          value={config.email.smtp.user}
-                          onChange={(e) => updateConfig('email', 'smtp', { ...config.email.smtp, user: e.target.value })}
+                          value={config.email.smtpUser}
+                          onChange={(e) => updateConfig('email', 'smtpUser', e.target.value)}
                           className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
                         />
                       </div>
@@ -1010,8 +1010,8 @@ const AdminSettings: NextPage = () => {
                         <label className="mb-2 block text-sm text-gray-400">Senha</label>
                         <input
                           type="password"
-                          value={config.email.smtp.password}
-                          onChange={(e) => updateConfig('email', 'smtp', { ...config.email.smtp, password: e.target.value })}
+                          value={config.email.smtpPassword}
+                          onChange={(e) => updateConfig('email', 'smtpPassword', e.target.value)}
                           className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
                         />
                       </div>
@@ -1020,8 +1020,8 @@ const AdminSettings: NextPage = () => {
                       <input
                         type="checkbox"
                         id="smtpSecure"
-                        checked={config.email.smtp.secure}
-                        onChange={(e) => updateConfig('email', 'smtp', { ...config.email.smtp, secure: e.target.checked })}
+                        checked={false}
+                        onChange={(e) => console.log('SSL/TLS toggle:', e.target.checked)}
                         className="rounded border-gray-600 bg-gray-700 text-yellow-400 focus:ring-yellow-400"
                       />
                       <label htmlFor="smtpSecure" className="text-white">
