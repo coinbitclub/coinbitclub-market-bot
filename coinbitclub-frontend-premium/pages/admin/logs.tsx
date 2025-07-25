@@ -64,7 +64,11 @@ const LogsAdmin: NextPage = () => {
       if (railwayResponse.ok) {
         const railwayData = await railwayResponse.json();
         setLogs(railwayData.logs || []);
-        addNotification('✅ Logs carregados do banco Railway com sucesso!', 'success');
+        addNotification({
+          type: 'success',
+          title: 'Sucesso',
+          message: '✅ Logs carregados do banco Railway com sucesso!'
+        });
         return;
       }
 
@@ -78,12 +82,20 @@ const LogsAdmin: NextPage = () => {
       
       setLogs(logsData);
       if (!autoRefresh) {
-        addNotification('Logs carregados com sucesso', 'success');
+        addNotification({
+          type: 'success',
+          title: 'Sucesso',
+          message: 'Logs carregados com sucesso'
+        });
       }
     } catch (error) {
       console.error('Erro ao buscar logs:', error);
       if (!autoRefresh) {
-        addNotification('Erro ao carregar logs. Usando dados locais.', 'warning');
+        addNotification({
+          type: 'warning',
+          title: 'Aviso',
+          message: 'Erro ao carregar logs. Usando dados locais.'
+        });
       }
       
       // Fallback para dados mockados
@@ -144,9 +156,17 @@ const LogsAdmin: NextPage = () => {
   const clearLogs = async () => {
     try {
       setLogs([]);
-      addNotification('Logs limpos com sucesso', 'success');
+      addNotification({
+        type: 'success',
+        title: 'Sucesso',
+        message: 'Logs limpos com sucesso'
+      });
     } catch (error) {
-      addNotification('Erro ao limpar logs', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Erro',
+        message: 'Erro ao limpar logs'
+      });
     }
   };
 
