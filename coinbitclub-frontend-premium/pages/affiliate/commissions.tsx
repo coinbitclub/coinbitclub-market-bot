@@ -313,7 +313,7 @@ export default function AffiliateCommissions() {
 
   const thStyle = {
     padding: '1rem',
-    textAlign: 'left',
+    textAlign: 'left' as const,
     borderBottom: '2px solid rgba(255, 255, 255, 0.1)',
     color: '#00BFFF',
     fontWeight: 'bold'
@@ -496,7 +496,7 @@ export default function AffiliateCommissions() {
             <h3 style={{ margin: '0 0 1rem 0', color: '#00BFFF' }}>💰 Histórico de Comissões</h3>
             
             {filteredCommissions.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '3rem', opacity: 0.6 }}>
+              <div style={{ textAlign: 'center' as const, padding: '3rem', opacity: 0.6 }}>
                 <div style={{ fontSize: '3rem' }}>💰</div>
                 <p>Nenhuma comissão encontrada para os filtros selecionados</p>
               </div>
@@ -591,7 +591,7 @@ export default function AffiliateCommissions() {
             <h3 style={{ margin: '0 0 1rem 0', color: '#00BFFF' }}>💸 Histórico de Saques</h3>
             
             {payouts.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '3rem', opacity: 0.6 }}>
+              <div style={{ textAlign: 'center' as const, padding: '3rem', opacity: 0.6 }}>
                 <div style={{ fontSize: '3rem' }}>💸</div>
                 <p>Nenhum saque realizado ainda</p>
               </div>
@@ -671,10 +671,10 @@ export default function AffiliateCommissions() {
           border: '1px solid rgba(33, 150, 243, 0.3)',
           borderRadius: '16px',
           padding: '2rem',
-          textAlign: 'center'
+          textAlign: 'center' as const
         }}>
           <h3 style={{ margin: '0 0 1rem 0', color: '#2196F3' }}>ℹ️ Informações Importantes</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', textAlign: 'left' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', textAlign: 'left' as const }}>
             <div>
               <strong style={{ color: '#00BFFF' }}>💰 Comissões:</strong>
               <p style={{ margin: '0.5rem 0 0 0', opacity: 0.9, fontSize: '0.9rem' }}>
