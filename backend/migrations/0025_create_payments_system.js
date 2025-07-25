@@ -298,16 +298,45 @@ export async function up(knex) {
       description: 'Métodos de pagamento habilitados'
     },
     {
-      key: 'prepaid_bonus',
+      key: 'prepaid_discounts',
       value: JSON.stringify({
         enabled: true,
-        tiers: [
-          { minimum: 100, bonus_percentage: 5 },
-          { minimum: 500, bonus_percentage: 10 },
-          { minimum: 1000, bonus_percentage: 15 }
+        brl_tiers: [
+          { minimum: 60000, maximum: 599999, discount_percentage: 5 }, // R$ 600 - R$ 5.999
+          { minimum: 600000, maximum: 2000000, discount_percentage: 10 } // R$ 6.000 - R$ 20.000
+        ],
+        usd_tiers: [
+          { minimum: 15000, maximum: 149999, discount_percentage: 5 }, // USD 150 - USD 1.499
+          { minimum: 150000, maximum: 500000, discount_percentage: 10 } // USD 1.500 - USD 5.000
         ]
       }),
-      description: 'Configurações de bônus para recarga pré-paga'
+      description: 'Configurações de desconto promocional por faixa de recarga'
+    },
+    {
+      key: 'subscription_plans',
+      value: JSON.stringify({
+        brasil_mensal: {
+          monthly_fee: 20000, // R$ 200.00
+          commission_rate: 10,
+          currency: 'BRL'
+        },
+        brasil_comissao: {
+          monthly_fee: 0,
+          commission_rate: 20,
+          currency: 'BRL'
+        },
+        exterior_mensal: {
+          monthly_fee: 4000, // USD 40.00
+          commission_rate: 10,
+          currency: 'USD'
+        },
+        exterior_comissao: {
+          monthly_fee: 0,
+          commission_rate: 20,
+          currency: 'USD'
+        }
+      }),
+      description: 'Configurações dos planos de assinatura'
     },
     {
       key: 'withdrawal_settings',
@@ -343,8 +372,8 @@ export async function up(knex) {
     {
       currency: 'BRL',
       country_code: 'BR',
-      minimum_balance: 100.00,
-      minimum_operation: 50.00,
+      minimum_balance: 60.00, // Mínimo para recarga
+      minimum_operation: 60.00, // Mínimo para operação
       withdrawal_fee_percentage: 0.02, // 2%
       withdrawal_fee_fixed: 5.00,
       minimum_withdrawal: 50.00,
@@ -355,8 +384,8 @@ export async function up(knex) {
     {
       currency: 'USD',
       country_code: 'US',
-      minimum_balance: 25.00,
-      minimum_operation: 15.00,
+      minimum_balance: 40.00, // Mínimo para recarga USD 40
+      minimum_operation: 40.00, // Mínimo para operação
       withdrawal_fee_percentage: 0.025, // 2.5%
       withdrawal_fee_fixed: 2.00,
       minimum_withdrawal: 20.00,

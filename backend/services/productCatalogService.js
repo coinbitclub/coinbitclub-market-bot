@@ -38,99 +38,95 @@ class ProductCatalogService {
     async createSubscriptionPlans() {
         const plans = [
             {
-                name: 'CoinBitClub Básico',
-                description: 'Plano básico para iniciantes no trading automatizado',
+                name: 'CoinBitClub Brasil - Mensal + 10% Comissão',
+                description: 'Plano mensal para traders brasileiros com 10% de comissão sobre lucros',
                 features: [
-                    'Sinais de trading básicos',
-                    'Análise técnica automatizada',
-                    'Suporte por email',
-                    'Dashboard básico'
-                ],
-                prices: [
-                    { amount: 2999, currency: 'BRL', interval: 'month' },
-                    { amount: 29999, currency: 'BRL', interval: 'year' }
-                ],
-                metadata: {
-                    type: 'subscription',
-                    category: 'basic',
-                    max_operations_per_day: '10',
-                    max_balance: '1000'
-                }
-            },
-            {
-                name: 'CoinBitClub Profissional',
-                description: 'Plano profissional com recursos avançados',
-                features: [
-                    'Sinais de trading avançados',
-                    'IA para análise de mercado',
-                    'Suporte prioritário',
-                    'Dashboard avançado',
-                    'Relatórios detalhados',
-                    'API Access'
-                ],
-                prices: [
-                    { amount: 9999, currency: 'BRL', interval: 'month' },
-                    { amount: 99999, currency: 'BRL', interval: 'year' },
-                    { amount: 49, currency: 'USD', interval: 'month' },
-                    { amount: 499, currency: 'USD', interval: 'year' }
-                ],
-                metadata: {
-                    type: 'subscription',
-                    category: 'professional',
-                    max_operations_per_day: '50',
-                    max_balance: '10000'
-                }
-            },
-            {
-                name: 'CoinBitClub Premium',
-                description: 'Plano premium para traders experientes',
-                features: [
-                    'Todos os recursos profissionais',
-                    'IA avançada com aprendizado de máquina',
-                    'Suporte 24/7',
-                    'Dashboard personalizado',
-                    'Análise de risco avançada',
                     'Trading automatizado completo',
-                    'Consultoria personalizada'
+                    'Sinais de trading profissionais',
+                    'IA avançada para análise de mercado',
+                    'Suporte prioritário',
+                    'Dashboard completo',
+                    'Comissão de 10% sobre lucros',
+                    'Relatórios detalhados'
                 ],
                 prices: [
-                    { amount: 19999, currency: 'BRL', interval: 'month' },
-                    { amount: 199999, currency: 'BRL', interval: 'year' },
-                    { amount: 99, currency: 'USD', interval: 'month' },
-                    { amount: 999, currency: 'USD', interval: 'year' }
+                    { amount: 20000, currency: 'BRL', interval: 'month' } // R$ 200,00
                 ],
                 metadata: {
                     type: 'subscription',
-                    category: 'premium',
-                    max_operations_per_day: 'unlimited',
-                    max_balance: 'unlimited'
+                    category: 'brasil_mensal',
+                    commission_rate: '10',
+                    region: 'brasil',
+                    plan_type: 'monthly_commission'
                 }
             },
             {
-                name: 'CoinBitClub Enterprise',
-                description: 'Solução corporativa para instituições',
+                name: 'CoinBitClub Brasil - 20% Comissão',
+                description: 'Plano brasileiro apenas com comissão de 20% sobre lucros, sem mensalidade',
                 features: [
-                    'Todos os recursos premium',
-                    'API personalizada',
-                    'Integração com sistemas externos',
-                    'Suporte dedicado',
-                    'SLA garantido',
-                    'Relatórios customizados',
-                    'Análise de compliance',
-                    'Multi-usuários'
+                    'Trading automatizado completo',
+                    'Sinais de trading profissionais',
+                    'IA avançada para análise de mercado',
+                    'Suporte prioritário',
+                    'Dashboard completo',
+                    'Comissão de 20% sobre lucros',
+                    'Sem mensalidade',
+                    'Relatórios detalhados'
+                ],
+                prices: [], // Sem preço recorrente, apenas comissão
+                metadata: {
+                    type: 'subscription',
+                    category: 'brasil_comissao',
+                    commission_rate: '20',
+                    region: 'brasil',
+                    plan_type: 'commission_only',
+                    monthly_fee: '0'
+                }
+            },
+            {
+                name: 'CoinBitClub Exterior - Mensal + 10% Comissão',
+                description: 'Plano mensal para traders internacionais com 10% de comissão sobre lucros',
+                features: [
+                    'Complete automated trading',
+                    'Professional trading signals',
+                    'Advanced AI market analysis',
+                    'Priority support',
+                    'Complete dashboard',
+                    '10% commission on profits',
+                    'Detailed reports'
                 ],
                 prices: [
-                    { amount: 49999, currency: 'BRL', interval: 'month' },
-                    { amount: 499999, currency: 'BRL', interval: 'year' },
-                    { amount: 249, currency: 'USD', interval: 'month' },
-                    { amount: 2499, currency: 'USD', interval: 'year' }
+                    { amount: 4000, currency: 'USD', interval: 'month' } // USD 40,00
                 ],
                 metadata: {
                     type: 'subscription',
-                    category: 'enterprise',
-                    max_operations_per_day: 'unlimited',
-                    max_balance: 'unlimited',
-                    max_users: '50'
+                    category: 'exterior_mensal',
+                    commission_rate: '10',
+                    region: 'exterior',
+                    plan_type: 'monthly_commission'
+                }
+            },
+            {
+                name: 'CoinBitClub Exterior - 20% Comissão',
+                description: 'Plano internacional apenas com comissão de 20% sobre lucros, sem mensalidade',
+                features: [
+                    'Complete automated trading',
+                    'Professional trading signals',
+                    'Advanced AI market analysis',
+                    'Priority support',
+                    'Complete dashboard',
+                    '20% commission on profits',
+                    'No monthly fee',
+                    'Detailed reports'
+                ],
+                prices: [], // Sem preço recorrente, apenas comissão
+                metadata: {
+                    type: 'subscription',
+                    category: 'exterior_comissao',
+                    commission_rate: '20',
+                    region: 'exterior',
+                    plan_type: 'commission_only',
+                    monthly_fee: '0'
                 }
             }
         ];
@@ -147,16 +143,23 @@ class ProductCatalogService {
                 });
 
                 const prices = [];
-                for (const priceData of plan.prices) {
-                    const price = await this.stripeService.createPrice({
-                        product_id: product.stripe_id,
-                        unit_amount: priceData.amount * 100, // Stripe usa centavos
-                        currency: priceData.currency.toLowerCase(),
-                        recurring: {
-                            interval: priceData.interval
-                        }
-                    });
-                    prices.push(price);
+                
+                // Apenas criar preços se o plano tiver mensalidade
+                if (plan.prices && plan.prices.length > 0) {
+                    for (const priceData of plan.prices) {
+                        const price = await this.stripeService.createPrice({
+                            product_id: product.stripe_id,
+                            unit_amount: priceData.amount, // Já em centavos
+                            currency: priceData.currency.toLowerCase(),
+                            recurring: {
+                                interval: priceData.interval
+                            }
+                        });
+                        prices.push(price);
+                    }
+                } else {
+                    // Para planos só com comissão, criar um "produto" sem preço recorrente
+                    console.log(`Plano ${plan.name} criado sem mensalidade (apenas comissão)`);
                 }
 
                 createdProducts.push({
@@ -175,74 +178,120 @@ class ProductCatalogService {
     async createPrepaidProducts() {
         const prepaidOptions = [
             {
-                name: 'Recarga R$ 50',
-                description: 'Adicione R$ 50 ao seu saldo para operações',
-                amount: 5000, // R$ 50.00
+                name: 'Recarga Personalizada Brasil',
+                description: 'Recarga de qualquer valor a partir de R$ 60',
+                amount: 6000, // R$ 60.00 mínimo
                 currency: 'BRL',
-                bonus_percentage: 0
+                bonus_percentage: 0,
+                is_custom: true
             },
+            {
+                name: 'Recarga Personalizada Exterior',
+                description: 'Recarga de qualquer valor a partir de USD 40',
+                amount: 4000, // USD 40.00 mínimo
+                currency: 'USD',
+                bonus_percentage: 0,
+                is_custom: true
+            },
+            // Opções pré-definidas para facilitar
             {
                 name: 'Recarga R$ 100',
                 description: 'Adicione R$ 100 ao seu saldo para operações',
-                amount: 10000, // R$ 100.00
+                amount: 10000,
+                currency: 'BRL',
+                bonus_percentage: 0
+            },
+            {
+                name: 'Recarga R$ 300',
+                description: 'Adicione R$ 300 ao seu saldo para operações',
+                amount: 30000,
+                currency: 'BRL',
+                bonus_percentage: 0
+            },
+            {
+                name: 'Recarga R$ 600 - 5% Desconto',
+                description: 'Adicione R$ 600 ao seu saldo + 5% de desconto promocional',
+                amount: 60000,
                 currency: 'BRL',
                 bonus_percentage: 5
             },
             {
-                name: 'Recarga R$ 250',
-                description: 'Adicione R$ 250 ao seu saldo para operações + 10% bônus',
-                amount: 25000, // R$ 250.00
+                name: 'Recarga R$ 1.000 - 5% Desconto',
+                description: 'Adicione R$ 1.000 ao seu saldo + 5% de desconto promocional',
+                amount: 100000,
+                currency: 'BRL',
+                bonus_percentage: 5
+            },
+            {
+                name: 'Recarga R$ 3.000 - 5% Desconto',
+                description: 'Adicione R$ 3.000 ao seu saldo + 5% de desconto promocional',
+                amount: 300000,
+                currency: 'BRL',
+                bonus_percentage: 5
+            },
+            {
+                name: 'Recarga R$ 6.000 - 10% Desconto',
+                description: 'Adicione R$ 6.000 ao seu saldo + 10% de desconto promocional',
+                amount: 600000,
                 currency: 'BRL',
                 bonus_percentage: 10
             },
             {
-                name: 'Recarga R$ 500',
-                description: 'Adicione R$ 500 ao seu saldo para operações + 15% bônus',
-                amount: 50000, // R$ 500.00
+                name: 'Recarga R$ 10.000 - 10% Desconto',
+                description: 'Adicione R$ 10.000 ao seu saldo + 10% de desconto promocional',
+                amount: 1000000,
                 currency: 'BRL',
-                bonus_percentage: 15
+                bonus_percentage: 10
             },
             {
-                name: 'Recarga R$ 1.000',
-                description: 'Adicione R$ 1.000 ao seu saldo para operações + 20% bônus',
-                amount: 100000, // R$ 1.000.00
+                name: 'Recarga R$ 20.000 - 10% Desconto',
+                description: 'Adicione R$ 20.000 ao seu saldo + 10% de desconto promocional',
+                amount: 2000000,
                 currency: 'BRL',
-                bonus_percentage: 20
+                bonus_percentage: 10
             },
+            // Opções em USD
             {
-                name: 'Recarga USD $25',
-                description: 'Add $25 to your balance for operations',
-                amount: 2500, // $25.00
+                name: 'Recarga USD $50',
+                description: 'Add $50 to your balance for operations',
+                amount: 5000,
                 currency: 'USD',
                 bonus_percentage: 0
             },
             {
-                name: 'Recarga USD $50',
-                description: 'Add $50 to your balance for operations + 5% bonus',
-                amount: 5000, // $50.00
+                name: 'Recarga USD $100',
+                description: 'Add $100 to your balance for operations',
+                amount: 10000,
+                currency: 'USD',
+                bonus_percentage: 0
+            },
+            {
+                name: 'Recarga USD $150 - 5% Desconto',
+                description: 'Add $150 to your balance + 5% promotional discount',
+                amount: 15000,
                 currency: 'USD',
                 bonus_percentage: 5
             },
             {
-                name: 'Recarga USD $100',
-                description: 'Add $100 to your balance for operations + 10% bonus',
-                amount: 10000, // $100.00
+                name: 'Recarga USD $300 - 5% Desconto',
+                description: 'Add $300 to your balance + 5% promotional discount',
+                amount: 30000,
+                currency: 'USD',
+                bonus_percentage: 5
+            },
+            {
+                name: 'Recarga USD $1.500 - 10% Desconto',
+                description: 'Add $1,500 to your balance + 10% promotional discount',
+                amount: 150000,
                 currency: 'USD',
                 bonus_percentage: 10
             },
             {
-                name: 'Recarga USD $250',
-                description: 'Add $250 to your balance for operations + 15% bonus',
-                amount: 25000, // $250.00
+                name: 'Recarga USD $5.000 - 10% Desconto',
+                description: 'Add $5,000 to your balance + 10% promotional discount',
+                amount: 500000,
                 currency: 'USD',
-                bonus_percentage: 15
-            },
-            {
-                name: 'Recarga USD $500',
-                description: 'Add $500 to your balance for operations + 20% bonus',
-                amount: 50000, // $500.00
-                currency: 'USD',
-                bonus_percentage: 20
+                bonus_percentage: 10
             }
         ];
 
@@ -257,7 +306,9 @@ class ProductCatalogService {
                         type: 'prepaid',
                         currency: option.currency,
                         bonus_percentage: option.bonus_percentage.toString(),
-                        balance_amount: (option.amount / 100).toString()
+                        balance_amount: (option.amount / 100).toString(),
+                        is_custom: option.is_custom ? 'true' : 'false',
+                        minimum_amount: option.is_custom ? (option.amount / 100).toString() : null
                     },
                     images: [`https://coinbitclub.com/images/prepaid/${option.currency.toLowerCase()}.jpg`]
                 });
@@ -284,47 +335,76 @@ class ProductCatalogService {
     async createPromotionalCodes() {
         const promoCodes = [
             {
-                code: 'WELCOME20',
-                percent_off: 20,
+                code: 'RECARGA5',
+                percent_off: 5,
+                duration: 'once',
+                max_redemptions: 1000,
+                restrictions: {
+                    minimum_amount: 60000 // R$ 600.00 mínimo
+                },
+                description: '5% desconto para recargas de R$ 600 a R$ 5.999'
+            },
+            {
+                code: 'RECARGA10',
+                percent_off: 10,
+                duration: 'once',
+                max_redemptions: 500,
+                restrictions: {
+                    minimum_amount: 600000 // R$ 6.000.00 mínimo
+                },
+                description: '10% desconto para recargas de R$ 6.000 a R$ 20.000'
+            },
+            {
+                code: 'USDRECARGA5',
+                percent_off: 5,
+                duration: 'once',
+                max_redemptions: 500,
+                restrictions: {
+                    minimum_amount: 15000, // USD 150.00 mínimo
+                    currency: 'usd'
+                },
+                description: '5% discount for recharges from $150 to $1,499'
+            },
+            {
+                code: 'USDRECARGA10',
+                percent_off: 10,
+                duration: 'once',
+                max_redemptions: 200,
+                restrictions: {
+                    minimum_amount: 150000, // USD 1,500.00 mínimo
+                    currency: 'usd'
+                },
+                description: '10% discount for recharges from $1,500 to $5,000+'
+            },
+            {
+                code: 'WELCOME',
+                percent_off: 15,
                 duration: 'once',
                 max_redemptions: 1000,
                 restrictions: {
                     first_time_transaction: true
-                }
+                },
+                description: 'Desconto de boas-vindas para novos usuários'
             },
             {
-                code: 'MONTHLY10',
-                percent_off: 10,
-                duration: 'repeating',
-                duration_in_months: 3,
-                max_redemptions: 500
-            },
-            {
-                code: 'PREMIUM50',
-                percent_off: 50,
+                code: 'BRASIL200',
+                percent_off: 20,
                 duration: 'once',
-                max_redemptions: 100,
+                max_redemptions: 300,
                 restrictions: {
-                    minimum_amount: 10000 // R$ 100.00
-                }
+                    applies_to: 'brasil_mensal'
+                },
+                description: '20% desconto no primeiro mês do plano Brasil'
             },
             {
-                code: 'ANNUAL25',
+                code: 'EXTERIOR40',
                 percent_off: 25,
                 duration: 'once',
                 max_redemptions: 200,
                 restrictions: {
-                    applies_to: 'annual_plans'
-                }
-            },
-            {
-                code: 'ENTERPRISE15',
-                percent_off: 15,
-                duration: 'forever',
-                max_redemptions: 50,
-                restrictions: {
-                    applies_to: 'enterprise_only'
-                }
+                    applies_to: 'exterior_mensal'
+                },
+                description: '25% discount on first month of International plan'
             }
         ];
 
@@ -355,12 +435,14 @@ class ProductCatalogService {
                     code: promoData.code,
                     stripe_coupon_id: stripeCoupon.id,
                     stripe_promotion_code_id: stripePromoCode.id,
-                    percent_off: promoData.percent_off,
-                    duration: promoData.duration,
-                    duration_in_months: promoData.duration_in_months || null,
+                    discount_type: 'percentage',
+                    discount_value: promoData.percent_off,
+                    currency: null,
                     max_redemptions: promoData.max_redemptions,
+                    times_redeemed: 0,
                     restrictions: JSON.stringify(promoData.restrictions || {}),
                     is_active: true,
+                    description: promoData.description,
                     created_at: new Date(),
                     updated_at: new Date()
                 }).returning('*');

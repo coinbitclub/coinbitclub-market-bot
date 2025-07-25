@@ -76,8 +76,7 @@ const LogsAdmin: NextPage = () => {
       const logsData = await systemService.getLogs({
         level: filter !== 'all' ? filter : undefined,
         service: serviceFilter !== 'all' ? serviceFilter : undefined,
-        search: searchTerm || undefined,
-        limit: 100
+        search: searchTerm || undefined
       });
       
       setLogs(logsData);
