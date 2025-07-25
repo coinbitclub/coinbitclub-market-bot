@@ -113,6 +113,11 @@ async function startServer() {
     await ensureConnection();
     logger.info('Database connection established');
 
+    // Initialize financial cron jobs
+    const { FinancialCronJobs } = await import('./services/financialCronJobs.js');
+    FinancialCronJobs.init();
+    logger.info('Financial cron jobs initialized');
+
     // Start the HTTP server
     const port = env.API_GATEWAY_PORT || env.PORT || 3000;
     server = app.listen(port, () => {

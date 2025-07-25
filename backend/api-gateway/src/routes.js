@@ -12,6 +12,8 @@ import notificationController from './controllers/notificationController.js';
 import analyticsController from './controllers/analyticsController.js';
 import settingsController from './controllers/settingsController.js';
 import financialController from './controllers/financialController.js';
+import paymentController from './controllers/paymentController.js';
+import webhookController from './controllers/webhookController.js';
 import docsController from './controllers/docsController.js';
 import { authenticateToken, requireRole } from './middleware/auth.js';
 
@@ -48,8 +50,14 @@ router.use('/analytics', analyticsController);
 router.use('/settings', settingsController);
 router.use('/financial', financialController);
 
+// Payment system routes
+router.use('/payments', authenticateToken, paymentController);
+
 // Admin routes (require admin role)
 router.use('/admin', requireRole('admin'), adminController);
+
+// Webhook routes (no authentication required)
+router.use('/webhooks', webhookController);
 
 // Admin Railway routes (integração completa com PostgreSQL Railway)
 router.use('/admin/railway', adminRailwayController);

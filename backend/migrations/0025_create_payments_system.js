@@ -113,6 +113,64 @@ export async function up(knex) {
     table.index(['event_type']);
   });
 
+  // Tabela de solicitações de saque
+  await knex.schema.createTable('withdrawal_requests', table => {
+    table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+    table.integer('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
+    table.decimal('amount', 15, 2).notNullable();
+    table.string('currency', 3).defaultTo('BRL');
+    table.enum('status', ['pending', 'processing', 'completed', 'failed', 'cancelled']).defaultTo('pending');
+    table.enum('withdrawal_type', ['user_prepaid', 'admin_profit', 'affiliate_commission']).notNullable();
+    table.jsonb('bank_details').nullable(); // Dados bancários para o saque
+    table.string('pix_key').nullable(); // Chave PIX para saques em BRL
+    table.string('crypto_address').nullable(); // Endereço crypto para saques internacionais
+    table.decimal('fee_amount', 15, 2).defaultTo(0);
+    table.decimal('net_amount', 15, 2).notNullable(); // Valor líquido após taxas
+    table.text('processing_notes').nullable();
+    table.timestamp('processed_at').nullable();
+    table.integer('processed_by').nullable().references('id').inTable('users');
+    table.string('transaction_hash').nullable(); // Hash da transação (se crypto)
+    table.timestamps(true, true);
+    
+    table.index(['user_id', 'created_at']);
+    table.index(['status', 'created_at']);
+    table.index(['withdrawal_type']);
+  });
+
+  // Tabela de tipos de afiliados (VIP vs Normal)
+  await knex.schema.createTable('affiliate_tiers', table => {
+    table.increments('id').primary();
+    table.string('name').notNullable().unique(); // 'normal', 'vip'
+    table.decimal('commission_rate', 5, 4).notNullable(); // 0.015 (1.5%) ou 0.05 (5%)
+    table.decimal('minimum_volume', 15, 2).defaultTo(0); // Volume mínimo para manter o tier
+    table.jsonb('benefits').nullable(); // Benefícios adicionais
+    table.boolean('is_active').defaultTo(true);
+    table.timestamps(true, true);
+  });
+
+  // Atualizar tabela de users para incluir tier de afiliado
+  await knex.schema.table('users', table => {
+    table.integer('affiliate_tier_id').nullable().references('id').inTable('affiliate_tiers');
+    table.decimal('minimum_balance_required', 15, 2).defaultTo(100); // Saldo mínimo para operar
+    table.boolean('can_operate').defaultTo(true); // Se pode abrir novas operações
+  });
+
+  // Tabela de configurações de operação por moeda
+  await knex.schema.createTable('currency_settings', table => {
+    table.increments('id').primary();
+    table.string('currency', 3).notNullable().unique();
+    table.string('country_code', 2).nullable(); // BR, US, etc
+    table.decimal('minimum_balance', 15, 2).notNullable();
+    table.decimal('minimum_operation', 15, 2).notNullable();
+    table.decimal('withdrawal_fee_percentage', 5, 4).defaultTo(0); // Taxa de saque em %
+    table.decimal('withdrawal_fee_fixed', 15, 2).defaultTo(0); // Taxa fixa de saque
+    table.decimal('minimum_withdrawal', 15, 2).defaultTo(50);
+    table.boolean('prepaid_enabled').defaultTo(true);
+    table.boolean('subscription_enabled').defaultTo(true);
+    table.jsonb('payment_methods').nullable(); // Métodos de pagamento disponíveis
+    table.timestamps(true, true);
+  });
+
   // Tabela de relatórios financeiros
   await knex.schema.createTable('financial_reports', table => {
     table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -125,6 +183,25 @@ export async function up(knex) {
     
     table.unique(['type', 'report_date']);
     table.index(['type', 'status']);
+  });
+
+  // Tabela de logs de operações (para controle de saldo mínimo)
+  await knex.schema.createTable('operation_logs', table => {
+    table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+    table.integer('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
+    table.string('operation_type').notNullable(); // 'trade_open', 'trade_close', 'balance_check'
+    table.decimal('balance_before', 15, 2).notNullable();
+    table.decimal('balance_after', 15, 2).nullable();
+    table.decimal('amount_used', 15, 2).nullable();
+    table.string('currency', 3).defaultTo('BRL');
+    table.boolean('allowed').notNullable(); // Se a operação foi permitida
+    table.text('reason').nullable(); // Motivo se não foi permitida
+    table.jsonb('metadata').nullable();
+    table.timestamps(true, true);
+    
+    table.index(['user_id', 'created_at']);
+    table.index(['operation_type']);
+    table.index(['allowed']);
   });
 
   // Inserir configurações padrão
