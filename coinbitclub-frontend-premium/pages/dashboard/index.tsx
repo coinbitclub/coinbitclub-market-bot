@@ -648,7 +648,7 @@ const UserDashboard: NextPage = () => {
                           </span>
                         </td>
                         <td className="py-4 text-right text-sm text-muted-foreground">
-                          {new Date(position.timestamp).toLocaleDateString()}
+                          {new Date(position.closeTime).toLocaleDateString()}
                         </td>
                       </tr>
                     ))}
