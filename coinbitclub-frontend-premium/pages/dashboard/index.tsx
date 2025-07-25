@@ -55,6 +55,7 @@ interface ClosedPosition {
   openTime: string;
   closeTime: string;
   created_at: string;
+  exitReason?: 'TAKE_PROFIT' | 'STOP_LOSS' | 'IA_SIGNAL' | 'MANUAL';
 }
 
 interface MarketReading {
