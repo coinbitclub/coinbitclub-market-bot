@@ -1,4 +1,4 @@
-# Multi-stage build for CoinBitClub Market Bot
+﻿# Multi-stage build for CoinBitClub Market Bot
 FROM node:18-alpine AS base
 
 # Install dumb-init

@@ -1,0 +1,4 @@
+﻿nixpacks.toml
+.nixpacks
+node_modules/
+*.log
