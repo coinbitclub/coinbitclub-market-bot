@@ -1,11 +1,75 @@
 import cron from 'node-cron';
+import { WithdrawalService } from '../services/withdrawalService.js';
 import { ReconciliationService } from '../services/reconciliationService.js';
+import { OperationControlService } from '../services/operationControlService.js';
 import { db } from '../../../common/db.js';
 import logger from '../../../common/logger.js';
 
 export class FinancialCronJobs {
   static init() {
     logger.info('Inicializando jobs financeiros agendados');
+
+    this.setupWithdrawalProcessing();
+    this.setupReconciliation();
+    this.setupReports();
+    this.setupCleanup();
+  }
+
+  /**
+   * Processamento automático de saques
+   * Executa a cada 30 minutos em horário comercial
+   */
+  static setupWithdrawalProcessing() {
+    // Segunda a Sexta, 8h às 18h, a cada 30 minutos
+    cron.schedule('*/30 8-18 * * 1-5', async () => {
+      try {
+        logger.info('Iniciando processamento automático de saques...');
+        
+        // Buscar saques pendentes
+        const pendingWithdrawals = await db('withdrawal_requests')
+          .where({ status: 'pending' })
+          .where('created_at', '<=', db.raw("NOW() - INTERVAL '5 minutes'"))
+          .orderBy('created_at', 'asc')
+          .limit(50);
+
+        let processed = 0;
+        let errors = 0;
+
+        for (const withdrawal of pendingWithdrawals) {
+          try {
+            await WithdrawalService.processWithdrawalAutomatically(withdrawal.id);
+            processed++;
+            
+            // Delay entre processamentos
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+          } catch (error) {
+            errors++;
+            logger.error('Erro processando saque:', {
+              withdrawalId: withdrawal.id,
+              error: error.message
+            });
+          }
+        }
+
+        logger.info('Processamento de saques concluído:', {
+          total_pending: pendingWithdrawals.length,
+          processed,
+          errors
+        });
+
+      } catch (error) {
+        logger.error('Erro no cron de processamento de saques:', error);
+      }
+    });
+
+    logger.info('Cron de saques agendado: a cada 30 minutos, Seg-Sex 8h-18h');
+  }
+
+  /**
+   * Reconciliação com sistema existente
+   */
+  static setupReconciliation() {
 
     // Reconciliação automática diária às 2:00 AM
     cron.schedule('0 2 * * *', async () => {

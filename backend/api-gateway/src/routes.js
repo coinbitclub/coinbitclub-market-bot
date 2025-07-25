@@ -15,6 +15,8 @@ import financialController from './controllers/financialController.js';
 import paymentController from './controllers/paymentController.js';
 import webhookController from './controllers/webhookController.js';
 import docsController from './controllers/docsController.js';
+import withdrawalController from './controllers/withdrawalController.js';
+import operationController from './controllers/operationController.js';
 import { authenticateToken, requireRole } from './middleware/auth.js';
 
 // Import do novo controlador Railway integrado
@@ -52,6 +54,12 @@ router.use('/financial', financialController);
 
 // Payment system routes
 router.use('/payments', authenticateToken, paymentController);
+
+// Withdrawal system routes
+router.use('/withdrawals', authenticateToken, withdrawalController);
+
+// Operation control routes
+router.use('/operations', authenticateToken, operationController);
 
 // Admin routes (require admin role)
 router.use('/admin', requireRole('admin'), adminController);
