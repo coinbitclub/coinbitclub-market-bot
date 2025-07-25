@@ -1307,7 +1307,6 @@ const AdminSettings: NextPage = () => {
                   </div>
                 </div>
               </div>
-              </div>
             </div>
           )}
 
