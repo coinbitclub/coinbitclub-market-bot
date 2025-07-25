@@ -1,13 +1,48 @@
-﻿node_modules
-npm-debug.log
+﻿# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 .npm
+
+# Frontend build cache
+../coinbitclub-frontend-premium/.next/cache
+../coinbitclub-frontend-premium/node_modules/
+../coinbitclub-frontend-premium/.env.local
+
+# Development files
 .git
 .gitignore
-README.md
+README*.md
+*.md
+.vscode/
+.env.local
+.env.development
 .env
+
+# Test files
+test/
+tests/
+__tests__/
+*.test.js
+*.spec.js
 .nyc_output
 coverage
-.nyc_output
+
+# Documentation
+docs/
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+
+# Logs
+logs/
+*.log
+
+# Railway specific
+railway.toml
+nixpacks.toml
 nixpacks.toml
 .nixpacks
 *.log

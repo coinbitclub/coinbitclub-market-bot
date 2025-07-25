@@ -19,7 +19,7 @@ import { FormValidator, systemConfigValidator } from '../../src/utils/validation
 import { useNotifications } from '../../src/contexts/NotificationContext.simple';
 
 interface SystemConfig {
-  // APIs
+  // API Keys
   tradingViewApiKey: string;
   coinStatsApiKey: string;
   stripePublicKey: string;
@@ -33,7 +33,7 @@ interface SystemConfig {
   defaultTakeProfit: number;
   maxConcurrentOrders: number;
   
-  // Commission Settings
+  // Commission Rates
   basicCommissionRate: number;
   premiumCommissionRate: number;
   vipCommissionRate: number;
@@ -46,7 +46,7 @@ interface SystemConfig {
   // System Settings
   maintenanceMode: boolean;
   autoBackup: boolean;
-  logLevel: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
+  logLevel: string;
   sessionTimeout: number;
 }
 
@@ -107,40 +107,52 @@ const ConfiguracoesAdmin: NextPage = () => {
       };
       
       setConfig(mockConfig);
-    } catch (error) {
-      console.error('Erro ao carregar configurações:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchConfig();
+  }, []);
+
   const saveConfig = async () => {
     if (!config) return;
-    
+
     setSaving(true);
     try {
-      // Aqui será feita a integração real com a API
-      console.log('Salvando configurações:', config);
+      // Validar configurações
+      const validator = new FormValidator(systemConfigValidator);
+      const validation = validator.validate(config);
       
-      // Simular delay da API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      alert('Configurações salvas com sucesso!');
+      if (!validation.isValid) {
+        setValidationErrors(validation.errors);
+        addNotification('Erro na validação dos dados', 'error');
+        return;
+      }
+
+      setValidationErrors([]);
+      await settingsService.updateSystemConfig(config);
+      addNotification('Configurações salvas com sucesso!', 'success');
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
-      alert('Erro ao salvar configurações!');
+      addNotification('Erro ao salvar configurações', 'error');
     } finally {
       setSaving(false);
     }
   };
 
-  const updateConfig = (key: keyof SystemConfig, value: any) => {
+  const updateConfig = (field: keyof SystemConfig, value: any) => {
     if (!config) return;
-    setConfig({ ...config, [key]: value });
+    
+    setConfig({
+      ...config,
+      [field]: value
+    });
   };
 
   const tabs = [
-    { id: 'apis', name: 'APIs & Integrações', icon: KeyIcon },
+    { id: 'apis', name: 'APIs', icon: KeyIcon },
     { id: 'trading', name: 'Trading', icon: ChartBarIcon },
     { id: 'commission', name: 'Comissões', icon: CurrencyDollarIcon },
     { id: 'notifications', name: 'Notificações', icon: BellIcon },
@@ -151,394 +163,414 @@ const ConfiguracoesAdmin: NextPage = () => {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto mb-4"></div>
-            <p className="text-white">Carregando configurações...</p>
-          </div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-400"></div>
         </div>
       </AdminLayout>
     );
   }
 
   return (
-    <>
+    <AdminLayout>
       <Head>
-        <title>Configurações do Sistema - Administração CoinBitClub</title>
+        <title>Configurações do Sistema - CoinBitClub Admin</title>
       </Head>
-      
-      <AdminLayout title="Configurações">
-        <div className="min-h-screen" style={{ 
-          background: 'linear-gradient(135deg, #000000 0%, #111111 100%)',
-          color: '#FFFFFF',
-          fontFamily: "'Inter', sans-serif"
-        }}>
+
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-yellow-400">Configurações do Sistema</h1>
+            <p className="text-gray-400 mt-2">Gerencie todas as configurações da plataforma</p>
+          </div>
           
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold mb-2" style={{
-                  background: 'linear-gradient(45deg, #FFD700, #FF69B4)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
-                  Configurações do Sistema
-                </h1>
-                <p className="text-gray-400">Gerencie todas as configurações da plataforma</p>
-              </div>
-              
-              <button
-                onClick={saveConfig}
-                disabled={saving}
-                className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-black rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50"
-              >
-                <CheckIcon className="w-5 h-5" />
-                {saving ? 'Salvando...' : 'Salvar Configurações'}
-              </button>
-            </div>
-          </div>
+          <button
+            onClick={saveConfig}
+            disabled={saving}
+            className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-500 hover:to-yellow-700 transition-all duration-200 disabled:opacity-50"
+          >
+            {saving ? 'Salvando...' : 'Salvar Configurações'}
+          </button>
+        </div>
 
-          {/* Tabs */}
-          <div style={cardStyle} className="mb-6">
-            <div className="flex flex-wrap gap-2">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                    activeTab === tab.id 
-                      ? 'bg-yellow-500 text-black' 
-                      : 'bg-gray-700 text-white hover:bg-gray-600'
-                  }`}
-                >
-                  <tab.icon className="w-5 h-5" />
-                  {tab.name}
-                </button>
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <div className="bg-red-900/50 border border-red-500 rounded-lg p-4">
+            <h3 className="text-red-400 font-semibold mb-2">Erros de Validação:</h3>
+            <ul className="list-disc list-inside text-red-300">
+              {validationErrors.map((error, index) => (
+                <li key={index}>{error.message}</li>
               ))}
-            </div>
+            </ul>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="bg-black/30 rounded-lg p-6">
+          <div className="border-b border-gray-700 mb-6">
+            <nav className="flex space-x-8">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
+                      activeTab === tab.id
+                        ? 'border-yellow-400 text-yellow-400'
+                        : 'border-transparent text-gray-400 hover:text-yellow-300 hover:border-yellow-300'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{tab.name}</span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
 
-          {/* Content based on active tab */}
-          <div style={cardStyle}>
-            {activeTab === 'apis' && (
-              <div>
-                <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                  <KeyIcon className="w-6 h-6 text-yellow-400" />
-                  APIs & Integrações
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">TradingView API Key</label>
-                    <input
-                      type="password"
-                      value={config?.tradingViewApiKey || ''}
-                      onChange={(e) => updateConfig('tradingViewApiKey', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">CoinStats API Key</label>
-                    <input
-                      type="password"
-                      value={config?.coinStatsApiKey || ''}
-                      onChange={(e) => updateConfig('coinStatsApiKey', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Stripe Public Key</label>
-                    <input
-                      type="password"
-                      value={config?.stripePublicKey || ''}
-                      onChange={(e) => updateConfig('stripePublicKey', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Stripe Secret Key</label>
-                    <input
-                      type="password"
-                      value={config?.stripeSecretKey || ''}
-                      onChange={(e) => updateConfig('stripeSecretKey', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">WhatsApp API Token</label>
-                    <input
-                      type="password"
-                      value={config?.whatsappApiToken || ''}
-                      onChange={(e) => updateConfig('whatsappApiToken', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">OpenAI API Key</label>
-                    <input
-                      type="password"
-                      value={config?.openaiApiKey || ''}
-                      onChange={(e) => updateConfig('openaiApiKey', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'trading' && (
-              <div>
-                <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                  <ChartBarIcon className="w-6 h-6 text-blue-400" />
-                  Configurações de Trading
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Tamanho Máximo da Ordem (USD)</label>
-                    <input
-                      type="number"
-                      value={config?.maxOrderSize || 0}
-                      onChange={(e) => updateConfig('maxOrderSize', Number(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Stop Loss Padrão (%)</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={config?.defaultStopLoss || 0}
-                      onChange={(e) => updateConfig('defaultStopLoss', Number(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Take Profit Padrão (%)</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={config?.defaultTakeProfit || 0}
-                      onChange={(e) => updateConfig('defaultTakeProfit', Number(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Máximo de Ordens Simultâneas</label>
-                    <input
-                      type="number"
-                      value={config?.maxConcurrentOrders || 0}
-                      onChange={(e) => updateConfig('maxConcurrentOrders', Number(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'commission' && (
-              <div>
-                <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                  <CurrencyDollarIcon className="w-6 h-6 text-green-400" />
-                  Configurações de Comissão
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Taxa Básica (%)</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={config?.basicCommissionRate || 0}
-                      onChange={(e) => updateConfig('basicCommissionRate', Number(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                    <p className="text-xs text-gray-400 mt-1">Para plano Básico</p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Taxa Premium (%)</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={config?.premiumCommissionRate || 0}
-                      onChange={(e) => updateConfig('premiumCommissionRate', Number(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                    <p className="text-xs text-gray-400 mt-1">Para plano Premium</p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Taxa VIP (%)</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={config?.vipCommissionRate || 0}
-                      onChange={(e) => updateConfig('vipCommissionRate', Number(e.target.value))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    />
-                    <p className="text-xs text-gray-400 mt-1">Para plano VIP</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'notifications' && (
-              <div>
-                <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                  <BellIcon className="w-6 h-6 text-purple-400" />
-                  Configurações de Notificação
-                </h3>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-black/20 rounded-lg">
-                    <div>
-                      <h4 className="text-white font-semibold">Notificações por E-mail</h4>
-                      <p className="text-gray-400 text-sm">Enviar alertas e relatórios por e-mail</p>
-                    </div>
-                    <button
-                      onClick={() => updateConfig('emailNotifications', !config?.emailNotifications)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        config?.emailNotifications ? 'bg-yellow-500' : 'bg-gray-600'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          config?.emailNotifications ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 bg-black/20 rounded-lg">
-                    <div>
-                      <h4 className="text-white font-semibold">Notificações WhatsApp</h4>
-                      <p className="text-gray-400 text-sm">Enviar sinais e alertas via WhatsApp</p>
-                    </div>
-                    <button
-                      onClick={() => updateConfig('whatsappNotifications', !config?.whatsappNotifications)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        config?.whatsappNotifications ? 'bg-yellow-500' : 'bg-gray-600'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          config?.whatsappNotifications ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 bg-black/20 rounded-lg">
-                    <div>
-                      <h4 className="text-white font-semibold">Push Notifications</h4>
-                      <p className="text-gray-400 text-sm">Notificações push no navegador</p>
-                    </div>
-                    <button
-                      onClick={() => updateConfig('pushNotifications', !config?.pushNotifications)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        config?.pushNotifications ? 'bg-yellow-500' : 'bg-gray-600'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          config?.pushNotifications ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'system' && (
-              <div>
-                <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                  <CogIcon className="w-6 h-6 text-red-400" />
-                  Configurações do Sistema
-                </h3>
-                
+          {/* Tab Content */}
+          {config && (
+            <div className="space-y-6">
+              {/* APIs Tab */}
+              {activeTab === 'apis' && (
                 <div className="space-y-6">
+                  <h3 className="text-xl font-semibold text-yellow-400">Configurações de APIs</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          TradingView API Key
+                        </label>
+                        <input
+                          type="password"
+                          value={config.tradingViewApiKey}
+                          onChange={(e) => updateConfig('tradingViewApiKey', e.target.value)}
+                          className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          placeholder="tv_***************"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          CoinStats API Key
+                        </label>
+                        <input
+                          type="password"
+                          value={config.coinStatsApiKey}
+                          onChange={(e) => updateConfig('coinStatsApiKey', e.target.value)}
+                          className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          placeholder="cs_***************"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Stripe Public Key
+                        </label>
+                        <input
+                          type="text"
+                          value={config.stripePublicKey}
+                          onChange={(e) => updateConfig('stripePublicKey', e.target.value)}
+                          className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          placeholder="pk_test_***************"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Stripe Secret Key
+                        </label>
+                        <input
+                          type="password"
+                          value={config.stripeSecretKey}
+                          onChange={(e) => updateConfig('stripeSecretKey', e.target.value)}
+                          className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          placeholder="sk_test_***************"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          WhatsApp API Token
+                        </label>
+                        <input
+                          type="password"
+                          value={config.whatsappApiToken}
+                          onChange={(e) => updateConfig('whatsappApiToken', e.target.value)}
+                          className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          placeholder="wa_***************"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          OpenAI API Key
+                        </label>
+                        <input
+                          type="password"
+                          value={config.openaiApiKey}
+                          onChange={(e) => updateConfig('openaiApiKey', e.target.value)}
+                          className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          placeholder="sk-***************"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Trading Tab */}
+              {activeTab === 'trading' && (
+                <div className="space-y-6">
+                  <h3 className="text-xl font-semibold text-yellow-400">Configurações de Trading</h3>
+                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Nível de Log</label>
-                      <select
-                        value={config?.logLevel || 'INFO'}
-                        onChange={(e) => updateConfig('logLevel', e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                      >
-                        <option value="DEBUG">DEBUG</option>
-                        <option value="INFO">INFO</option>
-                        <option value="WARN">WARN</option>
-                        <option value="ERROR">ERROR</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Timeout de Sessão (segundos)</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Tamanho Máximo da Ordem (USD)
+                      </label>
                       <input
                         type="number"
-                        value={config?.sessionTimeout || 0}
-                        onChange={(e) => updateConfig('sessionTimeout', Number(e.target.value))}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                        value={config.maxOrderSize}
+                        onChange={(e) => updateConfig('maxOrderSize', Number(e.target.value))}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Stop Loss Padrão (%)
+                      </label>
+                      <input
+                        type="number"
+                        value={config.defaultStopLoss}
+                        onChange={(e) => updateConfig('defaultStopLoss', Number(e.target.value))}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Take Profit Padrão (%)
+                      </label>
+                      <input
+                        type="number"
+                        value={config.defaultTakeProfit}
+                        onChange={(e) => updateConfig('defaultTakeProfit', Number(e.target.value))}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Máximo de Ordens Simultâneas
+                      </label>
+                      <input
+                        type="number"
+                        value={config.maxConcurrentOrders}
+                        onChange={(e) => updateConfig('maxConcurrentOrders', Number(e.target.value))}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
                       />
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Commission Tab */}
+              {activeTab === 'commission' && (
+                <div className="space-y-6">
+                  <h3 className="text-xl font-semibold text-yellow-400">Taxas de Comissão</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Plano Básico (%)
+                      </label>
+                      <input
+                        type="number"
+                        value={config.basicCommissionRate}
+                        onChange={(e) => updateConfig('basicCommissionRate', Number(e.target.value))}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Plano Premium (%)
+                      </label>
+                      <input
+                        type="number"
+                        value={config.premiumCommissionRate}
+                        onChange={(e) => updateConfig('premiumCommissionRate', Number(e.target.value))}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Plano VIP (%)
+                      </label>
+                      <input
+                        type="number"
+                        value={config.vipCommissionRate}
+                        onChange={(e) => updateConfig('vipCommissionRate', Number(e.target.value))}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Notifications Tab */}
+              {activeTab === 'notifications' && (
+                <div className="space-y-6">
+                  <h3 className="text-xl font-semibold text-yellow-400">Configurações de Notificações</h3>
                   
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-black/20 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
                       <div>
-                        <h4 className="text-white font-semibold">Modo de Manutenção</h4>
-                        <p className="text-gray-400 text-sm">Bloquear acesso de usuários regulares</p>
+                        <label className="text-white font-medium">Notificações por Email</label>
+                        <p className="text-gray-400 text-sm">Enviar notificações por email para usuários</p>
                       </div>
                       <button
-                        onClick={() => updateConfig('maintenanceMode', !config?.maintenanceMode)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          config?.maintenanceMode ? 'bg-red-500' : 'bg-gray-600'
+                        onClick={() => updateConfig('emailNotifications', !config.emailNotifications)}
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          config.emailNotifications ? 'bg-yellow-600' : 'bg-gray-600'
                         }`}
                       >
                         <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            config?.maintenanceMode ? 'translate-x-6' : 'translate-x-1'
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                            config.emailNotifications ? 'translate-x-5' : 'translate-x-0'
                           }`}
                         />
                       </button>
                     </div>
-                    
-                    <div className="flex items-center justify-between p-4 bg-black/20 rounded-lg">
+
+                    <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
                       <div>
-                        <h4 className="text-white font-semibold">Backup Automático</h4>
-                        <p className="text-gray-400 text-sm">Realizar backup diário do banco de dados</p>
+                        <label className="text-white font-medium">Notificações por WhatsApp</label>
+                        <p className="text-gray-400 text-sm">Enviar notificações por WhatsApp</p>
                       </div>
                       <button
-                        onClick={() => updateConfig('autoBackup', !config?.autoBackup)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          config?.autoBackup ? 'bg-green-500' : 'bg-gray-600'
+                        onClick={() => updateConfig('whatsappNotifications', !config.whatsappNotifications)}
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          config.whatsappNotifications ? 'bg-yellow-600' : 'bg-gray-600'
                         }`}
                       >
                         <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            config?.autoBackup ? 'translate-x-6' : 'translate-x-1'
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                            config.whatsappNotifications ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
+                      <div>
+                        <label className="text-white font-medium">Notificações Push</label>
+                        <p className="text-gray-400 text-sm">Enviar notificações push para dispositivos</p>
+                      </div>
+                      <button
+                        onClick={() => updateConfig('pushNotifications', !config.pushNotifications)}
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          config.pushNotifications ? 'bg-yellow-600' : 'bg-gray-600'
+                        }`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                            config.pushNotifications ? 'translate-x-5' : 'translate-x-0'
                           }`}
                         />
                       </button>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+
+              {/* System Tab */}
+              {activeTab === 'system' && (
+                <div className="space-y-6">
+                  <h3 className="text-xl font-semibold text-yellow-400">Configurações do Sistema</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
+                      <div>
+                        <label className="text-white font-medium">Modo de Manutenção</label>
+                        <p className="text-gray-400 text-sm">Desabilitar acesso de usuários durante manutenção</p>
+                      </div>
+                      <button
+                        onClick={() => updateConfig('maintenanceMode', !config.maintenanceMode)}
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          config.maintenanceMode ? 'bg-red-600' : 'bg-gray-600'
+                        }`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                            config.maintenanceMode ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
+                      <div>
+                        <label className="text-white font-medium">Backup Automático</label>
+                        <p className="text-gray-400 text-sm">Realizar backup automático dos dados</p>
+                      </div>
+                      <button
+                        onClick={() => updateConfig('autoBackup', !config.autoBackup)}
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          config.autoBackup ? 'bg-green-600' : 'bg-gray-600'
+                        }`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                            config.autoBackup ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Nível de Log
+                        </label>
+                        <select
+                          value={config.logLevel}
+                          onChange={(e) => updateConfig('logLevel', e.target.value)}
+                          className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                        >
+                          <option value="ERROR">ERROR</option>
+                          <option value="WARN">WARN</option>
+                          <option value="INFO">INFO</option>
+                          <option value="DEBUG">DEBUG</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Timeout de Sessão (segundos)
+                        </label>
+                        <input
+                          type="number"
+                          value={config.sessionTimeout}
+                          onChange={(e) => updateConfig('sessionTimeout', Number(e.target.value))}
+                          className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      </AdminLayout>
-    </>
+      </div>
+    </AdminLayout>
   );
 };
 
