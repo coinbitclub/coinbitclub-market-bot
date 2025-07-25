@@ -1,28 +1,30 @@
-﻿# Multi-service monorepo Dockerfile
-FROM node:18-alpine AS base
-
-# Install essential tools
-RUN apk add --no-cache dumb-init curl bash
-
-# Set workdir to backend
-WORKDIR /app
-
-# Copy all package.json files first (better caching)
-COPY ./package*.json ./
-COPY ./api-gateway/package*.json ./api-gateway/
-COPY ./common/ ./common/
+﻿FROM node:18-alpine
 
 # Install dependencies
-RUN npm install --only=production
+RUN apk add --no-cache dumb-init
 
-# Install api-gateway specific dependencies
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install root dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy common modules
+COPY common/ ./common/
+
+# Copy api-gateway
+COPY api-gateway/ ./api-gateway/
+
+# Set working directory to api-gateway
 WORKDIR /app/api-gateway
-RUN npm install --only=production
 
-# Copy source code
-COPY ./api-gateway/src/ ./src/
+# Install api-gateway dependencies
+RUN npm ci --only=production && npm cache clean --force
 
-# Create user and set permissions
+# Create user and set ownership
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 && \
     chown -R nodejs:nodejs /app
@@ -32,9 +34,5 @@ USER nodejs
 # Expose port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
-
-# Start the application
+# Start command
 CMD ["dumb-init", "node", "src/index.js"]
