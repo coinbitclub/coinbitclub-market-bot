@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBit Club - Checkout</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .price-highlight {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .loading-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .success-animation {
+            animation: checkmark 0.6s ease-in-out;
+        }
+        @keyframes checkmark {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-coins text-2xl"></i>
+                    <h1 class="text-2xl font-bold">CoinBit Club</h1>
+                </div>
+                <div class="text-sm opacity-90">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    Pagamento Seguro
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Seletor de Região -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                <i class="fas fa-globe mr-2"></i>
+                Selecione sua Região
+            </h2>
+            <div class="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
+                <button id="regionBrasil" class="region-btn flex-1 p-4 border-2 border-blue-200 rounded-lg hover:border-blue-500 transition-colors">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2">🇧🇷</div>
+                        <div class="font-semibold text-gray-800">Brasil</div>
+                        <div class="text-sm text-gray-600">Pagamentos em Real (BRL)</div>
+                    </div>
+                </button>
+                <button id="regionInternacional" class="region-btn flex-1 p-4 border-2 border-blue-200 rounded-lg hover:border-blue-500 transition-colors">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2">🌍</div>
+                        <div class="font-semibold text-gray-800">Internacional</div>
+                        <div class="text-sm text-gray-600">Payments in USD</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Seção de Planos -->
+        <div id="planosSection" class="hidden">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-star mr-2"></i>
+                    Escolha seu Plano
+                </h2>
+                <p id="planosDescription" class="text-gray-600 max-w-2xl mx-auto"></p>
+            </div>
+
+            <div id="planosGrid" class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- Planos serão inseridos aqui dinamicamente -->
+            </div>
+        </div>
+
+        <!-- Seção de Recargas -->
+        <div id="recargasSection" class="hidden">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-wallet mr-2"></i>
+                    Recarga de Saldo
+                </h2>
+                <p id="recargasDescription" class="text-gray-600 max-w-2xl mx-auto"></p>
+            </div>
+
+            <!-- Valores Pré-definidos -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-coins mr-2"></i>
+                    Valores Sugeridos
+                </h3>
+                <div id="valoresPredefinidos" class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    <!-- Valores serão inseridos dinamicamente -->
+                </div>
+            </div>
+
+            <!-- Valor Customizado -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-edit mr-2"></i>
+                    Valor Personalizado
+                </h3>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Valor da Recarga
+                        </label>
+                        <div class="relative">
+                            <input type="number" id="valorCustomizado" 
+                                   class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Digite o valor">
+                            <div id="simboloMoeda" class="absolute left-4 top-3 text-gray-500 font-medium">R$</div>
+                        </div>
+                        <div id="valorMinimoInfo" class="text-sm text-gray-500 mt-1"></div>
+                    </div>
+                    <button id="btnAdicionarCustomizado" 
+                            class="sm:mt-7 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        <i class="fas fa-plus mr-2"></i>
+                        Adicionar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Desconto Promocional Info -->
+            <div id="descontoInfo" class="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-4 mb-6 hidden">
+                <div class="flex items-center">
+                    <i class="fas fa-percentage text-green-600 mr-3"></i>
+                    <div>
+                        <div class="font-semibold text-green-800">Desconto Promocional Disponível!</div>
+                        <div id="descontoTexto" class="text-sm text-green-700"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Checkout -->
+        <div id="checkoutSection" class="hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-shopping-cart mr-2"></i>
+                    Finalizar Compra
+                </h3>
+
+                <!-- Resumo do Pedido -->
+                <div id="resumoPedido" class="bg-gray-50 rounded-lg p-4 mb-6">
+                    <!-- Conteúdo será inserido dinamicamente -->
+                </div>
+
+                <!-- Código Promocional -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-ticket-alt mr-1"></i>
+                        Código Promocional (Opcional)
+                    </label>
+                    <div class="flex gap-3">
+                        <input type="text" id="codigoPromocional" 
+                               class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Digite seu código promocional">
+                        <button id="btnValidarCodigo" 
+                                class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-check mr-1"></i>
+                            Validar
+                        </button>
+                    </div>
+                    <div id="codigoStatus" class="mt-2 text-sm"></div>
+                </div>
+
+                <!-- Informações de Primeira Compra -->
+                <div id="primeiraCompraInfo" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 hidden">
+                    <div class="flex items-center">
+                        <i class="fas fa-star text-blue-600 mr-3"></i>
+                        <div>
+                            <div class="font-semibold text-blue-800">Primeira Compra!</div>
+                            <div class="text-sm text-blue-700">Use códigos promocionais para desconto adicional na sua primeira compra.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botão de Pagamento -->
+                <button id="btnPagar" 
+                        class="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-credit-card mr-2"></i>
+                    <span id="btnPagarTexto">Pagar com Stripe</span>
+                    <div id="btnPagarLoader" class="loading-spinner mx-auto hidden"></div>
+                </button>
+
+                <div class="text-center mt-4 text-sm text-gray-500">
+                    <i class="fas fa-lock mr-1"></i>
+                    Pagamento seguro processado pelo Stripe
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <script>
+        // Configuração
+        const API_BASE = '/api/stripe';
+        const stripe = Stripe('pk_test_51234567890...'); // Substitua pela sua chave pública do Stripe
+        
+        // Estado da aplicação
+        let currentRegion = null;
+        let currentCurrency = null;
+        let selectedProduct = null;
+        let selectedAmount = null;
+        let appliedCoupon = null;
+        let discountTiers = [];
+        let isFirstPurchase = false;
+        let userId = 1; // Simular usuário logado
+
+        // Configurações por região
+        const regionConfig = {
+            brasil: {
+                currency: 'BRL',
+                symbol: 'R$',
+                minAmount: 60,
+                plans: [
+                    {
+                        name: 'Plano Mensal',
+                        price: 200,
+                        commission: 10,
+                        description: 'Mensalidade de R$200 + 10% de comissão sobre lucros',
+                        features: ['Sinais de trading', 'Suporte prioritário', 'Análises diárias'],
+                        highlight: false
+                    },
+                    {
+                        name: 'Plano Comissão',
+                        price: 0,
+                        commission: 20,
+                        description: 'Apenas 20% de comissão sobre lucros, sem mensalidade',
+                        features: ['Sinais de trading', 'Análises diárias'],
+                        highlight: true
+                    }
+                ],
+                suggestedAmounts: [60, 100, 200, 500, 1000]
+            },
+            internacional: {
+                currency: 'USD',
+                symbol: '$',
+                minAmount: 40,
+                plans: [
+                    {
+                        name: 'Monthly Plan',
+                        price: 40,
+                        commission: 10,
+                        description: 'Monthly fee $40 + 10% commission on profits',
+                        features: ['Trading signals', 'Priority support', 'Daily analysis'],
+                        highlight: false
+                    },
+                    {
+                        name: 'Commission Plan',
+                        price: 0,
+                        commission: 20,
+                        description: 'Only 20% commission on profits, no monthly fee',
+                        features: ['Trading signals', 'Daily analysis'],
+                        highlight: true
+                    }
+                ],
+                suggestedAmounts: [40, 100, 250, 500, 1000]
+            }
+        };
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            checkFirstPurchase();
+        });
+
+        function setupEventListeners() {
+            // Seleção de região
+            document.getElementById('regionBrasil').addEventListener('click', () => selectRegion('brasil'));
+            document.getElementById('regionInternacional').addEventListener('click', () => selectRegion('internacional'));
+            
+            // Valor customizado
+            document.getElementById('btnAdicionarCustomizado').addEventListener('click', addCustomAmount);
+            document.getElementById('valorCustomizado').addEventListener('input', validateCustomAmount);
+            
+            // Código promocional
+            document.getElementById('btnValidarCodigo').addEventListener('click', validateCouponCode);
+            
+            // Pagamento
+            document.getElementById('btnPagar').addEventListener('click', processPayment);
+        }
+
+        function selectRegion(region) {
+            currentRegion = region;
+            currentCurrency = regionConfig[region].currency;
+            
+            // Atualizar visual dos botões
+            document.querySelectorAll('.region-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'bg-blue-50');
+                btn.classList.add('border-blue-200');
+            });
+            
+            document.getElementById(`region${region.charAt(0).toUpperCase() + region.slice(1)}`).classList.add('border-blue-500', 'bg-blue-50');
+            
+            // Mostrar seções
+            document.getElementById('planosSection').classList.remove('hidden');
+            document.getElementById('recargasSection').classList.remove('hidden');
+            
+            // Carregar conteúdo da região
+            loadRegionContent();
+            loadDiscountTiers();
+        }
+
+        function loadRegionContent() {
+            const config = regionConfig[currentRegion];
+            
+            // Atualizar descrições
+            const planDesc = currentRegion === 'brasil' 
+                ? 'Escolha entre nossos planos para o mercado brasileiro'
+                : 'Choose between our plans for the international market';
+                
+            const rechargeDesc = currentRegion === 'brasil'
+                ? `Recarregue seu saldo para operar. Valor mínimo: ${config.symbol}${config.minAmount}`
+                : `Top up your balance to trade. Minimum amount: ${config.symbol}${config.minAmount}`;
+            
+            document.getElementById('planosDescription').textContent = planDesc;
+            document.getElementById('recargasDescription').textContent = rechargeDesc;
+            document.getElementById('simboloMoeda').textContent = config.symbol;
+            document.getElementById('valorMinimoInfo').textContent = `Valor mínimo: ${config.symbol}${config.minAmount}`;
+            
+            // Carregar planos
+            loadPlans();
+            loadSuggestedAmounts();
+        }
+
+        function loadPlans() {
+            const config = regionConfig[currentRegion];
+            const grid = document.getElementById('planosGrid');
+            
+            grid.innerHTML = config.plans.map(plan => `
+                <div class="plan-card bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200 card-hover cursor-pointer ${plan.highlight ? 'ring-2 ring-purple-500' : ''}"
+                     data-plan="${plan.name}" data-price="${plan.price}">
+                    ${plan.highlight ? '<div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-semibold">Recomendado</div>' : ''}
+                    <div class="text-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">${plan.name}</h3>
+                        <div class="price-highlight text-3xl font-bold mb-1">
+                            ${plan.price > 0 ? `${config.symbol}${plan.price}` : 'Grátis'}
+                        </div>
+                        <div class="text-sm text-gray-600">+ ${plan.commission}% comissão</div>
+                    </div>
+                    
+                    <p class="text-gray-600 text-center mb-4">${plan.description}</p>
+                    
+                    <ul class="space-y-2 mb-6">
+                        ${plan.features.map(feature => `
+                            <li class="flex items-center text-gray-700">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                ${feature}
+                            </li>
+                        `).join('')}
+                    </ul>
+                    
+                    <button class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Selecionar Plano
+                    </button>
+                </div>
+            `).join('');
+            
+            // Adicionar event listeners
+            document.querySelectorAll('.plan-card').forEach(card => {
+                card.addEventListener('click', () => selectPlan(card));
+            });
+        }
+
+        function loadSuggestedAmounts() {
+            const config = regionConfig[currentRegion];
+            const container = document.getElementById('valoresPredefinidos');
+            
+            container.innerHTML = config.suggestedAmounts.map(amount => `
+                <button class="amount-btn p-3 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-center"
+                        data-amount="${amount}">
+                    <div class="font-semibold text-gray-800">${config.symbol}${amount}</div>
+                    ${getDiscountInfo(amount)}
+                </button>
+            `).join('');
+            
+            // Adicionar event listeners
+            document.querySelectorAll('.amount-btn').forEach(btn => {
+                btn.addEventListener('click', () => selectAmount(parseInt(btn.dataset.amount)));
+            });
+        }
+
+        function getDiscountInfo(amount) {
+            const discount = getDiscountForAmount(amount);
+            if (discount > 0) {
+                return `<div class="text-xs text-green-600 font-medium">${discount}% off</div>`;
+            }
+            return '';
+        }
+
+        function getDiscountForAmount(amount) {
+            const tier = discountTiers.find(t => 
+                amount * 100 >= t.minimum && amount * 100 <= t.maximum
+            );
+            return tier ? tier.discount_percentage : 0;
+        }
+
+        async function loadDiscountTiers() {
+            try {
+                const response = await fetch(`${API_BASE}/discount-tiers?currency=${currentCurrency}`);
+                const data = await response.json();
+                discountTiers = data.tiers || [];
+                
+                updateDiscountInfo();
+            } catch (error) {
+                console.error('Erro ao carregar tiers de desconto:', error);
+            }
+        }
+
+        function updateDiscountInfo() {
+            const info = document.getElementById('descontoInfo');
+            const texto = document.getElementById('descontoTexto');
+            
+            if (discountTiers.length > 0) {
+                info.classList.remove('hidden');
+                const config = regionConfig[currentRegion];
+                
+                const tierTexts = discountTiers.map(tier => {
+                    const min = tier.minimum / 100;
+                    const max = tier.maximum === 99999999 ? '+' : ` - ${config.symbol}${tier.maximum / 100}`;
+                    return `${config.symbol}${min}${max}: ${tier.discount_percentage}% desconto`;
+                });
+                
+                texto.textContent = tierTexts.join(' | ');
+            }
+        }
+
+        async function checkFirstPurchase() {
+            try {
+                const response = await fetch(`${API_BASE}/first-purchase/${userId}`);
+                const data = await response.json();
+                isFirstPurchase = data.is_first_purchase;
+                
+                if (isFirstPurchase) {
+                    document.getElementById('primeiraCompraInfo').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Erro ao verificar primeira compra:', error);
+            }
+        }
+
+        function selectPlan(card) {
+            // Atualizar visual
+            document.querySelectorAll('.plan-card').forEach(c => {
+                c.classList.remove('border-blue-500', 'bg-blue-50');
+                c.classList.add('border-gray-200');
+            });
+            card.classList.add('border-blue-500', 'bg-blue-50');
+            
+            // Salvar seleção
+            selectedProduct = {
+                type: 'subscription',
+                name: card.dataset.plan,
+                price: parseFloat(card.dataset.price)
+            };
+            
+            showCheckoutSection();
+        }
+
+        function selectAmount(amount) {
+            // Atualizar visual
+            document.querySelectorAll('.amount-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'bg-blue-50');
+                btn.classList.add('border-gray-200');
+            });
+            event.target.closest('.amount-btn').classList.add('border-blue-500', 'bg-blue-50');
+            
+            // Salvar seleção
+            selectedAmount = amount;
+            selectedProduct = {
+                type: 'prepaid',
+                name: 'Recarga de Saldo',
+                price: amount
+            };
+            
+            showCheckoutSection();
+        }
+
+        function addCustomAmount() {
+            const input = document.getElementById('valorCustomizado');
+            const amount = parseFloat(input.value);
+            const minAmount = regionConfig[currentRegion].minAmount;
+            
+            if (!amount || amount < minAmount) {
+                showToast(`Valor mínimo: ${regionConfig[currentRegion].symbol}${minAmount}`, 'error');
+                return;
+            }
+            
+            selectedAmount = amount;
+            selectedProduct = {
+                type: 'prepaid',
+                name: 'Recarga Personalizada',
+                price: amount
+            };
+            
+            showCheckoutSection();
+        }
+
+        function validateCustomAmount() {
+            const input = document.getElementById('valorCustomizado');
+            const amount = parseFloat(input.value);
+            const minAmount = regionConfig[currentRegion].minAmount;
+            
+            if (amount && amount >= minAmount) {
+                input.classList.remove('border-red-300');
+                input.classList.add('border-green-300');
+            } else {
+                input.classList.remove('border-green-300');
+                input.classList.add('border-red-300');
+            }
+        }
+
+        async function validateCouponCode() {
+            const code = document.getElementById('codigoPromocional').value.trim();
+            const status = document.getElementById('codigoStatus');
+            
+            if (!code) {
+                status.textContent = '';
+                return;
+            }
+            
+            if (!selectedProduct) {
+                status.innerHTML = '<span class="text-red-600">Selecione um produto primeiro</span>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/validate-coupon`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        user_id: userId,
+                        amount: selectedProduct.price,
+                        currency: currentCurrency,
+                        product_type: selectedProduct.type
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.valid) {
+                    appliedCoupon = data;
+                    status.innerHTML = `<span class="text-green-600">✓ Cupom válido! Desconto: ${data.discount_amount.toFixed(2)} ${currentCurrency}</span>`;
+                    updateOrderSummary();
+                } else {
+                    appliedCoupon = null;
+                    status.innerHTML = `<span class="text-red-600">✗ ${data.error}</span>`;
+                    updateOrderSummary();
+                }
+            } catch (error) {
+                console.error('Erro ao validar cupom:', error);
+                status.innerHTML = '<span class="text-red-600">Erro ao validar cupom</span>';
+            }
+        }
+
+        function showCheckoutSection() {
+            document.getElementById('checkoutSection').classList.remove('hidden');
+            updateOrderSummary();
+            
+            // Scroll suave para a seção
+            document.getElementById('checkoutSection').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        function updateOrderSummary() {
+            if (!selectedProduct) return;
+            
+            const config = regionConfig[currentRegion];
+            const resumo = document.getElementById('resumoPedido');
+            
+            let subtotal = selectedProduct.price;
+            let discount = 0;
+            let discountSource = '';
+            
+            // Aplicar desconto automático para recargas
+            if (selectedProduct.type === 'prepaid') {
+                const autoDiscount = getDiscountForAmount(selectedProduct.price);
+                if (autoDiscount > 0) {
+                    discount = subtotal * (autoDiscount / 100);
+                    discountSource = `Desconto promocional (${autoDiscount}%)`;
+                }
+            }
+            
+            // Aplicar cupom se válido
+            if (appliedCoupon) {
+                discount = appliedCoupon.discount_amount;
+                discountSource = `Cupom: ${appliedCoupon.code}`;
+            }
+            
+            const total = subtotal - discount;
+            
+            resumo.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium">${selectedProduct.name}</span>
+                        <span class="font-semibold">${config.symbol}${subtotal.toFixed(2)}</span>
+                    </div>
+                    
+                    ${discount > 0 ? `
+                        <div class="flex justify-between items-center text-green-600">
+                            <span>${discountSource}</span>
+                            <span>-${config.symbol}${discount.toFixed(2)}</span>
+                        </div>
+                    ` : ''}
+                    
+                    <hr class="border-gray-200">
+                    
+                    <div class="flex justify-between items-center text-lg font-bold">
+                        <span>Total</span>
+                        <span class="price-highlight">${config.symbol}${total.toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function processPayment() {
+            if (!selectedProduct) {
+                showToast('Selecione um produto primeiro', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('btnPagar');
+            const btnText = document.getElementById('btnPagarTexto');
+            const btnLoader = document.getElementById('btnPagarLoader');
+            
+            // Mostrar loading
+            btn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+            
+            try {
+                // Criar sessão de checkout
+                const response = await fetch(`${API_BASE}/checkout/create-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        price_id: 'price_1234567890', // Será obtido dinamicamente na implementação real
+                        custom_amount: selectedProduct.type === 'prepaid' ? selectedProduct.price : undefined,
+                        currency: currentCurrency,
+                        coupon_code: appliedCoupon?.code,
+                        product_type: selectedProduct.type
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.sessionId) {
+                    // Redirecionar para o Stripe Checkout
+                    const { error } = await stripe.redirectToCheckout({
+                        sessionId: data.sessionId
+                    });
+                    
+                    if (error) {
+                        throw new Error(error.message);
+                    }
+                } else {
+                    throw new Error(data.error || 'Erro ao criar sessão de pagamento');
+                }
+                
+            } catch (error) {
+                console.error('Erro no pagamento:', error);
+                showToast(error.message || 'Erro ao processar pagamento', 'error');
+            } finally {
+                // Remover loading
+                btn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            
+            toast.className = `${colors[type]} text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-pulse`;
+            toast.innerHTML = `
+                <i class="${icons[type]}"></i>
+                <span>${message}</span>
+                <button class="ml-4 text-white hover:text-gray-200" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Auto-remover após 5 segundos
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

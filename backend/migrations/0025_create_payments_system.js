@@ -303,12 +303,13 @@ export async function up(knex) {
         enabled: true,
         brl_tiers: [
           { minimum: 60000, maximum: 599999, discount_percentage: 5 }, // R$ 600 - R$ 5.999
-          { minimum: 600000, maximum: 2000000, discount_percentage: 10 } // R$ 6.000 - R$ 20.000
+          { minimum: 600000, maximum: 99999999, discount_percentage: 10 } // R$ 6.000+
         ],
         usd_tiers: [
-          { minimum: 15000, maximum: 149999, discount_percentage: 5 }, // USD 150 - USD 1.499
-          { minimum: 150000, maximum: 500000, discount_percentage: 10 } // USD 1.500 - USD 5.000
-        ]
+          { minimum: 6000, maximum: 59999, discount_percentage: 5 }, // USD 60 - USD 599
+          { minimum: 60000, maximum: 99999999, discount_percentage: 10 } // USD 600+
+        ],
+        first_time_only: false // Aplicar em todas as recargas que atendem aos critérios
       }),
       description: 'Configurações de desconto promocional por faixa de recarga'
     },
@@ -372,8 +373,8 @@ export async function up(knex) {
     {
       currency: 'BRL',
       country_code: 'BR',
-      minimum_balance: 60.00, // Mínimo para recarga
-      minimum_operation: 60.00, // Mínimo para operação
+      minimum_balance: 100.00, // Mínimo para recarga R$ 100
+      minimum_operation: 100.00, // Mínimo para operação
       withdrawal_fee_percentage: 0.02, // 2%
       withdrawal_fee_fixed: 5.00,
       minimum_withdrawal: 50.00,
@@ -384,8 +385,8 @@ export async function up(knex) {
     {
       currency: 'USD',
       country_code: 'US',
-      minimum_balance: 40.00, // Mínimo para recarga USD 40
-      minimum_operation: 40.00, // Mínimo para operação
+      minimum_balance: 20.00, // Mínimo para recarga USD 20
+      minimum_operation: 20.00, // Mínimo para operação
       withdrawal_fee_percentage: 0.025, // 2.5%
       withdrawal_fee_fixed: 2.00,
       minimum_withdrawal: 20.00,
@@ -466,12 +467,17 @@ export async function up(knex) {
     table.timestamp('valid_from').nullable();
     table.timestamp('valid_until').nullable();
     table.boolean('is_active').defaultTo(true);
+    table.boolean('first_purchase_only').defaultTo(true); // Aplicar apenas na primeira compra
+    table.boolean('applies_to_subscription').defaultTo(true); // Se aplica à primeira mensalidade
+    table.boolean('applies_to_prepaid').defaultTo(true); // Se aplica à primeira recarga
+    table.decimal('minimum_amount', 15, 2).nullable(); // Valor mínimo para aplicar desconto
     table.text('description').nullable();
     table.jsonb('applicable_products').nullable(); // IDs dos produtos aplicáveis
     table.timestamps(true, true);
     
     table.index(['code', 'is_active']);
     table.index(['valid_from', 'valid_until']);
+    table.index(['first_purchase_only']);
   });
 
   // Tabela de uso de códigos promocionais

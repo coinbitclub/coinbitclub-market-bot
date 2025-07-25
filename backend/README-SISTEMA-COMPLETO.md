@@ -107,7 +107,7 @@ BACKEND_URL=http://localhost:3000
 git clone <repository-url>
 cd coinbitclub-market-bot/backend
 
-# Execute o setup completo
+# Execute o setup completo com novos planos
 .\setup-system.ps1 -All
 
 # Ou passo a passo:
@@ -126,8 +126,8 @@ npm install
 # Executar migrações
 node migrate.js
 
-# Inicializar catálogo de produtos
-node scripts/init-catalog.js
+# Atualizar catálogo com novos planos
+node scripts/update-catalog.js
 
 # Iniciar servidor
 node api-gateway/index.js
@@ -137,45 +137,59 @@ node api-gateway/index.js
 
 ### Planos de Assinatura
 
-1. **CoinBitClub Básico** - R$ 29,99/mês
-   - Sinais básicos
-   - 10 operações/dia
-   - Suporte por email
-
-2. **CoinBitClub Profissional** - R$ 99,99/mês
+#### 🇧🇷 Brasil
+1. **Plano Mensal** - R$ 200/mês + 10% comissão sobre lucros
+   - Trading automatizado completo
+   - Sinais profissionais
    - IA avançada
-   - 50 operações/dia
    - Suporte prioritário
 
-3. **CoinBitClub Premium** - R$ 199,99/mês
-   - Recursos completos
-   - Operações ilimitadas
-   - Suporte 24/7
+2. **Apenas Comissão** - R$ 0/mês + 20% comissão sobre lucros
+   - Todos os recursos do plano mensal
+   - Sem mensalidade
+   - Comissão maior sobre lucros
 
-4. **CoinBitClub Enterprise** - R$ 499,99/mês
-   - Solução corporativa
-   - API personalizada
-   - Suporte dedicado
+#### 🌎 Internacional
+1. **Monthly Plan** - $40/month + 10% commission on profits
+   - Complete automated trading
+   - Professional signals
+   - Advanced AI
+   - Priority support
 
-### Produtos de Recarga
+2. **Commission Only** - $0/month + 20% commission on profits
+   - All monthly plan features
+   - No monthly fee
+   - Higher commission on profits
 
-- **R$ 50** - Sem bônus
-- **R$ 100** - +5% bônus
-- **R$ 250** - +10% bônus
-- **R$ 500** - +15% bônus
-- **R$ 1.000** - +20% bônus
+### Sistema de Recarga
+
+#### 🇧🇷 Brasil (mínimo R$ 60)
+- **Recarga livre** a partir de R$ 60
+- **Descontos promocionais:**
+  - R$ 600 - R$ 5.999: **5% desconto**
+  - R$ 6.000 - R$ 20.000: **10% desconto**
+
+#### 🌎 Internacional (minimum $40)
+- **Free recharge** starting from $40
+- **Promotional discounts:**
+  - $150 - $1,499: **5% discount**
+  - $1,500+: **10% discount**
 
 ### Códigos Promocionais
 
-- **WELCOME20** - 20% desconto primeira compra
-- **MONTHLY10** - 10% por 3 meses
-- **PREMIUM50** - 50% em compras acima de R$ 100
-- **ANNUAL25** - 25% em planos anuais
+- **RECARGA5** - 5% desconto para recargas BRL R$ 600+
+- **RECARGA10** - 10% desconto para recargas BRL R$ 6.000+
+- **USDRECARGA5** - 5% discount for USD $150+ recharges
+- **USDRECARGA10** - 10% discount for USD $1,500+ recharges
+- **WELCOME** - 15% desconto de boas-vindas
+- **BRASIL200** - 20% desconto no plano Brasil mensal
+- **EXTERIOR40** - 25% discount on International monthly plan
 
 ## 🌐 URLs e Endpoints
 
 ### Páginas Frontend
-- **Checkout**: `http://localhost:3000/checkout.html`
+- **Checkout Atualizado**: `http://localhost:3000/checkout-updated.html`
+- **Checkout Original**: `http://localhost:3000/checkout.html`
 - **Admin Dashboard**: `http://localhost:3000/admin-dashboard.html`
 
 ### API Endpoints

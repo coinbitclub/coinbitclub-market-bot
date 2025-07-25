@@ -5,7 +5,7 @@
   "workspaces": [
     "api-gateway",
     "signal-ingestor",
-    "signal-processor", 
+    "signal-processor",
     "decision-engine",
     "order-executor",
     "accounting",
@@ -28,15 +28,24 @@
     "lint:fix": "eslint . --ext .js --fix"
   },
   "dependencies": {
-    "dotenv": "^16.3.1"
+    "body-parser": "^2.2.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express-rate-limit": "^8.0.1",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "node-cron": "^4.2.1",
+    "stripe": "^18.3.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
     "eslint": "^8.57.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.29.1",
-    "nodemon": "^3.0.2",
-    "cross-env": "^7.0.3"
+    "nodemon": "^3.0.2"
   },
   "engines": {
     "node": ">=18.0.0",

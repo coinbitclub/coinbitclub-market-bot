@@ -85,18 +85,18 @@ function Setup-Stripe {
 
 # Função para inicializar catálogo
 function Initialize-Catalog {
-    Write-Host "`n📋 Inicializando catálogo de produtos..." -ForegroundColor Yellow
+    Write-Host "`n📋 Atualizando catálogo com novos planos..." -ForegroundColor Yellow
     
-    if (Test-Path "scripts\init-catalog.js") {
-        node scripts\init-catalog.js
+    if (Test-Path "scripts\update-catalog.js") {
+        node scripts\update-catalog.js
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ Catálogo inicializado com sucesso" -ForegroundColor Green
+            Write-Host "✅ Catálogo atualizado com sucesso" -ForegroundColor Green
         } else {
-            Write-Host "❌ Erro ao inicializar catálogo" -ForegroundColor Red
+            Write-Host "❌ Erro ao atualizar catálogo" -ForegroundColor Red
             return $false
         }
     } else {
-        Write-Host "❌ Script init-catalog.js não encontrado" -ForegroundColor Red
+        Write-Host "❌ Script update-catalog.js não encontrado" -ForegroundColor Red
         return $false
     }
     return $true
@@ -125,9 +125,22 @@ function Show-Info {
     Write-Host ""
     Write-Host "🌐 URLs Importantes:" -ForegroundColor Yellow
     Write-Host "  • API Base: http://localhost:3000/api" -ForegroundColor White
-    Write-Host "  • Checkout: http://localhost:3000/checkout.html" -ForegroundColor White
+    Write-Host "  • Checkout Atualizado: http://localhost:3000/checkout-updated.html" -ForegroundColor White
+    Write-Host "  • Checkout Original: http://localhost:3000/checkout.html" -ForegroundColor White
     Write-Host "  • Admin Dashboard: http://localhost:3000/admin-dashboard.html" -ForegroundColor White
     Write-Host "  • Health Check: http://localhost:3000/health" -ForegroundColor White
+    Write-Host ""
+    Write-Host "💰 NOVOS PLANOS:" -ForegroundColor Yellow
+    Write-Host "  🇧🇷 Brasil:" -ForegroundColor White
+    Write-Host "    • Mensal: R$ 200/mês + 10% comissão" -ForegroundColor White
+    Write-Host "    • Comissão: R$ 0/mês + 20% comissão" -ForegroundColor White
+    Write-Host "  🌎 Internacional:" -ForegroundColor White
+    Write-Host "    • Monthly: $40/month + 10% commission" -ForegroundColor White
+    Write-Host "    • Commission: $0/month + 20% commission" -ForegroundColor White
+    Write-Host ""
+    Write-Host "💳 RECARGA:" -ForegroundColor Yellow
+    Write-Host "  🇧🇷 Brasil: mín. R$ 60 (descontos: 5% R$600+, 10% R$6.000+)" -ForegroundColor White
+    Write-Host "  🌎 Internacional: min. $40 (discounts: 5% $150+, 10% $1.500+)" -ForegroundColor White
     Write-Host ""
     Write-Host "🔗 Endpoints da API:" -ForegroundColor Yellow
     Write-Host "  • Catálogo Público: GET /api/catalog/public" -ForegroundColor White
