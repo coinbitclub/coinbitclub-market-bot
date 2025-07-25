@@ -1,0 +1,3 @@
+# Force Railway to use Nixpacks instead of Docker
+# This file presence tells Railway to use Nixpacks build system
+NIXPACKS=true
