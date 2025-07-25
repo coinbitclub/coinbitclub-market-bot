@@ -307,7 +307,7 @@ export default function AffiliateCommissions() {
 
   const tableStyle = {
     width: '100%',
-    borderCollapse: 'collapse',
+    borderCollapse: 'collapse' as const,
     marginTop: '1rem'
   };
 
