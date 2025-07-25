@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import { 
@@ -365,7 +366,7 @@ export default function UsersManagement() {
                       <input
                         type="text"
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) = /> setSearchTerm(e.target.value)}
                         className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
                         placeholder="Buscar por nome, email ou CPF..."
                       />
@@ -525,7 +526,7 @@ export default function UsersManagement() {
                       value={selectedUser.name}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -534,7 +535,7 @@ export default function UsersManagement() {
                       value={selectedUser.email}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">CPF</label>
@@ -543,7 +544,7 @@ export default function UsersManagement() {
                       value={selectedUser.cpf}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Telefone</label>
@@ -552,7 +553,7 @@ export default function UsersManagement() {
                       value={selectedUser.phone}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Chave PIX</label>
@@ -561,7 +562,7 @@ export default function UsersManagement() {
                       value={selectedUser.pixKey}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                 </div>
 
@@ -575,7 +576,7 @@ export default function UsersManagement() {
                       value={selectedUser.balance}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Saldo Pré-pago</label>
@@ -584,7 +585,7 @@ export default function UsersManagement() {
                       value={selectedUser.prepaidBalance}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Saldo na Exchange</label>
@@ -593,7 +594,7 @@ export default function UsersManagement() {
                       value={selectedUser.exchangeBalance}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Resultado Histórico (USD)</label>
@@ -602,7 +603,7 @@ export default function UsersManagement() {
                       value={selectedUser.historicalResult}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Receita</label>
@@ -611,7 +612,7 @@ export default function UsersManagement() {
                       value={selectedUser.revenue}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                 </div>
 
@@ -625,7 +626,7 @@ export default function UsersManagement() {
                       value={selectedUser.bankData.bank}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Agência</label>
@@ -634,7 +635,7 @@ export default function UsersManagement() {
                       value={selectedUser.bankData.agency}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Conta</label>
@@ -643,7 +644,7 @@ export default function UsersManagement() {
                       value={selectedUser.bankData.account}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Tipo de Conta</label>
@@ -736,7 +737,7 @@ export default function UsersManagement() {
                   type="number"
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="0.00"
-                />
+                / />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Motivo</label>

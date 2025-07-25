@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
@@ -136,7 +137,7 @@ export default function Auth() {
                     required={!isLogin}
                     className="premium-input"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) = /> setName(e.target.value)}
                     disabled={loading}
                   />
                 </div>
@@ -154,7 +155,7 @@ export default function Auth() {
                   required
                   className="premium-input"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) = /> setEmail(e.target.value)}
                   disabled={loading}
                 />
               </div>
@@ -171,7 +172,7 @@ export default function Auth() {
                   required
                   className="premium-input"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) = /> setPassword(e.target.value)}
                   disabled={loading}
                 />
               </div>
@@ -189,7 +190,7 @@ export default function Auth() {
                     required={!isLogin}
                     className="premium-input"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) = /> setConfirmPassword(e.target.value)}
                     disabled={loading}
                   />
                 </div>

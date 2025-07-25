@@ -1,3 +1,4 @@
+import React from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { FiBarChart2 } from 'react-icons/fi';
 

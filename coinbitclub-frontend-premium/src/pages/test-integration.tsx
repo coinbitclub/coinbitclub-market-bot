@@ -1,3 +1,4 @@
+import React from 'react';
 export default function TestIntegration() {
   return (
     <div style={{ padding: '50px', textAlign: 'center' }}>

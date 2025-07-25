@@ -1,3 +1,4 @@
+import React from 'react';
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -592,7 +593,7 @@ export default function AccountingPage() {
                     <input
                       type="text"
                       value={newTransaction.description}
-                      onChange={(e) => setNewTransaction({
+                      onChange={(e) = /> setNewTransaction({
                         ...newTransaction,
                         description: e.target.value
                       })}
@@ -607,7 +608,7 @@ export default function AccountingPage() {
                       type="number"
                       step="0.01"
                       value={newTransaction.amount}
-                      onChange={(e) => setNewTransaction({
+                      onChange={(e) = /> setNewTransaction({
                         ...newTransaction,
                         amount: parseFloat(e.target.value)
                       })}

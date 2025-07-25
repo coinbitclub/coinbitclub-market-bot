@@ -1,97 +1,24 @@
+import React, { useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useState } from 'react';
 import { useRouter } from 'next/router';
 
 const LoginPage: NextPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    rememberMe: false
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const router = useRouter();
 
-  const containerStyle = {
-    minHeight: '100vh',
-    background: 'linear-gradient(135deg, #000000 0%, #0a0a0b 25%, #1a1a1c 50%, #0a0a0b 75%, #000000 100%)',
-    color: '#FAFBFD',
-    fontFamily: "'Inter', sans-serif",
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '2rem',
-  };
-
-  const formContainerStyle = {
-    background: 'rgba(0, 0, 0, 0.8)',
-    border: '1px solid rgba(255, 215, 0, 0.3)',
-    borderRadius: '20px',
-    padding: '3rem',
-    maxWidth: '400px',
-    width: '100%',
-    backdropFilter: 'blur(20px)',
-    boxShadow: '0 0 40px rgba(255, 215, 0, 0.2)',
-  };
-
-  const titleStyle = {
-    fontSize: '2rem',
-    fontWeight: 'bold',
-    marginBottom: '0.5rem',
-    background: 'linear-gradient(45deg, #FFD700, #FF69B4, #00BFFF)',
-    backgroundClip: 'text',
-    WebkitBackgroundClip: 'text',
-    color: 'transparent',
-    textAlign: 'center' as const,
-  };
-
-  const subtitleStyle = {
-    color: '#B0B3B8',
-    textAlign: 'center' as const,
-    marginBottom: '2rem',
-  };
-
-  const inputStyle = {
-    width: '100%',
-    padding: '1rem',
-    marginBottom: '1rem',
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 215, 0, 0.3)',
-    borderRadius: '8px',
-    color: '#fff',
-    fontSize: '1rem',
-    outline: 'none',
-    transition: 'border-color 0.3s ease',
-  };
-
-  const buttonStyle = {
-    width: '100%',
-    padding: '1rem',
-    background: 'linear-gradient(135deg, #FFD700, #FFA500)',
-    border: 'none',
-    borderRadius: '8px',
-    color: '#000',
-    fontSize: '1rem',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    marginBottom: '1rem',
-  };
-
-  const linkStyle = {
-    color: '#00BFFF',
-    textDecoration: 'none',
-    fontSize: '0.9rem',
-  };
-
-  const errorStyle = {
-    background: 'rgba(255, 0, 0, 0.1)',
-    border: '1px solid rgba(255, 0, 0, 0.3)',
-    borderRadius: '8px',
-    padding: '0.75rem',
-    color: '#ff6b6b',
-    fontSize: '0.875rem',
-    marginBottom: '1rem',
-    textAlign: 'center' as const,
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,213 +26,269 @@ const LoginPage: NextPage = () => {
     setLoading(true);
     setError('');
 
-    console.log('🔍 Tentando login:', { email, passwordLength: password.length });
-
     try {
-      // Tenta primeiro a API do Railway com redirecionamento automático
-      console.log('🚀 Tentando API Railway...');
-      const response = await fetch('http://localhost:9997/api/auth/login', {
+      const response = await fetch('/api/auth/login-real', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
       });
 
-      console.log('📡 Resposta API Railway:', response.status, response.statusText);
+      const data = await response.json();
 
       if (response.ok) {
-        const data = await response.json();
-        const token = data.token;
-        const user = data.user;
+        console.log('✅ Login successful:', data);
         
-        console.log('✅ Login bem-sucedido:', { role: user.role, redirectUrl: data.redirectUrl });
-        
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        
-        // Redirecionamento automático baseado no papel do usuário
-        if (data.redirectUrl) {
-          // API retorna a URL de redirecionamento baseada no papel
-          router.push(data.redirectUrl);
-        } else {
-          // Fallback - determinar redirecionamento pelo papel do usuário
-          const userRole = user.role || 'user';
-          switch (userRole) {
-            case 'admin':
-              router.push('/admin/dashboard');
-              break;
-            case 'affiliate':
-              router.push('/affiliate/dashboard');
-              break;
-            default:
-              router.push('/user/dashboard');
-          }
+        // Salvar token no localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        // Redirecionar baseado no tipo de usuário
+        switch (data.user.type) {
+          case 'admin':
+            router.push('/admin/dashboard-real');
+            break;
+          case 'affiliate':
+            router.push('/affiliate/dashboard');
+            break;
+          case 'user':
+          default:
+            router.push('/user/dashboard');
+            break;
         }
       } else {
-        // Se a API do Railway falhar, tenta a API local
-        console.log('🔄 Tentando API local...');
-        const localResponse = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password }),
-        });
-
-        if (localResponse.ok) {
-          const data = await localResponse.json();
-          const token = data.token;
-          const user = data.user;
-          
-          console.log('✅ Login local bem-sucedido:', { role: user.role });
-          
-          localStorage.setItem('token', token);
-          localStorage.setItem('user', JSON.stringify(user));
-          
-          // Redirecionamento baseado no papel
-          const userRole = user.role || 'user';
-          switch (userRole) {
-            case 'admin':
-              router.push('/admin/dashboard');
-              break;
-            case 'affiliate':
-              router.push('/affiliate/dashboard');
-              break;
-            default:
-              router.push('/user/dashboard');
-          }
-        } else {
-          // Última tentativa com o backend
-          const backendResponse = await fetch('http://localhost:8085/api/auth/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-          });
-
-          if (backendResponse.ok) {
-            const data = await backendResponse.json();
-            const token = data.tokens?.accessToken || data.token;
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            
-            // Redirecionamento baseado no papel
-            const userRole = data.user.role || 'user';
-            switch (userRole) {
-              case 'admin':
-                router.push('/admin/dashboard');
-                break;
-              case 'affiliate':
-                router.push('/affiliate/dashboard');
-                break;
-              default:
-                router.push('/user/dashboard');
-            }
-          } else {
-            const errorData = await backendResponse.json();
-            console.log('❌ Erro backend:', errorData);
-            setError(errorData.error || errorData.message || 'Erro ao fazer login');
-          }
-        }
+        console.error('❌ Login failed:', data);
+        setError(data.message || 'Erro ao fazer login');
       }
-    } catch (err) {
-      console.error('💥 Login error:', err);
-      setError('Erro de conexão. Verifique se os serviços estão rodando.');
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('❌ Login error:', error);
+      setError('Erro de conexão. Tente novamente.');
     }
+
+    setLoading(false);
   };
 
   return (
-    <>
+    <div>
       <Head>
         <title>Login - CoinBitClub</title>
         <meta name="description" content="Faça login na sua conta CoinBitClub" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <div style={containerStyle}>
-        <div style={formContainerStyle}>
-          <Link href="/" style={{ 
-            display: 'block', 
-            textAlign: 'center', 
-            marginBottom: '2rem',
-            fontSize: '1.5rem',
-            background: 'linear-gradient(45deg, #FFD700, #FF69B4, #00BFFF)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            color: 'transparent',
-            textDecoration: 'none',
-            fontWeight: 'bold'
-          }}>
-            ⚡ CoinBitClub
-          </Link>
-          
-          <h1 style={titleStyle}>Bem-vindo!</h1>
-          <p style={subtitleStyle}>Faça login para acessar sua conta</p>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #000000 0%, #111111 100%)',
+        color: '#FFFFFF',
+        fontFamily: "'Inter', sans-serif",
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem',
+      }}>
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.05)',
+          padding: '3rem',
+          borderRadius: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          maxWidth: '400px',
+          width: '100%',
+          backdropFilter: 'blur(10px)',
+        }}>
+          {/* Logo */}
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <Link href="/" style={{
+              fontSize: '2rem',
+              fontWeight: '700',
+              background: 'linear-gradient(45deg, #FFD700, #FFA500)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textDecoration: 'none',
+            }}>
+              ⚡ CoinBitClub
+            </Link>
+            <h1 style={{
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              marginTop: '1rem',
+              color: '#B0B3B8',
+            }}>
+              Faça login na sua conta
+            </h1>
+          </div>
 
-          {error && <div style={errorStyle}>{error}</div>}
+          {/* Error Message */}
+          {error && (
+            <div style={{
+              background: 'rgba(255, 0, 0, 0.1)',
+              border: '1px solid rgba(255, 0, 0, 0.3)',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginBottom: '1.5rem',
+              color: '#ff6b6b',
+              textAlign: 'center',
+            }}>
+              {error}
+            </div>
+          )}
 
+          {/* Form */}
           <form onSubmit={handleSubmit}>
-            <input
-              type="email"
-              placeholder="Seu e-mail"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={inputStyle}
-              required
-            />
-            
-            <input
-              type="password"
-              placeholder="Sua senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={inputStyle}
-              required
-            />
-            
-            <button 
-              type="submit" 
-              style={buttonStyle}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                color: '#B0B3B8',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+              }}>
+                Email
+              </label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.875rem',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  color: '#fff',
+                  fontSize: '1rem',
+                  fontFamily: 'inherit',
+                  outline: 'none',
+                  transition: 'border-color 0.3s ease',
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                color: '#B0B3B8',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+              }}>
+                Senha
+              </label>
+              <input
+                type="password"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.875rem',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  color: '#fff',
+                  fontSize: '1rem',
+                  fontFamily: 'inherit',
+                  outline: 'none',
+                  transition: 'border-color 0.3s ease',
+                }}
+              />
+            </div>
+
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '2rem',
+            }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                color: '#B0B3B8',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+              }}>
+                <input
+                  type="checkbox"
+                  checked={formData.rememberMe}
+                  onChange={(e) => handleInputChange('rememberMe', e.target.checked)}
+                  style={{ marginRight: '0.5rem' }}
+                />
+                Lembrar de mim
+              </label>
+              <Link href="/auth/forgot-password" style={{
+                color: '#00BFFF',
+                textDecoration: 'none',
+                fontSize: '0.9rem',
+              }}>
+                Esqueci a senha
+              </Link>
+            </div>
+
+            <button
+              type="submit"
               disabled={loading}
+              style={{
+                width: '100%',
+                padding: '1rem',
+                borderRadius: '12px',
+                border: '2px solid #FFD700',
+                background: loading ? 'rgba(255, 215, 0, 0.5)' : 'linear-gradient(135deg, #FFD700, #FFA500)',
+                color: '#000',
+                fontSize: '1.1rem',
+                fontWeight: '700',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.3s ease',
+                fontFamily: 'inherit',
+              }}
             >
-              {loading ? '🔄 Entrando...' : '🚀 Entrar'}
+              {loading ? '🔄 Entrando...' : '🔑 Entrar'}
             </button>
           </form>
 
-          <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-            <p style={{ color: '#B0B3B8', fontSize: '0.9rem', marginBottom: '1rem' }}>
-              Não tem uma conta?{' '}
-              <Link href="/auth/register" style={linkStyle}>
-                Cadastre-se aqui
-              </Link>
+          {/* Links */}
+          <div style={{
+            textAlign: 'center',
+            marginTop: '2rem',
+            paddingTop: '2rem',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          }}>
+            <p style={{ color: '#B0B3B8', marginBottom: '1rem' }}>
+              Não tem uma conta?
             </p>
-            
-            <p style={{ fontSize: '0.875rem' }}>
-              <Link href="/auth/forgot-password" style={linkStyle}>
-                Esqueceu sua senha?
-              </Link>
-            </p>
-            
-            <div style={{ margin: '1.5rem 0', height: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
-            
-            <Link href="/landing" style={{
-              ...linkStyle,
+            <Link href="/auth/register" style={{
+              padding: '0.75rem 1.5rem',
+              borderRadius: '12px',
+              border: '2px solid #00BFFF',
+              background: 'linear-gradient(135deg, #00BFFF20, #FF69B420)',
+              color: '#fff',
+              textDecoration: 'none',
+              fontSize: '1rem',
+              fontWeight: '700',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer',
               display: 'inline-block',
-              padding: '0.5rem 1rem',
-              border: '1px solid rgba(0, 191, 255, 0.3)',
-              borderRadius: '8px',
-              background: 'rgba(0, 191, 255, 0.1)',
+              textAlign: 'center',
             }}>
-              ← Voltar para o site
+              🚀 Criar Conta
+            </Link>
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <Link href="/" style={{
+              color: '#B0B3B8',
+              textDecoration: 'none',
+              fontSize: '0.9rem',
+            }}>
+              ← Voltar para o início
             </Link>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

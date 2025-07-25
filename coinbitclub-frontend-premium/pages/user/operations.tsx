@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from '../../src/components/Card';
-import { Button } from '../../src/components/Button';
-import FormInput from '../../src/components/FormInput';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Filter, 
-  Download, 
-  Search, 
-  Calendar,
-  Eye,
-  AlertTriangle
-} from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { NextPage } from 'next';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 interface Operation {
   id: string;
@@ -34,7 +23,7 @@ interface Operation {
   aiJustification?: string;
   commission: number;
   fees: number;
-  duration?: number; // in hours
+  duration?: number;
 }
 
 interface OperationsStats {
@@ -49,12 +38,11 @@ interface OperationsStats {
   totalFees: number;
 }
 
-const UserOperations: React.FC = () => {
+const UserOperations: NextPage = () => {
   const [operations, setOperations] = useState<Operation[]>([]);
   const [stats, setStats] = useState<OperationsStats | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedOperation, setSelectedOperation] = useState<Operation | null>(null);
-  const [showJustificationModal, setShowJustificationModal] = useState(false);
+  const router = useRouter();
 
   // Filtros
   const [filters, setFilters] = useState({
@@ -66,116 +54,85 @@ const UserOperations: React.FC = () => {
     status: 'closed'
   });
 
-  // Paginação
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 50,
-    total: 0,
-    totalPages: 0
-  });
-
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/auth/login');
+      return;
+    }
     loadOperations();
-  }, [filters, pagination.page]);
+  }, []);
 
   const loadOperations = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-        ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v))
-      });
+      // Mock data
+      const mockOperations: Operation[] = [
+        {
+          id: '1',
+          exchange: 'binance',
+          symbol: 'BTCUSDT',
+          type: 'LONG',
+          status: 'closed',
+          entryPrice: 43500.00,
+          exitPrice: 44200.00,
+          quantity: 0.1,
+          leverage: 10,
+          stopLoss: 42800.00,
+          takeProfit: 44500.00,
+          result: 70.00,
+          resultPercentage: 1.61,
+          investedAmount: 435.00,
+          openedAt: '2024-01-20T10:30:00Z',
+          closedAt: '2024-01-20T11:15:00Z',
+          aiJustification: 'RSI oversold detectado, MACD em crossover bullish',
+          commission: 2.18,
+          fees: 1.50,
+          duration: 0.75
+        },
+        {
+          id: '2',
+          exchange: 'bybit',
+          symbol: 'ETHUSDT',
+          type: 'SHORT',
+          status: 'closed',
+          entryPrice: 2450.00,
+          exitPrice: 2420.00,
+          quantity: 1.0,
+          leverage: 5,
+          stopLoss: 2480.00,
+          takeProfit: 2400.00,
+          result: 150.00,
+          resultPercentage: 6.12,
+          investedAmount: 490.00,
+          openedAt: '2024-01-19T14:20:00Z',
+          closedAt: '2024-01-19T16:45:00Z',
+          aiJustification: 'Resistência forte em $2450, momentum bearish confirmado',
+          commission: 2.45,
+          fees: 1.20,
+          duration: 2.42
+        }
+      ];
 
-      const response = await fetch(`/api/user/operations?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setOperations(data.operations);
-        setStats(data.stats);
-        setPagination({
-          ...pagination,
-          total: data.pagination.total,
-          totalPages: data.pagination.totalPages
-        });
-      } else {
-        toast.error('Erro ao carregar operações');
-      }
+      const mockStats: OperationsStats = {
+        totalOperations: 45,
+        profitableOperations: 32,
+        lossOperations: 13,
+        successRate: 71.11,
+        totalProfit: 1847.50,
+        totalLoss: -599.65,
+        netResult: 1247.85,
+        averageResult: 27.73,
+        totalFees: 95.40
+      };
+
+      setOperations(mockOperations);
+      setStats(mockStats);
     } catch (error) {
-      toast.error('Erro ao carregar operações');
+      console.error('Erro ao carregar operações:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const exportToCSV = () => {
-    if (operations.length === 0) {
-      toast.error('Nenhuma operação para exportar');
-      return;
-    }
-
-    const headers = [
-      'Data Abertura',
-      'Data Fechamento',
-      'Moeda',
-      'Exchange',
-      'Tipo',
-      'Entrada',
-      'Saída',
-      'Quantidade',
-      'Alavancagem',
-      'Stop Loss',
-      'Take Profit',
-      'Resultado USD',
-      'Resultado %',
-      'Investido',
-      'Comissão',
-      'Taxas',
-      'Duração (h)',
-      'Justificativa IA'
-    ];
-
-    const csvData = operations.map(op => [
-      new Date(op.openedAt).toLocaleString('pt-BR'),
-      op.closedAt ? new Date(op.closedAt).toLocaleString('pt-BR') : '',
-      op.symbol,
-      op.exchange.toUpperCase(),
-      op.type,
-      op.entryPrice.toFixed(4),
-      op.exitPrice?.toFixed(4) || '',
-      op.quantity.toFixed(4),
-      op.leverage,
-      op.stopLoss.toFixed(4),
-      op.takeProfit?.toFixed(4) || '',
-      op.result?.toFixed(2) || '',
-      op.resultPercentage?.toFixed(2) || '',
-      op.investedAmount.toFixed(2),
-      op.commission.toFixed(2),
-      op.fees.toFixed(2),
-      op.duration || '',
-      op.aiJustification || ''
-    ]);
-
-    const csvContent = [headers, ...csvData]
-      .map(row => row.map(cell => `"${cell}"`).join(','))
-      .join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `operacoes_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-  };
-
-  const resetFilters = () => {
-    setFilters({
-      startDate: '',
-      endDate: '',
-      exchange: '',
-      symbol: '',
-      type: '',
-      status: 'closed'
-    });
-    setPagination({ ...pagination, page: 1 });
   };
 
   const formatCurrency = (value: number) => {
@@ -185,416 +142,517 @@ const UserOperations: React.FC = () => {
     }).format(value);
   };
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR');
-  };
-
   const formatDateTime = (date: string) => {
     return new Date(date).toLocaleString('pt-BR');
   };
 
   const getResultColor = (result?: number) => {
-    if (!result) return 'text-gray-500';
-    return result > 0 ? 'text-green-600' : 'text-red-600';
+    if (!result) return '#6b7280';
+    return result > 0 ? '#10b981' : '#ef4444';
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'open':
-        return 'bg-blue-100 text-blue-800';
-      case 'closed':
-        return 'bg-gray-100 text-gray-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            border: '3px solid transparent',
+            borderTop: '3px solid #fbbf24',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }}></div>
+          <p style={{ color: 'white' }}>Carregando operações...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Operações de Trading</h1>
-          <p className="text-gray-600">Histórico completo das suas operações</p>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)'
+    }}>
+      {/* Header */}
+      <div style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(251, 191, 36, 0.3)'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 16px'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            height: '64px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Link href="/" style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#fbbf24',
+                textDecoration: 'none'
+              }}>
+                CoinBitClub
+              </Link>
+              <span style={{
+                marginLeft: '16px',
+                color: 'rgba(255, 255, 255, 0.7)'
+              }}>Operações</span>
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px'
+            }}>
+              <Link 
+                href="/user/dashboard"
+                style={{
+                  backgroundColor: '#fbbf24',
+                  color: 'black',
+                  padding: '4px 12px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  textDecoration: 'none'
+                }}
+              >
+                Dashboard
+              </Link>
+              <button 
+                onClick={() => {
+                  localStorage.removeItem('token');
+                  router.push('/auth/login');
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  cursor: 'pointer'
+                }}
+              >
+                Sair
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* Estatísticas do Período */}
+      {/* Navigation */}
+      <div style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 16px'
+        }}>
+          <nav style={{
+            display: 'flex',
+            gap: '32px',
+            padding: '16px 0'
+          }}>
+            <Link href="/user/dashboard" style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
+              Dashboard
+            </Link>
+            <Link href="/user/operations" style={{
+              color: '#fbbf24',
+              borderBottom: '2px solid #fbbf24',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
+              Operações
+            </Link>
+            <Link href="/user/plans" style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
+              Planos
+            </Link>
+            <Link href="/user/settings" style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
+              Configurações
+            </Link>
+          </nav>
+        </div>
+      </div>
+
+      <div style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: '32px 16px'
+      }}>
+        {/* Estatísticas */}
         {stats && (
-          <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Resultado Líquido</p>
-                  <p className={`text-2xl font-bold ${getResultColor(stats.netResult)}`}>
-                    {formatCurrency(stats.netResult)}
-                  </p>
-                </div>
-                {stats.netResult > 0 ? (
-                  <TrendingUp className="size-12 text-green-500" />
-                ) : (
-                  <TrendingDown className="size-12 text-red-500" />
-                )}
-              </div>
-              <div className="mt-2 text-sm text-gray-500">
-                Lucro: {formatCurrency(stats.totalProfit)} • 
-                Perda: {formatCurrency(stats.totalLoss)}
-              </div>
-            </Card>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '24px',
+            marginBottom: '32px'
+          }}>
+            <div style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(12px)',
+              borderRadius: '12px',
+              padding: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '14px',
+                margin: '0 0 8px 0'
+              }}>Total de Operações</p>
+              <p style={{
+                fontSize: '32px',
+                fontWeight: 'bold',
+                color: 'white',
+                margin: 0
+              }}>{stats.totalOperations}</p>
+            </div>
 
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Taxa de Sucesso</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {stats.successRate.toFixed(1)}%
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-600">
-                    {stats.profitableOperations}/{stats.totalOperations}
-                  </div>
-                </div>
-              </div>
-            </Card>
+            <div style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(12px)',
+              borderRadius: '12px',
+              padding: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '14px',
+                margin: '0 0 8px 0'
+              }}>Taxa de Sucesso</p>
+              <p style={{
+                fontSize: '32px',
+                fontWeight: 'bold',
+                color: '#10b981',
+                margin: 0
+              }}>{stats.successRate.toFixed(1)}%</p>
+              <p style={{
+                fontSize: '12px',
+                color: 'rgba(255, 255, 255, 0.5)',
+                margin: '4px 0 0 0'
+              }}>{stats.profitableOperations}/{stats.totalOperations}</p>
+            </div>
 
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Resultado Médio</p>
-                  <p className={`text-2xl font-bold ${getResultColor(stats.averageResult)}`}>
-                    {formatCurrency(stats.averageResult)}
-                  </p>
-                </div>
-              </div>
-            </Card>
+            <div style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(12px)',
+              borderRadius: '12px',
+              padding: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '14px',
+                margin: '0 0 8px 0'
+              }}>Resultado Líquido</p>
+              <p style={{
+                fontSize: '32px',
+                fontWeight: 'bold',
+                color: stats.netResult >= 0 ? '#10b981' : '#ef4444',
+                margin: 0
+              }}>{formatCurrency(stats.netResult)}</p>
+            </div>
 
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Total em Taxas</p>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {formatCurrency(stats.totalFees)}
-                  </p>
-                </div>
-              </div>
-            </Card>
+            <div style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(12px)',
+              borderRadius: '12px',
+              padding: '24px',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '14px',
+                margin: '0 0 8px 0'
+              }}>Resultado Médio</p>
+              <p style={{
+                fontSize: '32px',
+                fontWeight: 'bold',
+                color: stats.averageResult >= 0 ? '#10b981' : '#ef4444',
+                margin: 0
+              }}>{formatCurrency(stats.averageResult)}</p>
+            </div>
           </div>
         )}
 
-        {/* Filtros */}
-        <Card className="mb-8 p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Filtros</h3>
-            <div className="flex gap-2">
-              <Button onClick={resetFilters} className="bg-gray-500 hover:bg-gray-600">
-                Limpar Filtros
-              </Button>
-              <Button onClick={exportToCSV} className="bg-green-600 hover:bg-green-700">
-                <Download className="mr-2 size-4" />
-                Exportar CSV
-              </Button>
-            </div>
+        {/* Lista de Operações */}
+        <div style={{
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(12px)',
+          borderRadius: '12px',
+          padding: '24px',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '24px'
+          }}>
+            <h2 style={{
+              fontSize: '20px',
+              fontWeight: 'bold',
+              color: 'white',
+              margin: 0
+            }}>Histórico de Operações</h2>
+            <button style={{
+              backgroundColor: '#10b981',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '500',
+              border: 'none',
+              cursor: 'pointer'
+            }}>
+              Exportar CSV
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                <Calendar className="mr-1 inline size-4" />
-                Data Início
-              </label>
-              <input
-                type="date"
-                value={filters.startDate}
-                onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2"
-              />
-            </div>
+          {/* Filtros */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '16px',
+            marginBottom: '24px',
+            padding: '16px',
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            borderRadius: '8px'
+          }}>
+            <select 
+              value={filters.exchange}
+              onChange={(e) => setFilters({...filters, exchange: e.target.value})}
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                padding: '8px 12px',
+                color: 'white'
+              }}
+            >
+              <option value="">Todas as Exchanges</option>
+              <option value="binance">Binance</option>
+              <option value="bybit">Bybit</option>
+            </select>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                <Calendar className="mr-1 inline size-4" />
-                Data Fim
-              </label>
-              <input
-                type="date"
-                value={filters.endDate}
-                onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2"
-              />
-            </div>
+            <select 
+              value={filters.type}
+              onChange={(e) => setFilters({...filters, type: e.target.value})}
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                padding: '8px 12px',
+                color: 'white'
+              }}
+            >
+              <option value="">Todos os Tipos</option>
+              <option value="LONG">LONG</option>
+              <option value="SHORT">SHORT</option>
+            </select>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Exchange</label>
-              <select
-                value={filters.exchange}
-                onChange={(e) => setFilters({ ...filters, exchange: e.target.value })}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2"
-              >
-                <option value="">Todas</option>
-                <option value="binance">Binance</option>
-                <option value="bybit">Bybit</option>
-              </select>
-            </div>
+            <select 
+              value={filters.status}
+              onChange={(e) => setFilters({...filters, status: e.target.value})}
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '8px',
+                padding: '8px 12px',
+                color: 'white'
+              }}
+            >
+              <option value="closed">Fechadas</option>
+              <option value="active">Ativas</option>
+              <option value="all">Todas</option>
+            </select>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Símbolo</label>
-              <input
-                type="text"
-                value={filters.symbol}
-                onChange={(e) => setFilters({ ...filters, symbol: e.target.value })}
-                placeholder="Ex: BTC, ETH..."
-                className="w-full rounded-lg border border-gray-300 px-3 py-2"
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Tipo</label>
-              <select
-                value={filters.type}
-                onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2"
-              >
-                <option value="">Todos</option>
-                <option value="LONG">Long</option>
-                <option value="SHORT">Short</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Status</label>
-              <select
-                value={filters.status}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2"
-              >
-                <option value="">Todos</option>
-                <option value="open">Abertas</option>
-                <option value="closed">Fechadas</option>
-                <option value="cancelled">Canceladas</option>
-              </select>
-            </div>
+            <button 
+              onClick={loadOperations}
+              style={{
+                backgroundColor: '#fbbf24',
+                color: 'black',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              Filtrar
+            </button>
           </div>
 
-          <div className="mt-4">
-            <Button onClick={() => setPagination({ ...pagination, page: 1 })} className="bg-blue-600 hover:bg-blue-700">
-              <Filter className="mr-2 size-4" />
-              Aplicar Filtros
-            </Button>
-          </div>
-        </Card>
-
-        {/* Tabela de Operações */}
-        <Card className="p-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-semibold">
-              Operações ({pagination.total})
-            </h3>
-          </div>
-
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="size-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-            </div>
-          ) : operations.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full table-auto text-sm">
-                <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="p-3 text-left">Data</th>
-                    <th className="p-3 text-left">Moeda</th>
-                    <th className="p-3 text-left">Exchange</th>
-                    <th className="p-3 text-left">Tipo</th>
-                    <th className="p-3 text-left">Status</th>
-                    <th className="p-3 text-left">Entrada</th>
-                    <th className="p-3 text-left">Saída</th>
-                    <th className="p-3 text-left">Alavancagem</th>
-                    <th className="p-3 text-left">Resultado</th>
-                    <th className="p-3 text-left">%</th>
-                    <th className="p-3 text-left">Duração</th>
-                    <th className="p-3 text-left">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {operations.map((operation) => (
-                    <tr key={operation.id} className="border-b hover:bg-gray-50">
-                      <td className="p-3">
-                        <div>
-                          <div className="font-medium">{formatDate(operation.openedAt)}</div>
-                          <div className="text-xs text-gray-500">
-                            {new Date(operation.openedAt).toLocaleTimeString('pt-BR')}
-                          </div>
+          {/* Tabela de Operações */}
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{
+              width: '100%',
+              borderCollapse: 'collapse'
+            }}>
+              <thead>
+                <tr style={{
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+                }}>
+                  <th style={{
+                    padding: '12px',
+                    textAlign: 'left',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}>Moeda</th>
+                  <th style={{
+                    padding: '12px',
+                    textAlign: 'left',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}>Tipo</th>
+                  <th style={{
+                    padding: '12px',
+                    textAlign: 'left',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}>Entrada</th>
+                  <th style={{
+                    padding: '12px',
+                    textAlign: 'left',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}>Saída</th>
+                  <th style={{
+                    padding: '12px',
+                    textAlign: 'left',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}>Resultado</th>
+                  <th style={{
+                    padding: '12px',
+                    textAlign: 'left',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}>Data</th>
+                  <th style={{
+                    padding: '12px',
+                    textAlign: 'left',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}>Exchange</th>
+                </tr>
+              </thead>
+              <tbody>
+                {operations.map((operation) => (
+                  <tr key={operation.id} style={{
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+                  }}>
+                    <td style={{
+                      padding: '12px',
+                      color: 'white',
+                      fontWeight: '500'
+                    }}>{operation.symbol}</td>
+                    <td style={{ padding: '12px' }}>
+                      <span style={{
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        backgroundColor: operation.type === 'LONG' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                        color: operation.type === 'LONG' ? '#10b981' : '#ef4444'
+                      }}>
+                        {operation.type}
+                      </span>
+                    </td>
+                    <td style={{
+                      padding: '12px',
+                      color: 'white'
+                    }}>${operation.entryPrice.toLocaleString()}</td>
+                    <td style={{
+                      padding: '12px',
+                      color: 'white'
+                    }}>{operation.exitPrice ? `$${operation.exitPrice.toLocaleString()}` : '-'}</td>
+                    <td style={{
+                      padding: '12px',
+                      color: getResultColor(operation.result),
+                      fontWeight: '500'
+                    }}>
+                      {operation.result ? formatCurrency(operation.result) : '-'}
+                      {operation.resultPercentage && (
+                        <div style={{
+                          fontSize: '12px',
+                          color: 'rgba(255, 255, 255, 0.5)'
+                        }}>
+                          ({operation.resultPercentage.toFixed(2)}%)
                         </div>
-                      </td>
-                      <td className="p-3">
-                        <span className="font-medium">{operation.symbol}</span>
-                      </td>
-                      <td className="p-3">
-                        <span className="rounded bg-gray-100 px-2 py-1 text-xs uppercase">
-                          {operation.exchange}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <span className={`rounded px-2 py-1 text-xs ${
-                          operation.type === 'LONG' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {operation.type}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <span className={`rounded px-2 py-1 text-xs ${getStatusColor(operation.status)}`}>
-                          {operation.status}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <span className="font-mono text-sm">
-                          ${operation.entryPrice.toFixed(4)}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        {operation.exitPrice ? (
-                          <span className="font-mono text-sm">
-                            ${operation.exitPrice.toFixed(4)}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-                      <td className="p-3">
-                        <span className="font-medium">{operation.leverage}x</span>
-                      </td>
-                      <td className="p-3">
-                        {operation.result !== undefined ? (
-                          <span className={`font-medium ${getResultColor(operation.result)}`}>
-                            {formatCurrency(operation.result)}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-                      <td className="p-3">
-                        {operation.resultPercentage !== undefined ? (
-                          <span className={`font-medium ${getResultColor(operation.result)}`}>
-                            {operation.resultPercentage > 0 ? '+' : ''}{operation.resultPercentage.toFixed(2)}%
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-                      <td className="p-3">
-                        {operation.duration ? (
-                          <span className="text-sm">{operation.duration}h</span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-                      <td className="p-3">
-                        {operation.result !== undefined && operation.result < 0 && operation.aiJustification && (
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setSelectedOperation(operation);
-                              setShowJustificationModal(true);
-                            }}
-                            className="bg-orange-600 hover:bg-orange-700"
-                          >
-                            <Eye className="size-3" />
-                          </Button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="py-12 text-center">
-              <AlertTriangle className="mx-auto mb-4 size-12 text-gray-400" />
-              <h3 className="mb-2 text-lg font-medium text-gray-900">Nenhuma operação encontrada</h3>
-              <p className="text-gray-500">Tente ajustar os filtros ou aguarde novas operações</p>
-            </div>
-          )}
+                      )}
+                    </td>
+                    <td style={{
+                      padding: '12px',
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: '14px'
+                    }}>{formatDateTime(operation.openedAt)}</td>
+                    <td style={{
+                      padding: '12px',
+                      color: 'white',
+                      textTransform: 'capitalize'
+                    }}>{operation.exchange}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-          {/* Paginação */}
-          {pagination.totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-between">
-              <div className="text-sm text-gray-600">
-                Mostrando {((pagination.page - 1) * pagination.limit) + 1} a {Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  disabled={pagination.page === 1}
-                  onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
-                >
-                  Anterior
-                </Button>
-                <span className="rounded bg-gray-100 px-3 py-1">
-                  {pagination.page} de {pagination.totalPages}
-                </span>
-                <Button
-                  size="sm"
-                  disabled={pagination.page === pagination.totalPages}
-                  onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
-                >
-                  Próximo
-                </Button>
-              </div>
+          {operations.length === 0 && (
+            <div style={{
+              textAlign: 'center',
+              padding: '32px 0'
+            }}>
+              <div style={{
+                fontSize: '48px',
+                marginBottom: '16px'
+              }}>📊</div>
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.5)'
+              }}>Nenhuma operação encontrada</p>
             </div>
           )}
-        </Card>
+        </div>
       </div>
 
-      {/* Modal de Justificativa da IA */}
-      {showJustificationModal && selectedOperation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[80vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white">
-            <div className="p-6">
-              <div className="mb-4 flex items-start justify-between">
-                <h2 className="text-xl font-bold">Justificativa da IA</h2>
-                <Button
-                  onClick={() => setShowJustificationModal(false)}
-                  className="bg-gray-500 hover:bg-gray-600"
-                >
-                  Fechar
-                </Button>
-              </div>
-              
-              <div className="mb-4 rounded-lg bg-red-50 p-4">
-                <div className="mb-2 flex items-center">
-                  <AlertTriangle className="mr-2 size-5 text-red-500" />
-                  <span className="font-medium text-red-800">Operação com Resultado Negativo</span>
-                </div>
-                <div className="text-sm text-red-700">
-                  <strong>{selectedOperation.symbol}</strong> • 
-                  <strong> {selectedOperation.type}</strong> • 
-                  <strong> {formatCurrency(selectedOperation.result!)}</strong>
-                </div>
-              </div>
-              
-              <div className="prose max-w-none">
-                <h3 className="mb-3 text-lg font-semibold">Análise da IA:</h3>
-                <div className="rounded-lg bg-gray-50 p-4">
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {selectedOperation.aiJustification}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="mt-6 border-t pt-4 text-sm text-gray-500">
-                <div><strong>Operação:</strong> {selectedOperation.id}</div>
-                <div><strong>Data:</strong> {formatDateTime(selectedOperation.openedAt)}</div>
-                {selectedOperation.closedAt && (
-                  <div><strong>Fechada em:</strong> {formatDateTime(selectedOperation.closedAt)}</div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

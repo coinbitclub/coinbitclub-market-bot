@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import { 
@@ -254,7 +255,7 @@ export default function UsersManagement() {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) = /> setFormData({ ...formData, name: e.target.value })}
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
@@ -264,7 +265,7 @@ export default function UsersManagement() {
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) = /> setFormData({ ...formData, email: e.target.value })}
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
@@ -304,7 +305,7 @@ export default function UsersManagement() {
                   type="number"
                   step="0.01"
                   value={formData.refundAmount}
-                  onChange={(e) => setFormData({ ...formData, refundAmount: parseFloat(e.target.value) })}
+                  onChange={(e) = /> setFormData({ ...formData, refundAmount: parseFloat(e.target.value) })}
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
@@ -383,7 +384,7 @@ export default function UsersManagement() {
                     type="text"
                     placeholder="Buscar por nome ou email..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) = /> setSearchTerm(e.target.value)}
                     className="pl-10 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>

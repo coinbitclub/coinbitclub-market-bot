@@ -1,18 +1,23 @@
+import React, { useState, useEffect } from 'react';
 import { NextPage } from 'next';
-import Head from 'next/head';
-import { useState, useEffect } from 'react';
-import {
-  UserGroupIcon, 
-  CurrencyDollarIcon, 
-  ChartBarIcon, 
-  GiftIcon,
-  SparklesIcon,
-  ArrowTrendingUpIcon,
-  UsersIcon,
-  BanknotesIcon
-} from '@heroicons/react/24/outline';const AffiliateDashboard: NextPage = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  const [affiliateData, setAffiliateData] = useState({
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+
+interface AffiliateData {
+  totalEarnings: number;
+  monthlyEarnings: number;
+  referrals: number;
+  activeReferrals: number;
+  conversionRate: number;
+  tier: string;
+  nextTierProgress: number;
+  pendingPayment: number;
+}
+
+const AffiliateDashboard: NextPage = () => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [affiliateData, setAffiliateData] = useState<AffiliateData>({
     totalEarnings: 15847.23,
     monthlyEarnings: 3294.56,
     referrals: 47,
@@ -23,7 +28,7 @@ import {
     pendingPayment: 1247.89
   });
 
-  const [aiInsights, setAiInsights] = useState([
+  const [aiInsights] = useState([
     "📈 Seus ganhos aumentaram 34% este mês comparado ao anterior",
     "🎯 Foque em conversão: 15 leads ainda não convertidos",
     "💡 Melhor horário para posts: 14h-16h (32% mais engajamento)",
@@ -31,362 +36,595 @@ import {
   ]);
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/auth/login');
+      return;
+    }
     
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    // Simular carregamento
+    setTimeout(() => setLoading(false), 1000);
   }, []);
 
-  const containerStyle = {
-    minHeight: '100vh',
-    background: 'linear-gradient(135deg, #050506 0%, #0a0a0b 25%, #1a1a1c 50%, #050506 100%)',
-    color: '#FAFBFD',
-    fontFamily: "'Inter', sans-serif"
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(value);
   };
 
-  const headerStyle = {
-    background: 'rgba(5, 167, 78, 0.05)',
-    backdropFilter: 'blur(20px)',
-    borderBottom: '1px solid rgba(5, 167, 78, 0.1)',
-    padding: isMobile ? '1rem' : '1.5rem 2rem',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    position: 'sticky' as const,
-    top: 0,
-    zIndex: 100
-  };
-
-  const mainStyle = {
-    maxWidth: '1400px',
-    margin: '0 auto',
-    padding: isMobile ? '2rem 1rem' : '3rem 2rem'
-  };
-
-  const cardStyle = {
-    background: 'rgba(5, 167, 78, 0.05)',
-    border: '1px solid rgba(5, 167, 78, 0.2)',
-    borderRadius: '20px',
-    padding: '2rem',
-    backdropFilter: 'blur(20px)',
-    transition: 'all 0.3s ease'
-  };
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            border: '3px solid transparent',
+            borderTop: '3px solid #05a74e',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }}></div>
+          <p style={{ color: 'white' }}>Carregando dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <Head>
-        <title>Dashboard Afiliado - CoinBitClub</title>
-      </Head>
-
-      <div style={containerStyle}>
-        <header style={headerStyle}>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #050506 0%, #0a0a0b 25%, #1a1a1c 50%, #050506 100%)',
+      color: '#FAFBFD'
+    }}>
+      {/* Header */}
+      <div style={{
+        background: 'rgba(5, 167, 78, 0.05)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(5, 167, 78, 0.1)',
+        padding: '24px 32px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100
+      }}>
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
           <div style={{
-            fontSize: isMobile ? '1.25rem' : '1.5rem',
-            fontWeight: '800',
-            background: 'linear-gradient(135deg, #05A74E, #6EA297)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px'
           }}>
-            🤝 Dashboard Afiliado - {affiliateData.tier}
+            <Link href="/" style={{
+              fontSize: '24px',
+              fontWeight: 'bold',
+              background: 'linear-gradient(135deg, #05A74E, #6EA297)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textDecoration: 'none'
+            }}>
+              CoinBitClub
+            </Link>
+            <span style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              color: 'rgba(255, 255, 255, 0.7)'
+            }}>Dashboard Afiliado - {affiliateData.tier}</span>
           </div>
           
           <div style={{
-            background: `linear-gradient(90deg, #05A74E ${affiliateData.nextTierProgress}%, rgba(5, 167, 78, 0.2) ${affiliateData.nextTierProgress}%)`,
-            borderRadius: '20px',
-            padding: '0.5rem 1rem',
-            fontSize: '0.875rem',
-            color: '#FAFBFD'
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px'
           }}>
-            Próximo Tier: {affiliateData.nextTierProgress}%
+            <div style={{
+              background: `linear-gradient(90deg, #05A74E ${affiliateData.nextTierProgress}%, rgba(5, 167, 78, 0.2) ${affiliateData.nextTierProgress}%)`,
+              borderRadius: '20px',
+              padding: '8px 16px',
+              fontSize: '14px',
+              fontWeight: '600'
+            }}>
+              Próximo Tier: {affiliateData.nextTierProgress}%
+            </div>
+            <button 
+              onClick={() => {
+                localStorage.removeItem('token');
+                router.push('/auth/login');
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'rgba(255, 255, 255, 0.7)',
+                cursor: 'pointer'
+              }}
+            >
+              Sair
+            </button>
           </div>
-        </header>
-
-        <main style={mainStyle}>
-          {/* IA Insights */}
-          <section style={{
-            ...cardStyle,
-            marginBottom: '3rem',
-            background: 'linear-gradient(135deg, rgba(5, 167, 78, 0.1), rgba(110, 162, 151, 0.05))'
-          }}>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontWeight: '700',
-              marginBottom: '1.5rem',
-              color: '#FAFBFD',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
-              <SparklesIcon style={{ width: '1.5rem', height: '1.5rem', color: '#05A74E' }} />
-              Insights de IA Personalizados
-            </h2>
-
-            <div style={{ display: 'grid', gap: '1rem' }}>
-              {aiInsights.map((insight, index) => (
-                <div key={index} style={{
-                  padding: '1rem',
-                  background: 'rgba(5, 167, 78, 0.1)',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(5, 167, 78, 0.2)',
-                  fontSize: '1rem',
-                  color: '#FAFBFD',
-                  lineHeight: '1.5'
-                }}>
-                  {insight}
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* KPIs do Afiliado */}
-          <section style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '2rem',
-            marginBottom: '3rem'
-          }}>
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                <CurrencyDollarIcon style={{ width: '3rem', height: '3rem', color: '#05A74E' }} />
-                <div>
-                  <h3 style={{ fontSize: '0.875rem', color: '#AFB4B1', marginBottom: '0.5rem' }}>
-                    Ganhos Totais
-                  </h3>
-                  <p style={{ fontSize: '2rem', fontWeight: '800', color: '#05A74E' }}>
-                    R$ {affiliateData.totalEarnings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </p>
-                  <p style={{ fontSize: '0.875rem', color: '#05A74E' }}>
-                    +34% este mês
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                <ArrowTrendingUpIcon style={{ width: '3rem', height: '3rem', color: '#05A74E' }} />
-                <div>
-                  <h3 style={{ fontSize: '0.875rem', color: '#AFB4B1', marginBottom: '0.5rem' }}>
-                    Este Mês
-                  </h3>
-                  <p style={{ fontSize: '2rem', fontWeight: '800', color: '#05A74E' }}>
-                    R$ {affiliateData.monthlyEarnings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </p>
-                  <p style={{ fontSize: '0.875rem', color: '#AFB4B1' }}>
-                    Média diária: R$ {(affiliateData.monthlyEarnings / 30).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                <UserGroupIcon style={{ width: '3rem', height: '3rem', color: '#05A74E' }} />
-                <div>
-                  <h3 style={{ fontSize: '0.875rem', color: '#AFB4B1', marginBottom: '0.5rem' }}>
-                    Indicações
-                  </h3>
-                  <p style={{ fontSize: '2rem', fontWeight: '800', color: '#FAFBFD' }}>
-                    {affiliateData.referrals}
-                  </p>
-                  <p style={{ fontSize: '0.875rem', color: '#05A74E' }}>
-                    {affiliateData.activeReferrals} ativos ({affiliateData.conversionRate}%)
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                <BanknotesIcon style={{ width: '3rem', height: '3rem', color: '#f59e0b' }} />
-                <div>
-                  <h3 style={{ fontSize: '0.875rem', color: '#AFB4B1', marginBottom: '0.5rem' }}>
-                    A Receber
-                  </h3>
-                  <p style={{ fontSize: '2rem', fontWeight: '800', color: '#f59e0b' }}>
-                    R$ {affiliateData.pendingPayment.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </p>
-                  <p style={{ fontSize: '0.875rem', color: '#f59e0b' }}>
-                    Próximo pagamento: 25/jul
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Ferramentas de Marketing */}
-          <section style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-            gap: '2rem',
-            marginBottom: '3rem'
-          }}>
-            <div style={cardStyle}>
-              <h3 style={{
-                fontSize: '1.25rem',
-                fontWeight: '700',
-                marginBottom: '1.5rem',
-                color: '#FAFBFD',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <GiftIcon style={{ width: '1.25rem', height: '1.25rem', color: '#05A74E' }} />
-                Links de Indicação
-              </h3>
-
-              <div style={{ display: 'grid', gap: '1rem' }}>
-                <div style={{
-                  padding: '1rem',
-                  background: 'rgba(5, 167, 78, 0.1)',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(5, 167, 78, 0.2)'
-                }}>
-                  <div style={{ fontSize: '0.875rem', color: '#AFB4B1', marginBottom: '0.5rem' }}>
-                    Link Principal
-                  </div>
-                  <div style={{
-                    fontFamily: 'monospace',
-                    fontSize: '0.875rem',
-                    color: '#05A74E',
-                    padding: '0.5rem',
-                    background: 'rgba(5, 167, 78, 0.1)',
-                    borderRadius: '6px',
-                    wordBreak: 'break-all' as const
-                  }}>
-                    https://coinbitclub.com/ref/ABC123XYZ
-                  </div>
-                </div>
-
-                <div style={{
-                  padding: '1rem',
-                  background: 'rgba(5, 167, 78, 0.1)',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(5, 167, 78, 0.2)'
-                }}>
-                  <div style={{ fontSize: '0.875rem', color: '#AFB4B1', marginBottom: '0.5rem' }}>
-                    Código de Cupom
-                  </div>
-                  <div style={{
-                    fontFamily: 'monospace',
-                    fontSize: '1.25rem',
-                    color: '#05A74E',
-                    fontWeight: '800',
-                    textAlign: 'center' as const,
-                    padding: '1rem',
-                    background: 'rgba(5, 167, 78, 0.1)',
-                    borderRadius: '6px'
-                  }}>
-                    COINBIT-ABC123
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div style={cardStyle}>
-              <h3 style={{
-                fontSize: '1.25rem',
-                fontWeight: '700',
-                marginBottom: '1.5rem',
-                color: '#FAFBFD',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <ChartBarIcon style={{ width: '1.25rem', height: '1.25rem', color: '#05A74E' }} />
-                Performance Recente
-              </h3>
-
-              <div style={{ display: 'grid', gap: '1rem' }}>
-                {[
-                  { metric: 'Cliques no Link', value: '247', change: '+18%' },
-                  { metric: 'Conversões', value: '8', change: '+33%' },
-                  { metric: 'Taxa de Conversão', value: '3.2%', change: '+0.8%' },
-                  { metric: 'Ticket Médio', value: 'R$ 297', change: '+5%' }
-                ].map((item, index) => (
-                  <div key={index} style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '1rem',
-                    background: 'rgba(5, 167, 78, 0.1)',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(5, 167, 78, 0.2)'
-                  }}>
-                    <div>
-                      <div style={{ color: '#AFB4B1', fontSize: '0.875rem' }}>
-                        {item.metric}
-                      </div>
-                      <div style={{ color: '#FAFBFD', fontSize: '1.25rem', fontWeight: '700' }}>
-                        {item.value}
-                      </div>
-                    </div>
-                    <div style={{ color: '#05A74E', fontSize: '0.875rem', fontWeight: '600' }}>
-                      {item.change}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* Histórico de Comissões */}
-          <section style={cardStyle}>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontWeight: '700',
-              marginBottom: '2rem',
-              color: '#FAFBFD',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
-              <UsersIcon style={{ width: '1.5rem', height: '1.5rem', color: '#05A74E' }} />
-              Comissões Recentes
-            </h2>
-
-            <div style={{ display: 'grid', gap: '1rem' }}>
-              {[
-                { user: 'João Silva', plan: 'Premium', amount: 89.10, date: '16/jul/25' },
-                { user: 'Maria Santos', plan: 'Pro', amount: 148.50, date: '15/jul/25' },
-                { user: 'Pedro Costa', plan: 'Premium', amount: 89.10, date: '14/jul/25' },
-                { user: 'Ana Oliveira', plan: 'Enterprise', amount: 297.00, date: '13/jul/25' }
-              ].map((commission, index) => (
-                <div key={index} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '1rem',
-                  background: 'rgba(5, 167, 78, 0.1)',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(5, 167, 78, 0.2)'
-                }}>
-                  <div>
-                    <div style={{ fontWeight: '600', color: '#FAFBFD', marginBottom: '0.25rem' }}>
-                      {commission.user} - {commission.plan}
-                    </div>
-                    <div style={{ fontSize: '0.875rem', color: '#AFB4B1' }}>
-                      {commission.date}
-                    </div>
-                  </div>
-                  
-                  <div style={{
-                    fontWeight: '700',
-                    color: '#05A74E',
-                    fontSize: '1.125rem'
-                  }}>
-                    R$ {commission.amount.toFixed(2)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </main>
+        </div>
       </div>
-    </>
+
+      {/* Navigation */}
+      <div style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+      }}>
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          padding: '0 32px'
+        }}>
+          <nav style={{
+            display: 'flex',
+            gap: '32px',
+            padding: '16px 0'
+          }}>
+            <Link href="/affiliate/dashboard" style={{
+              color: '#05a74e',
+              borderBottom: '2px solid #05a74e',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
+              Dashboard
+            </Link>
+            <Link href="/affiliate/commissions" style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
+              Comissões
+            </Link>
+            <Link href="/user/dashboard" style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
+              Área do Usuário
+            </Link>
+          </nav>
+        </div>
+      </div>
+
+      <div style={{
+        maxWidth: '1400px',
+        margin: '0 auto',
+        padding: '48px 32px'
+      }}>
+        {/* Cards de Estatísticas */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '24px',
+          marginBottom: '48px'
+        }}>
+          <div style={{
+            background: 'rgba(5, 167, 78, 0.05)',
+            border: '1px solid rgba(5, 167, 78, 0.2)',
+            borderRadius: '20px',
+            padding: '32px',
+            backdropFilter: 'blur(20px)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '80px',
+              height: '80px',
+              background: 'radial-gradient(circle, rgba(5, 167, 78, 0.2) 0%, transparent 70%)',
+              borderRadius: '50%',
+              transform: 'translate(50%, -50%)'
+            }}></div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px'
+            }}>
+              <h3 style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                color: 'rgba(255, 255, 255, 0.8)',
+                margin: 0
+              }}>Ganhos Totais</h3>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: 'rgba(5, 167, 78, 0.2)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px'
+              }}>💰</div>
+            </div>
+            <p style={{
+              fontSize: '36px',
+              fontWeight: '800',
+              color: '#05A74E',
+              margin: '0 0 8px 0'
+            }}>{formatCurrency(affiliateData.totalEarnings)}</p>
+            <p style={{
+              fontSize: '14px',
+              color: 'rgba(255, 255, 255, 0.6)',
+              margin: 0
+            }}>
+              +34% vs mês anterior
+            </p>
+          </div>
+
+          <div style={{
+            background: 'rgba(5, 167, 78, 0.05)',
+            border: '1px solid rgba(5, 167, 78, 0.2)',
+            borderRadius: '20px',
+            padding: '32px',
+            backdropFilter: 'blur(20px)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px'
+            }}>
+              <h3 style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                color: 'rgba(255, 255, 255, 0.8)',
+                margin: 0
+              }}>Este Mês</h3>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px'
+              }}>📈</div>
+            </div>
+            <p style={{
+              fontSize: '36px',
+              fontWeight: '800',
+              color: '#fbbf24',
+              margin: '0 0 8px 0'
+            }}>{formatCurrency(affiliateData.monthlyEarnings)}</p>
+            <p style={{
+              fontSize: '14px',
+              color: 'rgba(255, 255, 255, 0.6)',
+              margin: 0
+            }}>
+              {Math.round(affiliateData.monthlyEarnings / 30)} por dia (média)
+            </p>
+          </div>
+
+          <div style={{
+            background: 'rgba(5, 167, 78, 0.05)',
+            border: '1px solid rgba(5, 167, 78, 0.2)',
+            borderRadius: '20px',
+            padding: '32px',
+            backdropFilter: 'blur(20px)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px'
+            }}>
+              <h3 style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                color: 'rgba(255, 255, 255, 0.8)',
+                margin: 0
+              }}>Indicações</h3>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px'
+              }}>👥</div>
+            </div>
+            <p style={{
+              fontSize: '36px',
+              fontWeight: '800',
+              color: '#3b82f6',
+              margin: '0 0 8px 0'
+            }}>{affiliateData.referrals}</p>
+            <p style={{
+              fontSize: '14px',
+              color: 'rgba(255, 255, 255, 0.6)',
+              margin: 0
+            }}>
+              {affiliateData.activeReferrals} ativos ({affiliateData.conversionRate.toFixed(1)}% conversão)
+            </p>
+          </div>
+
+          <div style={{
+            background: 'rgba(5, 167, 78, 0.05)',
+            border: '1px solid rgba(5, 167, 78, 0.2)',
+            borderRadius: '20px',
+            padding: '32px',
+            backdropFilter: 'blur(20px)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px'
+            }}>
+              <h3 style={{
+                fontSize: '16px',
+                fontWeight: '600',
+                color: 'rgba(255, 255, 255, 0.8)',
+                margin: 0
+              }}>Pendente</h3>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: 'rgba(168, 85, 247, 0.2)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '20px'
+              }}>⏳</div>
+            </div>
+            <p style={{
+              fontSize: '36px',
+              fontWeight: '800',
+              color: '#a855f7',
+              margin: '0 0 8px 0'
+            }}>{formatCurrency(affiliateData.pendingPayment)}</p>
+            <p style={{
+              fontSize: '14px',
+              color: 'rgba(255, 255, 255, 0.6)',
+              margin: 0
+            }}>
+              Próximo pagamento em 3 dias
+            </p>
+          </div>
+        </div>
+
+        {/* Insights da IA */}
+        <div style={{
+          background: 'rgba(5, 167, 78, 0.05)',
+          border: '1px solid rgba(5, 167, 78, 0.2)',
+          borderRadius: '20px',
+          padding: '32px',
+          backdropFilter: 'blur(20px)',
+          marginBottom: '32px'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: '24px'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              background: 'linear-gradient(135deg, #05A74E, #6EA297)',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: '16px',
+              fontSize: '24px'
+            }}>🤖</div>
+            <h2 style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              margin: 0,
+              color: '#FAFBFD'
+            }}>
+              Insights da IA Personalizada
+            </h2>
+          </div>
+          
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '16px'
+          }}>
+            {aiInsights.map((insight, index) => (
+              <div key={index} style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                padding: '20px',
+                fontSize: '16px',
+                color: 'rgba(255, 255, 255, 0.9)'
+              }}>
+                {insight}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Ações Rápidas */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gap: '24px'
+        }}>
+          <Link href="/affiliate/commissions" style={{
+            background: 'rgba(5, 167, 78, 0.05)',
+            border: '1px solid rgba(5, 167, 78, 0.2)',
+            borderRadius: '20px',
+            padding: '32px',
+            backdropFilter: 'blur(20px)',
+            textDecoration: 'none',
+            color: 'inherit',
+            transition: 'all 0.3s ease',
+            display: 'block'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '16px'
+            }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: 'rgba(5, 167, 78, 0.2)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: '16px',
+                fontSize: '20px'
+              }}>💸</div>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                margin: 0,
+                color: '#05A74E'
+              }}>Ver Comissões</h3>
+            </div>
+            <p style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              margin: 0,
+              fontSize: '14px'
+            }}>
+              Acompanhe todas suas comissões e histórico de pagamentos
+            </p>
+          </Link>
+
+          <div style={{
+            background: 'rgba(5, 167, 78, 0.05)',
+            border: '1px solid rgba(5, 167, 78, 0.2)',
+            borderRadius: '20px',
+            padding: '32px',
+            backdropFilter: 'blur(20px)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '16px'
+            }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: '16px',
+                fontSize: '20px'
+              }}>🔗</div>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                margin: 0,
+                color: '#fbbf24'
+              }}>Link de Indicação</h3>
+            </div>
+            <div style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
+              padding: '12px',
+              fontSize: '14px',
+              color: 'rgba(255, 255, 255, 0.8)',
+              fontFamily: 'monospace',
+              wordBreak: 'break-all'
+            }}>
+              https://coinbitclub.com/ref/ABC123
+            </div>
+            <button style={{
+              backgroundColor: '#fbbf24',
+              color: 'black',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 16px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              marginTop: '12px',
+              width: '100%'
+            }}>
+              Copiar Link
+            </button>
+          </div>
+
+          <div style={{
+            background: 'rgba(5, 167, 78, 0.05)',
+            border: '1px solid rgba(5, 167, 78, 0.2)',
+            borderRadius: '20px',
+            padding: '32px',
+            backdropFilter: 'blur(20px)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '16px'
+            }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: '16px',
+                fontSize: '20px'
+              }}>📊</div>
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                margin: 0,
+                color: '#3b82f6'
+              }}>Materiais de Marketing</h3>
+            </div>
+            <p style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              margin: '0 0 16px 0',
+              fontSize: '14px'
+            }}>
+              Banners, vídeos e conteúdo para suas redes sociais
+            </p>
+            <button style={{
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 16px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              width: '100%'
+            }}>
+              Acessar Materiais
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
   );
 };
 

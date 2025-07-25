@@ -1,503 +1,585 @@
-import { useState, useEffect } from 'react';
-import Head from 'next/head';
+import React, { useState, useEffect } from 'react';
+import { NextPage } from 'next';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
-// Componente principal da página de planos
-export default function UserPlans() {
+interface Plan {
+  id: string;
+  name: string;
+  type: string;
+  price: number;
+  priceMonthly: number;
+  maxInvestment: number;
+  features: string[];
+  popular?: boolean;
+  savings?: number;
+}
+
+interface CurrentPlan {
+  id: string;
+  name: string;
+  type: string;
+  maxInvestment: number;
+  features: string[];
+  price: number;
+  validUntil?: string;
+  status: string;
+}
+
+const UserPlans: NextPage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  const [currentPlan, setCurrentPlan] = useState(null);
-  const [plans, setPlans] = useState([]);
+  const [user, setUser] = useState<any>(null);
+  const [currentPlan, setCurrentPlan] = useState<CurrentPlan | null>(null);
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [upgrading, setUpgrading] = useState(false);
 
-  // Verificar autenticação
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-    
-    if (!token || !userData) {
+    if (!token) {
       router.push('/auth/login');
       return;
     }
-
-    const parsedUser = JSON.parse(userData);
-    if (parsedUser.role !== 'user') {
-      router.push('/auth/login');
-      return;
-    }
-
-    setUser(parsedUser);
     fetchPlansData();
   }, []);
 
-  // Buscar dados dos planos
   const fetchPlansData = async () => {
     try {
-      const token = localStorage.getItem('token');
+      setLoading(true);
       
-      const response = await fetch('http://localhost:9997/api/user/plans', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+      // Mock data para desenvolvimento
+      setCurrentPlan({
+        id: 'trial',
+        name: 'Plano Teste Grátis',
+        type: 'trial',
+        maxInvestment: 100,
+        features: ['Trading em ambiente testnet', 'Suporte básico', '1 estratégia IA'],
+        price: 0,
+        validUntil: '2025-07-31T23:59:59Z',
+        status: 'active'
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentPlan(data.currentPlan || null);
-        setPlans(data.availablePlans || []);
-      } else {
-        console.log('API não disponível, usando dados mock...');
-        // Dados mock para desenvolvimento
-        setCurrentPlan({
-          id: 'trial',
-          name: 'Plano Teste Grátis',
-          type: 'trial',
-          maxInvestment: 100,
-          features: ['Trading em ambiente testnet', 'Suporte básico', '1 estratégia IA'],
-          price: 0,
-          validUntil: '2025-07-31T23:59:59Z',
-          status: 'active'
-        });
-        
-        setPlans([
-          {
-            id: 'basic',
-            name: 'Plano Básico',
-            type: 'basic',
-            price: 97,
-            priceMonthly: 97,
-            maxInvestment: 1000,
-            features: [
-              '💰 Investimento até $1.000',
-              '🤖 2 estratégias de IA',
-              '📊 Dashboard completo',
-              '📱 Suporte por email',
-              '📈 Relatórios mensais',
-              '🔒 Trading seguro'
-            ],
-            popular: false,
-            savings: 0
-          },
-          {
-            id: 'premium',
-            name: 'Plano Premium',
-            type: 'premium',
-            price: 197,
-            priceMonthly: 247,
-            maxInvestment: 5000,
-            features: [
-              '💰 Investimento até $5.000',
-              '🤖 5 estratégias avançadas de IA',
-              '📊 Dashboard Premium + Analytics',
-              '📱 Suporte prioritário 24/7',
-              '📈 Relatórios diários',
-              '⚡ Execução de ordens ultra-rápida',
-              '🎯 Sinais personalizados',
-              '📚 Curso de trading incluso'
-            ],
-            popular: true,
-            savings: 50
-          },
-          {
-            id: 'professional',
-            name: 'Plano Profissional',
-            type: 'professional',
-            price: 497,
-            priceMonthly: 597,
-            maxInvestment: 25000,
-            features: [
-              '💰 Investimento até $25.000',
-              '🤖 10+ estratégias IA avançadas',
-              '📊 Dashboard VIP + IA Analytics',
-              '📱 Suporte VIP dedicado',
-              '📈 Relatórios em tempo real',
-              '⚡ Execução institucional',
-              '🎯 Sinais exclusivos VIP',
-              '📚 Mentoria 1:1 mensal',
-              '🏆 Acesso a comunidade exclusiva',
-              '💎 API trading avançada'
-            ],
-            popular: false,
-            savings: 100
-          }
-        ]);
-      }
+      
+      setPlans([
+        {
+          id: 'basic',
+          name: 'Plano Básico',
+          type: 'basic',
+          price: 97,
+          priceMonthly: 97,
+          maxInvestment: 1000,
+          features: [
+            '💰 Investimento até $1.000',
+            '🤖 2 estratégias de IA',
+            '📊 Dashboard completo',
+            '📱 Suporte por email',
+            '📈 Relatórios mensais',
+            '🔒 Trading seguro'
+          ],
+          popular: false,
+          savings: 0
+        },
+        {
+          id: 'premium',
+          name: 'Plano Premium',
+          type: 'premium',
+          price: 197,
+          priceMonthly: 247,
+          maxInvestment: 5000,
+          features: [
+            '💰 Investimento até $5.000',
+            '🤖 5 estratégias avançadas de IA',
+            '📊 Dashboard Premium + Analytics',
+            '📱 Suporte prioritário 24/7',
+            '📈 Relatórios diários',
+            '⚡ Execução de ordens ultra-rápida',
+            '🎯 Sinais personalizados',
+            '📚 Curso de trading incluso'
+          ],
+          popular: true,
+          savings: 50
+        },
+        {
+          id: 'professional',
+          name: 'Plano Profissional',
+          type: 'professional',
+          price: 497,
+          priceMonthly: 597,
+          maxInvestment: 25000,
+          features: [
+            '💰 Investimento até $25.000',
+            '🤖 Todas as estratégias de IA disponíveis',
+            '📊 Dashboard Profissional + API',
+            '📱 Suporte VIP dedicado',
+            '📈 Relatórios em tempo real',
+            '⚡ Execução prioritária',
+            '🎯 Sinais VIP exclusivos',
+            '📚 Mentoria personalizada',
+            '🏆 Copy trading de traders profissionais',
+            '📊 Ferramentas de análise avançada'
+          ],
+          popular: false,
+          savings: 100
+        }
+      ]);
+      
     } catch (error) {
       console.error('Erro ao buscar planos:', error);
-      // Fallback para dados mock
-      setCurrentPlan(null);
-      setPlans([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fazer upgrade de plano
-  const handleUpgrade = async (planId) => {
+  const handleUpgrade = async (planId: string) => {
     setUpgrading(true);
     try {
-      const token = localStorage.getItem('token');
-      
-      const response = await fetch('http://localhost:9997/api/user/upgrade-plan', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ planId })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        alert('🎉 Upgrade realizado com sucesso! Redirecionando para pagamento...');
-        window.open(data.paymentUrl, '_blank');
-        await fetchPlansData(); // Recarregar dados
-      } else {
-        // Simulação para desenvolvimento
-        alert('🎉 Upgrade simulado com sucesso! Em produção, seria redirecionado para pagamento.');
-        await fetchPlansData();
-      }
+      // Simular upgrade
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      alert(`Redirecionando para pagamento do plano ${planId}`);
     } catch (error) {
-      console.error('Erro no upgrade:', error);
-      alert('❌ Erro ao processar upgrade. Tente novamente.');
+      console.error('Erro ao fazer upgrade:', error);
     } finally {
       setUpgrading(false);
     }
   };
 
-  // Formatação de valores
-  const formatCurrency = (value) => {
+  const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'USD'
     }).format(value);
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
-
-  // Estilos
-  const containerStyle = {
-    minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0B0F1A 0%, #1a1f3a 50%, #2a1810 100%)',
-    fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
-    color: '#ffffff',
-    padding: '2rem 1rem'
-  };
-
-  const cardStyle = {
-    background: 'rgba(255, 255, 255, 0.08)',
-    backdropFilter: 'blur(20px)',
-    borderRadius: '16px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    padding: '2rem',
-    marginBottom: '2rem',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
-  };
-
-  const planCardStyle = (popular = false) => ({
-    background: popular 
-      ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 105, 180, 0.15) 100%)'
-      : 'rgba(255, 255, 255, 0.08)',
-    backdropFilter: 'blur(20px)',
-    borderRadius: '16px',
-    border: popular 
-      ? '2px solid rgba(255, 215, 0, 0.5)'
-      : '1px solid rgba(255, 255, 255, 0.1)',
-    padding: '2rem',
-    position: 'relative',
-    boxShadow: popular 
-      ? '0 8px 32px rgba(255, 215, 0, 0.3)'
-      : '0 8px 32px rgba(0, 0, 0, 0.3)',
-    transform: popular ? 'scale(1.05)' : 'scale(1)',
-    transition: 'all 0.3s ease'
-  });
-
-  const buttonStyle = {
-    background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
-    border: 'none',
-    borderRadius: '8px',
-    padding: '0.75rem 2rem',
-    color: 'white',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    width: '100%',
-    fontSize: '1.1rem'
-  };
-
-  const premiumButtonStyle = {
-    background: 'linear-gradient(45deg, #FFD700, #FF69B4)',
-    border: 'none',
-    borderRadius: '8px',
-    padding: '0.75rem 2rem',
-    color: 'white',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    width: '100%',
-    fontSize: '1.1rem',
-    boxShadow: '0 4px 15px rgba(255, 215, 0, 0.4)'
-  };
-
   if (loading) {
     return (
-      <div style={containerStyle}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-          <div style={{ fontSize: '1.5rem', color: '#00BFFF' }}>⏳ Carregando planos...</div>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            border: '3px solid transparent',
+            borderTop: '3px solid #fbbf24',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }}></div>
+          <p style={{ color: 'white' }}>Carregando planos...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <>
-      <Head>
-        <title>Planos - CoinBitClub</title>
-        <meta name="description" content="Escolha o melhor plano para seu trading" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
-
-      <div style={containerStyle}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '2.5rem', background: 'linear-gradient(45deg, #FFD700, #FF69B4)', 
-                        backgroundClip: 'text', WebkitBackgroundClip: 'text', color: 'transparent' }}>
-              💎 Planos
-            </h1>
-            <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8 }}>
-              Escolha o melhor plano para maximizar seus lucros
-            </p>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)'
+    }}>
+      {/* Header */}
+      <div style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(251, 191, 36, 0.3)'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 16px'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            height: '64px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Link href="/" style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#fbbf24',
+                textDecoration: 'none'
+              }}>
+                CoinBitClub
+              </Link>
+              <span style={{
+                marginLeft: '16px',
+                color: 'rgba(255, 255, 255, 0.7)'
+              }}>Planos</span>
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px'
+            }}>
+              <Link 
+                href="/user/dashboard"
+                style={{
+                  backgroundColor: '#fbbf24',
+                  color: 'black',
+                  padding: '4px 12px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  textDecoration: 'none'
+                }}
+              >
+                Dashboard
+              </Link>
+              <button 
+                onClick={() => {
+                  localStorage.removeItem('token');
+                  router.push('/auth/login');
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  cursor: 'pointer'
+                }}
+              >
+                Sair
+              </button>
+            </div>
           </div>
-          <button 
-            onClick={() => router.push('/user/dashboard')}
-            style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '8px',
-              padding: '0.75rem 1.5rem',
-              color: '#ffffff',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            ← Voltar ao Dashboard
-          </button>
         </div>
+      </div>
 
+      {/* Navigation */}
+      <div style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 16px'
+        }}>
+          <nav style={{
+            display: 'flex',
+            gap: '32px',
+            padding: '16px 0'
+          }}>
+            <Link href="/user/dashboard" style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
+              Dashboard
+            </Link>
+            <Link href="/user/operations" style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
+              Operações
+            </Link>
+            <Link href="/user/plans" style={{
+              color: '#fbbf24',
+              borderBottom: '2px solid #fbbf24',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
+              Planos
+            </Link>
+            <Link href="/user/settings" style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
+              Configurações
+            </Link>
+          </nav>
+        </div>
+      </div>
+
+      <div style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: '32px 16px'
+      }}>
         {/* Plano Atual */}
         {currentPlan && (
-          <div style={cardStyle}>
-            <h3 style={{ margin: '0 0 1rem 0', color: '#00BFFF' }}>📋 Seu Plano Atual</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+          <div style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '12px',
+            padding: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            marginBottom: '32px'
+          }}>
+            <h2 style={{
+              fontSize: '20px',
+              fontWeight: 'bold',
+              color: 'white',
+              marginBottom: '16px'
+            }}>Seu Plano Atual</h2>
+            
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '16px'
+            }}>
               <div>
-                <h4 style={{ margin: '0 0 0.5rem 0', color: '#FFD700' }}>{currentPlan.name}</h4>
-                <p style={{ margin: '0 0 1rem 0', opacity: 0.8 }}>
-                  Status: <strong style={{ color: '#4CAF50' }}>✅ Ativo</strong>
+                <h3 style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: '#fbbf24',
+                  margin: '0 0 8px 0'
+                }}>{currentPlan.name}</h3>
+                <p style={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  margin: '0 0 4px 0'
+                }}>
+                  Investimento máximo: {formatCurrency(currentPlan.maxInvestment)}
                 </p>
                 {currentPlan.validUntil && (
-                  <p style={{ margin: '0 0 1rem 0', opacity: 0.8 }}>
-                    Válido até: <strong>{formatDate(currentPlan.validUntil)}</strong>
+                  <p style={{
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    fontSize: '14px',
+                    margin: 0
+                  }}>
+                    Válido até: {new Date(currentPlan.validUntil).toLocaleDateString('pt-BR')}
                   </p>
                 )}
-                <p style={{ margin: '0', opacity: 0.8 }}>
-                  Investimento máximo: <strong style={{ color: '#FFD700' }}>
-                    {formatCurrency(currentPlan.maxInvestment)}
-                  </strong>
-                </p>
               </div>
-              <div>
-                <h5 style={{ margin: '0 0 0.5rem 0', color: '#00BFFF' }}>Recursos inclusos:</h5>
-                <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
-                  {currentPlan.features.map((feature, index) => (
-                    <li key={index} style={{ marginBottom: '0.25rem', opacity: 0.9 }}>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+              
+              <div style={{
+                padding: '8px 16px',
+                backgroundColor: currentPlan.status === 'active' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                color: currentPlan.status === 'active' ? '#10b981' : '#ef4444',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '500'
+              }}>
+                {currentPlan.status === 'active' ? 'Ativo' : 'Inativo'}
               </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              gap: '8px',
+              marginTop: '16px'
+            }}>
+              {currentPlan.features.map((feature, index) => (
+                <div key={index} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '14px'
+                }}>
+                  <div style={{
+                    width: '6px',
+                    height: '6px',
+                    backgroundColor: '#10b981',
+                    borderRadius: '50%',
+                    marginRight: '8px'
+                  }}></div>
+                  {feature}
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* Destaque do Premium */}
+        {/* Título dos Planos Disponíveis */}
         <div style={{
-          background: 'linear-gradient(45deg, rgba(255, 215, 0, 0.1), rgba(255, 105, 180, 0.1))',
-          border: '1px solid rgba(255, 215, 0, 0.3)',
-          borderRadius: '16px',
-          padding: '2rem',
-          marginBottom: '2rem',
-          textAlign: 'center'
+          textAlign: 'center',
+          marginBottom: '32px'
         }}>
-          <h2 style={{ margin: '0 0 1rem 0', fontSize: '2rem', color: '#FFD700' }}>
-            🌟 Upgrade Agora e Potencialize Seus Lucros!
-          </h2>
-          <p style={{ margin: '0 0 1rem 0', fontSize: '1.2rem', opacity: 0.9 }}>
-            Acesse estratégias avançadas de IA e multiplique seus resultados
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', color: '#4CAF50' }}>📈 +280%</div>
-              <div>Performance média</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', color: '#2196F3' }}>🤖 10+</div>
-              <div>Estratégias IA</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', color: '#FF9800' }}>⚡ 24/7</div>
-              <div>Suporte VIP</div>
-            </div>
-          </div>
+          <h1 style={{
+            fontSize: 'clamp(32px, 5vw, 48px)',
+            fontWeight: 'bold',
+            color: 'white',
+            margin: '0 0 16px 0'
+          }}>Upgrade Seu Plano</h1>
+          <p style={{
+            fontSize: '18px',
+            color: 'rgba(255, 255, 255, 0.7)',
+            margin: 0
+          }}>Escolha o plano ideal para maximizar seus lucros</p>
         </div>
 
-        {/* Lista de Planos */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
-          {plans.map(plan => (
-            <div key={plan.id} style={planCardStyle(plan.popular)}>
+        {/* Grid de Planos */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+          gap: '32px',
+          marginBottom: '64px'
+        }}>
+          {plans.map((plan) => (
+            <div key={plan.id} style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              backdropFilter: 'blur(12px)',
+              borderRadius: '16px',
+              padding: '32px',
+              border: plan.popular ? '2px solid #fbbf24' : '1px solid rgba(255, 255, 255, 0.1)',
+              position: 'relative',
+              transition: 'transform 0.3s ease'
+            }}>
               {plan.popular && (
                 <div style={{
                   position: 'absolute',
-                  top: '-10px',
-                  right: '20px',
-                  background: 'linear-gradient(45deg, #FFD700, #FF69B4)',
-                  color: 'white',
-                  padding: '0.5rem 1rem',
+                  top: '-12px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  backgroundColor: '#fbbf24',
+                  color: 'black',
+                  padding: '4px 16px',
                   borderRadius: '20px',
-                  fontSize: '0.875rem',
-                  fontWeight: 'bold',
-                  boxShadow: '0 4px 15px rgba(255, 215, 0, 0.4)'
+                  fontSize: '12px',
+                  fontWeight: 'bold'
                 }}>
-                  🔥 MAIS POPULAR
+                  MAIS POPULAR
                 </div>
               )}
 
-              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                <h3 style={{ margin: '0 0 0.5rem 0', color: plan.popular ? '#FFD700' : '#00BFFF', fontSize: '1.5rem' }}>
-                  {plan.name}
-                </h3>
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <h3 style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  margin: '0 0 8px 0'
+                }}>{plan.name}</h3>
                 
-                <div style={{ marginBottom: '1rem' }}>
-                  <div style={{ 
-                    fontSize: '3rem', 
-                    fontWeight: 'bold', 
-                    color: plan.popular ? '#FFD700' : '#4ECDC4' 
-                  }}>
-                    {formatCurrency(plan.price)}
-                  </div>
-                  <div style={{ opacity: 0.8 }}>por mês</div>
-                  {plan.savings > 0 && (
-                    <div style={{ 
-                      marginTop: '0.5rem',
-                      color: '#4CAF50',
-                      fontSize: '0.9rem',
-                      textDecoration: 'line-through',
-                      opacity: 0.7
-                    }}>
-                      Antes: {formatCurrency(plan.priceMonthly)}
-                    </div>
-                  )}
-                  {plan.savings > 0 && (
-                    <div style={{ 
-                      background: 'rgba(76, 175, 80, 0.2)',
-                      color: '#4CAF50',
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '20px',
-                      fontSize: '0.875rem',
-                      fontWeight: 'bold',
-                      display: 'inline-block',
-                      marginTop: '0.5rem'
-                    }}>
-                      💰 Economize ${plan.savings}/mês
-                    </div>
-                  )}
+                <div style={{ marginBottom: '16px' }}>
+                  <span style={{
+                    fontSize: '48px',
+                    fontWeight: 'bold',
+                    color: '#fbbf24'
+                  }}>${plan.price}</span>
+                  <span style={{
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '16px'
+                  }}>/mês</span>
                 </div>
 
-                <div style={{ 
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  padding: '1rem',
-                  borderRadius: '8px',
-                  marginBottom: '1.5rem'
-                }}>
-                  <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#FFD700' }}>
-                    💰 Investimento até {formatCurrency(plan.maxInvestment)}
+                {plan.savings > 0 && (
+                  <div style={{
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    color: '#10b981',
+                    padding: '4px 12px',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    display: 'inline-block'
+                  }}>
+                    Economize ${plan.savings}/mês
                   </div>
-                </div>
+                )}
               </div>
 
-              <div style={{ marginBottom: '2rem' }}>
-                <h5 style={{ margin: '0 0 1rem 0', color: '#00BFFF' }}>✨ Recursos inclusos:</h5>
-                <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
-                  {plan.features.map((feature, index) => (
-                    <li key={index} style={{ marginBottom: '0.5rem', opacity: 0.9 }}>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+              <div style={{
+                textAlign: 'center',
+                marginBottom: '24px',
+                padding: '16px',
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '8px'
+              }}>
+                <p style={{
+                  color: 'white',
+                  fontSize: '18px',
+                  fontWeight: '500',
+                  margin: 0
+                }}>
+                  Investimento até {formatCurrency(plan.maxInvestment)}
+                </p>
+              </div>
+
+              <div style={{ marginBottom: '32px' }}>
+                {plan.features.map((feature, index) => (
+                  <div key={index} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginBottom: '12px',
+                    color: 'rgba(255, 255, 255, 0.8)'
+                  }}>
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      backgroundColor: '#10b981',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: '12px',
+                      fontSize: '12px',
+                      color: 'white'
+                    }}>✓</div>
+                    {feature}
+                  </div>
+                ))}
               </div>
 
               <button
                 onClick={() => handleUpgrade(plan.id)}
-                disabled={upgrading || (currentPlan && currentPlan.type === plan.type)}
-                style={plan.popular ? premiumButtonStyle : buttonStyle}
+                disabled={upgrading}
+                style={{
+                  width: '100%',
+                  backgroundColor: plan.popular ? '#fbbf24' : '#10b981',
+                  color: plan.popular ? 'black' : 'white',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  border: 'none',
+                  cursor: upgrading ? 'not-allowed' : 'pointer',
+                  opacity: upgrading ? 0.7 : 1,
+                  transition: 'all 0.3s ease'
+                }}
               >
-                {upgrading ? '⏳ Processando...' :
-                 currentPlan && currentPlan.type === plan.type ? '✅ Plano Atual' :
-                 `🚀 Escolher ${plan.name}`}
+                {upgrading ? 'Processando...' : `Assinar ${plan.name}`}
               </button>
             </div>
           ))}
         </div>
 
-        {/* FAQ */}
-        <div style={cardStyle}>
-          <h3 style={{ margin: '0 0 2rem 0', color: '#00BFFF', textAlign: 'center' }}>❓ Perguntas Frequentes</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
-            <div>
-              <h4 style={{ margin: '0 0 0.5rem 0', color: '#FFD700' }}>🔒 Os pagamentos são seguros?</h4>
-              <p style={{ margin: 0, opacity: 0.8 }}>
-                Sim! Utilizamos criptografia de nível bancário e processadores de pagamento certificados.
-              </p>
-            </div>
-            <div>
-              <h4 style={{ margin: '0 0 0.5rem 0', color: '#FFD700' }}>🔄 Posso cancelar a qualquer momento?</h4>
-              <p style={{ margin: 0, opacity: 0.8 }}>
-                Sim, você pode cancelar seu plano a qualquer momento sem taxas adicionais.
-              </p>
-            </div>
-            <div>
-              <h4 style={{ margin: '0 0 0.5rem 0', color: '#FFD700' }}>📞 Como funciona o suporte?</h4>
-              <p style={{ margin: 0, opacity: 0.8 }}>
-                Oferecemos suporte por email, chat e WhatsApp de acordo com seu plano.
-              </p>
-            </div>
-            <div>
-              <h4 style={{ margin: '0 0 0.5rem 0', color: '#FFD700' }}>💡 Posso fazer upgrade depois?</h4>
-              <p style={{ margin: 0, opacity: 0.8 }}>
-                Claro! Você pode fazer upgrade para um plano superior a qualquer momento.
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Garantia */}
         <div style={{
-          background: 'linear-gradient(45deg, rgba(76, 175, 80, 0.1), rgba(46, 125, 50, 0.1))',
-          border: '1px solid rgba(76, 175, 80, 0.3)',
+          textAlign: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(12px)',
           borderRadius: '16px',
-          padding: '2rem',
-          textAlign: 'center'
+          padding: '32px',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
         }}>
-          <h3 style={{ margin: '0 0 1rem 0', color: '#4CAF50' }}>🛡️ Garantia de 7 dias</h3>
-          <p style={{ margin: 0, fontSize: '1.1rem', opacity: 0.9 }}>
-            Não está satisfeito? Oferecemos reembolso total em até 7 dias, sem perguntas.
+          <div style={{
+            fontSize: '48px',
+            marginBottom: '16px'
+          }}>🛡️</div>
+          <h3 style={{
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: 'white',
+            marginBottom: '16px'
+          }}>Garantia de 30 Dias</h3>
+          <p style={{
+            color: 'rgba(255, 255, 255, 0.7)',
+            fontSize: '16px',
+            maxWidth: '600px',
+            margin: '0 auto'
+          }}>
+            Teste nosso serviço por 30 dias. Se não estiver satisfeito com os resultados, 
+            devolvemos 100% do seu dinheiro, sem perguntas.
           </p>
         </div>
       </div>
-    </>
+
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
   );
-}
+};
+
+export default UserPlans;

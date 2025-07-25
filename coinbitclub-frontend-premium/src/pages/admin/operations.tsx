@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import { 
@@ -266,7 +267,7 @@ export default function OperationsManagement() {
                       type="text"
                       placeholder="Buscar por símbolo ou usuário..."
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e) = /> setSearchTerm(e.target.value)}
                       className="pl-10 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>

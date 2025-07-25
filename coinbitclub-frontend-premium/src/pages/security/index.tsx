@@ -1,3 +1,4 @@
+import React from 'react';
 import Head from 'next/head';
 import { FiShield, FiDatabase, FiLock, FiServer, FiKey, FiEye } from 'react-icons/fi';
 

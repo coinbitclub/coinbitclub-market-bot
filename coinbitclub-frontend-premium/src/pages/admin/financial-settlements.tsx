@@ -1,3 +1,4 @@
+import React from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { FiDollarSign } from 'react-icons/fi';
 

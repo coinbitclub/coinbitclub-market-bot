@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -135,7 +136,7 @@ const AffiliateRegisterPage = () => {
                   onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
                   placeholder="Seu nome completo"
-                />
+                / />
               </div>
 
               <div>
@@ -151,7 +152,7 @@ const AffiliateRegisterPage = () => {
                   onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
                   placeholder="seu@email.com"
-                />
+                / />
               </div>
 
               <div>
@@ -167,7 +168,7 @@ const AffiliateRegisterPage = () => {
                   onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
                   placeholder="(11) 99999-9999"
-                />
+                / />
               </div>
 
               <div>
@@ -183,7 +184,7 @@ const AffiliateRegisterPage = () => {
                   onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
                   placeholder="Mínimo 8 caracteres"
-                />
+                / />
               </div>
 
               <div>
@@ -199,7 +200,7 @@ const AffiliateRegisterPage = () => {
                   onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
                   placeholder="Confirme sua senha"
-                />
+                / />
               </div>
 
               <div className="flex items-center">
@@ -210,7 +211,7 @@ const AffiliateRegisterPage = () => {
                   checked={formData.acceptedTerms}
                   onChange={handleChange}
                   className="h-4 w-4 text-yellow-400 focus:ring-yellow-400 border-gray-600 bg-gray-700 rounded"
-                />
+                / />
                 <label htmlFor="acceptedTerms" className="ml-2 block text-sm text-gray-300">
                   Aceito os{' '}
                   <Link href="/privacy" className="text-yellow-400 hover:text-yellow-300">

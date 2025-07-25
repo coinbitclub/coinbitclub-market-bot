@@ -1,21 +1,8 @@
+import React from 'react';
 import { NextPage } from 'next';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import {
-  ChartBarIcon,
-  CurrencyDollarIcon,
-  ExclamationTriangleIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  CreditCardIcon,
-  BanknotesIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon
-} from '@heroicons/react/24/outline';
 
 interface UserData {
   id: string;
@@ -184,10 +171,24 @@ const UserDashboard: NextPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto mb-4"></div>
-          <p className="text-white">Carregando dashboard...</p>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            border: '3px solid transparent',
+            borderTop: '3px solid #fbbf24',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }}></div>
+          <p style={{ color: 'white' }}>Carregando dashboard...</p>
         </div>
       </div>
     );
@@ -195,13 +196,38 @@ const UserDashboard: NextPage = () => {
 
   if (error || !dashboardData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center">
-        <div className="text-center">
-          <XCircleIcon className="h-12 w-12 text-red-400 mx-auto mb-4" />
-          <p className="text-white mb-4">{error || 'Erro ao carregar dados'}</p>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            backgroundColor: '#ef4444',
+            borderRadius: '50%',
+            margin: '0 auto 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: '24px'
+          }}>×</div>
+          <p style={{ color: 'white', marginBottom: '16px' }}>{error || 'Erro ao carregar dados'}</p>
           <button 
             onClick={fetchDashboardData}
-            className="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded-lg font-medium"
+            style={{
+              backgroundColor: '#fbbf24',
+              color: 'black',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              fontWeight: '500',
+              cursor: 'pointer'
+            }}
           >
             Tentar Novamente
           </button>
@@ -213,22 +239,58 @@ const UserDashboard: NextPage = () => {
   const { user, balances, recentOperations, statistics, alerts } = dashboardData;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)'
+    }}>
       {/* Header */}
-      <div className="bg-black/20 backdrop-blur-md border-b border-yellow-400/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link href="/" className="text-2xl font-bold text-yellow-400">
+      <div style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(251, 191, 36, 0.3)'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 16px'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            height: '64px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Link href="/" style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#fbbf24',
+                textDecoration: 'none'
+              }}>
                 CoinBitClub
               </Link>
-              <span className="ml-4 text-white/70">Dashboard do Usuário</span>
+              <span style={{
+                marginLeft: '16px',
+                color: 'rgba(255, 255, 255, 0.7)'
+              }}>Dashboard do Usuário</span>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-white">Olá, {user.name}</span>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px'
+            }}>
+              <span style={{ color: 'white' }}>Olá, {user.name}</span>
               <Link 
                 href="/user/settings"
-                className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded-lg text-sm font-medium"
+                style={{
+                  backgroundColor: '#fbbf24',
+                  color: 'black',
+                  padding: '4px 12px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  textDecoration: 'none'
+                }}
               >
                 Configurações
               </Link>
@@ -237,7 +299,12 @@ const UserDashboard: NextPage = () => {
                   localStorage.removeItem('token');
                   router.push('/auth/login');
                 }}
-                className="text-white/70 hover:text-white"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  cursor: 'pointer'
+                }}
               >
                 Sair
               </button>
@@ -247,52 +314,130 @@ const UserDashboard: NextPage = () => {
       </div>
 
       {/* Navigation */}
-      <div className="bg-black/10 backdrop-blur-sm border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8 py-4">
-            <Link href="/user/dashboard" className="text-yellow-400 border-b-2 border-yellow-400 pb-2">
+      <div style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+      }}>
+        <div style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 16px'
+        }}>
+          <nav style={{
+            display: 'flex',
+            gap: '32px',
+            padding: '16px 0'
+          }}>
+            <Link href="/user/dashboard" style={{
+              color: '#fbbf24',
+              borderBottom: '2px solid #fbbf24',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
               Dashboard
             </Link>
-            <Link href="/user/operations" className="text-white/70 hover:text-white pb-2">
+            <Link href="/user/operations" style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
               Operações
             </Link>
-            <Link href="/user/plans" className="text-white/70 hover:text-white pb-2">
+            <Link href="/user/plans" style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
               Planos
             </Link>
-            <Link href="/user/settings" className="text-white/70 hover:text-white pb-2">
+            <Link href="/user/settings" style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              paddingBottom: '8px',
+              textDecoration: 'none'
+            }}>
               Configurações
             </Link>
             {user.role === 'affiliate' && (
-              <>
-                <Link href="/affiliate/dashboard" className="text-white/70 hover:text-white pb-2">
+              <div style={{ display: 'flex', gap: '32px' }}>
+                <Link href="/affiliate/dashboard" style={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  paddingBottom: '8px',
+                  textDecoration: 'none'
+                }}>
                   Gestão de Indicados
                 </Link>
-                <Link href="/affiliate/commissions" className="text-white/70 hover:text-white pb-2">
+                <Link href="/affiliate/commissions" style={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  paddingBottom: '8px',
+                  textDecoration: 'none'
+                }}>
                   Comissões
                 </Link>
-              </>
+              </div>
             )}
           </nav>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: '32px 16px'
+      }}>
         {/* Alertas */}
         {(alerts.needsUpgrade || alerts.lowBalance) && (
-          <div className="mb-8 space-y-4">
+          <div style={{ marginBottom: '32px' }}>
             {alerts.needsUpgrade && (
-              <div className="bg-yellow-500/20 border border-yellow-400 rounded-lg p-4">
-                <div className="flex items-center">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mr-3" />
-                  <div>
-                    <h3 className="text-yellow-400 font-medium">Migração para Conta Paga</h3>
-                    <p className="text-white/70 text-sm">
+              <div style={{
+                backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                border: '1px solid #fbbf24',
+                borderRadius: '8px',
+                padding: '16px',
+                marginBottom: '16px'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: '#fbbf24',
+                    borderRadius: '50%',
+                    marginRight: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'black',
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                  }}>!</div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{
+                      color: '#fbbf24',
+                      fontWeight: '500',
+                      margin: '0 0 4px 0'
+                    }}>Migração para Conta Paga</h3>
+                    <p style={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: '14px',
+                      margin: 0
+                    }}>
                       Você está usando uma conta testnet. Migre para uma conta paga para operar com dinheiro real.
                     </p>
                   </div>
                   <Link 
                     href="/user/plans"
-                    className="ml-auto bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded-lg font-medium text-sm"
+                    style={{
+                      backgroundColor: '#fbbf24',
+                      color: 'black',
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      fontWeight: '500',
+                      fontSize: '14px',
+                      textDecoration: 'none'
+                    }}
                   >
                     Ver Planos
                   </Link>
@@ -301,17 +446,54 @@ const UserDashboard: NextPage = () => {
             )}
             
             {alerts.lowBalance && (
-              <div className="bg-red-500/20 border border-red-400 rounded-lg p-4">
-                <div className="flex items-center">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mr-3" />
-                  <div>
-                    <h3 className="text-red-400 font-medium">Saldo Baixo</h3>
-                    <p className="text-white/70 text-sm">
+              <div style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                border: '1px solid #ef4444',
+                borderRadius: '8px',
+                padding: '16px'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: '#ef4444',
+                    borderRadius: '50%',
+                    marginRight: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                  }}>!</div>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{
+                      color: '#ef4444',
+                      fontWeight: '500',
+                      margin: '0 0 4px 0'
+                    }}>Saldo Baixo</h3>
+                    <p style={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: '14px',
+                      margin: 0
+                    }}>
                       Seu saldo está abaixo do mínimo de {formatCurrency(alerts.minBalance)}. 
                       O robô só abre novas operações com saldo suficiente.
                     </p>
                   </div>
-                  <button className="ml-auto bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium text-sm">
+                  <button style={{
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontWeight: '500',
+                    fontSize: '14px',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}>
                     Adicionar Saldo
                   </button>
                 </div>
@@ -321,84 +503,255 @@ const UserDashboard: NextPage = () => {
         )}
 
         {/* Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-black/40 backdrop-blur-md rounded-xl p-6 border border-white/10">
-            <div className="flex items-center justify-between">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gap: '24px',
+          marginBottom: '32px'
+        }}>
+          <div style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '12px',
+            padding: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
               <div>
-                <p className="text-white/70 text-sm">Total de Operações</p>
-                <p className="text-2xl font-bold text-white">{statistics.totalOperations}</p>
+                <p style={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '14px',
+                  margin: '0 0 8px 0'
+                }}>Total de Operações</p>
+                <p style={{
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  margin: 0
+                }}>{statistics.totalOperations}</p>
               </div>
-              <ChartBarIcon className="h-8 w-8 text-blue-400" />
+              <div style={{
+                width: '32px',
+                height: '32px',
+                backgroundColor: '#3b82f6',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white'
+              }}>📊</div>
             </div>
           </div>
 
-          <div className="bg-black/40 backdrop-blur-md rounded-xl p-6 border border-white/10">
-            <div className="flex items-center justify-between">
+          <div style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '12px',
+            padding: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
               <div>
-                <p className="text-white/70 text-sm">Taxa de Acerto</p>
-                <p className="text-2xl font-bold text-green-400">{statistics.successRate.toFixed(1)}%</p>
-                <p className="text-xs text-white/50">{statistics.winningTrades}/{statistics.completedTrades}</p>
+                <p style={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '14px',
+                  margin: '0 0 8px 0'
+                }}>Taxa de Acerto</p>
+                <p style={{
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  color: '#10b981',
+                  margin: '0 0 4px 0'
+                }}>{statistics.successRate.toFixed(1)}%</p>
+                <p style={{
+                  fontSize: '12px',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  margin: 0
+                }}>{statistics.winningTrades}/{statistics.completedTrades}</p>
               </div>
-              <ArrowTrendingUpIcon className="h-8 w-8 text-green-400" />
+              <div style={{
+                width: '32px',
+                height: '32px',
+                backgroundColor: '#10b981',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white'
+              }}>📈</div>
             </div>
           </div>
 
-          <div className="bg-black/40 backdrop-blur-md rounded-xl p-6 border border-white/10">
-            <div className="flex items-center justify-between">
+          <div style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '12px',
+            padding: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
               <div>
-                <p className="text-white/70 text-sm">Lucro Total</p>
-                <p className={`text-2xl font-bold ${statistics.totalProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <p style={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '14px',
+                  margin: '0 0 8px 0'
+                }}>Lucro Total</p>
+                <p style={{
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  color: statistics.totalProfit >= 0 ? '#10b981' : '#ef4444',
+                  margin: 0
+                }}>
                   {formatCurrency(statistics.totalProfit, user.country === 'Brasil' ? 'BRL' : 'USD')}
                 </p>
               </div>
-              {statistics.totalProfit >= 0 ? (
-                <ArrowTrendingUpIcon className="h-8 w-8 text-green-400" />
-              ) : (
-                <ArrowTrendingDownIcon className="h-8 w-8 text-red-400" />
-              )}
+              <div style={{
+                width: '32px',
+                height: '32px',
+                backgroundColor: statistics.totalProfit >= 0 ? '#10b981' : '#ef4444',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white'
+              }}>{statistics.totalProfit >= 0 ? '📈' : '📉'}</div>
             </div>
           </div>
 
-          <div className="bg-black/40 backdrop-blur-md rounded-xl p-6 border border-white/10">
-            <div className="flex items-center justify-between">
+          <div style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '12px',
+            padding: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
               <div>
-                <p className="text-white/70 text-sm">Lucro Médio</p>
-                <p className={`text-2xl font-bold ${statistics.avgProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <p style={{
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '14px',
+                  margin: '0 0 8px 0'
+                }}>Lucro Médio</p>
+                <p style={{
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  color: statistics.avgProfit >= 0 ? '#10b981' : '#ef4444',
+                  margin: 0
+                }}>
                   {formatCurrency(statistics.avgProfit, user.country === 'Brasil' ? 'BRL' : 'USD')}
                 </p>
               </div>
-              <CurrencyDollarIcon className="h-8 w-8 text-yellow-400" />
+              <div style={{
+                width: '32px',
+                height: '32px',
+                backgroundColor: '#fbbf24',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white'
+              }}>💰</div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+          gap: '32px'
+        }}>
           {/* Saldos nas Exchanges */}
-          <div className="bg-black/40 backdrop-blur-md rounded-xl p-6 border border-white/10">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Saldos nas Exchanges</h2>
-              <BanknotesIcon className="h-6 w-6 text-yellow-400" />
+          <div style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '12px',
+            padding: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '24px'
+            }}>
+              <h2 style={{
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: 'white',
+                margin: 0
+              }}>Saldos nas Exchanges</h2>
+              <div style={{
+                width: '24px',
+                height: '24px',
+                color: '#fbbf24'
+              }}>💰</div>
             </div>
             
-            <div className="space-y-4">
+            <div style={{ marginBottom: '24px' }}>
               {balances.map((balance, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                  <div className="flex items-center">
-                    <div className={`w-3 h-3 rounded-full mr-3 ${
-                      balance.exchange === 'binance' ? 'bg-yellow-400' : 'bg-orange-400'
-                    }`}></div>
+                <div key={index} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '16px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '8px',
+                  marginBottom: '16px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '50%',
+                      marginRight: '12px',
+                      backgroundColor: balance.exchange === 'binance' ? '#fbbf24' : '#f97316'
+                    }}></div>
                     <div>
-                      <p className="text-white font-medium capitalize">{balance.exchange}</p>
-                      <p className="text-white/50 text-sm capitalize">
+                      <p style={{
+                        color: 'white',
+                        fontWeight: '500',
+                        margin: '0 0 4px 0',
+                        textTransform: 'capitalize'
+                      }}>{balance.exchange}</p>
+                      <p style={{
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        fontSize: '14px',
+                        margin: 0,
+                        textTransform: 'capitalize'
+                      }}>
                         {balance.environment} • {balance.balance_type}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-white font-bold">
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{
+                      color: 'white',
+                      fontWeight: 'bold',
+                      margin: '0 0 4px 0'
+                    }}>
                       {formatCurrency(balance.balance, user.country === 'Brasil' ? 'BRL' : 'USD')}
                     </p>
-                    <p className="text-white/50 text-xs">
+                    <p style={{
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      fontSize: '12px',
+                      margin: 0
+                    }}>
                       {formatDateTime(balance.last_updated)}
                     </p>
                   </div>
@@ -406,10 +759,25 @@ const UserDashboard: NextPage = () => {
               ))}
             </div>
 
-            <div className="mt-6 pt-4 border-t border-white/10">
-              <div className="flex justify-between items-center">
-                <span className="text-white font-medium">Saldo Total:</span>
-                <span className="text-xl font-bold text-yellow-400">
+            <div style={{
+              marginBottom: '16px',
+              paddingTop: '16px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <span style={{
+                  color: 'white',
+                  fontWeight: '500'
+                }}>Saldo Total:</span>
+                <span style={{
+                  fontSize: '20px',
+                  fontWeight: 'bold',
+                  color: '#fbbf24'
+                }}>
                   {formatCurrency(
                     balances.reduce((sum, balance) => sum + balance.balance, 0),
                     user.country === 'Brasil' ? 'BRL' : 'USD'
@@ -418,78 +786,175 @@ const UserDashboard: NextPage = () => {
               </div>
             </div>
 
-            <button className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium">
+            <button style={{
+              width: '100%',
+              backgroundColor: '#10b981',
+              color: 'white',
+              padding: '12px',
+              borderRadius: '8px',
+              fontWeight: '500',
+              border: 'none',
+              cursor: 'pointer'
+            }}>
               + Adicionar Saldo Pré-pago
             </button>
           </div>
 
           {/* Operações Recentes */}
-          <div className="bg-black/40 backdrop-blur-md rounded-xl p-6 border border-white/10">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Operações Recentes</h2>
-              <Link href="/user/operations" className="text-yellow-400 hover:text-yellow-300 text-sm">
+          <div style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '12px',
+            padding: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '24px'
+            }}>
+              <h2 style={{
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: 'white',
+                margin: 0
+              }}>Operações Recentes</h2>
+              <Link href="/user/operations" style={{
+                color: '#fbbf24',
+                fontSize: '14px',
+                textDecoration: 'none'
+              }}>
                 Ver Todas
               </Link>
             </div>
 
-            <div className="space-y-4">
+            <div>
               {recentOperations.length > 0 ? (
                 recentOperations.map((operation) => (
-                  <div key={operation.id} className="p-4 bg-white/5 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center">
-                        <div className={`w-3 h-3 rounded-full mr-3 ${
-                          operation.side === 'LONG' ? 'bg-green-400' : 'bg-red-400'
-                        }`}></div>
-                        <span className="text-white font-medium">{operation.symbol}</span>
-                        <span className={`ml-2 px-2 py-1 rounded text-xs ${
-                          operation.side === 'LONG' 
-                            ? 'bg-green-500/20 text-green-400' 
-                            : 'bg-red-500/20 text-red-400'
-                        }`}>
+                  <div key={operation.id} style={{
+                    padding: '16px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderRadius: '8px',
+                    marginBottom: '16px'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '8px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <div style={{
+                          width: '12px',
+                          height: '12px',
+                          borderRadius: '50%',
+                          marginRight: '12px',
+                          backgroundColor: operation.side === 'LONG' ? '#10b981' : '#ef4444'
+                        }}></div>
+                        <span style={{
+                          color: 'white',
+                          fontWeight: '500'
+                        }}>{operation.symbol}</span>
+                        <span style={{
+                          marginLeft: '8px',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          backgroundColor: operation.side === 'LONG' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                          color: operation.side === 'LONG' ? '#10b981' : '#ef4444'
+                        }}>
                           {operation.side}
                         </span>
                       </div>
-                      <div className="flex items-center">
-                        {operation.status === 'completed' ? (
-                          <CheckCircleIcon className="h-4 w-4 text-green-400 mr-1" />
-                        ) : operation.status === 'active' ? (
-                          <ClockIcon className="h-4 w-4 text-yellow-400 mr-1" />
-                        ) : (
-                          <XCircleIcon className="h-4 w-4 text-red-400 mr-1" />
-                        )}
-                        <span className="text-white/70 text-sm capitalize">{operation.status}</span>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <div style={{
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '50%',
+                          marginRight: '4px',
+                          backgroundColor: operation.status === 'completed' ? '#10b981' : operation.status === 'active' ? '#fbbf24' : '#ef4444',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontSize: '10px'
+                        }}>{operation.status === 'completed' ? '✓' : operation.status === 'active' ? '⏱' : '✗'}</div>
+                        <span style={{
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          fontSize: '14px',
+                          textTransform: 'capitalize'
+                        }}>{operation.status}</span>
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(2, 1fr)',
+                      gap: '16px',
+                      fontSize: '14px'
+                    }}>
                       <div>
-                        <p className="text-white/50">Entrada:</p>
-                        <p className="text-white">${operation.entry_price.toLocaleString()}</p>
+                        <p style={{
+                          color: 'rgba(255, 255, 255, 0.5)',
+                          margin: '0 0 4px 0'
+                        }}>Entrada:</p>
+                        <p style={{
+                          color: 'white',
+                          margin: 0
+                        }}>${operation.entry_price.toLocaleString()}</p>
                       </div>
                       {operation.exit_price && (
                         <div>
-                          <p className="text-white/50">Saída:</p>
-                          <p className="text-white">${operation.exit_price.toLocaleString()}</p>
+                          <p style={{
+                            color: 'rgba(255, 255, 255, 0.5)',
+                            margin: '0 0 4px 0'
+                          }}>Saída:</p>
+                          <p style={{
+                            color: 'white',
+                            margin: 0
+                          }}>${operation.exit_price.toLocaleString()}</p>
                         </div>
                       )}
                       <div>
-                        <p className="text-white/50">Lucro:</p>
-                        <p className={`font-medium ${operation.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        <p style={{
+                          color: 'rgba(255, 255, 255, 0.5)',
+                          margin: '0 0 4px 0'
+                        }}>Lucro:</p>
+                        <p style={{
+                          fontWeight: '500',
+                          color: operation.profit >= 0 ? '#10b981' : '#ef4444',
+                          margin: 0
+                        }}>
                           {formatCurrency(operation.profit, user.country === 'Brasil' ? 'BRL' : 'USD')}
                         </p>
                       </div>
                       <div>
-                        <p className="text-white/50">Exchange:</p>
-                        <p className="text-white capitalize">{operation.exchange}</p>
+                        <p style={{
+                          color: 'rgba(255, 255, 255, 0.5)',
+                          margin: '0 0 4px 0'
+                        }}>Exchange:</p>
+                        <p style={{
+                          color: 'white',
+                          margin: 0,
+                          textTransform: 'capitalize'
+                        }}>{operation.exchange}</p>
                       </div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8">
-                  <ChartBarIcon className="h-12 w-12 text-white/30 mx-auto mb-4" />
-                  <p className="text-white/50">Nenhuma operação encontrada</p>
+                <div style={{
+                  textAlign: 'center',
+                  padding: '32px 0'
+                }}>
+                  <div style={{
+                    fontSize: '48px',
+                    marginBottom: '16px'
+                  }}>📊</div>
+                  <p style={{
+                    color: 'rgba(255, 255, 255, 0.5)'
+                  }}>Nenhuma operação encontrada</p>
                 </div>
               )}
             </div>
@@ -497,44 +962,130 @@ const UserDashboard: NextPage = () => {
         </div>
 
         {/* Relatório IA e Sinais */}
-        <div className="mt-8 bg-black/40 backdrop-blur-md rounded-xl p-6 border border-white/10">
-          <h2 className="text-xl font-bold text-white mb-6">Relatório IA - Últimas 4 Horas</h2>
+        <div style={{
+          marginTop: '32px',
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(12px)',
+          borderRadius: '12px',
+          padding: '24px',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
+        }}>
+          <h2 style={{
+            fontSize: '20px',
+            fontWeight: 'bold',
+            color: 'white',
+            marginBottom: '24px'
+          }}>Relatório IA - Últimas 4 Horas</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="bg-blue-500/20 rounded-lg p-4">
-                <h3 className="text-blue-400 font-medium mb-2">Sinais Identificados</h3>
-                <p className="text-2xl font-bold text-white">12</p>
-                <p className="text-white/50 text-sm">Últimas 4h</p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '24px',
+            marginBottom: '24px'
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderRadius: '8px',
+                padding: '16px'
+              }}>
+                <h3 style={{
+                  color: '#3b82f6',
+                  fontWeight: '500',
+                  marginBottom: '8px'
+                }}>Sinais Identificados</h3>
+                <p style={{
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  margin: '0 0 4px 0'
+                }}>12</p>
+                <p style={{
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  fontSize: '14px',
+                  margin: 0
+                }}>Últimas 4h</p>
               </div>
             </div>
             
-            <div className="text-center">
-              <div className="bg-green-500/20 rounded-lg p-4">
-                <h3 className="text-green-400 font-medium mb-2">Confiança Média</h3>
-                <p className="text-2xl font-bold text-white">87.5%</p>
-                <p className="text-white/50 text-sm">Análise IA</p>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                borderRadius: '8px',
+                padding: '16px'
+              }}>
+                <h3 style={{
+                  color: '#10b981',
+                  fontWeight: '500',
+                  marginBottom: '8px'
+                }}>Confiança Média</h3>
+                <p style={{
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  margin: '0 0 4px 0'
+                }}>87.5%</p>
+                <p style={{
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  fontSize: '14px',
+                  margin: 0
+                }}>Análise IA</p>
               </div>
             </div>
             
-            <div className="text-center">
-              <div className="bg-purple-500/20 rounded-lg p-4">
-                <h3 className="text-purple-400 font-medium mb-2">Próximo Sinal</h3>
-                <p className="text-2xl font-bold text-white">~15min</p>
-                <p className="text-white/50 text-sm">Estimativa</p>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                borderRadius: '8px',
+                padding: '16px'
+              }}>
+                <h3 style={{
+                  color: '#8b5cf6',
+                  fontWeight: '500',
+                  marginBottom: '8px'
+                }}>Próximo Sinal</h3>
+                <p style={{
+                  fontSize: '32px',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  margin: '0 0 4px 0'
+                }}>~15min</p>
+                <p style={{
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  fontSize: '14px',
+                  margin: 0
+                }}>Estimativa</p>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 p-4 bg-white/5 rounded-lg">
-            <h4 className="text-white font-medium mb-2">Recomendação Atual:</h4>
-            <p className="text-white/70">
+          <div style={{
+            padding: '16px',
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            borderRadius: '8px'
+          }}>
+            <h4 style={{
+              color: 'white',
+              fontWeight: '500',
+              marginBottom: '8px'
+            }}>Recomendação Atual:</h4>
+            <p style={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              margin: 0
+            }}>
               🤖 <strong>BTCUSDT LONG</strong> - Confiança: 92% | RSI oversold detectado, MACD em crossover bullish. 
               Entrada recomendada: $43,200 | Stop Loss: $42,500 | Take Profit: $44,800
             </p>
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

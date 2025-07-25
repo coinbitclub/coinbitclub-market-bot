@@ -1,3 +1,4 @@
+import React from 'react';
 
 import { InputHTMLAttributes, forwardRef } from 'react';
 import clsx from 'clsx';
@@ -23,7 +24,7 @@ const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
         aria-disabled={disabled}
         disabled={disabled}
         {...props}
-      />
+      / />
       {error && errorMessage && (
         <span className="mt-1 block text-xs text-red-500">{errorMessage}</span>
       )}

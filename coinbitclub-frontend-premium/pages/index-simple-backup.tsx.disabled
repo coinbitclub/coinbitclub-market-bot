@@ -1,0 +1,80 @@
+import React from 'react';
+import Head from 'next/head';
+
+export default function Home() {
+  return (
+    <div>
+      <Head>
+        <title>CoinBitClub - Trading Bot Premium</title>
+        <meta name="description" content="Bot avançado de trading de criptomoedas com IA" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+
+      <main className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white">
+        <div className="container mx-auto px-4 py-16">
+          {/* Header */}
+          <header className="text-center mb-16">
+            <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+              CoinBitClub
+            </h1>
+            <p className="text-2xl text-gray-300 mb-8">
+              Bot Premium de Trading com Inteligência Artificial
+            </p>
+            <div className="bg-yellow-500 text-black px-8 py-4 rounded-lg text-lg font-bold inline-block">
+              🚀 Em Desenvolvimento
+            </div>
+          </header>
+
+          {/* Features */}
+          <section className="grid md:grid-cols-3 gap-8 mb-16">
+            <div className="bg-gray-800 p-8 rounded-xl">
+              <div className="text-4xl mb-4">🤖</div>
+              <h3 className="text-xl font-bold mb-4 text-yellow-400">
+                IA Avançada
+              </h3>
+              <p className="text-gray-400">
+                Algoritmos de machine learning para análise de mercado em tempo real
+              </p>
+            </div>
+
+            <div className="bg-gray-800 p-8 rounded-xl">
+              <div className="text-4xl mb-4">📊</div>
+              <h3 className="text-xl font-bold mb-4 text-yellow-400">
+                Trading Automático
+              </h3>
+              <p className="text-gray-400">
+                Execução automática de operações baseada em sinais precisos
+              </p>
+            </div>
+
+            <div className="bg-gray-800 p-8 rounded-xl">
+              <div className="text-4xl mb-4">💎</div>
+              <h3 className="text-xl font-bold mb-4 text-yellow-400">
+                Resultados Comprovados
+              </h3>
+              <p className="text-gray-400">
+                Performance superior com gestão avançada de risco
+              </p>
+            </div>
+          </section>
+
+          {/* CTA */}
+          <section className="text-center">
+            <h2 className="text-3xl font-bold mb-8">
+              Pronto para revolucionar seus investimentos?
+            </h2>
+            <div className="space-y-4">
+              <p className="text-xl text-gray-300">
+                Plataforma em desenvolvimento - Em breve disponível
+              </p>
+              <div className="text-gray-500">
+                Powered by Next.js & TradingView
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  );
+}

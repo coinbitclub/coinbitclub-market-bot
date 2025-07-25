@@ -1,0 +1,464 @@
+import React from 'react';
+import { NextPage } from 'next';
+import Head from 'next/head';
+import { useState, useEffect } from 'react';
+import {
+  BanknotesIcon,
+  ChartBarIcon,
+  UserGroupIcon,
+  ArrowDownIcon,
+  ArrowUpIcon,
+  CalendarIcon,
+  DocumentTextIcon,
+  CurrencyDollarIcon
+} from '@heroicons/react/24/outline';
+import Button from '../../src/components/Button';
+import Card from '../../src/components/Card';
+import Chart from '../../src/components/Chart';
+
+// Types
+interface FinancialSummary {
+  totalRevenue: number;
+  periodRevenue: number;
+  userBalances: number;
+  pendingCommissions: number;
+  businessBalance: number;
+}
+
+interface Subscription {
+  userName: string;
+  plan: string;
+  value: number;
+  date: string;
+  status: string;
+}
+
+interface Affiliate {
+  affiliateName: string;
+  referredName: string;
+  commission: number;
+  status: string;
+  date: string;
+}
+
+interface WithdrawalRequest {
+  userName: string;
+  value: number;
+  date: string;
+  status: string;
+}
+
+interface AIReport {
+  id: string;
+  type: string;
+  title: string;
+  content: any;
+  createdAt: string;
+}
+
+const FinancialDashboard: NextPage = () => {
+  const [summary, setSummary] = useState<FinancialSummary | null>(null);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
+  const [aiReports, setAiReports] = useState<AIReport[]>([]);
+  const [period, setPeriod] = useState('7d');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFinancialData();
+    fetchAIReports();
+    
+    // Update AI reports every 4 hours
+    const interval = setInterval(fetchAIReports, 4 * 60 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [period]);
+
+  const fetchFinancialData = async () => {
+    try {
+      // Mock data - será substituído pela API real
+      setSummary({
+        totalRevenue: 50000.00,
+        periodRevenue: 12500.00,
+        userBalances: 8700.00,
+        pendingCommissions: 1200.00,
+        businessBalance: 5300.00
+      });
+
+      setSubscriptions([
+        {
+          userName: 'João Santos',
+          plan: 'Plano Básico',
+          value: 100.00,
+          date: '2024-04-22',
+          status: 'Pago'
+        },
+        {
+          userName: 'Maria Souza',
+          plan: 'Plano Pro',
+          value: 200.00,
+          date: '2024-04-20',
+          status: 'Pago'
+        }
+      ]);
+
+      setAffiliates([
+        {
+          affiliateName: 'Carlos Silva',
+          referredName: 'Ana Costa',
+          commission: 25.00,
+          status: 'Pendente',
+          date: '2024-04-22'
+        }
+      ]);
+
+      setWithdrawals([
+        {
+          userName: 'João Santos',
+          value: 200.00,
+          date: '2024-04-22',
+          status: 'Pendente'
+        }
+      ]);
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching financial data:', error);
+      setLoading(false);
+    }
+  };
+
+  const fetchAIReports = async () => {
+    try {
+      // Mock AI reports - será substituído pela API real
+      setAiReports([
+        {
+          id: '1',
+          type: 'financial_summary',
+          title: 'Relatório Financeiro Automático',
+          content: {
+            revenue_growth: '+12.5%',
+            commission_ratio: '8.5%',
+            user_retention: '89%',
+            recommendations: [
+              'Receita em crescimento constante nos últimos 7 dias',
+              'Taxa de comissão dentro do esperado',
+              'Considerar campanha para aumentar retenção de usuários'
+            ]
+          },
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: '2',
+          type: 'system_health',
+          title: 'Saúde do Sistema Financeiro',
+          content: {
+            uptime: '99.9%',
+            transaction_success: '98.2%',
+            api_latency: '145ms',
+            alerts: ['Volume de transações 15% acima da média']
+          },
+          createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
+        }
+      ]);
+    } catch (error) {
+      console.error('Error fetching AI reports:', error);
+    }
+  };
+
+  if (loading) {
+    return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
+  }
+
+  return (
+    <>
+      <Head>
+        <title>Financeiro - CoinBitClub Admin</title>
+        <meta name="description" content="Dashboard financeiro administrativo" />
+      </Head>
+
+      <div className="min-h-screen bg-background text-foreground">
+        {/* Header */}
+        <header className="border-b border-border bg-card">
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-primary">Dashboard Financeiro</h1>
+                <p className="mt-1 text-muted-foreground">
+                  Gestão financeira e relatórios automatizados
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <select
+                  value={period}
+                  onChange={(e) => setPeriod(e.target.value)}
+                  className="rounded-md border border-border bg-card px-3 py-2 text-sm"
+                >
+                  <option value="24h">Últimas 24h</option>
+                  <option value="7d">Últimos 7 dias</option>
+                  <option value="30d">Últimos 30 dias</option>
+                  <option value="90d">Últimos 90 dias</option>
+                </select>
+                <Button variant="accent" leftIcon={<DocumentTextIcon className="size-4" />}>
+                  Exportar Relatório
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="container mx-auto space-y-8 px-4 py-8">
+          {/* Summary Cards */}
+          <section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Receita Total</p>
+                  <p className="mt-1 text-2xl font-bold">${summary?.totalRevenue.toLocaleString()}</p>
+                </div>
+                <div className="rounded-lg bg-success/10 p-3 text-success">
+                  <BanknotesIcon className="size-6" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Receita do Período</p>
+                  <p className="mt-1 text-2xl font-bold">${summary?.periodRevenue.toLocaleString()}</p>
+                </div>
+                <div className="rounded-lg bg-primary/10 p-3 text-primary">
+                  <ChartBarIcon className="size-6" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Saldo Pré-pago Usuários</p>
+                  <p className="mt-1 text-2xl font-bold">${summary?.userBalances.toLocaleString()}</p>
+                </div>
+                <div className="bg-info/10 text-info rounded-lg p-3">
+                  <UserGroupIcon className="size-6" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total a Pagar Afiliados</p>
+                  <p className="mt-1 text-2xl font-bold">${summary?.pendingCommissions.toLocaleString()}</p>
+                </div>
+                <div className="rounded-lg bg-warning/10 p-3 text-warning">
+                  <ArrowUpIcon className="size-6" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Saldo do Negócio</p>
+                  <p className="mt-1 text-2xl font-bold">${summary?.businessBalance.toLocaleString()}</p>
+                </div>
+                <div className="rounded-lg bg-accent/10 p-3 text-accent">
+                  <CurrencyDollarIcon className="size-6" />
+                </div>
+              </div>
+            </Card>
+          </section>
+
+          {/* AI Reports Section */}
+          <section>
+            <Card className="p-6">
+              <div className="mb-6">
+                <h2 className="flex items-center text-xl font-semibold">
+                  <DocumentTextIcon className="mr-2 size-5 text-primary" />
+                  Relatórios de IA (Atualizados a cada 4h)
+                </h2>
+                <p className="mt-1 text-muted-foreground">
+                  Análises automáticas do sistema financeiro
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {aiReports.map((report) => (
+                  <div key={report.id} className="rounded-lg border border-border p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <h3 className="font-semibold">{report.title}</h3>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(report.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                    
+                    {report.content.revenue_growth && (
+                      <div className="mb-4 space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm">Crescimento da Receita:</span>
+                          <span className="text-sm font-medium text-success">{report.content.revenue_growth}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Taxa de Comissão:</span>
+                          <span className="text-sm font-medium">{report.content.commission_ratio}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm">Retenção de Usuários:</span>
+                          <span className="text-sm font-medium">{report.content.user_retention}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {report.content.recommendations && (
+                      <div>
+                        <h4 className="mb-2 text-sm font-medium">Recomendações:</h4>
+                        <ul className="space-y-1 text-xs text-muted-foreground">
+                          {report.content.recommendations.map((rec: string, index: number) => (
+                            <li key={index}>• {rec}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {report.content.alerts && (
+                      <div>
+                        <h4 className="mb-2 text-sm font-medium text-warning">Alertas:</h4>
+                        <ul className="space-y-1 text-xs text-warning">
+                          {report.content.alerts.map((alert: string, index: number) => (
+                            <li key={index}>⚠️ {alert}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </section>
+
+          {/* Tables Section */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {/* Recent Subscriptions */}
+            <Card className="p-6">
+              <div className="mb-6">
+                <h2 className="flex items-center text-xl font-semibold">
+                  <BanknotesIcon className="mr-2 size-5 text-primary" />
+                  Assinaturas Recentes
+                </h2>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="py-3 text-left font-medium text-muted-foreground">Usuário</th>
+                      <th className="py-3 text-left font-medium text-muted-foreground">Plano</th>
+                      <th className="py-3 text-right font-medium text-muted-foreground">Valor</th>
+                      <th className="py-3 text-right font-medium text-muted-foreground">Data</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subscriptions.map((sub, index) => (
+                      <tr key={index} className="border-b border-border">
+                        <td className="py-4 font-medium">{sub.userName}</td>
+                        <td className="py-4">{sub.plan}</td>
+                        <td className="py-4 text-right font-medium text-success">
+                          ${sub.value.toFixed(2)}
+                        </td>
+                        <td className="py-4 text-right text-sm text-muted-foreground">
+                          {new Date(sub.date).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+
+            {/* Affiliate Commissions */}
+            <Card className="p-6">
+              <div className="mb-6">
+                <h2 className="flex items-center text-xl font-semibold">
+                  <UserGroupIcon className="mr-2 size-5 text-primary" />
+                  Comissões de Afiliados
+                </h2>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="py-3 text-left font-medium text-muted-foreground">Afiliado</th>
+                      <th className="py-3 text-right font-medium text-muted-foreground">Comissão</th>
+                      <th className="py-3 text-center font-medium text-muted-foreground">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {affiliates.map((aff, index) => (
+                      <tr key={index} className="border-b border-border">
+                        <td className="py-4 font-medium">{aff.affiliateName}</td>
+                        <td className="py-4 text-right font-medium text-success">
+                          ${aff.commission.toFixed(2)}
+                        </td>
+                        <td className="py-4 text-center">
+                          <span className="rounded bg-warning/10 px-2 py-1 text-xs font-medium text-warning">
+                            {aff.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
+
+          {/* Withdrawal Requests */}
+          <Card className="p-6">
+            <div className="mb-6">
+              <h2 className="flex items-center text-xl font-semibold">
+                <ArrowDownIcon className="mr-2 size-5 text-primary" />
+                Solicitações de Saque
+              </h2>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="py-3 text-left font-medium text-muted-foreground">Usuário</th>
+                    <th className="py-3 text-right font-medium text-muted-foreground">Valor</th>
+                    <th className="py-3 text-right font-medium text-muted-foreground">Data</th>
+                    <th className="py-3 text-center font-medium text-muted-foreground">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {withdrawals.map((withdrawal, index) => (
+                    <tr key={index} className="border-b border-border">
+                      <td className="py-4 font-medium">{withdrawal.userName}</td>
+                      <td className="py-4 text-right font-medium">
+                        ${withdrawal.value.toFixed(2)}
+                      </td>
+                      <td className="py-4 text-right text-sm text-muted-foreground">
+                        {new Date(withdrawal.date).toLocaleDateString()}
+                      </td>
+                      <td className="py-4 text-center">
+                        <span className="rounded bg-warning/10 px-2 py-1 text-xs font-medium text-warning">
+                          {withdrawal.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </main>
+      </div>
+    </>
+  );
+};
+
+export default FinancialDashboard;

@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { fetchPublicStats } from '../lib/api';
 import Head from 'next/head';
@@ -488,7 +489,7 @@ export default function Home() {
                         src={testimonial.avatar || `https://randomuser.me/api/portraits/${index % 2 ? 'women' : 'men'}/${index + 20}.jpg`}
                         alt={testimonial.name}
                         className="h-full w-full object-cover"
-                        onError={(e) => {
+                        onError={(e) = /> {
                           e.currentTarget.src = `https://randomuser.me/api/portraits/${index % 2 ? 'women' : 'men'}/${index + 20}.jpg`;
                         }}
                       />

@@ -1,3 +1,4 @@
+import React from 'react';
 import Head from 'next/head';
 import { FiMail, FiMessageSquare, FiTwitter } from 'react-icons/fi';
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
+const axios = require('axios');
 
 // Como o userController está em ES6, vou recriar as funções aqui mesmo
 const { Pool } = require('pg');
@@ -843,6 +844,274 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// ===== ENDPOINTS DE DADOS DE MERCADO =====
+
+// Webhook para receber sinais do TradingView
+app.post('/webhook/signal', async (req, res) => {
+  try {
+    const token = req.query.token;
+    
+    // Verificar token de segurança
+    if (token !== '210406') {
+      return res.status(401).json({ error: 'Token inválido' });
+    }
+
+    console.log('📈 Sinal TradingView recebido:', req.body);
+
+    // Processar usando a função criada no banco
+    const result = await pool.query(
+      'SELECT process_tradingview_webhook($1) as signal_id',
+      [JSON.stringify(req.body)]
+    );
+
+    console.log('✅ Sinal processado, ID:', result.rows[0].signal_id);
+
+    res.json({ 
+      success: true, 
+      signal_id: result.rows[0].signal_id,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao processar sinal TradingView:', error);
+    res.status(500).json({ 
+      error: 'Erro ao processar sinal',
+      message: error.message 
+    });
+  }
+});
+
+// Webhook para receber dados de dominância BTC
+app.post('/webhook/dominance', async (req, res) => {
+  try {
+    const token = req.query.token;
+    
+    // Verificar token de segurança
+    if (token !== '210406') {
+      return res.status(401).json({ error: 'Token inválido' });
+    }
+
+    console.log('📊 Dominância BTC recebida:', req.body);
+
+    // Processar usando a função criada no banco
+    const result = await pool.query(
+      'SELECT process_btc_dominance_webhook($1) as dominance_id',
+      [JSON.stringify(req.body)]
+    );
+
+    console.log('✅ Dominância processada, ID:', result.rows[0].dominance_id);
+
+    res.json({ 
+      success: true, 
+      dominance_id: result.rows[0].dominance_id,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao processar dominância BTC:', error);
+    res.status(500).json({ 
+      error: 'Erro ao processar dominância',
+      message: error.message 
+    });
+  }
+});
+
+// API para obter dados de Fear & Greed Index
+app.get('/api/fear-greed', async (req, res) => {
+  try {
+    // Buscar dados mais recentes da API CoinStats
+    const axios = require('axios');
+    const fearGreedResponse = await axios.get('https://openapiv1.coinstats.app/insights/fear-and-greed', {
+      headers: {
+        'X-API-KEY': 'ZFIxigBcVaCyXDL1Qp/Ork7TOL3+h07NM2f3YoSrMkI='
+      }
+    });
+
+    // Salvar no banco usando a função criada
+    const result = await pool.query(
+      'SELECT process_coinstats_fear_greed($1) as fear_greed_id',
+      [JSON.stringify(fearGreedResponse.data)]
+    );
+
+    // Retornar dados atuais do banco
+    const currentData = await pool.query(`
+      SELECT 
+        value,
+        classification,
+        classificacao_pt,
+        timestamp_data,
+        change_24h
+      FROM fear_greed_index 
+      ORDER BY timestamp_data DESC 
+      LIMIT 1
+    `);
+
+    res.json({
+      success: true,
+      data: currentData.rows[0] || null,
+      source: 'COINSTATS',
+      last_updated: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar Fear & Greed:', error);
+    
+    // Fallback: retornar dados do banco se API falhar
+    try {
+      const fallbackData = await pool.query(`
+        SELECT 
+          value,
+          classification,
+          classificacao_pt,
+          timestamp_data
+        FROM fear_greed_index 
+        ORDER BY timestamp_data DESC 
+        LIMIT 1
+      `);
+
+      res.json({
+        success: true,
+        data: fallbackData.rows[0] || null,
+        source: 'DATABASE_FALLBACK',
+        error: 'API temporariamente indisponível'
+      });
+    } catch (dbError) {
+      res.status(500).json({
+        error: 'Erro ao acessar dados de Fear & Greed',
+        message: error.message
+      });
+    }
+  }
+});
+
+// API para obter dados de dominância BTC
+app.get('/api/btc-dominance', async (req, res) => {
+  try {
+    // Buscar dados mais recentes da API CoinStats
+    const axios = require('axios');
+    const dominanceResponse = await axios.get('https://openapiv1.coinstats.app/insights/btc-dominance', {
+      headers: {
+        'X-API-KEY': 'ZFIxigBcVaCyXDL1Qp/Ork7TOL3+h07NM2f3YoSrMkI='
+      }
+    });
+
+    // Salvar no banco usando a função criada
+    const result = await pool.query(
+      'SELECT process_coinstats_btc_dominance($1) as dominance_id',
+      [JSON.stringify(dominanceResponse.data)]
+    );
+
+    // Retornar dados atuais do banco
+    const currentData = await pool.query(`
+      SELECT 
+        btc_dominance_value,
+        ema_7,
+        diff_pct,
+        sinal,
+        timestamp_data
+      FROM btc_dominance 
+      ORDER BY timestamp_data DESC 
+      LIMIT 1
+    `);
+
+    res.json({
+      success: true,
+      data: currentData.rows[0] || null,
+      source: 'COINSTATS',
+      last_updated: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar dominância BTC:', error);
+    
+    // Fallback: retornar dados do banco se API falhar
+    try {
+      const fallbackData = await pool.query(`
+        SELECT 
+          btc_dominance_value,
+          ema_7,
+          diff_pct,
+          sinal,
+          timestamp_data
+        FROM btc_dominance 
+        ORDER BY timestamp_data DESC 
+        LIMIT 1
+      `);
+
+      res.json({
+        success: true,
+        data: fallbackData.rows[0] || null,
+        source: 'DATABASE_FALLBACK',
+        error: 'API temporariamente indisponível'
+      });
+    } catch (dbError) {
+      res.status(500).json({
+        error: 'Erro ao acessar dados de dominância BTC',
+        message: error.message
+      });
+    }
+  }
+});
+
+// API para dashboard de trading em tempo real
+app.get('/api/trading/dashboard', async (req, res) => {
+  try {
+    const dashboardData = await pool.query(`
+      SELECT * FROM vw_trading_dashboard
+      ORDER BY ticker
+    `);
+
+    const statsData = await pool.query(`
+      SELECT get_trading_system_stats() as stats
+    `);
+
+    res.json({
+      success: true,
+      dashboard: dashboardData.rows,
+      statistics: statsData.rows[0]?.stats || {},
+      last_updated: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar dashboard de trading:', error);
+    res.status(500).json({
+      error: 'Erro ao acessar dashboard de trading',
+      message: error.message
+    });
+  }
+});
+
+// API para análise de mercado consolidada
+app.get('/api/trading/market-analysis', async (req, res) => {
+  try {
+    const hours = parseInt(req.query.hours) || 24; // Padrão 24 horas
+    
+    const analysisData = await pool.query(`
+      SELECT * FROM vw_market_analysis
+      WHERE analysis_hour >= NOW() - INTERVAL '${hours} hours'
+      ORDER BY analysis_hour DESC, ticker
+      LIMIT 100
+    `);
+
+    res.json({
+      success: true,
+      data: analysisData.rows,
+      period_hours: hours,
+      total_records: analysisData.rows.length,
+      last_updated: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar análise de mercado:', error);
+    res.status(500).json({
+      error: 'Erro ao acessar análise de mercado',
+      message: error.message
+    });
+  }
+});
+
+// ===== FIM DOS ENDPOINTS DE DADOS DE MERCADO =====
+
 // ===== MIDDLEWARE DE ERRO =====
 app.use((error, req, res, next) => {
   console.error('Erro na API:', error);
@@ -877,13 +1146,20 @@ app.listen(PORT, () => {
   console.log('   🏢 GET  /api/affiliate/dashboard');
   console.log('   💵 GET  /api/affiliate/commissions');
   console.log('   🔧 GET  /api/admin/railway/health');
-  console.log('   � GET  /api/admin/affiliates');
+  console.log('   👥 GET  /api/admin/affiliates');
   console.log('   ➕ POST /api/admin/affiliates');
   console.log('   ✏️  PUT  /api/admin/affiliates/:id');
   console.log('   🔄 PATCH /api/admin/affiliates/:id/toggle');
-  console.log('   �📊 GET  /api/test');
+  console.log('   📊 GET  /api/test');
+  console.log('📈 === ENDPOINTS DE TRADING ===');
+  console.log('   🔗 POST /webhook/signal?token=210406');
+  console.log('   📊 POST /webhook/dominance?token=210406');
+  console.log('   😱 GET  /api/fear-greed');
+  console.log('   🪙 GET  /api/btc-dominance');
+  console.log('   📈 GET  /api/trading/dashboard');
+  console.log('   📋 GET  /api/trading/market-analysis?hours=24');
   console.log('🔗 Banco: PostgreSQL Railway');
-  console.log('✅ Sistema pronto para uso!');
+  console.log('✅ Sistema pronto para uso com dados de trading!');
 });
 
 module.exports = app;

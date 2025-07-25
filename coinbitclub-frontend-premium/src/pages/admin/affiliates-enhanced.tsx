@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import { 
@@ -366,7 +367,7 @@ export default function AffiliatesManagement() {
                       <input
                         type="text"
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) = /> setSearchTerm(e.target.value)}
                         className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
                         placeholder="Buscar por nome, email ou código..."
                       />
@@ -547,7 +548,7 @@ export default function AffiliatesManagement() {
                       name="name"
                       required
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -556,7 +557,7 @@ export default function AffiliatesManagement() {
                       name="email"
                       required
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Telefone</label>
@@ -564,7 +565,7 @@ export default function AffiliatesManagement() {
                       type="text"
                       name="phone"
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">CPF</label>
@@ -572,7 +573,7 @@ export default function AffiliatesManagement() {
                       type="text"
                       name="cpf"
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
+                    / />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700">Tipo de Afiliado</label>
@@ -637,7 +638,7 @@ export default function AffiliatesManagement() {
                           value={selectedAffiliate.name}
                           disabled={modalType === 'view'}
                           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        />
+                        / />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -646,7 +647,7 @@ export default function AffiliatesManagement() {
                           value={selectedAffiliate.email}
                           disabled={modalType === 'view'}
                           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        />
+                        / />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Código de Referência</label>
@@ -656,7 +657,7 @@ export default function AffiliatesManagement() {
                             value={selectedAffiliate.referralCode}
                             disabled
                             className="mt-1 block w-full border-gray-300 rounded-l-md shadow-sm bg-gray-50 sm:text-sm"
-                          />
+                          / />
                           <button
                             onClick={() => copyReferralLink(selectedAffiliate.referralLink)}
                             className="mt-1 px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100"
@@ -673,7 +674,7 @@ export default function AffiliatesManagement() {
                             value={selectedAffiliate.referralLink}
                             disabled
                             className="mt-1 block w-full border-gray-300 rounded-l-md shadow-sm bg-gray-50 sm:text-sm"
-                          />
+                          / />
                           <button
                             onClick={() => copyReferralLink(selectedAffiliate.referralLink)}
                             className="mt-1 px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100"
@@ -868,7 +869,7 @@ export default function AffiliatesManagement() {
                   step="0.01"
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="0.00"
-                />
+                / />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Motivo</label>

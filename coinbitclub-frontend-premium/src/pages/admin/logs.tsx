@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import { 
@@ -176,7 +177,7 @@ export default function LogsManagement() {
                     <input
                       type="checkbox"
                       checked={autoRefresh}
-                      onChange={(e) => setAutoRefresh(e.target.checked)}
+                      onChange={(e) = /> setAutoRefresh(e.target.checked)}
                       className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                     />
                     <span className="text-sm text-gray-700">Auto-refresh</span>
@@ -343,7 +344,7 @@ export default function LogsManagement() {
                         type="text"
                         placeholder="Buscar logs..."
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) = /> setSearchTerm(e.target.value)}
                         className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>

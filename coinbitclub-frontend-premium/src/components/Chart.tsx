@@ -1,3 +1,4 @@
+import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 // Mock data para demonstração
@@ -48,11 +49,6 @@ export default function Chart() {
             dot={{ fill: '#f9a8d4', strokeWidth: 2, r: 4, stroke: '#ec4899' }}
             activeDot={{ r: 6, stroke: '#ec4899', strokeWidth: 2, fill: '#f9a8d4' }}
           />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
         </LineChart>
       </ResponsiveContainer>
     </div>

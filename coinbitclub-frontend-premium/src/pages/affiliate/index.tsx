@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import {
@@ -147,7 +148,7 @@ export default function AffiliatePage() {
                       value={referralLink}
                       readOnly
                       className="flex-1 bg-transparent text-blue-400 focus:outline-none"
-                    />
+                    / />
                     <button
                       onClick={copyToClipboard}
                       className="ml-2 rounded-md p-2 text-amber-400 hover:text-amber-300 focus:outline-none"

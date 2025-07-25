@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 import { FaTwitter, FaLinkedin, FaTelegram } from 'react-icons/fa';
 

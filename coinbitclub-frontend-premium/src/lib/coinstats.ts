@@ -309,7 +309,8 @@ class CoinStatsAPI {
   // Verificar se a API está funcionando
   async ping(): Promise<boolean> {
     try {
-      await this.makeRequest('/ping');
+      // Usa um endpoint válido da API com limite mínimo para testar conectividade
+      await this.makeRequest('/coins', { limit: 1 });
       return true;
     } catch (error) {
       console.error('CoinStats ping failed:', error);

@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link'
 import { SunIcon, MoonIcon, BellIcon } from '@radix-ui/react-icons'
 import { useTheme } from './ThemeProvider'
