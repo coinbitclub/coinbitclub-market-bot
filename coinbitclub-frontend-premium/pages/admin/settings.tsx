@@ -1039,8 +1039,8 @@ const AdminSettings: NextPage = () => {
                       <label className="mb-2 block text-sm text-gray-400">API Key</label>
                       <input
                         type="password"
-                        value={config.email.sendgrid.apiKey}
-                        onChange={(e) => updateConfig('email', 'sendgrid', { ...config.email.sendgrid, apiKey: e.target.value })}
+                        value={config.email.sendgridApiKey}
+                        onChange={(e) => updateConfig('email', 'sendgridApiKey', e.target.value)}
                         className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
                       />
                     </div>
@@ -1056,8 +1056,8 @@ const AdminSettings: NextPage = () => {
                         <label className="mb-2 block text-sm text-gray-400">API Key</label>
                         <input
                           type="password"
-                          value={config.email.mailgun.apiKey}
-                          onChange={(e) => updateConfig('email', 'mailgun', { ...config.email.mailgun, apiKey: e.target.value })}
+                          value={config.email.mailgunApiKey}
+                          onChange={(e) => updateConfig('email', 'mailgunApiKey', e.target.value)}
                           className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
                         />
                       </div>
@@ -1065,8 +1065,8 @@ const AdminSettings: NextPage = () => {
                         <label className="mb-2 block text-sm text-gray-400">Domínio</label>
                         <input
                           type="text"
-                          value={config.email.mailgun.domain}
-                          onChange={(e) => updateConfig('email', 'mailgun', { ...config.email.mailgun, domain: e.target.value })}
+                          value={config.email.mailgunDomain}
+                          onChange={(e) => updateConfig('email', 'mailgunDomain', e.target.value)}
                           placeholder="mg.coinbitclub.com"
                           className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
                         />
@@ -1084,8 +1084,8 @@ const AdminSettings: NextPage = () => {
                         <label className="mb-2 block text-sm text-gray-400">Access Key ID</label>
                         <input
                           type="text"
-                          value={config.email.ses.accessKeyId}
-                          onChange={(e) => updateConfig('email', 'ses', { ...config.email.ses, accessKeyId: e.target.value })}
+                          value={config.email.sesAccessKey}
+                          onChange={(e) => updateConfig('email', 'sesAccessKey', e.target.value)}
                           className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
                         />
                       </div>
@@ -1093,16 +1093,16 @@ const AdminSettings: NextPage = () => {
                         <label className="mb-2 block text-sm text-gray-400">Secret Access Key</label>
                         <input
                           type="password"
-                          value={config.email.ses.secretAccessKey}
-                          onChange={(e) => updateConfig('email', 'ses', { ...config.email.ses, secretAccessKey: e.target.value })}
+                          value={config.email.sesSecretKey}
+                          onChange={(e) => updateConfig('email', 'sesSecretKey', e.target.value)}
                           className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
                         />
                       </div>
                       <div>
                         <label className="mb-2 block text-sm text-gray-400">Região</label>
                         <select
-                          value={config.email.ses.region}
-                          onChange={(e) => updateConfig('email', 'ses', { ...config.email.ses, region: e.target.value })}
+                          value={config.email.sesRegion}
+                          onChange={(e) => updateConfig('email', 'sesRegion', e.target.value)}
                           className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
                         >
                           <option value="us-east-1">US East (N. Virginia)</option>
