@@ -970,9 +970,10 @@ app.use((req, res) => {
 });
 
 // ===== INICIALIZAR SERVIDOR =====
-app.listen(PORT, () => {
+const HOST = process.env.HOST || '0.0.0.0';
+app.listen(PORT, HOST, () => {
   console.log('🚀 ===== SERVIDOR API RAILWAY INICIADO =====');
-  console.log(`🌐 URL: http://localhost:${PORT}`);
+  console.log(`🌐 URL: http://${HOST}:${PORT}`);
   console.log('📋 Endpoints disponíveis:');
   console.log('   🔐 POST /api/auth/login');
   console.log('   📝 POST /api/auth/register');
