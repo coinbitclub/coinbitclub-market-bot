@@ -1,0 +1,12 @@
+﻿[providers]
+node = "18"
+
+[build]
+cmd = "docker build -t app ."
+
+[start] 
+cmd = "docker run -p 3000:3000 app"
+
+[variables]
+NODE_ENV = "production"
+PORT = "3000"

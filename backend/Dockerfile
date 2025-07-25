@@ -1,44 +1,40 @@
-﻿# Multi-stage build for CoinBitClub Market Bot
+﻿# Multi-service monorepo Dockerfile
 FROM node:18-alpine AS base
 
-# Install dumb-init
-RUN apk add --no-cache dumb-init
+# Install essential tools
+RUN apk add --no-cache dumb-init curl bash
 
-# Create app directory
+# Set workdir to backend
 WORKDIR /app
 
-# Copy root package.json and install root dependencies
-COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+# Copy all package.json files first (better caching)
+COPY ./package*.json ./
+COPY ./api-gateway/package*.json ./api-gateway/
+COPY ./common/ ./common/
 
-# Copy common modules
-COPY common/ ./common/
+# Install dependencies
+RUN npm install --only=production
 
-# Copy api-gateway
-COPY api-gateway/ ./api-gateway/
-
-# Install api-gateway dependencies
+# Install api-gateway specific dependencies
 WORKDIR /app/api-gateway
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --only=production
 
-# Create non-root user
+# Copy source code
+COPY ./api-gateway/src/ ./src/
+
+# Create user and set permissions
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /app
 
-# Change ownership of the app directory
-RUN chown -R nodejs:nodejs /app
-
-# Switch to non-root user
 USER nodejs
 
 # Expose port
 EXPOSE 3000
 
-# Set final working directory
-WORKDIR /app/api-gateway
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
 
-# Use dumb-init to handle signals properly
-ENTRYPOINT ["dumb-init", "--"]
-
-# Start command
-CMD ["node", "src/index.js"]
+# Start the application
+CMD ["dumb-init", "node", "src/index.js"]
