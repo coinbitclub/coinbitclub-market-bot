@@ -7,19 +7,16 @@ RUN apk add --no-cache dumb-init curl
 # Create app directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files first for better Docker layer caching
 COPY api-gateway/package*.json ./api-gateway/
 
-# Install dependencies
-RUN npm install --production
-
-# Copy all files
-COPY . .
-
-# Install api-gateway dependencies
+# Install api-gateway dependencies first
 WORKDIR /app/api-gateway
 RUN npm install --production
+
+# Copy all application files
+WORKDIR /app
+COPY . .
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
