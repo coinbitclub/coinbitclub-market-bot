@@ -590,7 +590,7 @@ const UserDashboard: NextPage = () => {
             <Card className="p-6">
               <div className="mb-6">
                 <h2 className="flex items-center text-xl font-semibold">
-                  <CheckIcon className="mr-2 size-5 text-primary" />
+                  <CheckCircleIcon className="mr-2 size-5 text-primary" />
                   Posições Fechadas
                 </h2>
                 <p className="mt-1 text-muted-foreground">
