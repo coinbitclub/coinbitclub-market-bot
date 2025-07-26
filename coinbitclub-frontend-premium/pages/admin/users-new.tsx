@@ -12,14 +12,18 @@ interface User {
   name: string;
   email: string;
   phone: string;
+  country: string;
+  plan: string;
+  status: string;
   balance: number;
-  plan_type: 'prepaid' | 'subscription';
-  location: 'brasil' | 'exterior';
-  status: 'active' | 'inactive';
-  created_at: string;
-  last_login: string;
-  total_profit: number;
   total_operations: number;
+  success_rate: number;
+  total_pnl: number;
+  joined_date: string;
+  last_login: string;
+  two_factor_enabled: boolean;
+  email_verified: boolean;
+  kyc_verified: boolean;
 }
 
 export default function UsersManagement() {
@@ -29,105 +33,107 @@ export default function UsersManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPlan, setFilterPlan] = useState('all');
-  const [filterLocation, setFilterLocation] = useState('all');
+  const [filterCountry, setFilterCountry] = useState('all');
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
-    inactive: 0,
-    subscription_brasil: 0,
-    subscription_exterior: 0,
-    prepaid_brasil: 0,
-    prepaid_exterior: 0
+    suspended: 0,
+    pending: 0,
+    free: 0,
+    basic: 0,
+    premium: 0,
+    vip: 0,
+    total_balance: 0
   });
 
-  // Mock data para demonstração
-  useEffect(() => {
-    setLoading(true);
-    // Simular dados de usuários
-    const mockUsers: User[] = [
-      {
-        id: '1',
-        name: 'João Silva',
-        email: 'joao@email.com',
-        phone: '+55 11 99999-9999',
-        balance: 2500.75,
-        plan_type: 'subscription',
-        location: 'brasil',
-        status: 'active',
-        created_at: '2024-01-15',
-        last_login: '2024-07-25',
-        total_profit: 1850.30,
-        total_operations: 45
-      },
-      {
-        id: '2',
-        name: 'Maria Santos',
-        email: 'maria@email.com',
-        phone: '+55 21 88888-8888',
-        balance: 1200.50,
-        plan_type: 'prepaid',
-        location: 'brasil',
-        status: 'active',
-        created_at: '2024-02-10',
-        last_login: '2024-07-24',
-        total_profit: 985.60,
-        total_operations: 28
-      },
-      {
-        id: '3',
-        name: 'John Doe',
-        email: 'john@email.com',
-        phone: '+1 555-123-4567',
-        balance: 5000.00,
-        plan_type: 'subscription',
-        location: 'exterior',
-        status: 'active',
-        created_at: '2024-01-20',
-        last_login: '2024-07-25',
-        total_profit: 3200.90,
-        total_operations: 78
-      },
-      {
-        id: '4',
-        name: 'Carlos Lima',
-        email: 'carlos@email.com',
-        phone: '+55 85 77777-7777',
-        balance: 750.25,
-        plan_type: 'prepaid',
-        location: 'brasil',
-        status: 'inactive',
-        created_at: '2024-03-05',
-        last_login: '2024-07-15',
-        total_profit: 420.15,
-        total_operations: 12
-      }
-    ];
+  // Buscar dados reais da API
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      
+      if (filterStatus !== 'all') params.append('status', filterStatus);
+      if (filterPlan !== 'all') params.append('plan', filterPlan);
+      if (filterCountry !== 'all') params.append('country', filterCountry);
+      if (searchTerm) params.append('search', searchTerm);
 
-    setUsers(mockUsers);
-    
-    // Calcular estatísticas
-    const newStats = {
-      total: mockUsers.length,
-      active: mockUsers.filter(u => u.status === 'active').length,
-      inactive: mockUsers.filter(u => u.status === 'inactive').length,
-      subscription_brasil: mockUsers.filter(u => u.plan_type === 'subscription' && u.location === 'brasil').length,
-      subscription_exterior: mockUsers.filter(u => u.plan_type === 'subscription' && u.location === 'exterior').length,
-      prepaid_brasil: mockUsers.filter(u => u.plan_type === 'prepaid' && u.location === 'brasil').length,
-      prepaid_exterior: mockUsers.filter(u => u.plan_type === 'prepaid' && u.location === 'exterior').length,
-    };
-    
-    setStats(newStats);
-    setLoading(false);
-  }, []);
+      const response = await fetch(`/api/admin/users?${params.toString()}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setUsers(data.users);
+        setStats(data.stats);
+      } else {
+        console.error('Erro ao buscar usuários:', data.message);
+      }
+    } catch (error) {
+      console.error('Erro na requisição:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [searchTerm, filterStatus, filterPlan, filterCountry]);
+
+  // Funções para manipular usuários
+  const handleActivateUser = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/admin/users?id=${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'active' })
+      });
+      
+      if (response.ok) {
+        fetchUsers(); // Recarregar dados
+      }
+    } catch (error) {
+      console.error('Erro ao ativar usuário:', error);
+    }
+  };
+
+  const handleSuspendUser = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/admin/users?id=${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'suspended' })
+      });
+      
+      if (response.ok) {
+        fetchUsers(); // Recarregar dados
+      }
+    } catch (error) {
+      console.error('Erro ao suspender usuário:', error);
+    }
+  };
+
+  const handleUpgradePlan = async (userId: string, newPlan: string) => {
+    try {
+      const response = await fetch(`/api/admin/users?id=${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: newPlan })
+      });
+      
+      if (response.ok) {
+        fetchUsers(); // Recarregar dados
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar plano:', error);
+    }
+  };
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || user.status === filterStatus;
-    const matchesPlan = filterPlan === 'all' || user.plan_type === filterPlan;
-    const matchesLocation = filterLocation === 'all' || user.location === filterLocation;
+    const matchesPlan = filterPlan === 'all' || user.plan === filterPlan;
+    const matchesCountry = filterCountry === 'all' || user.country === filterCountry;
     
-    return matchesSearch && matchesStatus && matchesPlan && matchesLocation;
+    return matchesSearch && matchesStatus && matchesPlan && matchesCountry;
   });
 
   const handleResetPassword = (userId: string) => {
@@ -262,32 +268,32 @@ export default function UsersManagement() {
               </div>
               <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-blue-400/50 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
                 <div className="text-center">
-                  <p className="text-blue-400 text-sm font-bold uppercase tracking-wider mb-2">Inativos</p>
-                  <p className="text-3xl font-bold text-yellow-400">{stats.inactive}</p>
+                  <p className="text-blue-400 text-sm font-bold uppercase tracking-wider mb-2">Suspensos</p>
+                  <p className="text-3xl font-bold text-yellow-400">{stats.suspended}</p>
                 </div>
               </div>
               <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-yellow-400/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
                 <div className="text-center">
-                  <p className="text-yellow-400 text-xs font-bold uppercase tracking-wider mb-2">Assinatura BR</p>
-                  <p className="text-3xl font-bold text-pink-400">{stats.subscription_brasil}</p>
+                  <p className="text-yellow-400 text-xs font-bold uppercase tracking-wider mb-2">Plano Free</p>
+                  <p className="text-3xl font-bold text-pink-400">{stats.free}</p>
                 </div>
               </div>
               <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-pink-400/50 shadow-[0_0_20px_rgba(236,72,153,0.3)]">
                 <div className="text-center">
-                  <p className="text-pink-400 text-xs font-bold uppercase tracking-wider mb-2">Assinatura EXT</p>
-                  <p className="text-3xl font-bold text-yellow-400">{stats.subscription_exterior}</p>
+                  <p className="text-pink-400 text-xs font-bold uppercase tracking-wider mb-2">Plano Basic</p>
+                  <p className="text-3xl font-bold text-yellow-400">{stats.basic}</p>
                 </div>
               </div>
               <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-blue-400/50 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
                 <div className="text-center">
-                  <p className="text-blue-400 text-xs font-bold uppercase tracking-wider mb-2">Prepago BR</p>
-                  <p className="text-3xl font-bold text-yellow-400">{stats.prepaid_brasil}</p>
+                  <p className="text-blue-400 text-xs font-bold uppercase tracking-wider mb-2">Plano Premium</p>
+                  <p className="text-3xl font-bold text-yellow-400">{stats.premium}</p>
                 </div>
               </div>
               <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-yellow-400/50 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
                 <div className="text-center">
-                  <p className="text-yellow-400 text-xs font-bold uppercase tracking-wider mb-2">Prepago EXT</p>
-                  <p className="text-3xl font-bold text-pink-400">{stats.prepaid_exterior}</p>
+                  <p className="text-yellow-400 text-xs font-bold uppercase tracking-wider mb-2">Plano VIP</p>
+                  <p className="text-3xl font-bold text-pink-400">{stats.vip}</p>
                 </div>
               </div>
             </div>
@@ -312,7 +318,8 @@ export default function UsersManagement() {
                 >
                   <option value="all">Todos os Status</option>
                   <option value="active">Ativos</option>
-                  <option value="inactive">Inativos</option>
+                  <option value="suspended">Suspensos</option>
+                  <option value="pending">Pendentes</option>
                 </select>
                 <select
                   value={filterPlan}
@@ -320,17 +327,21 @@ export default function UsersManagement() {
                   className="px-4 py-3 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
                 >
                   <option value="all">Todos os Planos</option>
-                  <option value="subscription">Assinatura</option>
-                  <option value="prepaid">Pré-pago</option>
+                  <option value="Free">Free</option>
+                  <option value="Basic">Basic</option>
+                  <option value="Premium">Premium</option>
+                  <option value="VIP">VIP</option>
                 </select>
                 <select
-                  value={filterLocation}
-                  onChange={(e) => setFilterLocation(e.target.value)}
+                  value={filterCountry}
+                  onChange={(e) => setFilterCountry(e.target.value)}
                   className="px-4 py-3 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
                 >
-                  <option value="all">Todas as Localizações</option>
-                  <option value="brasil">Brasil</option>
-                  <option value="exterior">Exterior</option>
+                  <option value="all">Todos os Países</option>
+                  <option value="Brasil">Brasil</option>
+                  <option value="Portugal">Portugal</option>
+                  <option value="Angola">Angola</option>
+                  <option value="USA">Estados Unidos</option>
                 </select>
               </div>
             </div>
@@ -368,36 +379,38 @@ export default function UsersManagement() {
                         </td>
                         <td className="px-6 py-4">
                           <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                            user.plan_type === 'subscription' 
+                            user.plan === 'Premium' || user.plan === 'VIP'
                               ? 'bg-pink-400/20 text-pink-400 border border-pink-400/50' 
                               : 'bg-blue-400/20 text-blue-400 border border-blue-400/50'
                           }`}>
-                            {user.plan_type === 'subscription' ? 'Assinatura' : 'Pré-pago'}
+                            {user.plan}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center">
-                            {user.location === 'brasil' ? (
+                            {user.country === 'Brasil' ? (
                               <FiMapPin className="w-4 h-4 mr-2 text-yellow-400" />
                             ) : (
                               <FiGlobe className="w-4 h-4 mr-2 text-blue-400" />
                             )}
-                            <span className="text-blue-300 font-medium capitalize">{user.location}</span>
+                            <span className="text-blue-300 font-medium">{user.country}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
                             user.status === 'active' 
                               ? 'bg-pink-400/20 text-pink-400 border border-pink-400/50' 
-                              : 'bg-blue-400/20 text-blue-400 border border-blue-400/50'
+                              : user.status === 'suspended'
+                              ? 'bg-blue-400/20 text-blue-400 border border-blue-400/50'
+                              : 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/50'
                           }`}>
-                            {user.status === 'active' ? 'Ativo' : 'Inativo'}
+                            {user.status === 'active' ? 'Ativo' : user.status === 'suspended' ? 'Suspenso' : 'Pendente'}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           <div>
-                            <p className="text-pink-400 font-bold">${user.total_profit.toFixed(2)}</p>
-                            <p className="text-blue-400 text-sm">{user.total_operations} ops</p>
+                            <p className="text-pink-400 font-bold">${user.total_pnl.toFixed(2)}</p>
+                            <p className="text-blue-400 text-sm">{user.total_operations} ops ({user.success_rate}%)</p>
                           </div>
                         </td>
                         <td className="px-6 py-4">

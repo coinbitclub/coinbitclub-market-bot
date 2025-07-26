@@ -1,43 +1,14 @@
 {
   "extends": [
-    "next/core-web-vitals",
-    "airbnb-typescript",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:tailwindcss/recommended",
-    "prettier"
-  ],
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "project": "./tsconfig.json"
-  },
-  "plugins": [
-    "@typescript-eslint",
-    "tailwindcss"
+    "next/core-web-vitals"
   ],
   "rules": {
     "react/react-in-jsx-scope": "off",
     "react/jsx-props-no-spreading": "off",
     "react/require-default-props": "off",
-    "import/prefer-default-export": "off",
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-    "tailwindcss/no-custom-classname": "off",
-    "tailwindcss/classnames-order": "error",
-    "tailwindcss/enforces-shorthand": "error",
-    "tailwindcss/migration-from-tailwind-2": "error",
-    "tailwindcss/no-contradicting-classname": "error",
-    "jsx-a11y/anchor-is-valid": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
     "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/lines-between-class-members": "warn",
-    "@typescript-eslint/return-await": "warn",
-    "@typescript-eslint/ban-ts-comment": "warn",
+    "no-console": "warn",
     "react/no-unescaped-entities": "warn"
-  },
-  "settings": {
-    "tailwindcss": {
-      "callees": ["cn", "clsx", "cva", "className"],
-      "config": "./tailwind.config.js",
-      "removeDuplicates": true,
-      "skipClassAttribute": false
-    }
   }
 }

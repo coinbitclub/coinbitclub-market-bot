@@ -1,72 +1,187 @@
-"use client";
-
-import React from 'react';
-/**
- * DASHBOARD ADMIN - INTEGRAÇÃO REAL COM BACKEND
- * Remove dados mock e conecta com APIs reais
- */
-import { NextPage } from 'next';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
-import {
-  ChartBarIcon,
-  ClockIcon,
-  CpuChipIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
-  UsersIcon,
-  CurrencyDollarIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
-  BellIcon
-} from '@heroicons/react/24/outline';
-import AdminLayout from '../../src/components/AdminLayout';
+import Link from 'next/link';
 import { 
-  adminDashboardService,
-  testBackendConnection 
-} from '../../src/services/api.simple';
-import { useNotifications } from '../../src/contexts/NotificationContext.simple';
+  FiHome, 
+  FiUsers, 
+  FiBarChart, 
+  FiSettings, 
+  FiLogOut,
+  FiMenu,
+  FiX,
+  FiUserCheck,
+  FiDollarSign,
+  FiActivity,
+  FiAlertTriangle,
+  FiCreditCard,
+  FiTrendingUp,
+  FiDatabase,
+  FiRefreshCw
+} from 'react-icons/fi';
 
-interface DashboardMetrics {
-  returnToday: number;
-  returnHistorical: number;
-  accuracyToday: number;
-  accuracyHistorical: number;
-  totalUsers: number;
-  activeUsers: number;
-  totalOperations: number;
-  openOperations: number;
-  totalRevenue: number;
-  monthlyRevenue: number;
-}
-
-interface MarketReading {
-  direction: 'LONG' | 'SHORT' | 'NEUTRO';
-  confidence: number;
-  justification: string;
-  lastUpdate: string;
-}
-
-interface SystemStatus {
-  api: 'online' | 'offline';
-  database: 'online' | 'offline';
-  payments: 'online' | 'offline';
-  email: 'online' | 'offline';
-}
-
-interface RecentActivity {
-  id: string;
-  type: 'operation' | 'user' | 'system' | 'affiliate';
-  message: string;
+interface DashboardData {
   timestamp: string;
+  users: {
+    total: number;
+    active: number;
+    newThisMonth: number;
+    totalBalance: number;
+  };
+  trading: {
+    totalOperations: number;
+    openOperations: number;
+    profitableOperations: number;
+    avgProfitLoss: number;
+    totalProfitLoss: number;
+    recentOperations: Array<{
+      id: string;
+      symbol: string;
+      side: string;
+      profit_loss: number;
+      user_email: string;
+      created_at: string;
+    }>;
+  };
+  signals: {
+    total: number;
+    processed: number;
+    pending: number;
+    avgConfidence: number;
+    recentSignals: Array<{
+      id: string;
+      symbol: string;
+      action: string;
+      source: string;
+      created_at: string;
+    }>;
+  };
+  affiliates: {
+    total: number;
+    active: number;
+    totalCommissions: number;
+    pendingCommissions: number;
+  };
+  system: {
+    services: Array<{
+      service_name: string;
+      status: string;
+      last_heartbeat: string;
+      response_time_ms: number;
+    }>;
+    marketData: Array<{
+      symbol: string;
+      price: number;
+      change_24h: number;
+      volume_24h: number;
+    }>;
+  };
+  ai: {
+    reports: Array<{
+      id: string;
+      report_type: string;
+      summary: string;
+      confidence_score: number;
+      created_at: string;
+    }>;
+  };
+  financial: {
+    totalDeposits: number;
+    totalWithdrawals: number;
+    activeSubscriptions: number;
+    monthlyRevenue: number;
+  };
 }
 
-const AdminDashboardReal: NextPage = () => {
-  const { addNotification } = useNotifications();
-  
-  // Estados para dados reais
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [marketReading, setMarketReading] = useState<MarketReading | null>(null);
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  user_type: 'admin' | 'user' | 'affiliate';
+}
+
+const AdminDashboardReal = () => {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdate, setLastUpdate] = useState<string>('');
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const userData = localStorage.getItem('user_data');
+
+        if (!token || !userData) {
+          router.push('/auth/login');
+          return;
+        }
+
+        const parsedUser = JSON.parse(userData);
+        
+        if (parsedUser.user_type !== 'admin') {
+          router.push('/dashboard');
+          return;
+        }
+
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+        router.push('/auth/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
+      
+      // Auto-refresh a cada 30 segundos
+      const interval = setInterval(fetchDashboardData, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  const fetchDashboardData = async () => {
+    try {
+      console.log('🔄 Buscando dados reais do dashboard...');
+      const response = await fetch('/api/admin/dashboard');
+      
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setDashboardData(data);
+      setLastUpdate(new Date().toLocaleTimeString('pt-BR'));
+      setError(null);
+      console.log('✅ Dados do dashboard carregados:', data);
+      
+    } catch (err) {
+      console.error('❌ Erro ao carregar dashboard:', err);
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_data');
+      router.push('/auth/login');
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
+  };
   const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);

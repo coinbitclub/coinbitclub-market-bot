@@ -1,73 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-
-// Mock database para desenvolvimento
-const users = [
-  {
-    id: '1',
-    email: 'admin@coinbitclub.com',
-    password: '$2b$10$caike4NmhzzG1Ae.K29YhOCXiRUac/jHZ15RC4brbO31E1B/v2p.6', // password
-    name: 'Administrador',
-    role: 'admin',
-    status: 'active'
-  },
-  {
-    id: '2', 
-    email: 'user@test.com',
-    password: '$2b$10$caike4NmhzzG1Ae.K29YhOCXiRUac/jHZ15RC4brbO31E1B/v2p.6', // password
-    name: 'Usuário Teste',
-    role: 'user',
-    status: 'trial_active'
-  },
-  {
-    id: '3',
-    email: 'affiliate@test.com', 
-    password: '$2b$10$caike4NmhzzG1Ae.K29YhOCXiRUac/jHZ15RC4brbO31E1B/v2p.6', // password
-    name: 'Afiliado Teste',
-    role: 'affiliate',
-    status: 'active',
-    affiliateCode: 'AFF123'
-  },
-  {
-    id: '4',
-    email: 'faleconosco@coinbitclub.vip',
-    password: '$2b$10$caike4NmhzzG1Ae.K29YhOCXiRUac/jHZ15RC4brbO31E1B/v2p.6', // password
-    name: 'Fale Conosco',
-    role: 'user',
-    status: 'active'
-  },
-  {
-    id: '5',
-    email: 'usuario@coinbitclub.com',
-    password: '$2b$10$caike4NmhzzG1Ae.K29YhOCXiRUac/jHZ15RC4brbO31E1B/v2p.6', // password
-    name: 'João Silva',
-    role: 'user',
-    status: 'premium_active',
-    plan: 'premium',
-    balance: 1500.00
-  },
-  {
-    id: '6',
-    email: 'maria@teste.com',
-    password: '$2b$10$caike4NmhzzG1Ae.K29YhOCXiRUac/jHZ15RC4brbO31E1B/v2p.6', // password
-    name: 'Maria Santos',
-    role: 'user',
-    status: 'trial_active',
-    plan: 'trial',
-    balance: 500.00
-  },
-  {
-    id: '7',
-    email: 'demo@coinbitclub.com',
-    password: '$2b$10$caike4NmhzzG1Ae.K29YhOCXiRUac/jHZ15RC4brbO31E1B/v2p.6', // password
-    name: 'Usuário Demo',
-    role: 'user',
-    status: 'active',
-    plan: 'basic',
-    balance: 250.00
-  }
-];
+import { query } from '../../../src/lib/database';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -77,53 +11,124 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { email, password } = req.body;
     
-    console.log('🔍 LOGIN ATTEMPT:', { email, passwordLength: password?.length });
+    console.log('🔍 LOGIN ATTEMPT (REAL DB):', { email, passwordLength: password?.length });
 
-    if (!email || !password) {
+    if (!email || password?.length < 1) {
       console.log('❌ Missing credentials');
       return res.status(400).json({ message: 'Email e senha são obrigatórios' });
     }
 
-    // Encontrar usuário
-    const user = users.find(u => u.email === email);
-    if (!user) {
+    // Buscar usuário no banco real
+    const userResult = await query(
+      'SELECT id, email, password_hash, name, user_type, role, status, phone, is_active FROM users WHERE email = $1 AND is_active = true',
+      [email.toLowerCase()]
+    );
+    
+    if (userResult.rows.length === 0) {
       console.log('❌ User not found:', email);
       return res.status(401).json({ message: 'Credenciais inválidas' });
     }
-    
-    console.log('✅ User found:', { email: user.email, role: user.role });
 
-    // Verificar senha
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const user = userResult.rows[0];
+    console.log('✅ User found:', { email: user.email, user_type: user.user_type });
+
+    // Verificar senha (pode ser bcrypt ou placeholder para desenvolvimento)
+    let isValidPassword = false;
+    
+    if (user.password_hash === 'placeholder' && password === 'password') {
+      // Para desenvolvimento - permitir senha padrão
+      isValidPassword = true;
+      console.log('🔐 Using development password');
+    } else {
+      // Verificação normal com bcrypt
+      isValidPassword = await bcrypt.compare(password, user.password_hash);
+    }
+    
     console.log('🔐 Password check:', { isValid: isValidPassword });
     
     if (!isValidPassword) {
-      console.log('❌ Invalid password for:', email);
+      console.log('❌ Invalid password');
       return res.status(401).json({ message: 'Credenciais inválidas' });
     }
 
-    // Gerar token JWT
+    // Buscar dados adicionais baseado no tipo de usuário
+    let additionalData = {};
+    
+    if (user.user_type === 'affiliate' || user.role === 'affiliate') {
+      // Buscar dados do afiliado
+      const affiliateResult = await query(
+        'SELECT affiliate_code, commission_rate FROM affiliates WHERE user_id = $1',
+        [user.id]
+      );
+      if (affiliateResult.rows.length > 0) {
+        additionalData = {
+          affiliateCode: affiliateResult.rows[0].affiliate_code,
+          commissionRate: affiliateResult.rows[0].commission_rate
+        };
+      }
+    }
+
+    // Buscar perfil do usuário
+    const profileResult = await query(
+      'SELECT country, account_type, trading_parameters FROM user_profiles WHERE user_id = $1',
+      [user.id]
+    );
+    
+    if (profileResult.rows.length > 0) {
+      const profile = profileResult.rows[0];
+      additionalData = {
+        ...additionalData,
+        country: profile.country,
+        accountType: profile.account_type,
+        tradingParameters: profile.trading_parameters
+      };
+    }
+
+    // Gerar JWT token
     const token = jwt.sign(
       { 
-        id: user.id, 
-        email: user.email, 
-        role: user.role 
+        userId: user.id, 
+        email: user.email,
+        userType: user.user_type || user.role,
+        name: user.name
       },
       process.env.JWT_SECRET || 'fallback-secret',
-      { expiresIn: '30d' }
+      { expiresIn: '7d' }
     );
 
-    // Retornar dados do usuário (sem senha)
-    const { password: _, ...userWithoutPassword } = user;
+    console.log('✅ Login successful:', { 
+      userId: user.id, 
+      userType: user.user_type || user.role 
+    });
+
+    // Atualizar último login
+    await query(
+      'UPDATE users SET last_login_at = NOW() WHERE id = $1',
+      [user.id]
+    );
+
+    const userData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      userType: user.user_type || user.role,
+      role: user.user_type || user.role, // Compatibilidade
+      status: user.status,
+      phone: user.phone,
+      ...additionalData
+    };
 
     res.status(200).json({
       message: 'Login realizado com sucesso',
       token,
-      user: userWithoutPassword
+      user: userData
     });
 
   } catch (error) {
-    console.error('Erro no login:', error);
-    res.status(500).json({ message: 'Erro interno do servidor' });
+    console.error('❌ Login error:', error);
+    res.status(500).json({ 
+      message: 'Erro interno do servidor',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Erro interno'
+    });
   }
 }

@@ -6,21 +6,6 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  userType: string;
-  created_at: string;
-  is_active: boolean;
-  email_verified: boolean;
-  plan_type?: string;
-  country?: string;
-  total_operations?: number;
-  total_profit?: number;
-  last_login?: string;
-}
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method not allowed' });
@@ -54,8 +39,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const pageNum = parseInt(page as string);
     const limitNum = parseInt(limit as string);
     const offset = (pageNum - 1) * limitNum;
-    const sortOrderStr = Array.isArray(sortOrder) ? sortOrder[0] : sortOrder;
-    const sortByStr = Array.isArray(sortBy) ? sortBy[0] : sortBy;
 
     // Construir WHERE clause
     let whereConditions = [];
@@ -81,6 +64,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    const validSortOrder = String(sortOrder).toUpperCase();
 
     // Query principal para buscar usuários
     const usersQuery = `
@@ -108,7 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         GROUP BY user_id
       ) stats ON u.id = stats.user_id
       ${whereClause}
-      ORDER BY u.${sortByStr} ${sortOrderStr.toUpperCase()}
+      ORDER BY u.${sortBy} ${validSortOrder}
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
 
@@ -136,6 +120,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.status(200).json({
       users,
+      totalPages,
       pagination: {
         currentPage: pageNum,
         totalPages,

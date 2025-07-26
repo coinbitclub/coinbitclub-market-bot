@@ -1,247 +1,257 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { requireAdmin } from '../../../src/lib/jwt';
-import { query } from '../../../src/lib/database';
+import { query } from '../../../src/lib/database-real';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Verificar se é admin
-    requireAdmin(req);
-
-    if (req.method === 'GET') {
-      await handleGetAffiliates(req, res);
-    } else if (req.method === 'PUT') {
-      await handleUpdateAffiliate(req, res);
-    } else if (req.method === 'POST') {
-      await handleProcessPayouts(req, res);
-    } else {
-      return res.status(405).json({ message: 'Método não permitido' });
+    switch (req.method) {
+      case 'GET':
+        return await getAffiliates(req, res);
+      case 'POST':
+        return await createAffiliate(req, res);
+      case 'PUT':
+        return await updateAffiliate(req, res);
+      default:
+        return res.status(405).json({ error: 'Method not allowed' });
     }
-
   } catch (error) {
-    console.error('Erro na API de afiliados admin:', error);
-    res.status(500).json({ 
-      message: 'Erro interno do servidor' 
+    console.error('❌ Erro na API affiliates:', error);
+    return res.status(500).json({ 
+      error: 'Erro interno do servidor',
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 }
 
-async function handleGetAffiliates(req: NextApiRequest, res: NextApiResponse) {
-  const { page = 1, limit = 50, status = '' } = req.query;
-  
-  const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
-  
-  let whereClause = '';
-  const params: any[] = [];
-  let paramCount = 0;
+// GET - Listar afiliados com métricas
+async function getAffiliates(req: NextApiRequest, res: NextApiResponse) {
+  const { 
+    page = 1, 
+    limit = 20, 
+    search = '', 
+    status = '',
+    sortBy = 'created_at',
+    sortOrder = 'DESC'
+  } = req.query;
 
-  if (status) {
-    paramCount++;
-    whereClause = `WHERE a.status = $${paramCount}`;
-    params.push(status);
-  }
+  try {
+    console.log('🔍 Buscando afiliados com filtros:', { page, limit, search, status });
 
-  const result = await query(`
-    SELECT 
-      a.id,
-      a.user_id,
-      u.name as user_name,
-      u.email as user_email,
-      a.affiliate_code,
-      a.commission_rate,
-      a.status,
-      a.total_referrals,
-      a.total_earnings,
-      a.pending_payout,
-      a.paid_out,
-      a.created_at,
-      COUNT(DISTINCT r.id) as current_referrals,
-      COALESCE(SUM(CASE WHEN c.status = 'pending' THEN c.amount ELSE 0 END), 0) as pending_commissions,
-      COALESCE(SUM(CASE WHEN c.status = 'paid' THEN c.amount ELSE 0 END), 0) as paid_commissions
-    FROM affiliates a
-    LEFT JOIN users u ON a.user_id = u.id
-    LEFT JOIN affiliates r ON a.affiliate_code = r.referral_code
-    LEFT JOIN commissions c ON a.id = c.affiliate_id
-    ${whereClause}
-    GROUP BY a.id, a.user_id, u.name, u.email, a.affiliate_code, a.commission_rate, 
-             a.status, a.total_referrals, a.total_earnings, a.pending_payout, a.paid_out, a.created_at
-    ORDER BY a.total_earnings DESC
-    LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
-  `, [...params, parseInt(limit as string), offset]);
+    // Construir query com filtros
+    let whereConditions = [];
+    let queryParams = [];
+    let paramIndex = 1;
 
-  // Buscar total de afiliados
-  const totalResult = await query(`
-    SELECT COUNT(*) as total
-    FROM affiliates a
-    ${whereClause}
-  `, params);
-
-  const affiliates = result.rows.map(affiliate => ({
-    id: affiliate.id,
-    userId: affiliate.user_id,
-    userName: affiliate.user_name,
-    userEmail: affiliate.user_email,
-    affiliateCode: affiliate.affiliate_code,
-    commissionRate: parseFloat(affiliate.commission_rate),
-    status: affiliate.status,
-    totalReferrals: parseInt(affiliate.total_referrals),
-    totalEarnings: parseFloat(affiliate.total_earnings),
-    pendingPayout: parseFloat(affiliate.pending_payout),
-    paidOut: parseFloat(affiliate.paid_out),
-    currentReferrals: parseInt(affiliate.current_referrals),
-    pendingCommissions: parseFloat(affiliate.pending_commissions),
-    paidCommissions: parseFloat(affiliate.paid_commissions),
-    createdAt: affiliate.created_at
-  }));
-
-  res.status(200).json({
-    affiliates,
-    pagination: {
-      page: parseInt(page as string),
-      limit: parseInt(limit as string),
-      total: parseInt(totalResult.rows[0].total),
-      totalPages: Math.ceil(parseInt(totalResult.rows[0].total) / parseInt(limit as string))
+    if (search) {
+      whereConditions.push(`(u.name ILIKE $${paramIndex} OR u.email ILIKE $${paramIndex})`);
+      queryParams.push(`%${search}%`);
+      paramIndex++;
     }
-  });
+
+    if (status) {
+      whereConditions.push(`a.status = $${paramIndex}`);
+      queryParams.push(status);
+      paramIndex++;
+    }
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    
+    // Query para contar total
+    const countQuery = `
+      SELECT COUNT(*) as total 
+      FROM affiliates a
+      JOIN users u ON a.user_id = u.id 
+      ${whereClause}
+    `;
+    
+    const countResult = await query(countQuery, queryParams);
+    const total = parseInt(countResult.rows[0].total);
+
+    // Query principal com paginação
+    const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+    queryParams.push(limit, offset);
+    
+    const affiliatesQuery = `
+      SELECT 
+        a.id,
+        a.user_id,
+        a.commission_rate,
+        a.status,
+        a.total_referrals,
+        a.total_commissions,
+        a.pending_commissions,
+        a.paid_commissions,
+        a.created_at,
+        a.updated_at,
+        u.name as user_name,
+        u.email as user_email,
+        u.referral_code,
+        u.current_plan
+      FROM affiliates a
+      JOIN users u ON a.user_id = u.id
+      ${whereClause}
+      ORDER BY a.${sortBy} ${sortOrder}
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `;
+
+    const affiliatesResult = await query(affiliatesQuery, queryParams);
+
+    // Buscar estatísticas detalhadas para cada afiliado
+    const affiliatesWithStats = await Promise.all(
+      affiliatesResult.rows.map(async (affiliate) => {
+        // Referidos ativos
+        const referralsResult = await query(`
+          SELECT 
+            COUNT(*) as total_referrals,
+            COUNT(CASE WHEN status = 'active' THEN 1 END) as active_referrals,
+            COUNT(CASE WHEN created_at >= NOW() - INTERVAL '30 days' THEN 1 END) as new_referrals_month
+          FROM users 
+          WHERE referred_by = $1
+        `, [affiliate.user_id]);
+
+        // Comissões detalhadas
+        const commissionsResult = await query(`
+          SELECT 
+            COUNT(*) as total_commissions,
+            SUM(amount) as total_amount,
+            SUM(CASE WHEN status = 'PENDING' THEN amount ELSE 0 END) as pending_amount,
+            SUM(CASE WHEN status = 'PAID' THEN amount ELSE 0 END) as paid_amount,
+            AVG(amount) as avg_commission
+          FROM commissions 
+          WHERE affiliate_id = $1
+        `, [affiliate.id]);
+
+        const referrals = referralsResult.rows[0];
+        const commissions = commissionsResult.rows[0];
+
+        return {
+          ...affiliate,
+          commissionRate: parseFloat(affiliate.commission_rate) || 0,
+          totalCommissions: parseFloat(affiliate.total_commissions) || 0,
+          pendingCommissions: parseFloat(affiliate.pending_commissions) || 0,
+          paidCommissions: parseFloat(affiliate.paid_commissions) || 0,
+          referrals: {
+            total: parseInt(referrals.total_referrals) || 0,
+            active: parseInt(referrals.active_referrals) || 0,
+            newThisMonth: parseInt(referrals.new_referrals_month) || 0
+          },
+          commissionsStats: {
+            totalTransactions: parseInt(commissions.total_commissions) || 0,
+            totalAmount: parseFloat(commissions.total_amount) || 0,
+            pendingAmount: parseFloat(commissions.pending_amount) || 0,
+            paidAmount: parseFloat(commissions.paid_amount) || 0,
+            avgCommission: parseFloat(commissions.avg_commission) || 0
+          }
+        };
+      })
+    );
+
+    const response = {
+      affiliates: affiliatesWithStats,
+      pagination: {
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit as string))
+      },
+      filters: { search, status, sortBy, sortOrder }
+    };
+
+    console.log(`✅ ${affiliatesWithStats.length} afiliados retornados de ${total} total`);
+    return res.status(200).json(response);
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar afiliados:', error);
+    throw error;
+  }
 }
 
-async function handleUpdateAffiliate(req: NextApiRequest, res: NextApiResponse) {
-  const { affiliateId, updates } = req.body;
+// POST - Criar novo afiliado
+async function createAffiliate(req: NextApiRequest, res: NextApiResponse) {
+  const { userId, commissionRate = 10, status = 'active' } = req.body;
 
-  if (!affiliateId || !updates) {
-    return res.status(400).json({ message: 'Affiliate ID e updates são obrigatórios' });
-  }
-
-  // Campos permitidos para atualização
-  const allowedFields = ['commission_rate', 'status'];
-  const updateFields: string[] = [];
-  const updateValues: any[] = [];
-  let paramCount = 0;
-
-  Object.keys(updates).forEach(field => {
-    if (allowedFields.includes(field)) {
-      paramCount++;
-      updateFields.push(`${field} = $${paramCount}`);
-      updateValues.push(updates[field]);
-    }
-  });
-
-  if (updateFields.length === 0) {
-    return res.status(400).json({ message: 'Nenhum campo válido para atualizar' });
-  }
-
-  paramCount++;
-  updateValues.push(affiliateId);
-
-  const result = await query(`
-    UPDATE affiliates 
-    SET ${updateFields.join(', ')}, updated_at = NOW()
-    WHERE id = $${paramCount}
-    RETURNING id, affiliate_code, commission_rate, status
-  `, updateValues);
-
-  if (result.rows.length === 0) {
-    return res.status(404).json({ message: 'Afiliado não encontrado' });
-  }
-
-  // Log de auditoria
-  await query(
-    `INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values)
-     VALUES ($1, 'AFFILIATE_UPDATED_BY_ADMIN', 'affiliates', $2, $3, $4)`,
-    [null, affiliateId, JSON.stringify({}), JSON.stringify(updates)]
-  );
-
-  res.status(200).json({
-    message: 'Afiliado atualizado com sucesso',
-    affiliate: result.rows[0]
-  });
-}
-
-async function handleProcessPayouts(req: NextApiRequest, res: NextApiResponse) {
-  const { affiliateIds, processAll = false } = req.body;
-
-  if (!processAll && (!affiliateIds || !Array.isArray(affiliateIds))) {
-    return res.status(400).json({ message: 'IDs dos afiliados são obrigatórios ou use processAll' });
+  if (!userId) {
+    return res.status(400).json({ error: 'User ID é obrigatório' });
   }
 
   try {
-    // Começar transação
-    await query('BEGIN');
-
-    let whereClause = '';
-    let params: any[] = [];
-
-    if (!processAll) {
-      whereClause = `WHERE a.id = ANY($1) AND a.pending_payout > 0`;
-      params = [affiliateIds];
-    } else {
-      whereClause = `WHERE a.pending_payout > 0 AND a.status = 'active'`;
+    // Verificar se usuário existe
+    const userCheck = await query('SELECT id, name, email FROM users WHERE id = $1', [userId]);
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
-    // Buscar afiliados com pagamentos pendentes
-    const affiliatesResult = await query(`
-      SELECT id, user_id, pending_payout, affiliate_code
-      FROM affiliates a
-      ${whereClause}
-    `, params);
-
-    if (affiliatesResult.rows.length === 0) {
-      await query('ROLLBACK');
-      return res.status(404).json({ message: 'Nenhum afiliado com pagamentos pendentes encontrado' });
+    // Verificar se já é afiliado
+    const affiliateCheck = await query('SELECT id FROM affiliates WHERE user_id = $1', [userId]);
+    if (affiliateCheck.rows.length > 0) {
+      return res.status(409).json({ error: 'Usuário já é afiliado' });
     }
 
-    let totalProcessed = 0;
-    const processedAffiliates = [];
+    // Criar afiliado
+    const affiliateResult = await query(`
+      INSERT INTO affiliates (
+        user_id, commission_rate, status, created_at
+      ) VALUES ($1, $2, $3, NOW())
+      RETURNING id, user_id, commission_rate, status, created_at
+    `, [userId, commissionRate, status]);
 
-    for (const affiliate of affiliatesResult.rows) {
-      const payoutAmount = parseFloat(affiliate.pending_payout);
-      
-      // Atualizar saldos do afiliado
-      await query(`
-        UPDATE affiliates 
-        SET pending_payout = 0, 
-            paid_out = paid_out + $1,
-            updated_at = NOW()
-        WHERE id = $2
-      `, [payoutAmount, affiliate.id]);
+    const newAffiliate = affiliateResult.rows[0];
 
-      // Atualizar status das comissões para 'paid'
-      await query(`
-        UPDATE commissions 
-        SET status = 'paid', updated_at = NOW()
-        WHERE affiliate_id = $1 AND status = 'pending'
-      `, [affiliate.id]);
-
-      // Log de auditoria
-      await query(
-        `INSERT INTO audit_logs (user_id, action, table_name, record_id, new_values)
-         VALUES ($1, 'AFFILIATE_PAYOUT_PROCESSED', 'affiliates', $2, $3)`,
-        [affiliate.user_id, affiliate.id, JSON.stringify({ 
-          payout_amount: payoutAmount,
-          processed_by: 'admin',
-          processed_at: new Date().toISOString()
-        })]
-      );
-
-      totalProcessed += payoutAmount;
-      processedAffiliates.push({
-        id: affiliate.id,
-        affiliateCode: affiliate.affiliate_code,
-        payoutAmount
-      });
-    }
-
-    // Confirmar transação
-    await query('COMMIT');
-
-    res.status(200).json({
-      message: 'Pagamentos processados com sucesso',
-      totalProcessed,
-      affiliatesCount: processedAffiliates.length,
-      processedAffiliates
-    });
+    console.log('✅ Afiliado criado:', newAffiliate.id);
+    return res.status(201).json({ affiliate: newAffiliate });
 
   } catch (error) {
-    await query('ROLLBACK');
+    console.error('❌ Erro ao criar afiliado:', error);
+    throw error;
+  }
+}
+
+// PUT - Atualizar afiliado
+async function updateAffiliate(req: NextApiRequest, res: NextApiResponse) {
+  const { affiliateId, updates } = req.body;
+
+  if (!affiliateId) {
+    return res.status(400).json({ error: 'Affiliate ID é obrigatório' });
+  }
+
+  try {
+    const allowedFields = ['commission_rate', 'status'];
+
+    const updateFields = [];
+    const updateValues = [];
+    let paramIndex = 1;
+
+    Object.keys(updates).forEach(field => {
+      if (allowedFields.includes(field)) {
+        updateFields.push(`${field} = $${paramIndex}`);
+        updateValues.push(updates[field]);
+        paramIndex++;
+      }
+    });
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({ error: 'Nenhum campo válido para atualizar' });
+    }
+
+    updateValues.push(affiliateId);
+    
+    const updateQuery = `
+      UPDATE affiliates 
+      SET ${updateFields.join(', ')}, updated_at = NOW()
+      WHERE id = $${paramIndex}
+      RETURNING id, user_id, commission_rate, status, updated_at
+    `;
+
+    const result = await query(updateQuery, updateValues);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Afiliado não encontrado' });
+    }
+
+    console.log('✅ Afiliado atualizado:', affiliateId);
+    return res.status(200).json({ affiliate: result.rows[0] });
+
+  } catch (error) {
+    console.error('❌ Erro ao atualizar afiliado:', error);
     throw error;
   }
 }
