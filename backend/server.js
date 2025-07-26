@@ -1,13 +1,14 @@
-// 🚀 CoinBitClub Market Bot - Servidor Completo com Novas Funcionalidades
-// Versão otimizada para Railway com todas as rotas implementadas
+// 🚀 CoinBitClub Market Bot - Servidor Completo com Integração Zapi
+// Versão otimizada para Railway com WhatsApp Business API
 
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
-// Importar rotas WhatsApp
+// Importar rotas WhatsApp e Zapi
 const whatsappRoutes = require('./routes/whatsappRoutes');
+const zapiWebhookRoutes = require('./routes/zapiWebhookRoutes');
 
 console.log('🚀 INICIANDO SERVIDOR COINBITCLUB COMPLETO...');
 
@@ -85,6 +86,43 @@ app.get('/api/status', (req, res) => {
 
 // ===== ROTAS WhatsApp VERIFICATION =====
 app.use('/api', whatsappRoutes);
+
+// ===== ROTAS WEBHOOK ZAPI (TEMPORÁRIAS) =====
+app.post('/api/webhooks/zapi/configure', async (req, res) => {
+  try {
+    const { instanceId, instanceName, token, webhookUrl } = req.body;
+    
+    if (!instanceId || !token) {
+      return res.status(400).json({
+        success: false,
+        error: 'Instance ID e token são obrigatórios'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Configuração Zapi simulada com sucesso',
+      instance_id: instanceId,
+      updated_at: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/api/webhooks/zapi/status', async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      zapi_instance: { status: 'simulated', success: true },
+      database_config: { success: true, message: 'Configuração simulada' },
+      message_stats: { success: true, total_messages: 0 },
+      checked_at: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 // ===== ROTAS DE EMERGÊNCIA ADMIN =====
 
