@@ -3,9 +3,9 @@ import { NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { FiPhone, FiArrowLeft, FiCheck, FiLoader, FiAlertCircle, FiKey, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiPhone, FiCheck, FiArrowLeft, FiLoader, FiAlertCircle, FiKey, FiEye, FiEyeOff } from 'react-icons/fi';
 
-const ForgotPasswordPage: NextPage = () => {
+const ForgotPasswordWhatsAppPage: NextPage = () => {
   const router = useRouter();
   const [step, setStep] = useState(1); // 1: WhatsApp, 2: Código, 3: Nova Senha
   const [formData, setFormData] = useState({
@@ -54,7 +54,7 @@ const ForgotPasswordPage: NextPage = () => {
         setVerification(prev => ({
           ...prev,
           codeSent: true,
-          generatedCode: data.verificationCode
+          generatedCode: data.verificationCode // Em produção não retornaria isso
         }));
         setStep(2);
         setMessage('Código de verificação enviado via WhatsApp!');
@@ -635,4 +635,4 @@ const ForgotPasswordPage: NextPage = () => {
   );
 };
 
-export default ForgotPasswordPage;
+export default ForgotPasswordWhatsAppPage;

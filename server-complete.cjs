@@ -6,9 +6,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
-// Importar rotas WhatsApp
-const whatsappRoutes = require('./routes/whatsappRoutes');
-
 console.log('🚀 INICIANDO SERVIDOR COINBITCLUB COMPLETO...');
 
 const app = express();
@@ -51,9 +48,7 @@ app.get('/api/health', (req, res) => {
       'emergency-controls',
       'ia-aguia',
       'stripe-webhooks',
-      'affiliate-system',
-      'whatsapp-verification',
-      'whatsapp-password-reset'
+      'affiliate-system'
     ]
   });
 });
@@ -74,17 +69,11 @@ app.get('/api/status', (req, res) => {
       admin_emergency_controls: true,
       stripe_integration: true,
       affiliate_system: true,
-      webhook_system: true,
-      whatsapp_verification: true,
-      whatsapp_password_reset: true,
-      admin_manual_reset: true
+      webhook_system: true
     },
     compliance_percentage: 100
   });
 });
-
-// ===== ROTAS WhatsApp VERIFICATION =====
-app.use('/api', whatsappRoutes);
 
 // ===== ROTAS DE EMERGÊNCIA ADMIN =====
 
@@ -292,15 +281,6 @@ app.get('/api/test/endpoints', (req, res) => {
       webhooks: [
         'POST /api/webhooks/stripe',
         'POST /api/webhooks/tradingview'
-      ],
-      whatsapp: [
-        'POST /api/whatsapp/start-verification',
-        'POST /api/whatsapp/verify-code',
-        'POST /api/auth/forgot-password-whatsapp',
-        'POST /api/auth/reset-password-whatsapp',
-        'POST /api/admin/reset-user-password',
-        'GET /api/admin/whatsapp-logs',
-        'GET /api/admin/whatsapp-stats'
       ]
     },
     authentication: {
@@ -324,10 +304,7 @@ app.get('/', (req, res) => {
       'Stripe Integration',
       'TradingView Webhooks',
       'API Key Management',
-      'Affiliate System',
-      'WhatsApp Verification',
-      'WhatsApp Password Reset',
-      'Admin Manual Reset'
+      'Affiliate System'
     ],
     endpoints: '/api/test/endpoints',
     timestamp: new Date().toISOString()

@@ -3,17 +3,25 @@ import { NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { FiPhone, FiCheck, FiAlertCircle, FiLoader } from 'react-icons/fi';
 
 const RegisterPage: NextPage = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    phone: '',
+    whatsapp: '',
     password: '',
     confirmPassword: '',
     termsAccepted: false,
     userType: 'user' // user, affiliate
+  });
+  const [whatsappVerification, setWhatsappVerification] = useState({
+    codeSent: false,
+    code: '',
+    verified: false,
+    verificationCode: '',
+    loading: false
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -25,12 +33,92 @@ const RegisterPage: NextPage = () => {
     }));
   };
 
+  // Função para enviar código de verificação do WhatsApp
+  const sendWhatsAppVerification = async () => {
+    if (!formData.whatsapp) {
+      setError('Por favor, insira seu número de WhatsApp');
+      return;
+    }
+
+    setWhatsappVerification(prev => ({ ...prev, loading: true }));
+    setError('');
+
+    try {
+      const response = await fetch('/api/auth/send-whatsapp-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ whatsapp: formData.whatsapp })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setWhatsappVerification(prev => ({
+          ...prev,
+          codeSent: true,
+          loading: false,
+          verificationCode: data.verificationCode // Em produção, isso não seria retornado
+        }));
+      } else {
+        setError(data.message || 'Erro ao enviar código de verificação');
+        setWhatsappVerification(prev => ({ ...prev, loading: false }));
+      }
+    } catch (error) {
+      setError('Erro ao conectar com o servidor');
+      setWhatsappVerification(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  // Função para verificar código do WhatsApp
+  const verifyWhatsAppCode = async () => {
+    if (!whatsappVerification.code) {
+      setError('Por favor, insira o código de verificação');
+      return;
+    }
+
+    setWhatsappVerification(prev => ({ ...prev, loading: true }));
+    setError('');
+
+    try {
+      const response = await fetch('/api/auth/verify-whatsapp-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          whatsapp: formData.whatsapp,
+          code: whatsappVerification.code 
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setWhatsappVerification(prev => ({
+          ...prev,
+          verified: true,
+          loading: false
+        }));
+      } else {
+        setError(data.message || 'Código de verificação inválido');
+        setWhatsappVerification(prev => ({ ...prev, loading: false }));
+      }
+    } catch (error) {
+      setError('Erro ao conectar com o servidor');
+      setWhatsappVerification(prev => ({ ...prev, loading: false }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     // Validações
+    if (!whatsappVerification.verified) {
+      setError('Por favor, verifique seu número de WhatsApp antes de continuar.');
+      setLoading(false);
+      return;
+    }
+
     if (!formData.termsAccepted) {
       setError('Você deve aceitar os Termos de Uso para continuar.');
       setLoading(false);
@@ -58,9 +146,10 @@ const RegisterPage: NextPage = () => {
         body: JSON.stringify({
           fullName: formData.fullName,
           email: formData.email,
-          phone: formData.phone,
+          whatsapp: formData.whatsapp,
           password: formData.password,
           userType: formData.userType,
+          whatsappVerified: whatsappVerification.verified
         }),
       });
 
@@ -277,25 +366,146 @@ const RegisterPage: NextPage = () => {
                 fontSize: '0.9rem',
                 fontWeight: '500',
               }}>
-                Telefone
+                WhatsApp
               </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                required
-                style={{
-                  width: '100%',
-                  padding: '0.875rem',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  color: '#fff',
-                  fontSize: '1rem',
-                  fontFamily: 'inherit',
-                  outline: 'none',
-                }}
-              />
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input
+                  type="tel"
+                  value={formData.whatsapp}
+                  onChange={(e) => handleInputChange('whatsapp', e.target.value)}
+                  placeholder="+55 (11) 99999-9999"
+                  required
+                  disabled={whatsappVerification.verified}
+                  style={{
+                    flex: 1,
+                    padding: '0.875rem',
+                    borderRadius: '8px',
+                    border: whatsappVerification.verified 
+                      ? '1px solid #10B981' 
+                      : '1px solid rgba(255, 255, 255, 0.2)',
+                    background: whatsappVerification.verified 
+                      ? 'rgba(16, 185, 129, 0.1)' 
+                      : 'rgba(255, 255, 255, 0.05)',
+                    color: '#fff',
+                    fontSize: '1rem',
+                    fontFamily: 'inherit',
+                    outline: 'none',
+                  }}
+                />
+                {!whatsappVerification.verified && (
+                  <button
+                    type="button"
+                    onClick={sendWhatsAppVerification}
+                    disabled={whatsappVerification.loading || !formData.whatsapp}
+                    style={{
+                      padding: '0.875rem 1rem',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: '#F59E0B',
+                      color: '#000',
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      cursor: whatsappVerification.loading ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      minWidth: '120px',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {whatsappVerification.loading ? (
+                      <FiLoader className="animate-spin" />
+                    ) : (
+                      <FiPhone />
+                    )}
+                    {whatsappVerification.loading ? 'Enviando...' : 'Verificar'}
+                  </button>
+                )}
+                {whatsappVerification.verified && (
+                  <div style={{
+                    padding: '0.875rem',
+                    borderRadius: '8px',
+                    background: 'rgba(16, 185, 129, 0.2)',
+                    color: '#10B981',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    <FiCheck />
+                    Verificado
+                  </div>
+                )}
+              </div>
+              
+              {whatsappVerification.codeSent && !whatsappVerification.verified && (
+                <div style={{ marginTop: '1rem' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    color: '#F59E0B',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                  }}>
+                    Código de Verificação (enviado via WhatsApp)
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      value={whatsappVerification.code}
+                      onChange={(e) => setWhatsappVerification(prev => ({ ...prev, code: e.target.value }))}
+                      placeholder="Digite o código recebido"
+                      maxLength={6}
+                      style={{
+                        flex: 1,
+                        padding: '0.875rem',
+                        borderRadius: '8px',
+                        border: '1px solid #F59E0B',
+                        background: 'rgba(245, 158, 11, 0.1)',
+                        color: '#fff',
+                        fontSize: '1rem',
+                        fontFamily: 'inherit',
+                        outline: 'none',
+                        textAlign: 'center',
+                        letterSpacing: '2px'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={verifyWhatsAppCode}
+                      disabled={whatsappVerification.loading || !whatsappVerification.code}
+                      style={{
+                        padding: '0.875rem 1rem',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: '#10B981',
+                        color: '#fff',
+                        fontSize: '0.9rem',
+                        fontWeight: '600',
+                        cursor: whatsappVerification.loading ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        minWidth: '120px',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {whatsappVerification.loading ? (
+                        <FiLoader className="animate-spin" />
+                      ) : (
+                        <FiCheck />
+                      )}
+                      {whatsappVerification.loading ? 'Verificando...' : 'Confirmar'}
+                    </button>
+                  </div>
+                  <p style={{
+                    fontSize: '0.8rem',
+                    color: '#B0B3B8',
+                    marginTop: '0.5rem'
+                  }}>
+                    Código de teste: <strong>{whatsappVerification.verificationCode}</strong> (apenas para demonstração)
+                  </p>
+                </div>
+              )}
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
