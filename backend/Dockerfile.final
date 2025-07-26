@@ -1,0 +1,36 @@
+# Dockerfile FINAL para Railway - Resolver 502
+FROM node:18-alpine
+
+# Metadados
+LABEL version="final-1.0.0"
+LABEL description="CoinBitClub Final Server for Railway"
+
+# Diretório de trabalho
+WORKDIR /app
+
+# Copiar package.json
+COPY package*.json ./
+
+# Instalar dependências com cache limpo
+RUN npm ci --only=production && npm cache clean --force
+
+# Copiar servidor final
+COPY api-gateway/server-final.cjs ./
+
+# Criar usuário não-root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S coinbit -u 1001
+
+# Mudar ownership
+RUN chown -R coinbit:nodejs /app
+USER coinbit
+
+# Expor porta
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+
+# Comando final
+CMD ["node", "server-final.cjs"]
