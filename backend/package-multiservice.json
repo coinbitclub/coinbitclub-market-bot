@@ -1,7 +1,7 @@
 {
   "name": "coinbitclub-market-bot-multiservice",
   "version": "3.0.0",
-  "description": "CoinBitClub Market Bot - Servidor Multiserviço Completo Railway V3 - Webhooks TradingView",
+  "description": "CoinBitClub Market Bot - Servidor Multiserviço Completo Railway V3",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

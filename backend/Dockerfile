@@ -1,43 +1,24 @@
-﻿# CoinBitClub Market Bot - Backend Only - Railway Optimized
+# Use Node.js 18 Alpine image
 FROM node:18-alpine
 
-# Install system dependencies for Railway
-RUN apk add --no-cache dumb-init curl
-
-# Create app directory
+# Set working directory
 WORKDIR /app
 
-# Copy package files first for better Docker layer caching
-COPY api-gateway/package*.json ./api-gateway/
+# Copy package files
+COPY package*.json ./
 
-# Install api-gateway dependencies
-WORKDIR /app/api-gateway
-RUN npm ci --only=production --no-audit --no-fund
+# Install production dependencies (use npm install instead of npm ci to handle version mismatches)
+RUN npm install --only=production
 
-# Copy server file specifically
-COPY api-gateway/server.cjs ./
-COPY api-gateway/knexfile.js ./
+# Copy application code
+COPY . .
 
-# Copy other necessary files if they exist
-COPY api-gateway/src ./src/ 2>/dev/null || true
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
-
-# Change ownership
-RUN chown -R nodejs:nodejs /app
-USER nodejs
-
-# Set working directory to api-gateway
-WORKDIR /app/api-gateway
-
-# Expose Railway port
+# Expose port
 EXPOSE 3000
 
-# Health check specifically for Railway
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
-  CMD curl -f http://localhost:3000/health || exit 1
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=3000
 
-# Start application directly with node (not npm)
-CMD ["node", "server.cjs"]
+# Start the application
+CMD ["node", "server.js"]

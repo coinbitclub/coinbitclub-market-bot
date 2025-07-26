@@ -70,6 +70,102 @@ app.post('/webhook/signal1', (req, res) => {
   });
 });
 
+// === WEBHOOKS TRADINGVIEW ===
+
+// Webhook para sinais do TradingView
+app.post('/api/webhooks/signal', (req, res) => {
+  const { token } = req.query;
+  const signalData = req.body;
+  
+  console.log('🎯 WEBHOOK SINAL TRADINGVIEW:', JSON.stringify(signalData));
+  
+  // Verificar token
+  if (!token || token !== '210406') {
+    console.log('❌ Token inválido:', token);
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+  
+  try {
+    // Determinar ação baseada nos cruzamentos EMA9
+    let action = 'HOLD';
+    if (signalData.cruzou_acima_ema9 === '1' || signalData.cruzou_acima_ema9 === 1) {
+      action = 'BUY';
+    } else if (signalData.cruzou_abaixo_ema9 === '1' || signalData.cruzou_abaixo_ema9 === 1) {
+      action = 'SELL';
+    }
+    
+    console.log(`✅ Sinal processado: ${action} para ${signalData.ticker}`);
+    
+    res.json({
+      status: 'success',
+      message: 'Sinal CoinBitClub recebido e processado',
+      action: action,
+      symbol: signalData.ticker,
+      timestamp: new Date().toISOString(),
+      server: 'railway-ultra-minimal'
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro no webhook de sinal:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro ao processar sinal',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Webhook para dominância BTC
+app.post('/api/webhooks/dominance', (req, res) => {
+  const { token } = req.query;
+  const dominanceData = req.body;
+  
+  console.log('📈 WEBHOOK DOMINÂNCIA BTC:', JSON.stringify(dominanceData));
+  
+  // Verificar token
+  if (!token || token !== '210406') {
+    console.log('❌ Token inválido:', token);
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+  
+  try {
+    console.log(`✅ Dominância processada: ${dominanceData.btc_dominance}% (${dominanceData.sinal})`);
+    
+    res.json({
+      status: 'success',
+      message: 'Dados de dominância BTC recebidos e processados',
+      dominance: dominanceData.btc_dominance,
+      signal: dominanceData.sinal,
+      timestamp: new Date().toISOString(),
+      server: 'railway-ultra-minimal'
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro no webhook de dominância:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro ao processar dominância',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Endpoint para consultar sinais recentes (simulado)
+app.get('/api/webhooks/signals/recent', (req, res) => {
+  console.log('📊 Consultando sinais recentes (mock)');
+  
+  res.json({
+    status: 'success',
+    count: 0,
+    signals: [],
+    message: 'Endpoint funcionando - banco não conectado no ultra-minimal',
+    timestamp: new Date().toISOString(),
+    server: 'railway-ultra-minimal'
+  });
+});
+
 // 404
 app.use((req, res) => {
   console.log(`404: ${req.method} ${req.path}`);

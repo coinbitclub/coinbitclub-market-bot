@@ -591,7 +591,217 @@ async function handleChargeRefunded(charge) {
   }
 }
 
-// Rota do webhook
+/**
+ * TradingView Signal Webhook - Processamento do código Pine CoinBitClub
+ */
+export const tradingViewSignalWebhook = handleAsyncError(async (req, res) => {
+  const { token } = req.query;
+  const signalData = req.body;
+
+  // Verificar token de autenticação
+  if (!token || token !== env.WEBHOOK_TOKEN) {
+    logger.warn({ ip: req.ip, token }, 'Tentativa de acesso não autorizada ao webhook de sinal');
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+
+  try {
+    // Salvar o webhook bruto
+    const [webhookLog] = await db('raw_webhook').insert({
+      source: 'tradingview_signal',
+      payload: signalData,
+      status: 'received',
+      received_at: new Date(),
+      ip_address: req.ip
+    }).returning('id');
+
+    logger.info({ 
+      webhookId: webhookLog.id,
+      ticker: signalData.ticker,
+      signal: signalData 
+    }, 'Webhook de sinal TradingView recebido');
+
+    // Determinar ação baseada nos cruzamentos EMA9
+    let action = 'HOLD';
+    if (signalData.cruzou_acima_ema9 === '1' || signalData.cruzou_acima_ema9 === 1) {
+      action = 'BUY';
+    } else if (signalData.cruzou_abaixo_ema9 === '1' || signalData.cruzou_abaixo_ema9 === 1) {
+      action = 'SELL';
+    }
+
+    // Salvar sinal processado na estrutura existente
+    await db('trading_signals').insert({
+      webhook_id: webhookLog.id,
+      source: 'tradingview',
+      symbol: signalData.ticker || 'UNKNOWN',
+      action: action,
+      price: parseFloat(signalData.close) || null,
+      volume: parseFloat(signalData.vol_30) || null,
+      strategy: 'CoinBitClub-CompleteSignal',
+      exchange: 'tradingview',
+      timeframe: '30m', // Baseado no timeframe do indicador
+      signal_timestamp: signalData.time ? new Date(signalData.time) : new Date(),
+      created_at: new Date(),
+      processed_at: new Date(),
+      status: 'processed',
+      metadata: {
+        // Dados técnicos do Pine Script
+        ema9_30: parseFloat(signalData.ema9_30) || null,
+        rsi_4h: parseFloat(signalData.rsi_4h) || null,
+        rsi_15: parseFloat(signalData.rsi_15) || null,
+        momentum_15: parseFloat(signalData.momentum_15) || null,
+        atr_30: parseFloat(signalData.atr_30) || null,
+        atr_pct_30: parseFloat(signalData.atr_pct_30) || null,
+        vol_ma_30: parseFloat(signalData.vol_ma_30) || null,
+        diff_btc_ema7: parseFloat(signalData.diff_btc_ema7) || null,
+        cruzou_acima_ema9: signalData.cruzou_acima_ema9 === '1' || signalData.cruzou_acima_ema9 === 1,
+        cruzou_abaixo_ema9: signalData.cruzou_abaixo_ema9 === '1' || signalData.cruzou_abaixo_ema9 === 1,
+        
+        // Dados originais para auditoria
+        original_payload: signalData,
+        processed_at: new Date()
+      },
+      raw_data: signalData
+    });
+
+    // Atualizar status do webhook
+    await db('raw_webhook')
+      .where({ id: webhookLog.id })
+      .update({ 
+        status: 'processed',
+        processed_at: new Date()
+      });
+
+    res.json({ 
+      status: 'success', 
+      message: 'Sinal CoinBitClub recebido e processado',
+      webhook_id: webhookLog.id,
+      action: action,
+      symbol: signalData.ticker,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    logger.error({ error, signalData }, 'Erro ao processar webhook de sinal TradingView');
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+/**
+ * TradingView Dominance Webhook - Processamento do código Pine BTC Dominance
+ */
+export const tradingViewDominanceWebhook = handleAsyncError(async (req, res) => {
+  const { token } = req.query;
+  const dominanceData = req.body;
+
+  // Verificar token de autenticação
+  if (!token || token !== env.WEBHOOK_TOKEN) {
+    logger.warn({ ip: req.ip, token }, 'Tentativa de acesso não autorizada ao webhook de dominância');
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+
+  try {
+    // Salvar o webhook bruto
+    const [webhookLog] = await db('raw_webhook').insert({
+      source: 'tradingview_dominance',
+      payload: dominanceData,
+      status: 'received',
+      received_at: new Date(),
+      ip_address: req.ip
+    }).returning('id');
+
+    logger.info({ 
+      webhookId: webhookLog.id,
+      ticker: dominanceData.ticker,
+      dominance: dominanceData.btc_dominance,
+      sinal: dominanceData.sinal
+    }, 'Webhook de dominância TradingView recebido');
+
+    // Salvar dados de dominância
+    await db('dominance_data').insert({
+      webhook_id: webhookLog.id,
+      symbol: dominanceData.ticker || 'BTC.D',
+      dominance_percentage: parseFloat(dominanceData.btc_dominance) || null,
+      signal_timestamp: dominanceData.time ? new Date(dominanceData.time) : new Date(),
+      source: 'tradingview',
+      metadata: {
+        // Dados específicos do Pine Script de dominância
+        ema_7: parseFloat(dominanceData.ema_7) || null,
+        diff_pct: parseFloat(dominanceData.diff_pct) || null,
+        sinal: dominanceData.sinal || 'NEUTRO',
+        
+        // Dados técnicos calculados
+        dominance_trend: dominanceData.sinal,
+        trend_strength: Math.abs(parseFloat(dominanceData.diff_pct) || 0),
+        
+        // Dados originais para auditoria
+        original_payload: dominanceData,
+        processed_at: new Date()
+      }
+    });
+
+    // Atualizar status do webhook
+    await db('raw_webhook')
+      .where({ id: webhookLog.id })
+      .update({ 
+        status: 'processed',
+        processed_at: new Date()
+      });
+
+    res.json({ 
+      status: 'success', 
+      message: 'Dados de dominância BTC recebidos e processados',
+      webhook_id: webhookLog.id,
+      dominance: dominanceData.btc_dominance,
+      signal: dominanceData.sinal,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    logger.error({ error, dominanceData }, 'Erro ao processar webhook de dominância TradingView');
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+/**
+ * Endpoint para consultar sinais recentes
+ */
+export const getRecentSignals = handleAsyncError(async (req, res) => {
+  const { limit = 50, symbol, status } = req.query;
+
+  try {
+    let query = db('trading_signals')
+      .select('*')
+      .orderBy('created_at', 'desc')
+      .limit(parseInt(limit));
+
+    if (symbol) {
+      query = query.where('symbol', 'ilike', `%${symbol}%`);
+    }
+
+    if (status) {
+      query = query.where('status', status);
+    }
+
+    const signals = await query;
+
+    res.json({
+      status: 'success',
+      count: signals.length,
+      signals: signals
+    });
+
+  } catch (error) {
+    logger.error({ error }, 'Erro ao consultar sinais recentes');
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Rotas dos webhooks
 router.post('/stripe', express.raw({ type: 'application/json' }), stripeWebhookEnhanced);
+router.post('/signal', tradingViewSignalWebhook);
+router.post('/dominance', tradingViewDominanceWebhook);
+
+// Rotas de consulta
+router.get('/signals/recent', getRecentSignals);
 
 export default router;

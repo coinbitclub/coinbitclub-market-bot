@@ -1,0 +1,36 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "node server.js"
+restartPolicyType = "always"
+restartPolicyMaxRetries = 10
+
+[environments.production.variables]
+NODE_ENV = "production"
+PORT = "3000"
+
+[environments.production.deploy]
+startCommand = "node server.js"
+
+# Configurações específicas para multiserviço
+[settings]
+generateDomain = true
+
+# Configurações de build otimizadas
+[build.env]
+NPM_CONFIG_PRODUCTION = "false"
+NODE_OPTIONS = "--max-old-space-size=4096"
+
+# Health checks
+[healthcheck]
+path = "/health"
+port = 3000
+initialDelaySeconds = 30
+periodSeconds = 10
+timeoutSeconds = 5
+failureThreshold = 3
+
+# Configurações de rede otimizadas para webhooks
+[networking]
+serviceDomain = true

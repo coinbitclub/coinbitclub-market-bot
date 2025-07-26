@@ -1,0 +1,73 @@
+# CoinBitClub Market Bot - Railway Migration V2
+# Dockerfile otimizado para resolver erro 502 definitivamente
+# MIGRATION VERSION: 2.0.0
+
+FROM node:18-alpine
+
+# Definir labels para identificação
+LABEL version="2.0.0-migration"
+LABEL description="CoinBitClub Market Bot - Railway V2 Clean Migration"
+LABEL maintainer="CoinBitClub Team"
+
+# Criar usuário não-root para segurança
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S coinbitclub -u 1001
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Copiar arquivos de dependências primeiro (para cache do Docker)
+COPY package*.json ./
+
+# Instalar dependências de produção apenas
+RUN npm ci --only=production --silent
+
+# Limpar cache do npm para reduzir tamanho da imagem
+RUN npm cache clean --force
+
+# Copiar código da aplicação
+COPY --chown=coinbitclub:nodejs server-migration-v2.cjs ./server.js
+
+# Criar estrutura de pastas necessárias
+RUN mkdir -p /app/logs /app/temp
+RUN chown -R coinbitclub:nodejs /app
+
+# Definir variáveis de ambiente
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOST=0.0.0.0
+
+# Otimizações para Railway
+ENV NODE_OPTIONS="--dns-result-order=ipv4first --max-old-space-size=512"
+
+# Mudar para usuário não-root
+USER coinbitclub
+
+# Expor porta
+EXPOSE 3000
+
+# Health check otimizado
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "
+    const http = require('http');
+    const options = {
+      hostname: 'localhost',
+      port: 3000,
+      path: '/health',
+      method: 'GET',
+      timeout: 5000
+    };
+    const req = http.request(options, (res) => {
+      if (res.statusCode === 200) {
+        process.exit(0);
+      } else {
+        process.exit(1);
+      }
+    });
+    req.on('error', () => process.exit(1));
+    req.on('timeout', () => process.exit(1));
+    req.end();
+  "
+
+# Comando para iniciar a aplicação
+CMD ["node", "server.js"]
