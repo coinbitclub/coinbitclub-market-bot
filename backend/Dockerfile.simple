@@ -1,0 +1,35 @@
+# Dockerfile simplificado para corrigir problemas Railway
+FROM node:18-alpine
+
+# Instalar dependências do sistema
+RUN apk add --no-cache curl
+
+# Criar diretório da aplicação
+WORKDIR /app
+
+# Copiar arquivos de dependências
+COPY api-gateway/package*.json ./
+
+# Instalar dependências
+RUN npm install --production
+
+# Copiar código da aplicação
+COPY api-gateway/ ./
+
+# Criar usuário não-root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Dar permissões
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+# Expor porta
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+# Comando de inicialização simplificado
+CMD ["node", "server.cjs"]

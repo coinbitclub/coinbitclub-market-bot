@@ -2,11 +2,10 @@
 node = "18"
 
 [build.cmd]
-cmd = "npm install"
+cmd = "cd api-gateway && npm install --production"
 
 [start]
 cmd = "cd api-gateway && npm start"
 
 [variables]
 NODE_ENV = "production"
-PORT = "3000"

@@ -1,13 +1,12 @@
-﻿[build]
+[build]
 builder = "dockerfile"
-dockerfilePath = "Dockerfile.production"
+dockerfilePath = "Dockerfile.simple"
 
 [deploy]
 startCommand = "node server.cjs"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 3
+restartPolicyType = "always"
 
 [environments.production]
 [environments.production.variables]
