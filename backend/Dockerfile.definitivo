@@ -1,0 +1,39 @@
+# DOCKERFILE DEFINITIVO - Resolve TODOS os problemas 502
+FROM node:18-alpine
+
+# Instalar wget para health check
+RUN apk add --no-cache wget
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Copiar TODOS os package.json necessários
+COPY package*.json ./
+COPY api-gateway/package*.json ./api-gateway/
+
+# Instalar dependências da raiz E do api-gateway
+RUN npm ci --only=production --silent
+RUN cd api-gateway && npm ci --only=production --silent
+
+# Copiar código do servidor
+COPY api-gateway/server-railway-fix.js ./server.js
+
+# Verificar se arquivo existe
+RUN ls -la server.js
+
+# Criar usuário seguro
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S railway -u 1001 && \
+    chown -R railway:nodejs /app
+
+USER railway
+
+# Expor porta Railway
+EXPOSE 3000
+
+# Health check otimizado
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+
+# Comando final - sem conflitos de module
+CMD ["node", "server.js"]

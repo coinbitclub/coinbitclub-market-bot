@@ -1,4 +1,4 @@
-﻿# Railway TOML DEFINITIVO - Configuração final
+# Railway TOML DEFINITIVO - Configuração final
 [build]
 builder = "dockerfile"
 dockerfilePath = "Dockerfile.definitivo"
