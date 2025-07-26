@@ -1,0 +1,17 @@
+FORCE BUILD RAILWAY
+===================
+Build ID: ae87a320-0921-4d32-9b35-d3f923839d5a
+Timestamp: 2025-07-26T01:10:00Z
+Cache Killer: ULTRA AGGRESSIVE
+Deploy Strategy: FORCE NO SKIP
+
+Este arquivo força o Railway a reconhecer mudanças significativas.
+
+MUDANÇAS CRÍTICAS:
+- Novo Dockerfile.force-build
+- Novo server-force-build.js  
+- Railway.toml completamente alterado
+- Build IDs únicos
+- Headers anti-cache extremos
+
+RAILWAY: VOCÊ DEVE FAZER BUILD AGORA!

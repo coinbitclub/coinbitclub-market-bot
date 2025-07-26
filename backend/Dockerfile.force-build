@@ -1,0 +1,59 @@
+# DOCKERFILE FORÇA BUILD - Railway Cache Killer
+# Build ID: ae87a320-0921-4d32-9b35-d3f923839d5a
+# Timestamp: 2025-07-26T01:10:00Z
+
+FROM node:18-alpine
+
+# Instalar ferramentas necessárias
+RUN apk add --no-cache wget curl
+
+# Argumentos de build únicos para quebrar cache
+ARG BUILD_ID=ae87a320-0921-4d32-9b35-d3f923839d5a
+ARG BUILD_TIME=2025-07-26T01:10:00Z
+ARG CACHE_KILLER=force-build-ultimate
+
+# Labels únicos
+LABEL build.id=${BUILD_ID}
+LABEL build.time=${BUILD_TIME} 
+LABEL cache.killer=${CACHE_KILLER}
+LABEL force.deploy="true"
+
+# Diretório
+WORKDIR /app
+
+# Copiar package.json com ID único
+COPY package*.json ./
+RUN echo "BUILD_ID=${BUILD_ID}" > .build-info
+RUN echo "BUILD_TIME=${BUILD_TIME}" >> .build-info
+RUN echo "CACHE_KILLER=${CACHE_KILLER}" >> .build-info
+
+# Instalar dependências
+RUN npm ci --only=production --silent
+
+# Copiar servidor força build
+COPY api-gateway/server-force-build.js ./server.js
+
+# Verificar arquivo
+RUN ls -la server.js
+RUN cat .build-info
+
+# Usuário seguro
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S railway -u 1001 && \
+    chown -R railway:nodejs /app
+
+USER railway
+
+# Porta
+EXPOSE 3000
+
+# Health check com build ID
+HEALTHCHECK --interval=20s --timeout=5s --start-period=30s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider "http://localhost:3000/health?build=${BUILD_ID}" || exit 1
+
+# Comando com variáveis de ambiente únicas
+ENV BUILD_ID=${BUILD_ID}
+ENV BUILD_TIME=${BUILD_TIME}
+ENV CACHE_KILLER=${CACHE_KILLER}
+
+CMD ["node", "server.js"]
