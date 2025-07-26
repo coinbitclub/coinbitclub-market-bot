@@ -1,0 +1,10 @@
+﻿providers = ["node"]
+
+[phases.install]
+cmd = "npm ci --only=production"
+
+[phases.start]
+cmd = "node server.js"
+
+[variables]
+NODE_ENV = "production"

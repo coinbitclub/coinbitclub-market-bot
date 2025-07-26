@@ -80,129 +80,48 @@ export default function OperationsManagementNew() {
     fetchOperations();
   }, [searchTerm, filterStatus, filterSymbol, filterSource]);
 
-  // Mock data para demonstração
+  // Atualizar a cada 60 segundos (1 minuto)
   useEffect(() => {
-    setLoading(true);
-    // Simular dados de operações
-    const mockOperations: Operation[] = [
-      {
-        id: '1',
-        symbol: 'BTCUSDT',
-        side: 'LONG',
-        status: 'RUNNING',
-        entry_price: 43250.75,
-        current_price: 43890.20,
-        quantity: 0.5,
-        pnl: 319.73,
-        pnl_percentage: 1.48,
-        start_time: '2024-07-25T08:30:00Z',
-        signal_source: 'tradingview',
-        confidence: 92,
-        risk_level: 'medium',
-        leverage: 2,
-        stop_loss: 42800.00,
-        take_profit: 44500.00,
-        user_name: 'João Silva'
-      },
-      {
-        id: '2',
-        symbol: 'ETHUSDT',
-        side: 'LONG',
-        status: 'RUNNING',
-        entry_price: 2680.50,
-        current_price: 2745.30,
-        quantity: 2.0,
-        pnl: 129.60,
-        pnl_percentage: 2.42,
-        start_time: '2024-07-25T07:15:00Z',
-        signal_source: 'ai_analysis',
-        confidence: 87,
-        risk_level: 'low',
-        leverage: 1,
-        stop_loss: 2600.00,
-        take_profit: 2800.00,
-        user_name: 'Maria Santos'
-      },
-      {
-        id: '3',
-        symbol: 'SOLUSDT',
-        side: 'SHORT',
-        status: 'PENDING',
-        entry_price: 195.75,
-        current_price: 195.20,
-        quantity: 10.0,
-        pnl: 0,
-        pnl_percentage: 0,
-        start_time: '2024-07-25T09:45:00Z',
-        signal_source: 'coinstar',
-        confidence: 78,
-        risk_level: 'high',
-        leverage: 3,
-        stop_loss: 202.00,
-        take_profit: 185.00,
-        user_name: 'Carlos Lima'
-      },
-      {
-        id: '4',
-        symbol: 'ADAUSDT',
-        side: 'LONG',
-        status: 'COMPLETED',
-        entry_price: 0.4850,
-        current_price: 0.5120,
-        quantity: 5000.0,
-        pnl: 1350.00,
-        pnl_percentage: 5.57,
-        start_time: '2024-07-24T14:20:00Z',
-        end_time: '2024-07-25T02:30:00Z',
-        signal_source: 'manual',
-        confidence: 95,
-        risk_level: 'low',
-        leverage: 1,
-        stop_loss: 0.4700,
-        take_profit: 0.5100,
-        user_name: 'Ana Costa'
-      },
-      {
-        id: '5',
-        symbol: 'BNBUSDT',
-        side: 'SHORT',
-        status: 'FAILED',
-        entry_price: 315.80,
-        current_price: 328.45,
-        quantity: 3.0,
-        pnl: -37.95,
-        pnl_percentage: -4.01,
-        start_time: '2024-07-24T16:10:00Z',
-        end_time: '2024-07-24T18:25:00Z',
-        signal_source: 'tradingview',
-        confidence: 65,
-        risk_level: 'high',
-        leverage: 2,
-        stop_loss: 325.00,
-        take_profit: 300.00,
-        user_name: 'Roberto Silva'
-      }
-    ];
-
-    setOperations(mockOperations);
-    
-    // Calcular estatísticas
-    const newStats = {
-      total: mockOperations.length,
-      running: mockOperations.filter(o => o.status === 'RUNNING').length,
-      pending: mockOperations.filter(o => o.status === 'PENDING').length,
-      completed: mockOperations.filter(o => o.status === 'COMPLETED').length,
-      cancelled: mockOperations.filter(o => o.status === 'CANCELLED').length,
-      failed: mockOperations.filter(o => o.status === 'FAILED').length,
-      total_pnl: mockOperations.reduce((sum, o) => sum + o.pnl, 0),
-      success_rate: (mockOperations.filter(o => o.status === 'COMPLETED' && o.pnl > 0).length / 
-                    mockOperations.filter(o => ['COMPLETED', 'FAILED'].includes(o.status)).length) * 100 || 0
-    };
-    
-    setStats(newStats);
-    setLoading(false);
+    const interval = setInterval(fetchOperations, 60000);
+    return () => clearInterval(interval);
   }, []);
 
+  // Funções para manipular operações
+  const handleStopOperation = async (operationId: string) => {
+    try {
+      const response = await fetch(`/api/admin/operations?id=${operationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'stop' })
+      });
+      
+      if (response.ok) {
+        fetchOperations();
+        alert('Operação parada com sucesso!');
+      }
+    } catch (error) {
+      console.error('Erro ao parar operação:', error);
+    }
+  };
+
+  const handleResumeOperation = async (operationId: string) => {
+    try {
+      const response = await fetch(`/api/admin/operations?id=${operationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'resume' })
+      });
+      
+      if (response.ok) {
+        fetchOperations();
+        alert('Operação retomada com sucesso!');
+      }
+    } catch (error) {
+      console.error('Erro ao retomar operação:', error);
+    }
+  };
+
+  // Filtrar operações
   const filteredOperations = operations.filter(operation => {
     const matchesSearch = operation.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (operation.user_name && operation.user_name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -212,24 +131,6 @@ export default function OperationsManagementNew() {
     
     return matchesSearch && matchesStatus && matchesSymbol && matchesSource;
   });
-
-  const handleStopOperation = (operationId: string) => {
-    if (confirm('Confirma a parada desta operação?')) {
-      setOperations(operations.map(o => 
-        o.id === operationId ? { ...o, status: 'CANCELLED' as const, end_time: new Date().toISOString() } : o
-      ));
-      alert('Operação parada com sucesso!');
-    }
-  };
-
-  const handleResumeOperation = (operationId: string) => {
-    if (confirm('Confirma a retomada desta operação?')) {
-      setOperations(operations.map(o => 
-        o.id === operationId ? { ...o, status: 'RUNNING' as const } : o
-      ));
-      alert('Operação retomada com sucesso!');
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -291,9 +192,9 @@ export default function OperationsManagementNew() {
         <meta name="description" content="Operações - CoinBitClub Admin" />
       </Head>
 
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-black flex">
         {/* Sidebar */}
-        <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-black/95 backdrop-blur-sm border-r border-yellow-400/30 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
+        <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-black/95 backdrop-blur-sm border-r border-yellow-400/30 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:relative lg:flex lg:flex-col lg:w-64`}>
           <div className="flex items-center justify-center h-16 px-4 bg-gradient-to-r from-yellow-400/20 to-pink-400/20 border-b border-yellow-400/30">
             <h1 className="text-xl font-bold text-yellow-400">⚡ CoinBitClub</h1>
             <button
@@ -343,7 +244,7 @@ export default function OperationsManagementNew() {
         </div>
 
         {/* Main Content */}
-        <div className="lg:ml-64">
+        <div className="flex-1 lg:w-0">
           {/* Header */}
           <header className="bg-black/90 backdrop-blur-sm border-b border-yellow-400/30">
             <div className="flex items-center justify-between px-8 py-6">
