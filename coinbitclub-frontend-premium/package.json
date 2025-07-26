@@ -23,7 +23,12 @@
     "test-suite": "node scripts/test-suite.js",
     "prepare-deploy": "node scripts/prepare-deploy.js",
     "deploy": "npm run prepare-deploy && vercel --prod",
-    "deploy-safe": "npm run fix && npm run test-suite && npm run build && vercel --prod"
+    "deploy-safe": "npm run fix && npm run test-suite && npm run build && vercel --prod",
+    "test:all": "node tests/run-all-tests.js",
+    "test:integration": "node tests/integration-test-complete.js",
+    "test:database": "node tests/database-test.js",
+    "test:frontend": "node tests/frontend-test.js",
+    "test:setup": "node tests/setup-test-env.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

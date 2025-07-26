@@ -15,8 +15,11 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci --only=production --silent && npm cache clean --force
 
-# Copy server
+# Copy server V2 - FORÇAR REBUILD
 COPY api-gateway/server-v2-clean.js ./server.js
+
+# Verificar arquivo copiado
+RUN ls -la server.js && echo "SERVER V2 COPIADO SUCESSO"
 
 # Non-root user
 RUN addgroup -g 1001 -S nodejs && \
