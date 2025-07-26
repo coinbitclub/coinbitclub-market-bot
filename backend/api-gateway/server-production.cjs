@@ -1,5 +1,6 @@
 // CoinBitClub Market Bot - Servidor Otimizado para Railway
 // Versão optimizada para resolver erro 502
+// Deploy timestamp: 2025-07-25T21:40:00Z - Force deploy after SKIP
 
 const express = require('express');
 const cors = require('cors');
@@ -8,6 +9,10 @@ const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 
 console.log('🚀 INICIANDO SERVIDOR OPTIMIZADO RAILWAY...');
+console.log('🔄 DEPLOY FORÇADO - Timestamp: 2025-07-25T21:40:00Z');
+
+// Versão para forçar deploy
+const DEPLOY_VERSION = '1.0.1-force-deploy-' + Date.now();
 
 // Configuração do Express
 const app = express();
@@ -77,7 +82,8 @@ app.get('/health', async (req, res) => {
       uptime: process.uptime(),
       memory: process.memoryUsage(),
       database: dbStatus ? 'connected' : 'disconnected',
-      version: '1.0.0-railway-optimized',
+      version: DEPLOY_VERSION,
+      railway_force_deploy: true,
       environment: process.env.NODE_ENV || 'production'
     };
     
@@ -100,7 +106,8 @@ app.get('/', (req, res) => {
   res.json({
     service: 'CoinBitClub Market Bot',
     status: 'active',
-    version: '1.0.0-railway-optimized',
+    version: DEPLOY_VERSION,
+    railway_force_deploy: true,
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     endpoints: {
