@@ -106,20 +106,9 @@ export default function AccountingManagementNew() {
   useEffect(() => {
     fetchAccountingData();
   }, [searchTerm, filterCategory, filterType, selectedPeriod]);
-  const [filterType, setFilterType] = useState('all');
+
   const [filterCurrency, setFilterCurrency] = useState('all');
   const [dateRange, setDateRange] = useState('30');
-  const [summary, setSummary] = useState<FinancialSummary>({
-    total_revenue: 0,
-    total_expenses: 0,
-    net_profit: 0,
-    profit_margin: 0,
-    trading_volume: 0,
-    commission_earned: 0,
-    fees_paid: 0,
-    active_users: 0,
-    monthly_growth: 0
-  });
 
   // Mock data para demonstração
   useEffect(() => {

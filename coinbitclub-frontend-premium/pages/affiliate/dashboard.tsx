@@ -4,8 +4,7 @@ import {
   FiHome, FiUsers, FiDollarSign, FiSettings, FiMenu, FiX,
   FiTrendingUp, FiRefreshCw, FiEye, FiShare2, FiCopy,
   FiShield, FiGift, FiTarget, FiBarChart, FiCalendar,
-  FiUser, FiAward, FiPercent, FiTrendingDown, FiLink,
-  FiStar, FiCrown, FiArrowUp, FiArrowDown, FiActivity
+  FiUser, FiAward, FiStar, FiArrowUp, FiArrowDown, FiActivity
 } from 'react-icons/fi';
 
 interface Referral {
@@ -462,7 +461,7 @@ export default function AffiliateDashboard() {
               {/* Informações do Afiliado */}
               <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border border-yellow-400/30">
                 <h3 className="text-xl font-bold text-yellow-400 mb-6 flex items-center">
-                  <FiCrown className="w-6 h-6 mr-3" />
+                  <FiStar className="w-6 h-6 mr-3" />
                   Seu Status de Afiliado
                 </h3>
 

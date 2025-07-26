@@ -18,6 +18,11 @@ import docsController from './controllers/docsController.js';
 import withdrawalController from './controllers/withdrawalController.js';
 import operationController from './controllers/operationController.js';
 import financialControlController from './controllers/financialControlController.js';
+import aiRoutes from './routes/aiRoutes.js';
+import tradingViewWebhookController from './controllers/tradingViewWebhookController.js';
+import affiliateControllerV2 from './controllers/affiliateControllerV2.js';
+import apiKeysController from './controllers/apiKeysController.js';
+import userDashboardController from './controllers/userDashboardController.js';
 import { authenticateToken, requireRole } from './middleware/auth.js';
 
 // Import do novo controlador Railway integrado
@@ -53,6 +58,15 @@ router.use('/orders', orders);
 // New business logic routes
 router.use('/subscriptions', subscriptionController);
 router.use('/affiliate', affiliateController);
+
+// Affiliate V2 routes (sistema de afiliados atualizado)
+router.get('/affiliate/v2/dashboard', authenticateToken, affiliateControllerV2.getDashboard.bind(affiliateControllerV2));
+router.get('/affiliate/v2/link', authenticateToken, affiliateControllerV2.getAffiliateLink.bind(affiliateControllerV2));
+router.get('/affiliate/v2/commissions', authenticateToken, affiliateControllerV2.getCommissions.bind(affiliateControllerV2));
+router.post('/affiliate/v2/withdraw', authenticateToken, affiliateControllerV2.requestWithdraw.bind(affiliateControllerV2));
+router.get('/affiliate/v2/withdrawals', authenticateToken, affiliateControllerV2.getWithdrawals.bind(affiliateControllerV2));
+router.get('/affiliate/v2/analytics', authenticateToken, affiliateControllerV2.getAnalytics.bind(affiliateControllerV2));
+
 router.use('/notifications', notificationController);
 router.use('/analytics', analyticsController);
 router.use('/settings', settingsController);
@@ -70,11 +84,31 @@ router.use('/operations', authenticateToken, operationController);
 // Financial control routes (admin only)
 router.use('/financial-control', requireRole('admin'), financialControlController);
 
+// AI Águia routes (sistema de IA para trading)
+router.use('/ai', aiRoutes);
+
+// User Dashboard routes (dashboard completo conforme especificação)
+router.get('/user/dashboard', authenticateToken, userDashboardController.getDashboard.bind(userDashboardController));
+
+// API Keys routes (gerenciamento de chaves de exchanges)
+router.get('/user/api-keys', authenticateToken, apiKeysController.getUserApiKeys.bind(apiKeysController));
+router.post('/user/api-keys', authenticateToken, apiKeysController.createOrUpdateApiKey.bind(apiKeysController));
+router.delete('/user/api-keys/:id', authenticateToken, apiKeysController.deleteApiKey.bind(apiKeysController));
+router.put('/user/api-keys/:id/toggle', authenticateToken, apiKeysController.toggleApiKey.bind(apiKeysController));
+router.get('/user/api-keys/validate/:id', authenticateToken, apiKeysController.validateApiKey.bind(apiKeysController));
+
 // Admin routes (require admin role)
 router.use('/admin', requireRole('admin'), adminController);
 
 // Webhook routes (no authentication required)
 router.use('/webhooks', webhookController);
+
+// TradingView webhook routes (no authentication required)
+router.post('/webhook/tradingview/alert', tradingViewWebhookController.receiveAlert.bind(tradingViewWebhookController));
+router.post('/webhook/tradingview/strategy', tradingViewWebhookController.automatedStrategy.bind(tradingViewWebhookController));
+
+// TradingView admin routes (require admin role)
+router.get('/admin/tradingview/alerts', requireRole('admin'), tradingViewWebhookController.getAlertHistory.bind(tradingViewWebhookController));
 
 // Admin Railway routes (integração completa com PostgreSQL Railway)
 router.use('/admin/railway', adminRailwayController);

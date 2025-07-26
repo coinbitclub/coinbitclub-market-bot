@@ -76,6 +76,11 @@ export default function AlertsManagementNew() {
   useEffect(() => {
     fetchAlerts();
   }, [searchTerm, filterStatus, filterType, filterPriority]);
+
+  // Mock data para demonstração
+  useEffect(() => {
+    setLoading(true);
+    const mockAlerts: Alert[] = [
       {
         id: '1',
         title: 'Operação de Alto Lucro Detectada',
