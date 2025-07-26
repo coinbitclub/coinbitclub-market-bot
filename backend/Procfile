@@ -1,1 +1,1 @@
-web: cd api-gateway && node server-production.cjs
+web: cd api-gateway && node server-cache-bust.cjs

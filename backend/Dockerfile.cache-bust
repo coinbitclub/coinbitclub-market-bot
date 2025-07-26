@@ -1,0 +1,36 @@
+# Cache Busting Dockerfile for Railway
+FROM node:18-alpine
+
+# Cache buster build arg
+ARG CACHE_BUST=unknown
+ENV CACHE_BUST_ID=$CACHE_BUST
+
+# Install system deps
+RUN apk add --no-cache curl ca-certificates tzdata
+
+WORKDIR /app
+
+# Copy package files
+COPY api-gateway/package*.json ./
+
+# Install deps with cache busting
+RUN npm ci --only=production --no-cache && \
+    rm -rf ~/.npm /tmp/*
+
+# Copy cache buster server
+COPY api-gateway/server-cache-bust.cjs ./server.cjs
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /app
+
+USER nodejs
+
+EXPOSE 3000
+
+# Health check with cache bust
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+CMD ["node", "server.cjs"]

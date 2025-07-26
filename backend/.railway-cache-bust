@@ -1,0 +1,15 @@
+# Cache Busting Force File
+# Data: 2025-07-25T21:50:00Z
+# Propósito: Forçar Railway a detectar mudanças
+
+CACHE_BUST_ID=6998fbda6-cache-bust-force
+TIMESTAMP=1737848400000
+RANDOM_HASH=4a7b9c2e8f1d3a6b
+DEPLOY_VERSION=v2.0.0-cache-bust-force
+
+# Este arquivo força o Railway a fazer deploy mesmo com cache
+# Cada commit deve alterar estes valores para quebrar o cache
+
+BUILD_NUMBER=2025072521500001
+FORCE_REBUILD=true
+CACHE_STRATEGY=no-cache-force-rebuild

@@ -1,6 +1,6 @@
 // CoinBitClub Market Bot - Servidor Otimizado para Railway
 // Versão optimizada para resolver erro 502
-// Deploy timestamp: 2025-07-25T21:40:00Z - Force deploy after SKIP
+// CACHE BUSTING DEPLOY: 2025-07-25T21:50:00Z
 
 const express = require('express');
 const cors = require('cors');
@@ -8,14 +8,27 @@ const crypto = require('crypto');
 const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 
-console.log('🚀 INICIANDO SERVIDOR OPTIMIZADO RAILWAY...');
-console.log('🔄 DEPLOY FORÇADO - Timestamp: 2025-07-25T21:40:00Z');
+console.log('🚀 INICIANDO SERVIDOR RAILWAY - CACHE BUSTING...');
+console.log('🧹 LIMPEZA DE CACHE FORÇADA - Deploy ID: ' + Math.random());
 
-// Versão para forçar deploy
-const DEPLOY_VERSION = '1.0.1-force-deploy-' + Date.now();
+// Versão dinâmica para quebrar cache
+const CACHE_BUST_VERSION = 'v2.0.0-cache-bust-' + Date.now() + '-' + Math.random().toString(36);
+const DEPLOY_HASH = crypto.randomBytes(8).toString('hex');
 
-// Configuração do Express
+// Configuração do Express com cache busting
 const app = express();
+
+// Cache busting headers
+app.use((req, res, next) => {
+  res.set({
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    'X-Deploy-Hash': DEPLOY_HASH,
+    'X-Cache-Bust': CACHE_BUST_VERSION
+  });
+  next();
+});
 
 // Middleware básico primeiro
 app.use(express.json({ limit: '50mb' }));
@@ -82,8 +95,9 @@ app.get('/health', async (req, res) => {
       uptime: process.uptime(),
       memory: process.memoryUsage(),
       database: dbStatus ? 'connected' : 'disconnected',
-      version: DEPLOY_VERSION,
-      railway_force_deploy: true,
+      version: CACHE_BUST_VERSION,
+      deploy_hash: DEPLOY_HASH,
+      cache_busted: true,
       environment: process.env.NODE_ENV || 'production'
     };
     
@@ -106,8 +120,9 @@ app.get('/', (req, res) => {
   res.json({
     service: 'CoinBitClub Market Bot',
     status: 'active',
-    version: DEPLOY_VERSION,
-    railway_force_deploy: true,
+    version: CACHE_BUST_VERSION,
+    deploy_hash: DEPLOY_HASH,
+    cache_busted: true,
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     endpoints: {

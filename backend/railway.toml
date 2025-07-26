@@ -1,9 +1,17 @@
 ﻿[build]
 builder = "dockerfile"
-dockerfilePath = "Dockerfile.production"
+dockerfilePath = "Dockerfile.cache-bust"
 
 [deploy]
 startCommand = "node server.cjs"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3ilder = "dockerfile"
+dockerfilePath = "Dockerfile.production"
+
+[deploy]
+startCommand = "cd api-gateway && node server-ultra-simple.cjs"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
