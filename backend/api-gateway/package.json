@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "server.cjs",
   "scripts": {
-    "start": "node server-debug.cjs",
+    "start": "node server-ultra-minimal.cjs",
+    "start:minimal": "node server-minimal.cjs",
+    "start:debug": "node server-debug.cjs",
     "start:full": "node server.cjs",
     "dev": "nodemon src/index.js",
     "migrate": "knex migrate:latest",
