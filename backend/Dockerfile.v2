@@ -1,0 +1,36 @@
+# Dockerfile para NOVO PROJETO RAILWAY V2
+# Configuração limpa sem conflitos
+
+FROM node:18-alpine
+
+# Instalar wget para health check
+RUN apk add --no-cache wget
+
+# Workdir
+WORKDIR /app
+
+# Package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production --silent && npm cache clean --force
+
+# Copy server
+COPY api-gateway/server-v2-clean.js ./server.js
+
+# Non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S railway -u 1001 && \
+    chown -R railway:nodejs /app
+
+USER railway
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+
+# Start command
+CMD ["node", "server.js"]

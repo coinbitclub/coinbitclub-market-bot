@@ -1,18 +1,17 @@
-# Railway.toml para NOVO PROJETO V2
-# Configuração limpa
-
+﻿# Railway FORÇA BUILD - ae87a320-0921-4d32-9b35-d3f923839d5a
 [build]
 builder = "dockerfile"
-dockerfilePath = "Dockerfile.v2"
+dockerfilePath = "Dockerfile.force-build"
 
 [deploy]
 startCommand = "node server.js"
 healthcheckPath = "/health"
-healthcheckTimeout = 120
+healthcheckTimeout = 90
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 2
 
 [environments.production]
 [environments.production.variables]
 NODE_ENV = "production"
-DATABASE_URL = "postgresql://postgres:TQDSOVEqxVgCFdcKtwHEvnkoLSTFvswS@yamabiko.proxy.rlwy.net:32866/railway"
+PORT = "3000"
+FORCE_BUILD_ID = "ae87a320-0921-4d32-9b35-d3f923839d5a"
