@@ -8,6 +8,10 @@ import {
   FiCreditCard, FiArrowUp, FiArrowDown, FiZap, FiGift, FiUser,
   FiCheck, FiX as FiCancel, FiCopy, FiSave, FiAlertCircle
 } from 'react-icons/fi';
+import {
+  MobileNav, MobileCard, ResponsiveGrid, MobileInput,
+  MobileButton, MobileModal, MobileTabs, MobileAlert
+} from '../../components/mobile/MobileComponents';
 
 interface User {
   id: string;
@@ -51,7 +55,8 @@ interface BalanceAdjustment {
 
 export default function CreditsManagement() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('balances'); // balances, coupons, history
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('balances');
   const [loading, setLoading] = useState(true);
   
   // Balance Management
@@ -78,214 +83,77 @@ export default function CreditsManagement() {
   // History
   const [adjustments, setAdjustments] = useState<BalanceAdjustment[]>([]);
   
-  // Filters
+  // UI States
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showBalanceModal, setShowBalanceModal] = useState(false);
   const [showCouponModal, setShowCouponModal] = useState(false);
 
-  // Stats
-  const [stats, setStats] = useState({
-    total_active_coupons: 0,
-    total_used_coupons: 0,
-    total_coupon_value: 0,
-    total_manual_credits: 0,
-    total_users_with_credits: 0
-  });
-
-  // Mock data - Em produção, buscar da API
+  // Mock data
   useEffect(() => {
     setLoading(true);
     
-    // Simular usuários
     const mockUsers: User[] = [
       {
-        id: 'user_001',
+        id: '1',
         name: 'João Silva',
         email: 'joao@email.com',
         whatsapp: '+5511999999999',
-        balance: 250.00,
+        balance: 1250.50,
         currency: 'USD',
-        plan: 'PRO',
+        plan: 'Premium',
         status: 'active'
       },
       {
-        id: 'user_002',
+        id: '2',
         name: 'Maria Santos',
         email: 'maria@email.com',
         whatsapp: '+5511888888888',
-        balance: 0.00,
+        balance: 750.25,
         currency: 'USD',
-        plan: 'FLEX',
-        status: 'active'
-      },
-      {
-        id: 'user_003',
-        name: 'Carlos Lima',
-        email: 'carlos@email.com',
-        whatsapp: '+5511777777777',
-        balance: 500.00,
-        currency: 'USD',
-        plan: 'PRO',
+        plan: 'Standard',
         status: 'active'
       }
     ];
 
-    // Simular cupons
     const mockCoupons: CreditCoupon[] = [
       {
-        id: 'coupon_001',
-        code: 'WELCOME50',
-        amount: 50.00,
+        id: '1',
+        code: 'CBC50OFF',
+        amount: 50,
         currency: 'USD',
-        description: 'Bônus de boas-vindas',
+        description: 'Cupom promocional de $50',
         usage_limit: 100,
         used_count: 23,
-        expires_at: '2025-12-31T23:59:59Z',
+        expires_at: '2024-12-31T23:59:59Z',
         created_at: '2024-07-01T10:00:00Z',
         status: 'active',
-        created_by: 'admin_001',
-        type: 'multi_use'
-      },
-      {
-        id: 'coupon_002',
-        code: 'PROMO100',
-        amount: 100.00,
-        currency: 'USD',
-        description: 'Promoção especial',
-        usage_limit: 50,
-        used_count: 45,
-        expires_at: '2025-08-15T23:59:59Z',
-        created_at: '2024-07-15T15:30:00Z',
-        status: 'active',
-        created_by: 'admin_001',
+        created_by: 'Admin',
         type: 'multi_use'
       }
     ];
 
-    // Simular histórico
     const mockAdjustments: BalanceAdjustment[] = [
       {
-        id: 'adj_001',
-        user_id: 'user_001',
+        id: '1',
+        user_id: '1',
         user_name: 'João Silva',
-        amount: 100.00,
+        amount: 50,
         currency: 'USD',
         type: 'manual_credit',
-        description: 'Crédito manual para teste',
-        admin_id: 'admin_001',
-        admin_name: 'Administrador',
+        description: 'Bônus de boas-vindas',
+        admin_id: 'admin_1',
+        admin_name: 'Admin Sistema',
         created_at: '2024-07-25T10:30:00Z',
-        withdrawable: false
-      },
-      {
-        id: 'adj_002',
-        user_id: 'user_003',
-        user_name: 'Carlos Lima',
-        amount: 50.00,
-        currency: 'USD',
-        type: 'coupon_credit',
-        description: 'Cupom WELCOME50 aplicado',
-        admin_id: 'system',
-        admin_name: 'Sistema',
-        created_at: '2024-07-25T09:15:00Z',
-        withdrawable: false
+        withdrawable: true
       }
     ];
 
     setUsers(mockUsers);
     setCoupons(mockCoupons);
     setAdjustments(mockAdjustments);
-    
-    // Calcular estatísticas
-    setStats({
-      total_active_coupons: mockCoupons.filter(c => c.status === 'active').length,
-      total_used_coupons: mockCoupons.reduce((sum, c) => sum + c.used_count, 0),
-      total_coupon_value: mockCoupons.reduce((sum, c) => sum + (c.amount * c.used_count), 0),
-      total_manual_credits: mockAdjustments.filter(a => a.type === 'manual_credit').reduce((sum, a) => sum + a.amount, 0),
-      total_users_with_credits: new Set(mockAdjustments.map(a => a.user_id)).size
-    });
-    
     setLoading(false);
   }, []);
-
-  const handleAddBalance = async () => {
-    if (!selectedUser || !balanceForm.amount) {
-      alert('Selecione um usuário e informe o valor');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/admin/add-balance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: selectedUser.id,
-          amount: parseFloat(balanceForm.amount),
-          description: balanceForm.description,
-          type: balanceForm.type
-        })
-      });
-
-      if (response.ok) {
-        alert('Saldo adicionado com sucesso!');
-        setShowBalanceModal(false);
-        setBalanceForm({ amount: '', description: '', type: 'manual_credit' });
-        setSelectedUser(null);
-        // Recarregar dados
-      } else {
-        alert('Erro ao adicionar saldo');
-      }
-    } catch (error) {
-      console.error('Erro:', error);
-      alert('Erro ao conectar com servidor');
-    }
-  };
-
-  const handleCreateCoupon = async () => {
-    if (!couponForm.code || !couponForm.amount) {
-      alert('Código e valor são obrigatórios');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/admin/create-coupon', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(couponForm)
-      });
-
-      if (response.ok) {
-        alert('Cupom criado com sucesso!');
-        setShowCouponModal(false);
-        setCouponForm({
-          code: '',
-          amount: '',
-          currency: 'USD',
-          description: '',
-          usage_limit: '',
-          expires_at: '',
-          type: 'single_use'
-        });
-        // Recarregar dados
-      } else {
-        alert('Erro ao criar cupom');
-      }
-    } catch (error) {
-      console.error('Erro:', error);
-      alert('Erro ao conectar com servidor');
-    }
-  };
-
-  const generateCouponCode = () => {
-    const code = 'CBC' + Math.random().toString(36).substr(2, 8).toUpperCase();
-    setCouponForm(prev => ({ ...prev, code }));
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert('Código copiado!');
-  };
 
   if (loading) {
     return (
@@ -306,21 +174,41 @@ export default function CreditsManagement() {
         <meta name="description" content="Gestão de Créditos e Cupons - CoinBitClub Admin" />
       </Head>
 
-      <div className="min-h-screen bg-black flex">
-        {/* Sidebar */}
-        <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-black/95 backdrop-blur-sm border-r border-yellow-400/30 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:relative lg:flex lg:flex-col lg:w-64`}>
-          <div className="flex items-center justify-center h-16 px-4 bg-gradient-to-r from-yellow-400/20 to-pink-400/20 border-b border-yellow-400/30">
-            <h1 className="text-xl font-bold text-yellow-400">⚡ CoinBitClub</h1>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="ml-auto lg:hidden text-yellow-400 hover:text-pink-400"
-            >
-              <FiX className="w-6 h-6" />
-            </button>
-          </div>
+      <div className="min-h-screen bg-black">
+        {/* Mobile Navigation */}
+        <MobileNav 
+          isOpen={mobileMenuOpen} 
+          onToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
+          title="⚡ Admin Panel"
+        >
+          <nav className="px-4 py-4 space-y-3">
+            <a href="/admin/dashboard-executive" className="flex items-center px-4 py-3 text-blue-400 hover:text-yellow-400 hover:bg-blue-400/10 rounded-lg transition-all">
+              <FiBarChart className="w-5 h-5 mr-3" />
+              <span>Dashboard Executivo</span>
+            </a>
+            <a href="/admin/users" className="flex items-center px-4 py-3 text-blue-400 hover:text-yellow-400 hover:bg-blue-400/10 rounded-lg transition-all">
+              <FiUsers className="w-5 h-5 mr-3" />
+              <span>Gestão de Usuários</span>
+            </a>
+            <a href="#" className="flex items-center px-4 py-3 text-yellow-400 bg-yellow-400/20 rounded-lg border border-yellow-400/50 font-bold">
+              <FiGift className="w-5 h-5 mr-3" />
+              <span>Gestão de Créditos</span>
+            </a>
+            <a href="/admin/settings" className="flex items-center px-4 py-3 text-blue-400 hover:text-yellow-400 hover:bg-blue-400/10 rounded-lg transition-all">
+              <FiSettings className="w-5 h-5 mr-3" />
+              <span>Configurações</span>
+            </a>
+          </nav>
+        </MobileNav>
 
-          <nav className="mt-8 px-4">
-            <div className="space-y-3">
+        <div className="flex">
+          {/* Desktop Sidebar */}
+          <div className="hidden lg:flex flex-col w-64 bg-black/95 backdrop-blur-sm border-r border-yellow-400/30">
+            <div className="flex items-center justify-center h-16 px-4 bg-gradient-to-r from-yellow-400/20 to-pink-400/20 border-b border-yellow-400/30">
+              <h1 className="text-xl font-bold text-yellow-400">⚡ CoinBitClub</h1>
+            </div>
+
+            <nav className="mt-8 px-4 space-y-3">
               <a href="/admin/dashboard-executive" className="flex items-center px-6 py-4 text-blue-400 hover:text-yellow-400 hover:bg-blue-400/10 border-2 border-transparent hover:border-blue-400/50 rounded-xl transition-all duration-300 font-medium">
                 <FiBarChart className="w-6 h-6 mr-4" />
                 <span>Dashboard Executivo</span>
@@ -329,770 +217,381 @@ export default function CreditsManagement() {
                 <FiUsers className="w-6 h-6 mr-4" />
                 <span>Gestão de Usuários</span>
               </a>
-              <a href="/admin/affiliates" className="flex items-center px-6 py-4 text-blue-400 hover:text-yellow-400 hover:bg-blue-400/10 border-2 border-transparent hover:border-blue-400/50 rounded-xl transition-all duration-300 font-medium">
-                <FiShare2 className="w-6 h-6 mr-4" />
-                <span>Gestão de Afiliados</span>
-              </a>
-              <a href="/admin/operations" className="flex items-center px-6 py-4 text-blue-400 hover:text-yellow-400 hover:bg-blue-400/10 border-2 border-transparent hover:border-blue-400/50 rounded-xl transition-all duration-300 font-medium">
-                <FiActivity className="w-6 h-6 mr-4" />
-                <span>Operações</span>
-              </a>
-              <a href="/admin/alerts" className="flex items-center px-6 py-4 text-blue-400 hover:text-yellow-400 hover:bg-blue-400/10 border-2 border-transparent hover:border-blue-400/50 rounded-xl transition-all duration-300 font-medium">
-                <FiAlertTriangle className="w-6 h-6 mr-4" />
-                <span>Alertas</span>
-              </a>
-              <a href="/admin/adjustments" className="flex items-center px-6 py-4 text-blue-400 hover:text-yellow-400 hover:bg-blue-400/10 border-2 border-transparent hover:border-blue-400/50 rounded-xl transition-all duration-300 font-medium">
-                <FiDollarSign className="w-6 h-6 mr-4" />
-                <span>Acertos</span>
-              </a>
-              <a href="/admin/accounting" className="flex items-center px-6 py-4 text-blue-400 hover:text-yellow-400 hover:bg-blue-400/10 border-2 border-transparent hover:border-blue-400/50 rounded-xl transition-all duration-300 font-medium">
-                <FiFileText className="w-6 h-6 mr-4" />
-                <span>Contabilidade</span>
-              </a>
               <a href="#" className="flex items-center px-6 py-4 text-yellow-400 bg-yellow-400/20 rounded-xl border-2 border-yellow-400/50 shadow-lg shadow-yellow-400/20 font-bold">
                 <FiGift className="w-6 h-6 mr-4" />
-                <span>Créditos e Cupons</span>
+                <span>Gestão de Créditos</span>
               </a>
               <a href="/admin/settings" className="flex items-center px-6 py-4 text-blue-400 hover:text-yellow-400 hover:bg-blue-400/10 border-2 border-transparent hover:border-blue-400/50 rounded-xl transition-all duration-300 font-medium">
                 <FiSettings className="w-6 h-6 mr-4" />
                 <span>Configurações</span>
               </a>
-            </div>
-          </nav>
-        </div>
+            </nav>
+          </div>
 
-        {/* Main Content */}
-        <div className="flex-1 lg:w-0">
-          {/* Header */}
-          <header className="bg-black/90 backdrop-blur-sm border-b border-yellow-400/30">
-            <div className="flex items-center justify-between px-8 py-6">
-              <div className="flex items-center space-x-6">
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="lg:hidden text-blue-400 hover:text-yellow-400 transition-colors"
-                >
-                  <FiMenu className="w-6 h-6" />
-                </button>
-                <h2 className="text-2xl font-bold text-yellow-400">Gestão de Créditos e Cupons</h2>
-              </div>
+          {/* Main Content */}
+          <div className="flex-1 lg:w-0">
+            {/* Header */}
+            <header className="bg-black/90 backdrop-blur-sm border-b border-yellow-400/30">
+              <div className="flex items-center justify-between px-4 lg:px-8 py-4 lg:py-6">
+                <div className="flex items-center space-x-3 lg:space-x-6">
+                  <button
+                    onClick={() => setMobileMenuOpen(true)}
+                    className="lg:hidden text-blue-400 hover:text-yellow-400 transition-colors"
+                  >
+                    <FiMenu className="w-6 h-6" />
+                  </button>
+                  <h2 className="text-lg lg:text-2xl font-bold text-yellow-400">Gestão de Créditos</h2>
+                </div>
 
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => setShowBalanceModal(true)}
-                  className="flex items-center px-6 py-3 text-black bg-green-400 hover:bg-green-300 border-2 border-green-400 rounded-lg transition-all duration-300 font-bold"
-                >
-                  <FiPlus className="w-5 h-5 mr-2" />
-                  <span>Adicionar Saldo</span>
-                </button>
-                <button
-                  onClick={() => setShowCouponModal(true)}
-                  className="flex items-center px-6 py-3 text-black bg-yellow-400 hover:bg-yellow-300 border-2 border-yellow-400 rounded-lg transition-all duration-300 font-bold"
-                >
-                  <FiGift className="w-5 h-5 mr-2" />
-                  <span>Criar Cupom</span>
-                </button>
-              </div>
-            </div>
-          </header>
-
-          {/* Content */}
-          <main className="p-8 bg-black min-h-screen">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-              <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-green-400/50 shadow-[0_0_20px_rgba(34,197,94,0.3)]">
-                <div className="text-center">
-                  <FiGift className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                  <p className="text-green-400 text-sm font-bold uppercase tracking-wider mb-2">Cupons Ativos</p>
-                  <p className="text-2xl font-bold text-yellow-400">{stats.total_active_coupons}</p>
+                <div className="flex items-center space-x-3 lg:space-x-6">
+                  <MobileButton
+                    onClick={() => setShowCouponModal(true)}
+                    className="bg-green-400 text-black hover:bg-green-300"
+                    icon={<FiPlus className="w-4 h-4" />}
+                  >
+                    <span className="hidden lg:inline">Novo Cupom</span>
+                  </MobileButton>
+                  
+                  <button className="flex items-center px-4 lg:px-6 py-2 lg:py-3 text-blue-400 hover:text-yellow-400 bg-blue-400/20 hover:bg-yellow-400/20 border-2 border-blue-400/50 hover:border-yellow-400/70 rounded-lg transition-all duration-300 font-bold">
+                    <FiDownload className="w-4 lg:w-5 h-4 lg:h-5 lg:mr-2" />
+                    <span className="hidden lg:inline">Relatório</span>
+                  </button>
                 </div>
               </div>
-              <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-blue-400/50 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
-                <div className="text-center">
-                  <FiCheck className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-                  <p className="text-blue-400 text-sm font-bold uppercase tracking-wider mb-2">Cupons Utilizados</p>
-                  <p className="text-2xl font-bold text-yellow-400">{stats.total_used_coupons}</p>
-                </div>
-              </div>
-              <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-purple-400/50 shadow-[0_0_20px_rgba(147,51,234,0.3)]">
-                <div className="text-center">
-                  <FiDollarSign className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-                  <p className="text-purple-400 text-sm font-bold uppercase tracking-wider mb-2">Valor em Cupons</p>
-                  <p className="text-2xl font-bold text-yellow-400">${stats.total_coupon_value.toFixed(2)}</p>
-                </div>
-              </div>
-              <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-pink-400/50 shadow-[0_0_20px_rgba(236,72,153,0.3)]">
-                <div className="text-center">
-                  <FiCreditCard className="w-8 h-8 text-pink-400 mx-auto mb-2" />
-                  <p className="text-pink-400 text-sm font-bold uppercase tracking-wider mb-2">Créditos Manuais</p>
-                  <p className="text-2xl font-bold text-yellow-400">${stats.total_manual_credits.toFixed(2)}</p>
-                </div>
-              </div>
-              <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-orange-400/50 shadow-[0_0_20px_rgba(251,146,60,0.3)]">
-                <div className="text-center">
-                  <FiUsers className="w-8 h-8 text-orange-400 mx-auto mb-2" />
-                  <p className="text-orange-400 text-sm font-bold uppercase tracking-wider mb-2">Usuários c/ Crédito</p>
-                  <p className="text-2xl font-bold text-yellow-400">{stats.total_users_with_credits}</p>
-                </div>
-              </div>
-            </div>
+            </header>
 
-            {/* Tabs */}
-            <div className="bg-black/80 backdrop-blur-sm rounded-xl border-2 border-yellow-400/50 shadow-[0_0_20px_rgba(255,215,0,0.3)] mb-8">
-              <div className="flex border-b border-yellow-400/30">
-                <button
-                  onClick={() => setActiveTab('balances')}
-                  className={`px-8 py-4 font-bold transition-all duration-300 ${
-                    activeTab === 'balances'
-                      ? 'text-yellow-400 border-b-2 border-yellow-400 bg-yellow-400/10'
-                      : 'text-blue-400 hover:text-yellow-400 hover:bg-yellow-400/5'
-                  }`}
-                >
-                  <FiCreditCard className="w-5 h-5 inline mr-2" />
-                  Gestão de Saldos
-                </button>
-                <button
-                  onClick={() => setActiveTab('coupons')}
-                  className={`px-8 py-4 font-bold transition-all duration-300 ${
-                    activeTab === 'coupons'
-                      ? 'text-yellow-400 border-b-2 border-yellow-400 bg-yellow-400/10'
-                      : 'text-blue-400 hover:text-yellow-400 hover:bg-yellow-400/5'
-                  }`}
-                >
-                  <FiGift className="w-5 h-5 inline mr-2" />
-                  Cupons de Crédito
-                </button>
-                <button
-                  onClick={() => setActiveTab('history')}
-                  className={`px-8 py-4 font-bold transition-all duration-300 ${
-                    activeTab === 'history'
-                      ? 'text-yellow-400 border-b-2 border-yellow-400 bg-yellow-400/10'
-                      : 'text-blue-400 hover:text-yellow-400 hover:bg-yellow-400/5'
-                  }`}
-                >
-                  <FiFileText className="w-5 h-5 inline mr-2" />
-                  Histórico
-                </button>
-              </div>
+            {/* Content */}
+            <main className="p-4 lg:p-8 bg-black min-h-screen">
+              {/* Tabs */}
+              <MobileTabs
+                tabs={[
+                  { id: 'balances', label: 'Saldos', icon: <FiDollarSign className="w-4 h-4" /> },
+                  { id: 'coupons', label: 'Cupons', icon: <FiGift className="w-4 h-4" /> },
+                  { id: 'history', label: 'Histórico', icon: <FiFileText className="w-4 h-4" /> }
+                ]}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+              />
 
-              <div className="p-6">
-                {/* Balance Management Tab */}
-                {activeTab === 'balances' && (
-                  <div>
-                    <div className="mb-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xl font-bold text-yellow-400">Usuários - Gestão de Saldos</h3>
-                        <div className="relative">
-                          <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 w-5 h-5" />
-                          <input
-                            type="text"
-                            placeholder="Buscar usuários..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-3 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 placeholder-blue-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
-                          />
-                        </div>
+              {/* Tab Content */}
+              {activeTab === 'balances' && (
+                <div className="space-y-6">
+                  {/* Search and Filters */}
+                  <MobileCard>
+                    <div className="space-y-4 lg:space-y-0 lg:flex lg:items-center lg:space-x-4">
+                      <div className="flex-1">
+                        <MobileInput
+                          label="Buscar usuário"
+                          type="text"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          placeholder="Nome, email ou WhatsApp..."
+                          icon={<FiSearch className="w-5 h-5" />}
+                        />
                       </div>
                       
-                      <div className="bg-black/50 rounded-xl overflow-hidden">
-                        <table className="w-full">
-                          <thead className="bg-yellow-400/10 border-b border-yellow-400/30">
-                            <tr>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Usuário</th>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Saldo Atual</th>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Plano</th>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Status</th>
-                              <th className="px-6 py-4 text-center text-yellow-400 font-bold">Ações</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-yellow-400/20">
-                            {users.filter(user => 
-                              user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                              user.email.toLowerCase().includes(searchTerm.toLowerCase())
-                            ).map((user) => (
-                              <tr key={user.id} className="hover:bg-yellow-400/5 transition-colors">
-                                <td className="px-6 py-4">
-                                  <div>
-                                    <p className="text-yellow-400 font-bold">{user.name}</p>
-                                    <p className="text-blue-400 text-sm">{user.email}</p>
-                                    <p className="text-pink-400 text-xs">{user.whatsapp}</p>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div className="flex items-center space-x-2">
-                                    <FiDollarSign className="w-4 h-4 text-green-400" />
-                                    <span className="text-2xl font-bold text-green-400">
-                                      ${user.balance.toFixed(2)}
-                                    </span>
-                                    <span className="text-blue-400 text-sm">{user.currency}</span>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                    user.plan === 'PRO' 
-                                      ? 'bg-yellow-400/20 text-yellow-400 border border-yellow-400/50'
-                                      : 'bg-blue-400/20 text-blue-400 border border-blue-400/50'
-                                  }`}>
-                                    {user.plan}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                    user.status === 'active'
-                                      ? 'bg-green-400/20 text-green-400 border border-green-400/50'
-                                      : 'bg-red-400/20 text-red-400 border border-red-400/50'
-                                  }`}>
-                                    {user.status === 'active' ? 'ATIVO' : 'INATIVO'}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div className="flex items-center justify-center space-x-3">
-                                    <button
-                                      onClick={() => {
-                                        setSelectedUser(user);
-                                        setShowBalanceModal(true);
-                                      }}
-                                      className="p-2 text-green-400 hover:text-yellow-400 bg-green-400/20 hover:bg-yellow-400/20 rounded-lg transition-colors"
-                                      title="Adicionar Saldo"
-                                    >
-                                      <FiPlus className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      className="p-2 text-blue-400 hover:text-yellow-400 bg-blue-400/20 hover:bg-yellow-400/20 rounded-lg transition-colors"
-                                      title="Ver Histórico"
-                                    >
-                                      <FiEye className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Coupons Management Tab */}
-                {activeTab === 'coupons' && (
-                  <div>
-                    <div className="mb-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xl font-bold text-yellow-400">Cupons de Crédito</h3>
+                      <div className="lg:w-48">
+                        <label className="block text-blue-400 text-sm font-bold mb-2">Status</label>
                         <select
                           value={filterStatus}
                           onChange={(e) => setFilterStatus(e.target.value)}
-                          className="px-4 py-2 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
+                          className="w-full px-3 py-2 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
                         >
-                          <option value="all">Todos os Status</option>
+                          <option value="all">Todos</option>
                           <option value="active">Ativos</option>
-                          <option value="expired">Expirados</option>
-                          <option value="disabled">Desabilitados</option>
+                          <option value="inactive">Inativos</option>
                         </select>
                       </div>
-                      
-                      <div className="bg-black/50 rounded-xl overflow-hidden">
-                        <table className="w-full">
-                          <thead className="bg-yellow-400/10 border-b border-yellow-400/30">
-                            <tr>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Código</th>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Valor</th>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Uso</th>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Expires</th>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Status</th>
-                              <th className="px-6 py-4 text-center text-yellow-400 font-bold">Ações</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-yellow-400/20">
-                            {coupons.filter(coupon => 
-                              filterStatus === 'all' || coupon.status === filterStatus
-                            ).map((coupon) => (
-                              <tr key={coupon.id} className="hover:bg-yellow-400/5 transition-colors">
-                                <td className="px-6 py-4">
-                                  <div className="flex items-center space-x-2">
-                                    <code className="text-yellow-400 font-bold text-lg bg-yellow-400/10 px-3 py-1 rounded">
-                                      {coupon.code}
-                                    </code>
-                                    <button
-                                      onClick={() => copyToClipboard(coupon.code)}
-                                      className="p-1 text-blue-400 hover:text-yellow-400 transition-colors"
-                                      title="Copiar código"
-                                    >
-                                      <FiCopy className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                  <p className="text-blue-400 text-sm mt-1">{coupon.description}</p>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div className="flex items-center space-x-2">
-                                    <FiDollarSign className="w-4 h-4 text-green-400" />
-                                    <span className="text-xl font-bold text-green-400">
-                                      ${coupon.amount.toFixed(2)}
-                                    </span>
-                                    <span className="text-blue-400 text-sm">{coupon.currency}</span>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div>
-                                    <div className="flex items-center space-x-2 mb-1">
-                                      <span className="text-pink-400 font-bold">{coupon.used_count}</span>
-                                      <span className="text-blue-400">/</span>
-                                      <span className="text-yellow-400 font-bold">
-                                        {coupon.usage_limit === 0 ? '∞' : coupon.usage_limit}
-                                      </span>
-                                    </div>
-                                    <div className="w-24 bg-black/50 rounded-full h-2">
-                                      <div 
-                                        className="bg-gradient-to-r from-pink-400 to-yellow-400 h-2 rounded-full"
-                                        style={{ 
-                                          width: coupon.usage_limit === 0 ? '50%' : `${(coupon.used_count / coupon.usage_limit) * 100}%` 
-                                        }}
-                                      ></div>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <p className="text-blue-400 text-sm">
-                                    {new Date(coupon.expires_at).toLocaleDateString('pt-BR')}
-                                  </p>
-                                  <p className="text-pink-400 text-xs">
-                                    {new Date(coupon.expires_at).toLocaleTimeString('pt-BR')}
-                                  </p>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                    coupon.status === 'active'
-                                      ? 'bg-green-400/20 text-green-400 border border-green-400/50'
-                                      : coupon.status === 'expired'
-                                      ? 'bg-red-400/20 text-red-400 border border-red-400/50'
-                                      : 'bg-gray-400/20 text-gray-400 border border-gray-400/50'
-                                  }`}>
-                                    {coupon.status.toUpperCase()}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div className="flex items-center justify-center space-x-3">
-                                    <button
-                                      className="p-2 text-blue-400 hover:text-yellow-400 bg-blue-400/20 hover:bg-yellow-400/20 rounded-lg transition-colors"
-                                      title="Editar"
-                                    >
-                                      <FiEdit className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      className="p-2 text-red-400 hover:text-pink-400 bg-red-400/20 hover:bg-pink-400/20 rounded-lg transition-colors"
-                                      title="Desativar"
-                                    >
-                                      <FiCancel className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
                     </div>
-                  </div>
-                )}
+                  </MobileCard>
 
-                {/* History Tab */}
-                {activeTab === 'history' && (
-                  <div>
-                    <div className="mb-6">
-                      <h3 className="text-xl font-bold text-yellow-400 mb-4">Histórico de Ajustes de Saldo</h3>
-                      
-                      <div className="bg-black/50 rounded-xl overflow-hidden">
-                        <table className="w-full">
-                          <thead className="bg-yellow-400/10 border-b border-yellow-400/30">
-                            <tr>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Data</th>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Usuário</th>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Tipo</th>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Valor</th>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Admin</th>
-                              <th className="px-6 py-4 text-left text-yellow-400 font-bold">Saque</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-yellow-400/20">
-                            {adjustments.map((adjustment) => (
-                              <tr key={adjustment.id} className="hover:bg-yellow-400/5 transition-colors">
-                                <td className="px-6 py-4">
-                                  <p className="text-blue-400 text-sm">
-                                    {new Date(adjustment.created_at).toLocaleDateString('pt-BR')}
-                                  </p>
-                                  <p className="text-pink-400 text-xs">
-                                    {new Date(adjustment.created_at).toLocaleTimeString('pt-BR')}
-                                  </p>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <p className="text-yellow-400 font-bold">{adjustment.user_name}</p>
-                                  <p className="text-blue-400 text-xs">ID: {adjustment.user_id}</p>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                    adjustment.type === 'manual_credit'
-                                      ? 'bg-green-400/20 text-green-400 border border-green-400/50'
-                                      : adjustment.type === 'coupon_credit'
-                                      ? 'bg-purple-400/20 text-purple-400 border border-purple-400/50'
-                                      : 'bg-red-400/20 text-red-400 border border-red-400/50'
-                                  }`}>
-                                    {adjustment.type === 'manual_credit' ? 'MANUAL' : 
-                                     adjustment.type === 'coupon_credit' ? 'CUPOM' : 'DÉBITO'}
-                                  </span>
-                                  <p className="text-blue-400 text-xs mt-1">{adjustment.description}</p>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div className="flex items-center space-x-2">
-                                    <span className={`text-lg font-bold ${
-                                      adjustment.amount >= 0 ? 'text-green-400' : 'text-red-400'
-                                    }`}>
-                                      {adjustment.amount >= 0 ? '+' : ''}${adjustment.amount.toFixed(2)}
-                                    </span>
-                                    <span className="text-blue-400 text-sm">{adjustment.currency}</span>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <p className="text-yellow-400 font-bold">{adjustment.admin_name}</p>
-                                  <p className="text-blue-400 text-xs">ID: {adjustment.admin_id}</p>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div className="flex items-center space-x-2">
-                                    {adjustment.withdrawable ? (
-                                      <FiCheck className="w-4 h-4 text-green-400" />
-                                    ) : (
-                                      <FiCancel className="w-4 h-4 text-red-400" />
-                                    )}
-                                    <span className={`text-sm font-bold ${
-                                      adjustment.withdrawable ? 'text-green-400' : 'text-red-400'
-                                    }`}>
-                                      {adjustment.withdrawable ? 'PERMITE' : 'BLOQUEIA'}
-                                    </span>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </main>
-        </div>
-      </div>
-
-      {/* Modal - Adicionar Saldo */}
-      {showBalanceModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-black/90 backdrop-blur-sm rounded-xl border-2 border-yellow-400/50 shadow-[0_0_30px_rgba(255,215,0,0.3)] w-full max-w-md">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-yellow-400 flex items-center">
-                  <FiPlus className="w-6 h-6 mr-2" />
-                  Adicionar Saldo
-                </h3>
-                <button
-                  onClick={() => {
-                    setShowBalanceModal(false);
-                    setSelectedUser(null);
-                    setBalanceForm({ amount: '', description: '', type: 'manual_credit' });
-                  }}
-                  className="text-red-400 hover:text-pink-400 transition-colors"
-                >
-                  <FiX className="w-6 h-6" />
-                </button>
-              </div>
-
-              {selectedUser && (
-                <div className="bg-blue-400/10 border border-blue-400/50 rounded-lg p-4 mb-6">
-                  <div className="flex items-center space-x-3">
-                    <FiUser className="w-8 h-8 text-blue-400" />
-                    <div>
-                      <p className="text-yellow-400 font-bold">{selectedUser.name}</p>
-                      <p className="text-blue-400 text-sm">{selectedUser.email}</p>
-                      <p className="text-pink-400 text-xs">Saldo atual: ${selectedUser.balance.toFixed(2)} {selectedUser.currency}</p>
-                    </div>
-                  </div>
+                  {/* Users List */}
+                  <ResponsiveGrid cols={{ mobile: 1, tablet: 2, desktop: 3 }}>
+                    {users.map((user) => (
+                      <MobileCard key={user.id} className="border-blue-400/50 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                        <div className="space-y-4">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="text-yellow-400 font-bold">{user.name}</h3>
+                              <p className="text-blue-400 text-sm">{user.email}</p>
+                              <p className="text-blue-400 text-sm">{user.whatsapp}</p>
+                            </div>
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${user.status === 'active' ? 'bg-green-400/20 text-green-400' : 'bg-red-400/20 text-red-400'}`}>
+                              {user.status}
+                            </span>
+                          </div>
+                          
+                          <div className="border-t border-yellow-400/30 pt-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="text-blue-400 text-sm">Saldo:</span>
+                              <span className="text-2xl font-bold text-green-400">
+                                ${user.balance.toFixed(2)}
+                              </span>
+                            </div>
+                            
+                            <div className="flex space-x-2">
+                              <MobileButton
+                                size="sm"
+                                variant="primary"
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setShowBalanceModal(true);
+                                }}
+                                className="flex-1 bg-yellow-400/20 text-yellow-400 border-yellow-400/50"
+                              >
+                                Ajustar
+                              </MobileButton>
+                              <MobileButton
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => {}}
+                                icon={<FiEye className="w-4 h-4" />}
+                                className="px-3"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </MobileCard>
+                    ))}
+                  </ResponsiveGrid>
                 </div>
               )}
 
-              <div className="space-y-4">
+              {activeTab === 'coupons' && (
+                <div className="space-y-6">
+                  <ResponsiveGrid cols={{ mobile: 1, tablet: 2, desktop: 3 }}>
+                    {coupons.map((coupon) => (
+                      <MobileCard key={coupon.id} className="border-pink-400/50 shadow-[0_0_20px_rgba(236,72,153,0.3)]">
+                        <div className="space-y-4">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="text-yellow-400 font-bold text-lg">{coupon.code}</h3>
+                              <p className="text-blue-400 text-sm">{coupon.description}</p>
+                            </div>
+                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${coupon.status === 'active' ? 'bg-green-400/20 text-green-400' : 'bg-red-400/20 text-red-400'}`}>
+                              {coupon.status}
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-blue-400">Valor:</span>
+                              <p className="text-green-400 font-bold">${coupon.amount}</p>
+                            </div>
+                            <div>
+                              <span className="text-blue-400">Uso:</span>
+                              <p className="text-yellow-400 font-bold">{coupon.used_count}/{coupon.usage_limit}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex space-x-2">
+                            <MobileButton
+                              size="sm"
+                              variant="primary"
+                              onClick={() => navigator.clipboard.writeText(coupon.code)}
+                              icon={<FiCopy className="w-4 h-4" />}
+                              className="flex-1 bg-blue-400/20 text-blue-400 border-blue-400/50"
+                            >
+                              Copiar
+                            </MobileButton>
+                            <MobileButton
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => {}}
+                              icon={<FiEdit className="w-4 h-4" />}
+                              className="px-3"
+                            />
+                          </div>
+                        </div>
+                      </MobileCard>
+                    ))}
+                  </ResponsiveGrid>
+                </div>
+              )}
+
+              {activeTab === 'history' && (
+                <div className="space-y-6">
+                  <MobileCard>
+                    {adjustments.map((adj) => (
+                      <div key={adj.id} className="border-b border-yellow-400/30 pb-4 mb-4 last:border-b-0 last:mb-0">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="text-yellow-400 font-bold">{adj.user_name}</h3>
+                            <p className="text-blue-400 text-sm">{adj.description}</p>
+                          </div>
+                          <span className={`text-lg font-bold ${adj.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {adj.amount >= 0 ? '+' : ''}${adj.amount}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-blue-400">
+                          <span>Por: {adj.admin_name}</span>
+                          <span>{new Date(adj.created_at).toLocaleString('pt-BR')}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </MobileCard>
+                </div>
+              )}
+            </main>
+          </div>
+        </div>
+
+        {/* Balance Adjustment Modal */}
+        {showBalanceModal && selectedUser && (
+          <MobileModal
+            isOpen={showBalanceModal}
+            onClose={() => setShowBalanceModal(false)}
+            title={`Ajustar Saldo - ${selectedUser.name}`}
+          >
+            <div className="space-y-4">
+              <div className="text-center p-4 bg-blue-400/10 rounded-lg border border-blue-400/30">
+                <p className="text-blue-400 text-sm">Saldo Atual</p>
+                <p className="text-2xl font-bold text-green-400">${selectedUser.balance.toFixed(2)}</p>
+              </div>
+              
+              <MobileInput
+                label="Valor do Ajuste"
+                type="number"
+                value={balanceForm.amount}
+                onChange={(e) => setBalanceForm(prev => ({...prev, amount: e.target.value}))}
+                placeholder="0.00"
+              />
+              
+              <div>
+                <label className="block text-blue-400 text-sm font-bold mb-2">Tipo</label>
+                <select
+                  value={balanceForm.type}
+                  onChange={(e) => setBalanceForm(prev => ({...prev, type: e.target.value}))}
+                  className="w-full px-3 py-2 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
+                >
+                  <option value="manual_credit">Crédito Manual</option>
+                  <option value="manual_debit">Débito Manual</option>
+                </select>
+              </div>
+              
+              <MobileInput
+                label="Descrição"
+                type="text"
+                value={balanceForm.description}
+                onChange={(e) => setBalanceForm(prev => ({...prev, description: e.target.value}))}
+                placeholder="Motivo do ajuste..."
+              />
+              
+              <div className="flex space-x-4">
+                <MobileButton
+                  variant="secondary"
+                  onClick={() => setShowBalanceModal(false)}
+                  className="flex-1"
+                >
+                  Cancelar
+                </MobileButton>
+                <MobileButton
+                  variant="primary"
+                  onClick={() => {}}
+                  className="flex-1 bg-yellow-400 text-black"
+                >
+                  Confirmar
+                </MobileButton>
+              </div>
+            </div>
+          </MobileModal>
+        )}
+
+        {/* Coupon Creation Modal */}
+        {showCouponModal && (
+          <MobileModal
+            isOpen={showCouponModal}
+            onClose={() => setShowCouponModal(false)}
+            title="Criar Novo Cupom"
+          >
+            <div className="space-y-4">
+              <div className="flex space-x-2">
+                <MobileInput
+                  label="Código do Cupom"
+                  type="text"
+                  value={couponForm.code}
+                  onChange={(e) => setCouponForm(prev => ({...prev, code: e.target.value}))}
+                  placeholder="CBC123"
+                  className="flex-1"
+                />
+                <MobileButton
+                  variant="secondary"
+                  onClick={() => {
+                    const code = 'CBC' + Math.random().toString(36).substr(2, 8).toUpperCase();
+                    setCouponForm(prev => ({ ...prev, code }));
+                  }}
+                  icon={<FiRefreshCw className="w-4 h-4" />}
+                  className="mt-7"
+                />
+              </div>
+              
+              <MobileInput
+                label="Valor"
+                type="number"
+                value={couponForm.amount}
+                onChange={(e) => setCouponForm(prev => ({...prev, amount: e.target.value}))}
+                placeholder="0.00"
+              />
+              
+              <MobileInput
+                label="Descrição"
+                type="text"
+                value={couponForm.description}
+                onChange={(e) => setCouponForm(prev => ({...prev, description: e.target.value}))}
+                placeholder="Descrição do cupom..."
+              />
+              
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-blue-400 text-sm font-bold mb-2">
-                    Tipo de Ajuste
-                  </label>
+                  <label className="block text-blue-400 text-sm font-bold mb-2">Limite de Uso</label>
+                  <input
+                    type="number"
+                    value={couponForm.usage_limit}
+                    onChange={(e) => setCouponForm(prev => ({...prev, usage_limit: e.target.value}))}
+                    placeholder="100"
+                    className="w-full px-3 py-2 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-blue-400 text-sm font-bold mb-2">Tipo</label>
                   <select
-                    value={balanceForm.type}
-                    onChange={(e) => setBalanceForm(prev => ({ ...prev, type: e.target.value }))}
-                    className="w-full px-4 py-3 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
+                    value={couponForm.type}
+                    onChange={(e) => setCouponForm(prev => ({...prev, type: e.target.value}))}
+                    className="w-full px-3 py-2 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
                   >
-                    <option value="manual_credit">Crédito Manual</option>
-                    <option value="manual_debit">Débito Manual</option>
+                    <option value="single_use">Uso Único</option>
+                    <option value="multi_use">Múltiplos Usos</option>
                   </select>
                 </div>
-
-                <div>
-                  <label className="block text-blue-400 text-sm font-bold mb-2">
-                    Valor (USD)
-                  </label>
-                  <div className="relative">
-                    <FiDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-400 w-5 h-5" />
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={balanceForm.amount}
-                      onChange={(e) => setBalanceForm(prev => ({ ...prev, amount: e.target.value }))}
-                      placeholder="0.00"
-                      className="w-full pl-10 pr-4 py-3 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 placeholder-blue-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-blue-400 text-sm font-bold mb-2">
-                    Descrição/Motivo
-                  </label>
-                  <textarea
-                    value={balanceForm.description}
-                    onChange={(e) => setBalanceForm(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Descreva o motivo do ajuste..."
-                    rows={3}
-                    className="w-full px-4 py-3 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 placeholder-blue-400 focus:border-yellow-400/70 focus:outline-none transition-colors resize-none"
-                  />
-                </div>
-
-                {/* Warning */}
-                <div className="bg-orange-400/10 border border-orange-400/50 rounded-lg p-4">
-                  <div className="flex items-start space-x-3">
-                    <FiAlertCircle className="w-5 h-5 text-orange-400 mt-0.5" />
-                    <div>
-                      <p className="text-orange-400 font-bold text-sm">Atenção!</p>
-                      <p className="text-orange-400 text-xs mt-1">
-                        Créditos manuais e de cupons NÃO geram direito a saque. Apenas liberam o sistema para operações.
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </div>
-
-              <div className="flex space-x-4 mt-6">
-                <button
-                  onClick={() => {
-                    setShowBalanceModal(false);
-                    setSelectedUser(null);
-                    setBalanceForm({ amount: '', description: '', type: 'manual_credit' });
-                  }}
-                  className="flex-1 px-6 py-3 text-red-400 border-2 border-red-400/50 rounded-lg hover:bg-red-400/10 transition-all duration-300 font-bold"
+              
+              <MobileInput
+                label="Data de Expiração"
+                type="datetime-local"
+                value={couponForm.expires_at}
+                onChange={(e) => setCouponForm(prev => ({...prev, expires_at: e.target.value}))}
+              />
+              
+              <div className="flex space-x-4">
+                <MobileButton
+                  variant="secondary"
+                  onClick={() => setShowCouponModal(false)}
+                  className="flex-1"
                 >
                   Cancelar
-                </button>
-                <button
-                  onClick={handleAddBalance}
-                  className="flex-1 px-6 py-3 text-black bg-yellow-400 hover:bg-yellow-300 border-2 border-yellow-400 rounded-lg transition-all duration-300 font-bold"
+                </MobileButton>
+                <MobileButton
+                  variant="primary"
+                  onClick={() => {}}
+                  className="flex-1 bg-green-400 text-black"
                 >
-                  <FiSave className="w-5 h-5 inline mr-2" />
-                  Adicionar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal - Criar Cupom */}
-      {showCouponModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-black/90 backdrop-blur-sm rounded-xl border-2 border-yellow-400/50 shadow-[0_0_30px_rgba(255,215,0,0.3)] w-full max-w-lg">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-yellow-400 flex items-center">
-                  <FiGift className="w-6 h-6 mr-2" />
-                  Criar Cupom de Crédito
-                </h3>
-                <button
-                  onClick={() => {
-                    setShowCouponModal(false);
-                    setCouponForm({
-                      code: '',
-                      amount: '',
-                      currency: 'USD',
-                      description: '',
-                      usage_limit: '',
-                      expires_at: '',
-                      type: 'single_use'
-                    });
-                  }}
-                  className="text-red-400 hover:text-pink-400 transition-colors"
-                >
-                  <FiX className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-blue-400 text-sm font-bold mb-2">
-                    Código do Cupom
-                  </label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="text"
-                      value={couponForm.code}
-                      onChange={(e) => setCouponForm(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                      placeholder="CODIGO123"
-                      className="flex-1 px-4 py-3 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 placeholder-blue-400 focus:border-yellow-400/70 focus:outline-none transition-colors uppercase"
-                    />
-                    <button
-                      onClick={generateCouponCode}
-                      className="px-4 py-3 text-blue-400 border-2 border-blue-400/50 rounded-lg hover:bg-blue-400/10 transition-all duration-300"
-                      title="Gerar código automático"
-                    >
-                      <FiRefreshCw className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-blue-400 text-sm font-bold mb-2">
-                      Valor
-                    </label>
-                    <div className="relative">
-                      <FiDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-400 w-5 h-5" />
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={couponForm.amount}
-                        onChange={(e) => setCouponForm(prev => ({ ...prev, amount: e.target.value }))}
-                        placeholder="0.00"
-                        className="w-full pl-10 pr-4 py-3 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 placeholder-blue-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-blue-400 text-sm font-bold mb-2">
-                      Moeda
-                    </label>
-                    <select
-                      value={couponForm.currency}
-                      onChange={(e) => setCouponForm(prev => ({ ...prev, currency: e.target.value }))}
-                      className="w-full px-4 py-3 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
-                    >
-                      <option value="USD">USD</option>
-                      <option value="BRL">BRL</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-blue-400 text-sm font-bold mb-2">
-                    Descrição
-                  </label>
-                  <input
-                    type="text"
-                    value={couponForm.description}
-                    onChange={(e) => setCouponForm(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Bônus de boas-vindas..."
-                    className="w-full px-4 py-3 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 placeholder-blue-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-blue-400 text-sm font-bold mb-2">
-                      Tipo de Uso
-                    </label>
-                    <select
-                      value={couponForm.type}
-                      onChange={(e) => setCouponForm(prev => ({ ...prev, type: e.target.value }))}
-                      className="w-full px-4 py-3 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
-                    >
-                      <option value="single_use">Uso Único</option>
-                      <option value="multi_use">Uso Múltiplo</option>
-                      <option value="unlimited">Ilimitado</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-blue-400 text-sm font-bold mb-2">
-                      Limite de Usos
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={couponForm.usage_limit}
-                      onChange={(e) => setCouponForm(prev => ({ ...prev, usage_limit: e.target.value }))}
-                      placeholder="100"
-                      disabled={couponForm.type === 'unlimited'}
-                      className="w-full px-4 py-3 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 placeholder-blue-400 focus:border-yellow-400/70 focus:outline-none transition-colors disabled:opacity-50"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-blue-400 text-sm font-bold mb-2">
-                    Data de Expiração
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={couponForm.expires_at}
-                    onChange={(e) => setCouponForm(prev => ({ ...prev, expires_at: e.target.value }))}
-                    className="w-full px-4 py-3 bg-black/50 border-2 border-yellow-400/30 rounded-lg text-yellow-400 focus:border-yellow-400/70 focus:outline-none transition-colors"
-                  />
-                </div>
-
-                {/* Warning */}
-                <div className="bg-orange-400/10 border border-orange-400/50 rounded-lg p-4">
-                  <div className="flex items-start space-x-3">
-                    <FiAlertCircle className="w-5 h-5 text-orange-400 mt-0.5" />
-                    <div>
-                      <p className="text-orange-400 font-bold text-sm">Importante!</p>
-                      <p className="text-orange-400 text-xs mt-1">
-                        Cupons de crédito não geram direito a saque, apenas liberam operações na plataforma.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex space-x-4 mt-6">
-                <button
-                  onClick={() => {
-                    setShowCouponModal(false);
-                    setCouponForm({
-                      code: '',
-                      amount: '',
-                      currency: 'USD',
-                      description: '',
-                      usage_limit: '',
-                      expires_at: '',
-                      type: 'single_use'
-                    });
-                  }}
-                  className="flex-1 px-6 py-3 text-red-400 border-2 border-red-400/50 rounded-lg hover:bg-red-400/10 transition-all duration-300 font-bold"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleCreateCoupon}
-                  className="flex-1 px-6 py-3 text-black bg-yellow-400 hover:bg-yellow-300 border-2 border-yellow-400 rounded-lg transition-all duration-300 font-bold"
-                >
-                  <FiGift className="w-5 h-5 inline mr-2" />
                   Criar Cupom
-                </button>
+                </MobileButton>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-sm border-t border-yellow-400/30 p-4 text-center">
-        <p className="text-yellow-400 text-sm font-bold">⚡ Gestão de Créditos e Cupons - CoinBitClub ⚡</p>
+          </MobileModal>
+        )}
       </div>
     </>
   );

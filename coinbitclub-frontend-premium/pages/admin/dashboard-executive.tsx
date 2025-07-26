@@ -5,8 +5,12 @@ import {
   FiActivity, FiAlertTriangle, FiDollarSign, FiTrendingUp, FiRefreshCw,
   FiBell, FiShield, FiMonitor, FiDatabase, FiArrowUp, FiArrowDown,
   FiClock, FiCheckCircle, FiXCircle, FiInfo, FiCpu, FiZap, FiTarget,
-  FiRadio, FiTrendingDown, FiEye, FiPlay, FiPause
+  FiRadio, FiTrendingDown, FiEye, FiPlay, FiPause, FiPower, FiSquare
 } from 'react-icons/fi';
+import {
+  MobileNav, MobileCard, ResponsiveGrid, MobileInput,
+  MobileButton, MobileModal, MobileTabs, MobileAlert
+} from '../../components/mobile/MobileComponents';
 
 interface DashboardData {
   timestamp: string;
@@ -43,9 +47,16 @@ interface DashboardData {
 
 export default function ExecutiveDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
+  
+  // Sistema de Controle Administrativo
+  const [systemStatus, setSystemStatus] = useState<'active' | 'inactive' | 'maintenance'>('active');
+  const [systemLoading, setSystemLoading] = useState(false);
+  const [showSystemModal, setShowSystemModal] = useState(false);
+  const [systemAction, setSystemAction] = useState<'start' | 'stop' | null>(null);
 
   // Dados de mock iniciais (serão substituídos pelos dados reais)
   const [mockData] = useState<DashboardData>({
@@ -153,6 +164,48 @@ export default function ExecutiveDashboard() {
     } finally {
       setLoading(false);
       setLastUpdate(new Date());
+    }
+  };
+
+  // Funções de Controle do Sistema
+  const handleSystemControl = async (action: 'start' | 'stop') => {
+    setSystemAction(action);
+    setShowSystemModal(true);
+  };
+
+  const confirmSystemAction = async () => {
+    if (!systemAction) return;
+
+    setSystemLoading(true);
+    setShowSystemModal(false);
+
+    try {
+      const response = await fetch('/api/admin/system-control', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: systemAction }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setSystemStatus(systemAction === 'start' ? 'active' : 'inactive');
+        
+        // Refresh dashboard data
+        await fetchDashboardData();
+        
+        // Show success message
+        alert(`Sistema ${systemAction === 'start' ? 'iniciado' : 'finalizado'} com sucesso!`);
+      } else {
+        throw new Error('Erro ao controlar sistema');
+      }
+    } catch (error) {
+      console.error('Erro ao controlar sistema:', error);
+      alert(`Erro ao ${systemAction === 'start' ? 'iniciar' : 'finalizar'} sistema. Tente novamente.`);
+    } finally {
+      setSystemLoading(false);
+      setSystemAction(null);
     }
   };
 
@@ -287,110 +340,275 @@ export default function ExecutiveDashboard() {
 
         {/* Main Content */}
         <div className="flex-1 lg:w-0">
+          {/* Mobile Navigation */}
+          <MobileNav
+            isOpen={mobileMenuOpen}
+            onToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
+            title="Dashboard Executivo"
+          >
+            <div className="p-4 space-y-2">
+              <a href="/admin/dashboard-executive" className="flex items-center px-4 py-3 text-yellow-400 bg-yellow-400/10 border-2 border-yellow-400/50 rounded-xl font-medium">
+                <FiBarChart className="w-5 h-5 mr-3" />
+                Dashboard Executivo
+              </a>
+              <a href="/admin/users" className="flex items-center px-4 py-3 text-blue-400 hover:text-yellow-400 hover:bg-blue-400/10 border-2 border-transparent hover:border-blue-400/50 rounded-xl transition-all duration-300 font-medium">
+                <FiUsers className="w-5 h-5 mr-3" />
+                Usuários
+              </a>
+              <a href="/admin/signals" className="flex items-center px-4 py-3 text-blue-400 hover:text-yellow-400 hover:bg-blue-400/10 border-2 border-transparent hover:border-blue-400/50 rounded-xl transition-all duration-300 font-medium">
+                <FiRadio className="w-5 h-5 mr-3" />
+                Sinais
+              </a>
+              <a href="/admin/operations" className="flex items-center px-4 py-3 text-blue-400 hover:text-yellow-400 hover:bg-blue-400/10 border-2 border-transparent hover:border-blue-400/50 rounded-xl transition-all duration-300 font-medium">
+                <FiActivity className="w-5 h-5 mr-3" />
+                Operações
+              </a>
+            </div>
+          </MobileNav>
+
           {/* Header */}
           <header className="bg-black/90 backdrop-blur-sm border-b border-yellow-400/30">
-            <div className="flex items-center justify-between px-8 py-6">
-              <div className="flex items-center space-x-6">
+            <div className="flex items-center justify-between px-4 lg:px-8 py-4 lg:py-6">
+              {/* Mobile Header */}
+              <div className="flex items-center space-x-3 lg:space-x-6">
                 <button
-                  onClick={() => setSidebarOpen(true)}
+                  onClick={() => setMobileMenuOpen(true)}
                   className="lg:hidden text-blue-400 hover:text-yellow-400 transition-colors"
                 >
                   <FiMenu className="w-6 h-6" />
                 </button>
-                <h2 className="text-2xl font-bold text-yellow-400">Dashboard Executivo</h2>
-                <div className="flex items-center text-blue-400 bg-black/50 px-4 py-2 rounded-lg border border-blue-400/30">
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="hidden lg:block xl:hidden text-blue-400 hover:text-yellow-400 transition-colors"
+                >
+                  <FiMenu className="w-6 h-6" />
+                </button>
+                <h2 className="text-lg lg:text-2xl font-bold text-yellow-400">Dashboard Executivo</h2>
+                <div className="hidden lg:flex items-center text-blue-400 bg-black/50 px-4 py-2 rounded-lg border border-blue-400/30">
                   <FiClock className="w-4 h-4 mr-2" />
                   <span className="text-sm font-medium">{new Date().toLocaleString('pt-BR')}</span>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-6">
+              {/* Desktop Controls / Mobile Simplified */}
+              <div className="flex items-center space-x-2 lg:space-x-6">
+                {/* Mobile System Status */}
+                <div className="lg:hidden flex items-center bg-black/80 px-3 py-2 rounded-lg border-2 border-pink-400/50">
+                  <div className="w-2 h-2 bg-pink-400 rounded-full mr-2 animate-pulse"></div>
+                  <span className="text-pink-400 font-bold text-xs">Online</span>
+                </div>
+
+                {/* Desktop System Controls */}
+                <div className="hidden lg:flex items-center space-x-3">
+                  <button
+                    onClick={() => handleSystemControl('start')}
+                    disabled={systemLoading || systemStatus === 'active'}
+                    className={`flex items-center px-4 py-3 rounded-lg border-2 transition-all duration-300 shadow-lg font-medium ${
+                      systemStatus === 'active' 
+                        ? 'bg-gray-800 border-gray-600 text-gray-500 cursor-not-allowed'
+                        : 'text-green-400 hover:text-white bg-black/80 hover:bg-green-500/20 border-green-400/50 hover:border-green-400/70 hover:shadow-green-400/30'
+                    }`}
+                  >
+                    <FiPower className="w-5 h-5 mr-2" />
+                    <span>Iniciar Sistema</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleSystemControl('stop')}
+                    disabled={systemLoading || systemStatus === 'inactive'}
+                    className={`flex items-center px-4 py-3 rounded-lg border-2 transition-all duration-300 shadow-lg font-medium ${
+                      systemStatus === 'inactive'
+                        ? 'bg-gray-800 border-gray-600 text-gray-500 cursor-not-allowed'
+                        : 'text-red-400 hover:text-white bg-black/80 hover:bg-red-500/20 border-red-400/50 hover:border-red-400/70 hover:shadow-red-400/30'
+                    }`}
+                  >
+                    <FiSquare className="w-5 h-5 mr-2" />
+                    <span>Finalizar Sistema</span>
+                  </button>
+                </div>
+                
                 <button
                   onClick={fetchDashboardData}
-                  className="flex items-center px-6 py-3 text-blue-400 hover:text-yellow-400 bg-black/80 hover:bg-yellow-400/10 border-2 border-blue-400/50 hover:border-yellow-400/70 rounded-lg transition-all duration-300 shadow-lg hover:shadow-blue-400/30"
+                  className="flex items-center px-3 lg:px-6 py-2 lg:py-3 text-blue-400 hover:text-yellow-400 bg-black/80 hover:bg-yellow-400/10 border-2 border-blue-400/50 hover:border-yellow-400/70 rounded-lg transition-all duration-300 shadow-lg hover:shadow-blue-400/30"
                 >
-                  <FiRefreshCw className="w-5 h-5 mr-2" />
-                  <span className="font-medium">Atualizar</span>
+                  <FiRefreshCw className="w-4 lg:w-5 h-4 lg:h-5 lg:mr-2" />
+                  <span className="hidden lg:inline font-medium">Atualizar</span>
                 </button>
-                <div className="flex items-center bg-black/80 px-4 py-3 rounded-lg border-2 border-pink-400/50 shadow-lg">
+                
+                <div className="hidden lg:flex items-center bg-black/80 px-4 py-3 rounded-lg border-2 border-pink-400/50 shadow-lg">
                   <div className="w-3 h-3 bg-pink-400 rounded-full mr-3 animate-pulse shadow-lg shadow-pink-400/50"></div>
                   <span className="text-pink-400 font-bold text-sm">Sistema Online</span>
                 </div>
               </div>
             </div>
+
+            {/* Mobile System Controls */}
+            <div className="lg:hidden px-4 pb-4">
+              <div className="flex space-x-2">
+                <MobileButton
+                  variant={systemStatus === 'active' ? 'secondary' : 'primary'}
+                  onClick={() => handleSystemControl('start')}
+                  disabled={systemLoading || systemStatus === 'active'}
+                  className="flex-1 bg-green-600 hover:bg-green-700 border-green-500 disabled:bg-gray-600 disabled:border-gray-500"
+                >
+                  <FiPower className="w-4 h-4 mr-2" />
+                  Iniciar
+                </MobileButton>
+                
+                <MobileButton
+                  variant={systemStatus === 'inactive' ? 'secondary' : 'primary'}
+                  onClick={() => handleSystemControl('stop')}
+                  disabled={systemLoading || systemStatus === 'inactive'}
+                  className="flex-1 bg-red-600 hover:bg-red-700 border-red-500 disabled:bg-gray-600 disabled:border-gray-500"
+                >
+                  <FiSquare className="w-4 h-4 mr-2" />
+                  Parar
+                </MobileButton>
+              </div>
+            </div>
           </header>
 
           {/* Dashboard Content */}
-          <main className="p-6 bg-black min-h-screen">
-            {/* Leitura do Mercado */}
-            <div className="mb-8">
-              <div className="bg-black/80 backdrop-blur-sm rounded-2xl p-8 border-2 border-yellow-400/50 shadow-[0_0_30px_rgba(255,215,0,0.3)]">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold text-yellow-400 flex items-center">
-                    <FiActivity className="w-8 h-8 mr-4 text-pink-400" />
-                    LEITURA DO MERCADO - IA
-                  </h3>
-                  <div className={`flex items-center px-6 py-3 rounded-full bg-black/80 border-2 ${getDirectionColor(data.marketReading.direction)} shadow-lg`}>
-                    {getDirectionIcon(data.marketReading.direction)}
-                    <span className="ml-3 font-bold text-2xl">{data.marketReading.direction}</span>
-                    <span className="ml-3 text-lg">({data.marketReading.confidence}%)</span>
-                  </div>
+          <main className="p-3 lg:p-6 bg-black min-h-screen">
+            {/* Leitura do Mercado - Mobile Card */}
+            <MobileCard className="mb-6 lg:mb-8">
+              <div className="lg:hidden">
+                <h3 className="text-lg font-bold text-yellow-400 flex items-center mb-4">
+                  <FiActivity className="w-5 h-5 mr-2 text-pink-400" />
+                  LEITURA IA
+                </h3>
+                <div className={`flex items-center justify-center px-4 py-3 rounded-lg bg-black/80 border-2 ${getDirectionColor(data.marketReading.direction)} mb-4`}>
+                  {getDirectionIcon(data.marketReading.direction)}
+                  <span className="ml-2 font-bold text-xl">{data.marketReading.direction}</span>
+                  <span className="ml-2 text-sm">({data.marketReading.confidence}%)</span>
                 </div>
-                <p className="text-blue-300 leading-relaxed text-lg mb-4">{data.marketReading.ai_justification}</p>
-                <div className="text-sm text-pink-400 flex items-center">
-                  <FiClock className="w-4 h-4 mr-2" />
-                  Última atualização: {new Date(data.marketReading.lastUpdate).toLocaleString('pt-BR')}
-                </div>
-              </div>
-            </div>
-
-            {/* Grid de Métricas Principais */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {/* Sinais Constantes */}
-              <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-pink-400/50 shadow-[0_0_20px_rgba(236,72,153,0.3)] hover:shadow-[0_0_30px_rgba(236,72,153,0.5)] transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div className="text-center w-full">
-                    <p className="text-pink-400 text-sm font-bold uppercase tracking-wider mb-2">Sinais Constantes</p>
-                    <p className="text-4xl font-bold text-yellow-400 mb-2">{data.signals.constant_signals.length}</p>
-                    <p className="text-blue-300 text-sm">Algoritmos próprios</p>
-                  </div>
-                  <FiRadio className="w-8 h-8 text-pink-400 ml-4" />
+                <p className="text-blue-300 text-sm leading-relaxed mb-3">{data.marketReading.ai_justification}</p>
+                <div className="text-xs text-pink-400 flex items-center">
+                  <FiClock className="w-3 h-3 mr-1" />
+                  {new Date(data.marketReading.lastUpdate).toLocaleString('pt-BR')}
                 </div>
               </div>
 
-              {/* TradingView */}
-              <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-blue-400/50 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div className="text-center w-full">
-                    <p className="text-blue-400 text-sm font-bold uppercase tracking-wider mb-2">Sinais TradingView</p>
-                    <p className="text-4xl font-bold text-yellow-400 mb-2">{data.signals.tradingview.length}</p>
-                    <p className="text-blue-300 text-sm">Análise técnica avançada</p>
+              {/* Desktop Version */}
+              <div className="hidden lg:block">
+                <div className="bg-black/80 backdrop-blur-sm rounded-2xl p-8 border-2 border-yellow-400/50 shadow-[0_0_30px_rgba(255,215,0,0.3)]">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-2xl font-bold text-yellow-400 flex items-center">
+                      <FiActivity className="w-8 h-8 mr-4 text-pink-400" />
+                      LEITURA DO MERCADO - IA
+                    </h3>
+                    <div className={`flex items-center px-6 py-3 rounded-full bg-black/80 border-2 ${getDirectionColor(data.marketReading.direction)} shadow-lg`}>
+                      {getDirectionIcon(data.marketReading.direction)}
+                      <span className="ml-3 font-bold text-2xl">{data.marketReading.direction}</span>
+                      <span className="ml-3 text-lg">({data.marketReading.confidence}%)</span>
+                    </div>
                   </div>
-                  <FiTarget className="w-8 h-8 text-blue-400 ml-4" />
+                  <p className="text-blue-300 leading-relaxed text-lg mb-4">{data.marketReading.ai_justification}</p>
+                  <div className="text-sm text-pink-400 flex items-center">
+                    <FiClock className="w-4 h-4 mr-2" />
+                    Última atualização: {new Date(data.marketReading.lastUpdate).toLocaleString('pt-BR')}
+                  </div>
                 </div>
               </div>
+            </MobileCard>
 
-              {/* Operações Ativas */}
-              <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-yellow-400/50 shadow-[0_0_20px_rgba(255,215,0,0.3)] hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div className="text-center w-full">
-                    <p className="text-yellow-400 text-sm font-bold uppercase tracking-wider mb-2">Operações Ativas</p>
-                    <p className="text-4xl font-bold text-pink-400 mb-2">{data.operations.active.length}</p>
-                    <p className="text-blue-300 text-sm">Em tempo real</p>
+            {/* Métricas Principais - Mobile/Desktop Responsive */}
+            <div className="mb-6 lg:mb-8">
+              {/* Mobile Version - Cards em Stack */}
+              <div className="lg:hidden space-y-4">
+                <MobileCard>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-pink-400 text-sm font-bold mb-1">Sinais Constantes</p>
+                      <p className="text-2xl font-bold text-yellow-400">{data.signals.constant_signals.length}</p>
+                      <p className="text-blue-300 text-xs">Algoritmos próprios</p>
+                    </div>
+                    <FiRadio className="w-8 h-8 text-pink-400" />
                   </div>
-                  <FiActivity className="w-8 h-8 text-yellow-400 ml-4" />
-                </div>
+                </MobileCard>
+
+                <MobileCard>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-blue-400 text-sm font-bold mb-1">Sinais TradingView</p>
+                      <p className="text-2xl font-bold text-yellow-400">{data.signals.tradingview.length}</p>
+                      <p className="text-blue-300 text-xs">Análise técnica</p>
+                    </div>
+                    <FiTarget className="w-8 h-8 text-blue-400" />
+                  </div>
+                </MobileCard>
+
+                <MobileCard>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-yellow-400 text-sm font-bold mb-1">Operações Ativas</p>
+                      <p className="text-2xl font-bold text-pink-400">{data.operations.active.length}</p>
+                      <p className="text-blue-300 text-xs">Em tempo real</p>
+                    </div>
+                    <FiActivity className="w-8 h-8 text-yellow-400" />
+                  </div>
+                </MobileCard>
+
+                <MobileCard>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-pink-400 text-sm font-bold mb-1">Assertividade Hoje</p>
+                      <p className="text-2xl font-bold text-yellow-400">{data.operations.daily_accuracy}%</p>
+                      <p className="text-blue-300 text-xs">Histórica: {data.operations.historical_accuracy}%</p>
+                    </div>
+                    <FiEye className="w-8 h-8 text-pink-400" />
+                  </div>
+                </MobileCard>
               </div>
 
-              {/* Assertividade */}
-              <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-pink-400/50 shadow-[0_0_20px_rgba(236,72,153,0.3)] hover:shadow-[0_0_30px_rgba(236,72,153,0.5)] transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div className="text-center w-full">
-                    <p className="text-pink-400 text-sm font-bold uppercase tracking-wider mb-2">Assertividade Hoje</p>
-                    <p className="text-4xl font-bold text-yellow-400 mb-2">{data.operations.daily_accuracy}%</p>
-                    <p className="text-blue-300 text-sm">Histórica: {data.operations.historical_accuracy}%</p>
+              {/* Desktop Version - Grid */}
+              <div className="hidden lg:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Sinais Constantes */}
+                <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-pink-400/50 shadow-[0_0_20px_rgba(236,72,153,0.3)] hover:shadow-[0_0_30px_rgba(236,72,153,0.5)] transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div className="text-center w-full">
+                      <p className="text-pink-400 text-sm font-bold uppercase tracking-wider mb-2">Sinais Constantes</p>
+                      <p className="text-4xl font-bold text-yellow-400 mb-2">{data.signals.constant_signals.length}</p>
+                      <p className="text-blue-300 text-sm">Algoritmos próprios</p>
+                    </div>
+                    <FiRadio className="w-8 h-8 text-pink-400 ml-4" />
                   </div>
-                  <FiEye className="w-8 h-8 text-pink-400 ml-4" />
+                </div>
+
+                {/* TradingView */}
+                <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-blue-400/50 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div className="text-center w-full">
+                      <p className="text-blue-400 text-sm font-bold uppercase tracking-wider mb-2">Sinais TradingView</p>
+                      <p className="text-4xl font-bold text-yellow-400 mb-2">{data.signals.tradingview.length}</p>
+                      <p className="text-blue-300 text-sm">Análise técnica avançada</p>
+                    </div>
+                    <FiTarget className="w-8 h-8 text-blue-400 ml-4" />
+                  </div>
+                </div>
+
+                {/* Operações Ativas */}
+                <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-yellow-400/50 shadow-[0_0_20px_rgba(255,215,0,0.3)] hover:shadow-[0_0_30px_rgba(255,215,0,0.5)] transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div className="text-center w-full">
+                      <p className="text-yellow-400 text-sm font-bold uppercase tracking-wider mb-2">Operações Ativas</p>
+                      <p className="text-4xl font-bold text-pink-400 mb-2">{data.operations.active.length}</p>
+                      <p className="text-blue-300 text-sm">Em tempo real</p>
+                    </div>
+                    <FiActivity className="w-8 h-8 text-yellow-400 ml-4" />
+                  </div>
+                </div>
+
+                {/* Assertividade */}
+                <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-pink-400/50 shadow-[0_0_20px_rgba(236,72,153,0.3)] hover:shadow-[0_0_30px_rgba(236,72,153,0.5)] transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div className="text-center w-full">
+                      <p className="text-pink-400 text-sm font-bold uppercase tracking-wider mb-2">Assertividade Hoje</p>
+                      <p className="text-4xl font-bold text-yellow-400 mb-2">{data.operations.daily_accuracy}%</p>
+                      <p className="text-blue-300 text-sm">Histórica: {data.operations.historical_accuracy}%</p>
+                    </div>
+                    <FiEye className="w-8 h-8 text-pink-400 ml-4" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -541,6 +759,83 @@ export default function ExecutiveDashboard() {
           </main>
         </div>
       </div>
+
+      {/* Modal de Confirmação do Sistema */}
+      {showSystemModal && (
+        <MobileModal
+          isOpen={showSystemModal}
+          onClose={() => setShowSystemModal(false)}
+          title={`Confirmar ${systemAction === 'start' ? 'Inicialização' : 'Finalização'} do Sistema`}
+        >
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${
+                systemAction === 'start' ? 'bg-green-500/20 border border-green-400/50' : 'bg-red-500/20 border border-red-400/50'
+              }`}>
+                {systemAction === 'start' ? (
+                  <FiPower className="w-8 h-8 text-green-400" />
+                ) : (
+                  <FiSquare className="w-8 h-8 text-red-400" />
+                )}
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">
+                {systemAction === 'start' ? 'Iniciar Sistema Completo' : 'Finalizar Sistema Completo'}
+              </h3>
+              
+              <p className="text-gray-300 mb-4">
+                {systemAction === 'start' 
+                  ? 'Tem certeza que deseja iniciar todos os serviços e microserviços do sistema CoinBitClub? Esta ação irá ativar o trading automático, sinais de IA e todas as funcionalidades.'
+                  : 'Tem certeza que deseja finalizar todos os serviços e microserviços do sistema CoinBitClub? Esta ação irá pausar todas as operações em andamento e desativar o trading automático.'
+                }
+              </p>
+              
+              <div className={`p-4 rounded-lg border ${
+                systemAction === 'start' 
+                  ? 'bg-green-500/10 border-green-400/30 text-green-300'
+                  : 'bg-red-500/10 border-red-400/30 text-red-300'
+              }`}>
+                <p className="text-sm font-medium">
+                  {systemAction === 'start' 
+                    ? '✅ Sistemas serão iniciados em sequência segura'
+                    : '⚠️ Operações ativas serão finalizadas com segurança'
+                  }
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex space-x-4">
+              <MobileButton
+                variant="secondary"
+                onClick={() => setShowSystemModal(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </MobileButton>
+              
+              <MobileButton
+                variant="primary"
+                onClick={confirmSystemAction}
+                disabled={systemLoading}
+                className={`flex-1 ${
+                  systemAction === 'start' 
+                    ? 'bg-green-600 hover:bg-green-700 border-green-500'
+                    : 'bg-red-600 hover:bg-red-700 border-red-500'
+                }`}
+              >
+                {systemLoading ? (
+                  <div className="flex items-center justify-center">
+                    <FiRefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                    Processando...
+                  </div>
+                ) : (
+                  `Confirmar ${systemAction === 'start' ? 'Inicialização' : 'Finalização'}`
+                )}
+              </MobileButton>
+            </div>
+          </div>
+        </MobileModal>
+      )}
     </>
   );
 }

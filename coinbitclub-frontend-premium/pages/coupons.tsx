@@ -192,34 +192,26 @@ export default function CouponsPage() {
                 >
                   {loading ? 'Validando...' : 'Validar Cupom'}
                 </MobileButton>
-                </button>
 
                 {/* Resultado da Validação */}
                 {validationResult && (
-                  <div className="bg-green-400/10 border border-green-400/50 rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-2">
-                        <FiCheck className="w-5 h-5 text-green-400" />
-                        <span className="text-green-400 font-bold">Cupom Válido!</span>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
+                  <MobileAlert type="success" title="Cupom Válido!" icon={<FiCheck className="w-5 h-5" />}>
+                    <div className="space-y-2 mt-3">
+                      <div className="flex justify-between text-sm">
                         <span className="text-blue-400">Código:</span>
                         <span className="text-yellow-400 font-bold">{validationResult.code}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-sm">
                         <span className="text-blue-400">Valor:</span>
                         <span className="text-green-400 font-bold">
                           ${validationResult.amount.toFixed(2)} {validationResult.currency}
                         </span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-sm">
                         <span className="text-blue-400">Descrição:</span>
                         <span className="text-yellow-400">{validationResult.description}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-sm">
                         <span className="text-blue-400">Tipo:</span>
                         <span className="text-pink-400">
                           {validationResult.type === 'single_use' ? 'Uso Único' : 
@@ -228,32 +220,24 @@ export default function CouponsPage() {
                       </div>
                     </div>
 
-                    <button
+                    <MobileButton
+                      fullWidth
                       onClick={applyCoupon}
-                      disabled={loading}
-                      className="w-full mt-4 px-6 py-3 text-black bg-green-400 hover:bg-green-300 disabled:bg-green-400/50 disabled:cursor-not-allowed border-2 border-green-400 rounded-lg transition-all duration-300 font-bold flex items-center justify-center"
+                      loading={loading}
+                      className="mt-4 bg-green-400 hover:bg-green-300 border-green-400 text-black"
+                      icon={!loading && <FiGift className="w-5 h-5" />}
                     >
-                      {loading ? (
-                        <>
-                          <FiLoader className="w-5 h-5 mr-2 animate-spin" />
-                          Aplicando...
-                        </>
-                      ) : (
-                        <>
-                          <FiGift className="w-5 h-5 mr-2" />
-                          Aplicar Cupom
-                        </>
-                      )}
-                    </button>
-                  </div>
+                      {loading ? 'Aplicando...' : 'Aplicar Cupom'}
+                    </MobileButton>
+                  </MobileAlert>
                 )}
               </div>
-            </div>
+            </MobileCard>
 
             {/* Informações */}
-            <div className="space-y-6">
+            <div className="space-y-6 order-2">
               {/* Como Funciona */}
-              <div className="bg-black/90 backdrop-blur-sm border-2 border-blue-400/50 rounded-xl p-6">
+              <MobileCard>
                 <h3 className="text-lg font-bold text-blue-400 mb-4">Como Funciona</h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex items-start space-x-3">
@@ -273,33 +257,33 @@ export default function CouponsPage() {
                     <span className="text-blue-400">Créditos serão adicionados à sua conta</span>
                   </div>
                 </div>
-              </div>
+              </MobileCard>
 
               {/* Importante */}
-              <div className="bg-orange-400/10 border border-orange-400/50 rounded-xl p-6">
-                <h3 className="text-lg font-bold text-orange-400 mb-4 flex items-center">
-                  <FiAlertCircle className="w-5 h-5 mr-2" />
-                  Importante
-                </h3>
-                <div className="space-y-2 text-sm text-orange-400">
+              <MobileAlert type="warning" title="Importante" icon={<FiAlertCircle className="w-5 h-5" />}>
+                <div className="space-y-2 text-sm">
                   <p>• Cupons só podem ser usados uma vez por conta</p>
                   <p>• Créditos de cupons não geram direito a saque</p>
                   <p>• Use os créditos apenas para operações na plataforma</p>
                   <p>• Verifique a data de validade do cupom</p>
                   <p>• Códigos são case-insensitive (maiúsculas/minúsculas)</p>
                 </div>
-              </div>
+              </MobileAlert>
 
               {/* Suporte */}
-              <div className="bg-black/90 backdrop-blur-sm border-2 border-pink-400/50 rounded-xl p-6">
+              <MobileCard className="border-pink-400/50">
                 <h3 className="text-lg font-bold text-pink-400 mb-4">Precisa de Ajuda?</h3>
                 <p className="text-blue-400 text-sm mb-4">
                   Se você está com problemas para aplicar um cupom, entre em contato conosco.
                 </p>
-                <button className="w-full px-4 py-2 text-black bg-pink-400 hover:bg-pink-300 border-2 border-pink-400 rounded-lg transition-all duration-300 font-bold">
+                <MobileButton
+                  fullWidth
+                  variant="primary"
+                  className="bg-pink-400 hover:bg-pink-300 border-pink-400 text-black"
+                >
                   Contatar Suporte
-                </button>
-              </div>
+                </MobileButton>
+              </MobileCard>
             </div>
           </div>
         </div>
