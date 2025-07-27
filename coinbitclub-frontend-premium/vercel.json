@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "coinbitclub-admin",
+  "name": "coinbitclub-marketbot",
   "framework": "nextjs",
   "installCommand": "npm install --force",
   "buildCommand": "npm run build || echo 'Build failed but deploying anyway'",
