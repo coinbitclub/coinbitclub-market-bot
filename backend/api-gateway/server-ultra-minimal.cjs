@@ -12,6 +12,56 @@ const app = express();
 // Middleware minimo
 app.use(express.json());
 
+// === CONFIGURAÇÃO DE PRODUÇÃO ===
+const cors = require('cors');
+
+// Configuração CORS para produção
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'https://coinbitclub.vercel.app',
+      'https://coinbitclub-staging.vercel.app',
+      'http://localhost:3001', // Para desenvolvimento
+      'https://app.coinbitclub.com' // Futuro domínio customizado
+    ];
+    
+    // Permitir requests sem origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['X-Total-Count'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
+
+// Headers de segurança para produção
+app.use((req, res, next) => {
+  // Security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-Powered-By', 'CoinBitClub-v3.0.0');
+  
+  // HSTS em produção
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  
+  next();
+});
+
 // Configuracao Railway
 const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
@@ -134,6 +184,75 @@ app.post('/auth/reset-password', (req, res) => {
   res.json({
     success: true,
     message: 'Senha alterada com sucesso'
+  });
+});
+
+// === ENDPOINTS THULIO SMS OTP ===
+app.post('/api/auth/request-otp', (req, res) => {
+  console.log('POST /api/auth/request-otp:', req.body);
+  
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ error: 'Email é obrigatório' });
+  }
+  
+  // Simular verificação do usuário e telefone
+  if (email === 'faleconosco@coinbitclub.vip') {
+    console.log('📱 Simulando envio de SMS OTP para: 5521987386645');
+    
+    res.json({
+      success: true,
+      message: 'Código OTP enviado via SMS',
+      service: 'Thulio SMS API',
+      expiresIn: '5 minutos',
+      phone: '5521987386645'
+    });
+  } else {
+    res.status(404).json({ error: 'Usuário não encontrado ou telefone não cadastrado' });
+  }
+});
+
+app.post('/api/auth/verify-otp', (req, res) => {
+  console.log('POST /api/auth/verify-otp:', req.body);
+  
+  const { email, otp } = req.body;
+  
+  if (!email || !otp) {
+    return res.status(400).json({ error: 'Email e código OTP são obrigatórios' });
+  }
+  
+  // Simular verificação do código OTP
+  if (email === 'faleconosco@coinbitclub.vip' && otp === '123456') {
+    res.json({
+      message: 'Login via OTP realizado com sucesso',
+      user: {
+        id: 'f9613b34-d57c-4335-80b5-40dfc3fd4998',
+        email: 'faleconosco@coinbitclub.vip',
+        name: 'ERICA ANDRADE',
+        role: 'admin',
+        status: 'trial_active'
+      },
+      tokens: {
+        accessToken: 'jwt-otp-access-token',
+        refreshToken: 'jwt-otp-refresh-token'
+      }
+    });
+  } else {
+    res.status(400).json({ error: 'Código OTP inválido ou expirado' });
+  }
+});
+
+app.get('/api/auth/thulio-sms-status', (req, res) => {
+  console.log('GET /api/auth/thulio-sms-status');
+  
+  res.json({
+    service: 'Thulio SMS API',
+    status: 'connected',
+    sender: 'CoinBitClub',
+    online: true,
+    balance: 'R$ 50,00',
+    test_mode: true
   });
 });
 

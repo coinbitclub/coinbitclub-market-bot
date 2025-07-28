@@ -77,8 +77,8 @@ class CoinbitClubExecutor {
           
         case 'day':
           const day = parseInt(args[0]);
-          if (!day || day < 1 || day > 18) {
-            throw new Error('Dia deve ser um número entre 1 e 18');
+          if (!day || day < 1 || day > 23) {
+            throw new Error('Dia deve ser um número entre 1 e 23');
           }
           await this.executeDay(day);
           break;
@@ -158,7 +158,7 @@ class CoinbitClubExecutor {
   }
 
   async startExecution() {
-    console.log('\x1b[33m%s\x1b[0m', '🚀 INICIANDO EXECUÇÃO COMPLETA - 18 DIAS');
+    console.log('\x1b[33m%s\x1b[0m', '🚀 INICIANDO EXECUÇÃO COMPLETA - 23 DIAS');
     console.log('');
     
     const confirmation = await this.confirm('Tem certeza que deseja iniciar a execução completa? (y/N)');
@@ -168,12 +168,13 @@ class CoinbitClubExecutor {
     }
     
     console.log('📅 CRONOGRAMA:');
-    console.log('   Fase 1 (Dias 1-6):  Backend completo');
-    console.log('   Fase 2 (Dias 7-12): Frontend real');
+    console.log('   Fase 1 (Dias 1-6):   Backend completo');
+    console.log('   Fase 2 (Dias 7-12):  Frontend real');
     console.log('   Fase 3 (Dias 13-18): Integração total');
+    console.log('   Fase 4 (Dias 19-23): IA Monitoramento');
     console.log('');
     
-    for (let day = 1; day <= 18; day++) {
+    for (let day = 1; day <= 23; day++) {
       try {
         console.log(`\x1b[36m%s\x1b[0m`, `📅 EXECUTANDO DIA ${day}...`);
         await this.executeDay(day, false);
@@ -191,7 +192,7 @@ class CoinbitClubExecutor {
     
     console.log('');
     console.log('\x1b[32m%s\x1b[0m', '🎉 EXECUÇÃO COMPLETA FINALIZADA!');
-    console.log('🚀 Sistema CoinbitClub está 98% operacional!');
+    console.log('🚀 Sistema CoinbitClub está 100% operacional!');
   }
 
   async executeDay(day, showHeader = true) {
@@ -430,7 +431,12 @@ NODE_ENV=development
       15: { component: 'order-executor', description: 'Order Executor real' },
       16: { component: 'production-deploy', description: 'Deploy produção' },
       17: { component: 'integration-tests', description: 'Testes integração' },
-      18: { component: 'go-live', description: 'Go-live e monitoramento' }
+      18: { component: 'go-live', description: 'Go-live e monitoramento' },
+      19: { component: 'ai-monitoring-core', description: 'IA Monitoring Core' },
+      20: { component: 'volatility-detection', description: 'Sistema Detecção Volatilidade' },
+      21: { component: 'security-ip-fixed', description: 'Segurança e IP Fixo' },
+      22: { component: 'admin-dashboard-ai', description: 'Dashboard Admin IA' },
+      23: { component: 'ai-tests-homologation', description: 'Testes IA & Homologação' }
     };
     
     return configs[day] || { component: 'unknown', description: 'Desconhecido' };

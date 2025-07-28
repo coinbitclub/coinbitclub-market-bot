@@ -8,6 +8,7 @@ import { validate, validateBody, authSchema } from '../../../common/validation.j
 import { handleAsyncError } from '../../../common/utils.js';
 import { env } from '../../../common/env.js';
 import logger from '../../../common/logger.js';
+import { thulioOTP } from '../services/thulioOTPService.js';
 
 const JWT_SECRET = env.JWT_SECRET;
 
@@ -333,6 +334,120 @@ export const getPublicStats = handleAsyncError(async (req, res) => {
   });
 });
 
+// Solicitar código OTP via SMS
+export const requestOTP = handleAsyncError(async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ error: 'Email é obrigatório' });
+  }
+  
+  // Verificar se usuário existe
+  const user = await db('users').where({ email }).first();
+  if (!user) {
+    return res.status(404).json({ error: 'Usuário não encontrado' });
+  }
+  
+  // Verificar se telefone está cadastrado
+  if (!user.phone) {
+    return res.status(400).json({ 
+      error: 'Telefone não cadastrado. Entre em contato com o suporte.' 
+    });
+  }
+  
+  try {
+    const result = await thulioOTP.sendOTP(user.phone, email);
+    
+    logger.info({ userId: user.id, email, phone: user.phone }, 'OTP SMS enviado');
+    
+    res.json({
+      success: true,
+      message: result.message,
+      service: result.service,
+      expiresIn: result.expiresIn
+    });
+    
+  } catch (error) {
+    logger.error({ userId: user.id, email, error: error.message }, 'Erro ao enviar OTP SMS');
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Verificar código OTP e fazer login
+export const verifyOTPLogin = handleAsyncError(async (req, res) => {
+  const { email, otp } = req.body;
+  
+  if (!email || !otp) {
+    return res.status(400).json({ error: 'Email e código OTP são obrigatórios' });
+  }
+  
+  // Verificar se usuário existe
+  const user = await db('users').where({ email }).first();
+  if (!user) {
+    return res.status(404).json({ error: 'Usuário não encontrado' });
+  }
+  
+  try {
+    // Verificar código OTP
+    const verification = await thulioOTP.verifyOTP(email, otp);
+    
+    if (!verification.success) {
+      return res.status(400).json({ error: 'Código OTP inválido' });
+    }
+    
+    // Verificar status do usuário
+    await verifyUserStatus(user);
+    
+    // Atualizar último login
+    await db('users')
+      .where({ id: user.id })
+      .update({ 
+        last_login_at: db.fn.now(),
+        updated_at: db.fn.now()
+      });
+    
+    // Gerar tokens
+    const { accessToken, refreshToken } = generateTokens(user.id);
+    
+    logger.info({ userId: user.id, email }, 'Login via OTP SMS realizado com sucesso');
+    
+    res.json({
+      message: 'Login via OTP realizado com sucesso',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        status: user.status,
+        trialEndsAt: user.trial_ends_at
+      },
+      tokens: {
+        accessToken,
+        refreshToken
+      }
+    });
+    
+  } catch (error) {
+    logger.error({ userId: user.id, email, error: error.message }, 'Erro na verificação OTP');
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Status do serviço Thulio SMS
+export const getThulioPSMSStatus = handleAsyncError(async (req, res) => {
+  try {
+    const status = await thulioOTP.getStatus();
+    res.json(status);
+  } catch (error) {
+    res.status(500).json({ 
+      service: 'Thulio SMS API',
+      status: 'error',
+      error: error.message,
+      online: false
+    });
+  }
+});
+
 // Routes
 const router = express.Router();
 
@@ -342,6 +457,11 @@ router.post('/login', validateBody(authSchema.login), login);
 router.post('/refresh', validateBody(authSchema.refreshToken), refreshToken);
 router.post('/reset-password', validateBody(authSchema.resetPassword), resetPassword);
 router.get('/public-stats', getPublicStats);
+
+// OTP Routes (público)
+router.post('/request-otp', requestOTP);
+router.post('/verify-otp', verifyOTPLogin);
+router.get('/thulio-sms-status', getThulioPSMSStatus);
 
 // Protected routes 
 router.use(authenticateToken);
