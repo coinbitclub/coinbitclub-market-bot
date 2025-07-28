@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 
 // Configuração da conexão com PostgreSQL Railway
 const pool = new Pool({
-  connectionString: 'postgresql://postgres:TQDSOVEqxVgCFdcKtwHEvnkoLSTFvswS@yamabiko.proxy.rlwy.net:32866/railway',
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway',
   ssl: {
     rejectUnauthorized: false
   }
