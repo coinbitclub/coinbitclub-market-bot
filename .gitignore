@@ -1,34 +1,46 @@
-node_modules
-backend/.env
-*.env.local
-*.env.production
-*.env.railway
+﻿# Credenciais e chaves de API
+*.key
+*.pem
+.env
+.env.local
+.env.production
+.env.staging
 
-# Next.js
-.next/
-out/
-build/
-dist/
+# Arquivos com credenciais
+**/configurar-railway-completo.js
+**/teste-chave-openai-producao.js
+**/teste-integracoes-completo-final.js
+**/atualizar-railway-automatico.js
+**/atualizar-railway-corrigido.js
+**/dia4-ia-aguia-sistema-completo.js
+**/gerador-relatorio-aguia-news.js
+**/teste-final-twilio-openai-completo.js
+**/dia5-sms-twilio-avancado-completo.js
+**/dia2-stripe-integration-completa.js
 
-# Cache files
-.cache/
-*.tsbuildinfo
-.eslintcache
-
-# Development files
+# Logs e dados temporÃ¡rios
+logs/
 *.log
+temp/
+tmp/
+
+# Node modules
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# VS Code
-.vscode/settings.json
-.vscode/launch.json
+# Build outputs
+.next/
+out/
+dist/
+build/
 
-# Testing
-coverage/
-.nyc_output/
-
-# OS
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db

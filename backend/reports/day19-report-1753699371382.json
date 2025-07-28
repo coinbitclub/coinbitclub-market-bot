@@ -1,0 +1,261 @@
+{
+  "day": 19,
+  "phase": "IA_MONITORING_CORE",
+  "timestamp": "2025-07-28T10:42:51.381Z",
+  "results": {
+    "total_tests": 30,
+    "passed": 24,
+    "failed": 2,
+    "warnings": 4,
+    "details": [
+      {
+        "category": "CORE_MODULE",
+        "test": "AI Monitoring Service",
+        "passed": true,
+        "isWarning": false,
+        "details": "Carregado com sucesso",
+        "timestamp": "2025-07-28T10:42:51.183Z"
+      },
+      {
+        "category": "CORE_MODULE",
+        "test": "Security Module",
+        "passed": true,
+        "isWarning": false,
+        "details": "Carregado com sucesso",
+        "timestamp": "2025-07-28T10:42:51.190Z"
+      },
+      {
+        "category": "CORE_MODULE",
+        "test": "Exchange Manager",
+        "passed": true,
+        "isWarning": false,
+        "details": "Carregado com sucesso",
+        "timestamp": "2025-07-28T10:42:51.192Z"
+      },
+      {
+        "category": "CORE_MODULE",
+        "test": "Logger Utils",
+        "passed": true,
+        "isWarning": false,
+        "details": "Sistema de logs operacional",
+        "timestamp": "2025-07-28T10:42:51.195Z"
+      },
+      {
+        "category": "FILE_STRUCTURE",
+        "test": "src/services/aiMonitoringService.js",
+        "passed": true,
+        "isWarning": false,
+        "details": "Arquivo existe",
+        "timestamp": "2025-07-28T10:42:51.197Z"
+      },
+      {
+        "category": "FILE_STRUCTURE",
+        "test": "src/security/SecurityModule.js",
+        "passed": true,
+        "isWarning": false,
+        "details": "Arquivo existe",
+        "timestamp": "2025-07-28T10:42:51.198Z"
+      },
+      {
+        "category": "FILE_STRUCTURE",
+        "test": "src/services/exchangeManager.js",
+        "passed": true,
+        "isWarning": false,
+        "details": "Arquivo existe",
+        "timestamp": "2025-07-28T10:42:51.199Z"
+      },
+      {
+        "category": "FILE_STRUCTURE",
+        "test": "src/utils/logger.js",
+        "passed": true,
+        "isWarning": false,
+        "details": "Arquivo existe",
+        "timestamp": "2025-07-28T10:42:51.199Z"
+      },
+      {
+        "category": "FILE_STRUCTURE",
+        "test": "scripts/closeAllOrders.js",
+        "passed": true,
+        "isWarning": false,
+        "details": "Arquivo existe",
+        "timestamp": "2025-07-28T10:42:51.200Z"
+      },
+      {
+        "category": "FILE_STRUCTURE",
+        "test": "scripts/pauseNewOrders.js",
+        "passed": true,
+        "isWarning": false,
+        "details": "Arquivo existe",
+        "timestamp": "2025-07-28T10:42:51.201Z"
+      },
+      {
+        "category": "FILE_STRUCTURE",
+        "test": "scripts/retriggerWebhook.js",
+        "passed": true,
+        "isWarning": false,
+        "details": "Arquivo existe",
+        "timestamp": "2025-07-28T10:42:51.201Z"
+      },
+      {
+        "category": "FILE_STRUCTURE",
+        "test": "database/migrations/005_create_ai_monitoring_tables.sql",
+        "passed": true,
+        "isWarning": false,
+        "details": "Arquivo existe",
+        "timestamp": "2025-07-28T10:42:51.202Z"
+      },
+      {
+        "category": "DEPENDENCY",
+        "test": "openai",
+        "passed": true,
+        "isWarning": false,
+        "details": "Dependência instalada",
+        "timestamp": "2025-07-28T10:42:51.205Z"
+      },
+      {
+        "category": "DEPENDENCY",
+        "test": "redis",
+        "passed": true,
+        "isWarning": false,
+        "details": "Dependência instalada",
+        "timestamp": "2025-07-28T10:42:51.206Z"
+      },
+      {
+        "category": "DEPENDENCY",
+        "test": "axios",
+        "passed": true,
+        "isWarning": false,
+        "details": "Dependência instalada",
+        "timestamp": "2025-07-28T10:42:51.331Z"
+      },
+      {
+        "category": "DEPENDENCY",
+        "test": "ws",
+        "passed": true,
+        "isWarning": false,
+        "details": "Dependência instalada",
+        "timestamp": "2025-07-28T10:42:51.353Z"
+      },
+      {
+        "category": "CONFIG",
+        "test": "OPENAI_API_KEY",
+        "passed": false,
+        "isWarning": true,
+        "details": "Variável não configurada",
+        "timestamp": "2025-07-28T10:42:51.355Z"
+      },
+      {
+        "category": "CONFIG",
+        "test": "REDIS_URL",
+        "passed": false,
+        "isWarning": true,
+        "details": "Variável não configurada",
+        "timestamp": "2025-07-28T10:42:51.355Z"
+      },
+      {
+        "category": "CONFIG",
+        "test": "DATABASE_URL",
+        "passed": false,
+        "isWarning": true,
+        "details": "Variável não configurada",
+        "timestamp": "2025-07-28T10:42:51.356Z"
+      },
+      {
+        "category": "CONFIG",
+        "test": "ADMIN_IPS",
+        "passed": false,
+        "isWarning": true,
+        "details": "Variável não configurada",
+        "timestamp": "2025-07-28T10:42:51.356Z"
+      },
+      {
+        "category": "CONFIG",
+        "test": "Configuração geral",
+        "passed": false,
+        "isWarning": false,
+        "details": "Nenhuma variável configurada - usando modo de demonstração",
+        "timestamp": "2025-07-28T10:42:51.356Z"
+      },
+      {
+        "category": "AUTOMATION",
+        "test": "scripts/closeAllOrders.js",
+        "passed": true,
+        "isWarning": false,
+        "details": "Script carregado",
+        "timestamp": "2025-07-28T10:42:51.360Z"
+      },
+      {
+        "category": "AUTOMATION",
+        "test": "scripts/pauseNewOrders.js",
+        "passed": true,
+        "isWarning": false,
+        "details": "Script carregado",
+        "timestamp": "2025-07-28T10:42:51.364Z"
+      },
+      {
+        "category": "AUTOMATION",
+        "test": "scripts/retriggerWebhook.js",
+        "passed": true,
+        "isWarning": false,
+        "details": "Script carregado",
+        "timestamp": "2025-07-28T10:42:51.367Z"
+      },
+      {
+        "category": "DATABASE",
+        "test": "Migração SQL",
+        "passed": true,
+        "isWarning": false,
+        "details": "Tabelas principais: OK",
+        "timestamp": "2025-07-28T10:42:51.369Z"
+      },
+      {
+        "category": "DATABASE",
+        "test": "Índices de performance",
+        "passed": true,
+        "isWarning": false,
+        "details": "Índices criados",
+        "timestamp": "2025-07-28T10:42:51.369Z"
+      },
+      {
+        "category": "SECURITY",
+        "test": "Validação de IP",
+        "passed": true,
+        "isWarning": false,
+        "details": "Função disponível",
+        "timestamp": "2025-07-28T10:42:51.372Z"
+      },
+      {
+        "category": "SECURITY",
+        "test": "Rate Limiting",
+        "passed": true,
+        "isWarning": false,
+        "details": "Função disponível",
+        "timestamp": "2025-07-28T10:42:51.372Z"
+      },
+      {
+        "category": "SECURITY",
+        "test": "Integridade de arquivos",
+        "passed": true,
+        "isWarning": false,
+        "details": "Função disponível",
+        "timestamp": "2025-07-28T10:42:51.373Z"
+      },
+      {
+        "category": "INTEGRATION",
+        "test": "Teste de integração",
+        "passed": false,
+        "isWarning": false,
+        "details": "The OPENAI_API_KEY environment variable is missing or empty; either provide it, or instantiate the OpenAI client with an apiKey option, like new OpenAI({ apiKey: 'My API Key' }).",
+        "timestamp": "2025-07-28T10:42:51.377Z"
+      }
+    ]
+  },
+  "success_rate": 80,
+  "status": "WARNING",
+  "next_steps": [
+    "Configure variáveis de ambiente",
+    "Execute migração do banco",
+    "Configure Redis server",
+    "Prossiga para Dia 20"
+  ]
+}

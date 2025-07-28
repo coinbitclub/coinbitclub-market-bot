@@ -1,0 +1,105 @@
+{
+  "timestamp": "2025-07-28T03:01:12.192Z",
+  "automation_score": 0,
+  "results": {
+    "files": {
+      "status": "partial",
+      "details": [
+        {
+          "file": "MAPEAMENTO-PROCESSOS-AUTOMATICOS.md",
+          "status": "found"
+        },
+        {
+          "file": "api-gateway/src/services/allCronJobs.js",
+          "status": "found"
+        },
+        {
+          "file": "api-gateway/src/services/webSocketService.js",
+          "status": "found"
+        },
+        {
+          "file": "api-gateway/src/services/withdrawalService.js",
+          "status": "found"
+        },
+        {
+          "file": "api-gateway/src/services/scheduler.js",
+          "status": "missing"
+        }
+      ]
+    },
+    "structure": {
+      "status": "pending",
+      "details": []
+    },
+    "automation": {
+      "status": "partial",
+      "details": [
+        {
+          "component": "AllCronJobs",
+          "status": "valid",
+          "foundKeywords": 5,
+          "totalKeywords": 5
+        },
+        {
+          "component": "WebSocketService",
+          "status": "valid",
+          "foundKeywords": 4,
+          "totalKeywords": 4
+        },
+        {
+          "component": "WithdrawalService",
+          "status": "partial",
+          "foundKeywords": 2,
+          "totalKeywords": 3
+        }
+      ]
+    },
+    "integration": {
+      "status": "partial",
+      "details": [
+        {
+          "integration": "Scheduler Integration",
+          "status": "not_ready",
+          "message": "Arquivo scheduler.js não encontrado"
+        },
+        {
+          "integration": "Database Connections",
+          "status": "not_ready",
+          "message": "Algumas tabelas podem estar faltando"
+        },
+        {
+          "integration": "Environment Variables",
+          "status": "ready",
+          "details": "Arquivos de ambiente: .env.example"
+        },
+        {
+          "integration": "Service Dependencies",
+          "status": "not_ready",
+          "message": "Algumas dependências podem estar faltando"
+        }
+      ]
+    }
+  },
+  "recommendations": [
+    {
+      "category": "files",
+      "priority": "medium",
+      "action": "Revisar e completar files"
+    },
+    {
+      "category": "structure",
+      "priority": "high",
+      "action": "Revisar e completar structure"
+    },
+    {
+      "category": "automation",
+      "priority": "medium",
+      "action": "Revisar e completar automation"
+    },
+    {
+      "category": "integration",
+      "priority": "medium",
+      "action": "Revisar e completar integration"
+    }
+  ]
+}

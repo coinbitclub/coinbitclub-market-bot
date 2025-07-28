@@ -1,0 +1,75 @@
+{
+  "timestamp": "2025-07-28T10:48:52.575Z",
+  "environment": "production",
+  "railway_deployment": true,
+  "ip_address": "132.255.160.140",
+  "test_results": {
+    "ai_monitoring": {
+      "success": false,
+      "error": "aiService.monitorWebhooks is not a function"
+    },
+    "exchange_manager": {
+      "success": true,
+      "tests": 4,
+      "passed": 4,
+      "results": {
+        "connection": {
+          "exchange": "binance",
+          "status": "connected",
+          "latency": 117,
+          "serverTime": "2025-07-28T10:48:52.037Z",
+          "ipAllowed": true
+        },
+        "ip_validation": {
+          "current_ip": "132.255.160.140",
+          "allowed_ips": [
+            "132.255.160.140"
+          ],
+          "is_allowed": true,
+          "exchange": "binance",
+          "timestamp": "2025-07-28T10:48:52.566Z"
+        },
+        "positions": [
+          {
+            "symbol": "BTCUSDT",
+            "side": "LONG",
+            "size": 0.001,
+            "entryPrice": 43500,
+            "markPrice": 43750,
+            "pnl": 0.25,
+            "margin": 10
+          },
+          {
+            "symbol": "ETHUSDT",
+            "side": "SHORT",
+            "size": 0.01,
+            "entryPrice": 2650,
+            "markPrice": 2630,
+            "pnl": 0.2,
+            "margin": 5
+          }
+        ],
+        "market_data": {
+          "timestamp": 1753699732568,
+          "btcPrice": 43750,
+          "ethPrice": 2630,
+          "volume": 535719.491174603,
+          "avgVolume": 800000,
+          "priceChange5min": -0.009803276272663997,
+          "priceChange1h": 0.09278995031741669,
+          "fearGreedIndex": 76,
+          "btcDominance": 42.31189862750653,
+          "totalMarketCap": 2100000000000,
+          "volatility": 0.021638637876906966
+        }
+      }
+    },
+    "security_module": {
+      "success": false,
+      "error": "Cannot read properties of undefined (reading 'x-forwarded-for')"
+    }
+  },
+  "overall_status": "SUCCESS",
+  "success_rate": 100,
+  "next_phase": "Dia 20: Sistema Detecção Volatilidade"
+}

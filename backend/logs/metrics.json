@@ -1,0 +1,1256 @@
+{
+  "api_calls": {
+    "GET /health": {
+      "count": 18,
+      "avg_duration": 0.5001602172851562,
+      "errors": 0
+    },
+    "GET /api/health": {
+      "count": 2,
+      "avg_duration": 0.25,
+      "errors": 0
+    },
+    "GET /api/admin/fase3/status": {
+      "count": 1,
+      "avg_duration": 1.5,
+      "errors": 0
+    },
+    "GET /api/fear-greed/current": {
+      "count": 2,
+      "avg_duration": 0.25,
+      "errors": 0
+    },
+    "POST /api/webhooks/tradingview": {
+      "count": 2,
+      "avg_duration": 0.75,
+      "errors": 2
+    },
+    "POST /api/webhooks/stripe": {
+      "count": 2,
+      "avg_duration": 0,
+      "errors": 0
+    },
+    "GET /api/admin/emergency/status": {
+      "count": 3,
+      "avg_duration": 0.25,
+      "errors": 1
+    },
+    "GET /": {
+      "count": 815,
+      "avg_duration": 0.5003442168545013,
+      "errors": 45
+    }
+  },
+  "response_times": {},
+  "errors": {},
+  "active_users": [],
+  "admin_actions": [],
+  "system_health": {
+    "uptime": 1753659265220,
+    "memory_usage": [
+      {
+        "timestamp": "2025-07-28T07:40:28.963Z",
+        "heap_used": 15276152,
+        "heap_total": 22237184,
+        "external": 3651009,
+        "rss": 36605952
+      },
+      {
+        "timestamp": "2025-07-28T07:41:28.960Z",
+        "heap_used": 15409048,
+        "heap_total": 22237184,
+        "external": 3651009,
+        "rss": 36610048
+      },
+      {
+        "timestamp": "2025-07-28T07:42:28.961Z",
+        "heap_used": 15095264,
+        "heap_total": 23285760,
+        "external": 3651009,
+        "rss": 36642816
+      },
+      {
+        "timestamp": "2025-07-28T07:43:28.964Z",
+        "heap_used": 15228480,
+        "heap_total": 23285760,
+        "external": 3627453,
+        "rss": 36646912
+      },
+      {
+        "timestamp": "2025-07-28T07:44:28.954Z",
+        "heap_used": 15479696,
+        "heap_total": 23285760,
+        "external": 3659203,
+        "rss": 36655104
+      },
+      {
+        "timestamp": "2025-07-28T07:45:28.944Z",
+        "heap_used": 15619128,
+        "heap_total": 23285760,
+        "external": 3659203,
+        "rss": 36655104
+      },
+      {
+        "timestamp": "2025-07-28T07:46:28.943Z",
+        "heap_used": 15271384,
+        "heap_total": 22237184,
+        "external": 3659203,
+        "rss": 36655104
+      },
+      {
+        "timestamp": "2025-07-28T07:47:28.931Z",
+        "heap_used": 15468400,
+        "heap_total": 22237184,
+        "external": 3659203,
+        "rss": 36655104
+      },
+      {
+        "timestamp": "2025-07-28T07:48:28.927Z",
+        "heap_used": 15602560,
+        "heap_total": 22237184,
+        "external": 3659203,
+        "rss": 36655104
+      },
+      {
+        "timestamp": "2025-07-28T07:49:28.921Z",
+        "heap_used": 15797600,
+        "heap_total": 22237184,
+        "external": 3659208,
+        "rss": 36659200
+      },
+      {
+        "timestamp": "2025-07-28T07:50:28.911Z",
+        "heap_used": 15450976,
+        "heap_total": 22237184,
+        "external": 3667400,
+        "rss": 36720640
+      },
+      {
+        "timestamp": "2025-07-28T07:51:28.902Z",
+        "heap_used": 15583760,
+        "heap_total": 22237184,
+        "external": 3667400,
+        "rss": 36720640
+      },
+      {
+        "timestamp": "2025-07-28T07:52:28.900Z",
+        "heap_used": 15774272,
+        "heap_total": 22237184,
+        "external": 3667400,
+        "rss": 36732928
+      },
+      {
+        "timestamp": "2025-07-28T07:53:28.896Z",
+        "heap_used": 15913728,
+        "heap_total": 22237184,
+        "external": 3667400,
+        "rss": 36732928
+      },
+      {
+        "timestamp": "2025-07-28T07:54:28.894Z",
+        "heap_used": 16108008,
+        "heap_total": 22237184,
+        "external": 3659214,
+        "rss": 36732928
+      },
+      {
+        "timestamp": "2025-07-28T07:55:28.887Z",
+        "heap_used": 15822568,
+        "heap_total": 22237184,
+        "external": 3659214,
+        "rss": 36814848
+      },
+      {
+        "timestamp": "2025-07-28T07:56:28.887Z",
+        "heap_used": 15956544,
+        "heap_total": 22237184,
+        "external": 3659214,
+        "rss": 36814848
+      },
+      {
+        "timestamp": "2025-07-28T07:57:28.888Z",
+        "heap_used": 16089616,
+        "heap_total": 22237184,
+        "external": 3635645,
+        "rss": 36814848
+      },
+      {
+        "timestamp": "2025-07-28T07:58:28.887Z",
+        "heap_used": 16287928,
+        "heap_total": 22237184,
+        "external": 3635645,
+        "rss": 36814848
+      },
+      {
+        "timestamp": "2025-07-28T07:59:28.883Z",
+        "heap_used": 15984168,
+        "heap_total": 23285760,
+        "external": 3667412,
+        "rss": 36954112
+      },
+      {
+        "timestamp": "2025-07-28T08:00:28.885Z",
+        "heap_used": 16173744,
+        "heap_total": 23285760,
+        "external": 3667412,
+        "rss": 36954112
+      },
+      {
+        "timestamp": "2025-07-28T08:01:28.888Z",
+        "heap_used": 16313088,
+        "heap_total": 23285760,
+        "external": 3667412,
+        "rss": 36954112
+      },
+      {
+        "timestamp": "2025-07-28T08:02:28.885Z",
+        "heap_used": 16445952,
+        "heap_total": 23285760,
+        "external": 3667412,
+        "rss": 36950016
+      },
+      {
+        "timestamp": "2025-07-28T08:03:28.881Z",
+        "heap_used": 16158040,
+        "heap_total": 22237184,
+        "external": 3667412,
+        "rss": 36950016
+      },
+      {
+        "timestamp": "2025-07-28T08:04:28.881Z",
+        "heap_used": 16354352,
+        "heap_total": 22237184,
+        "external": 3675608,
+        "rss": 36954112
+      },
+      {
+        "timestamp": "2025-07-28T08:05:28.881Z",
+        "heap_used": 16487432,
+        "heap_total": 22237184,
+        "external": 3675608,
+        "rss": 36954112
+      },
+      {
+        "timestamp": "2025-07-28T08:06:28.887Z",
+        "heap_used": 16684920,
+        "heap_total": 22237184,
+        "external": 3675608,
+        "rss": 36958208
+      },
+      {
+        "timestamp": "2025-07-28T08:07:28.893Z",
+        "heap_used": 16293488,
+        "heap_total": 22237184,
+        "external": 3675608,
+        "rss": 36958208
+      },
+      {
+        "timestamp": "2025-07-28T08:08:28.902Z",
+        "heap_used": 16482952,
+        "heap_total": 22237184,
+        "external": 3675608,
+        "rss": 36958208
+      },
+      {
+        "timestamp": "2025-07-28T08:09:28.911Z",
+        "heap_used": 16684608,
+        "heap_total": 22237184,
+        "external": 3675612,
+        "rss": 36958208
+      },
+      {
+        "timestamp": "2025-07-28T08:10:28.915Z",
+        "heap_used": 16817400,
+        "heap_total": 22237184,
+        "external": 3675612,
+        "rss": 36958208
+      },
+      {
+        "timestamp": "2025-07-28T08:11:28.913Z",
+        "heap_used": 16535208,
+        "heap_total": 22237184,
+        "external": 3683804,
+        "rss": 36958208
+      },
+      {
+        "timestamp": "2025-07-28T08:12:28.914Z",
+        "heap_used": 16669120,
+        "heap_total": 22237184,
+        "external": 3683804,
+        "rss": 36958208
+      },
+      {
+        "timestamp": "2025-07-28T08:13:28.909Z",
+        "heap_used": 16801968,
+        "heap_total": 22237184,
+        "external": 3683804,
+        "rss": 36958208
+      },
+      {
+        "timestamp": "2025-07-28T08:14:28.904Z",
+        "heap_used": 17059872,
+        "heap_total": 22237184,
+        "external": 3675619,
+        "rss": 36958208
+      },
+      {
+        "timestamp": "2025-07-28T08:15:28.900Z",
+        "heap_used": 16667256,
+        "heap_total": 23285760,
+        "external": 3675619,
+        "rss": 36974592
+      },
+      {
+        "timestamp": "2025-07-28T08:16:28.901Z",
+        "heap_used": 16804800,
+        "heap_total": 23285760,
+        "external": 3675619,
+        "rss": 36741120
+      },
+      {
+        "timestamp": "2025-07-28T08:17:28.903Z",
+        "heap_used": 17004344,
+        "heap_total": 23285760,
+        "external": 3675619,
+        "rss": 36794368
+      },
+      {
+        "timestamp": "2025-07-28T08:18:28.909Z",
+        "heap_used": 17137304,
+        "heap_total": 23285760,
+        "external": 3652029,
+        "rss": 36798464
+      },
+      {
+        "timestamp": "2025-07-28T08:19:28.907Z",
+        "heap_used": 16916032,
+        "heap_total": 22237184,
+        "external": 3683815,
+        "rss": 36827136
+      },
+      {
+        "timestamp": "2025-07-28T10:38:10.107Z",
+        "heap_used": 16923408,
+        "heap_total": 22237184,
+        "external": 3683815,
+        "rss": 37384192
+      },
+      {
+        "timestamp": "2025-07-28T10:39:10.108Z",
+        "heap_used": 17117648,
+        "heap_total": 22237184,
+        "external": 3715602,
+        "rss": 37396480
+      },
+      {
+        "timestamp": "2025-07-28T10:40:10.115Z",
+        "heap_used": 17308080,
+        "heap_total": 22237184,
+        "external": 3715602,
+        "rss": 37634048
+      },
+      {
+        "timestamp": "2025-07-28T10:41:10.119Z",
+        "heap_used": 17447624,
+        "heap_total": 22237184,
+        "external": 3715602,
+        "rss": 37634048
+      },
+      {
+        "timestamp": "2025-07-28T10:42:10.124Z",
+        "heap_used": 17082792,
+        "heap_total": 22237184,
+        "external": 3715602,
+        "rss": 37634048
+      },
+      {
+        "timestamp": "2025-07-28T10:43:10.125Z",
+        "heap_used": 17334480,
+        "heap_total": 22237184,
+        "external": 3692009,
+        "rss": 37634048
+      },
+      {
+        "timestamp": "2025-07-28T10:44:10.135Z",
+        "heap_used": 17475448,
+        "heap_total": 22237184,
+        "external": 3692009,
+        "rss": 37658624
+      },
+      {
+        "timestamp": "2025-07-28T10:45:10.143Z",
+        "heap_used": 17608304,
+        "heap_total": 22237184,
+        "external": 3692009,
+        "rss": 37658624
+      },
+      {
+        "timestamp": "2025-07-28T10:46:10.152Z",
+        "heap_used": 17272952,
+        "heap_total": 22237184,
+        "external": 3692009,
+        "rss": 37658624
+      },
+      {
+        "timestamp": "2025-07-28T10:47:10.160Z",
+        "heap_used": 17406952,
+        "heap_total": 22237184,
+        "external": 3692009,
+        "rss": 37531648
+      },
+      {
+        "timestamp": "2025-07-28T10:48:10.170Z",
+        "heap_used": 17606464,
+        "heap_total": 22237184,
+        "external": 3692007,
+        "rss": 37531648
+      },
+      {
+        "timestamp": "2025-07-28T10:49:10.171Z",
+        "heap_used": 17801232,
+        "heap_total": 22237184,
+        "external": 3692007,
+        "rss": 37531648
+      },
+      {
+        "timestamp": "2025-07-28T10:50:10.184Z",
+        "heap_used": 18115448,
+        "heap_total": 22237184,
+        "external": 3668413,
+        "rss": 37703680
+      },
+      {
+        "timestamp": "2025-07-28T10:51:10.187Z",
+        "heap_used": 18611488,
+        "heap_total": 23285760,
+        "external": 3676605,
+        "rss": 37953536
+      },
+      {
+        "timestamp": "2025-07-28T10:52:10.191Z",
+        "heap_used": 18490520,
+        "heap_total": 22237184,
+        "external": 3676605,
+        "rss": 37847040
+      },
+      {
+        "timestamp": "2025-07-28T10:53:10.202Z",
+        "heap_used": 18880472,
+        "heap_total": 22237184,
+        "external": 3708392,
+        "rss": 37863424
+      },
+      {
+        "timestamp": "2025-07-28T10:54:10.203Z",
+        "heap_used": 18806880,
+        "heap_total": 23285760,
+        "external": 3716584,
+        "rss": 38055936
+      },
+      {
+        "timestamp": "2025-07-28T10:55:10.205Z",
+        "heap_used": 19136256,
+        "heap_total": 23285760,
+        "external": 3716584,
+        "rss": 38055936
+      },
+      {
+        "timestamp": "2025-07-28T10:56:10.208Z",
+        "heap_used": 19001976,
+        "heap_total": 22237184,
+        "external": 3684797,
+        "rss": 38055936
+      },
+      {
+        "timestamp": "2025-07-28T10:57:10.209Z",
+        "heap_used": 19336832,
+        "heap_total": 22237184,
+        "external": 3692989,
+        "rss": 37904384
+      },
+      {
+        "timestamp": "2025-07-28T10:58:10.222Z",
+        "heap_used": 19261328,
+        "heap_total": 22237184,
+        "external": 3724776,
+        "rss": 37990400
+      },
+      {
+        "timestamp": "2025-07-28T10:59:10.227Z",
+        "heap_used": 19652312,
+        "heap_total": 22237184,
+        "external": 3724776,
+        "rss": 37990400
+      },
+      {
+        "timestamp": "2025-07-28T11:00:10.241Z",
+        "heap_used": 19470392,
+        "heap_total": 23285760,
+        "external": 3701181,
+        "rss": 38006784
+      },
+      {
+        "timestamp": "2025-07-28T11:01:10.246Z",
+        "heap_used": 19857344,
+        "heap_total": 23285760,
+        "external": 3701181,
+        "rss": 38006784
+      },
+      {
+        "timestamp": "2025-07-28T11:02:10.260Z",
+        "heap_used": 19684160,
+        "heap_total": 22237184,
+        "external": 3701181,
+        "rss": 37621760
+      },
+      {
+        "timestamp": "2025-07-28T11:03:10.266Z",
+        "heap_used": 20108424,
+        "heap_total": 22237184,
+        "external": 3732969,
+        "rss": 37773312
+      },
+      {
+        "timestamp": "2025-07-28T11:04:10.273Z",
+        "heap_used": 19961056,
+        "heap_total": 22237184,
+        "external": 3741161,
+        "rss": 37937152
+      },
+      {
+        "timestamp": "2025-07-28T11:05:10.286Z",
+        "heap_used": 20353136,
+        "heap_total": 22237184,
+        "external": 3741161,
+        "rss": 37937152
+      },
+      {
+        "timestamp": "2025-07-28T11:06:10.287Z",
+        "heap_used": 20170032,
+        "heap_total": 23285760,
+        "external": 3701181,
+        "rss": 37937152
+      },
+      {
+        "timestamp": "2025-07-28T11:07:10.289Z",
+        "heap_used": 20500408,
+        "heap_total": 23285760,
+        "external": 3709373,
+        "rss": 31670272
+      },
+      {
+        "timestamp": "2025-07-28T11:08:10.297Z",
+        "heap_used": 20490680,
+        "heap_total": 22237184,
+        "external": 3741160,
+        "rss": 31850496
+      },
+      {
+        "timestamp": "2025-07-28T11:09:10.306Z",
+        "heap_used": 20308504,
+        "heap_total": 22499328,
+        "external": 3741160,
+        "rss": 32010240
+      },
+      {
+        "timestamp": "2025-07-28T11:10:10.314Z",
+        "heap_used": 20638424,
+        "heap_total": 22499328,
+        "external": 3717565,
+        "rss": 32014336
+      },
+      {
+        "timestamp": "2025-07-28T11:11:10.317Z",
+        "heap_used": 20554248,
+        "heap_total": 23547904,
+        "external": 3717565,
+        "rss": 32157696
+      },
+      {
+        "timestamp": "2025-07-28T11:12:10.329Z",
+        "heap_used": 20887752,
+        "heap_total": 23547904,
+        "external": 3717565,
+        "rss": 28733440
+      },
+      {
+        "timestamp": "2025-07-28T11:13:10.341Z",
+        "heap_used": 20800144,
+        "heap_total": 22761472,
+        "external": 3757547,
+        "rss": 28975104
+      },
+      {
+        "timestamp": "2025-07-28T11:14:10.343Z",
+        "heap_used": 21185792,
+        "heap_total": 22761472,
+        "external": 3757547,
+        "rss": 28991488
+      },
+      {
+        "timestamp": "2025-07-28T11:15:10.349Z",
+        "heap_used": 21017992,
+        "heap_total": 22761472,
+        "external": 3757547,
+        "rss": 29220864
+      },
+      {
+        "timestamp": "2025-07-28T11:16:10.356Z",
+        "heap_used": 21347320,
+        "heap_total": 22761472,
+        "external": 3757547,
+        "rss": 29220864
+      },
+      {
+        "timestamp": "2025-07-28T11:17:10.360Z",
+        "heap_used": 21288208,
+        "heap_total": 23023616,
+        "external": 3733949,
+        "rss": 29003776
+      },
+      {
+        "timestamp": "2025-07-28T11:18:10.362Z",
+        "heap_used": 21681920,
+        "heap_total": 23023616,
+        "external": 3757545,
+        "rss": 29016064
+      },
+      {
+        "timestamp": "2025-07-28T11:19:10.376Z",
+        "heap_used": 21552104,
+        "heap_total": 24072192,
+        "external": 3757545,
+        "rss": 29298688
+      },
+      {
+        "timestamp": "2025-07-28T11:20:10.391Z",
+        "heap_used": 21943448,
+        "heap_total": 24072192,
+        "external": 3733949,
+        "rss": 29298688
+      },
+      {
+        "timestamp": "2025-07-28T11:21:10.393Z",
+        "heap_used": 21768392,
+        "heap_total": 23285760,
+        "external": 3733949,
+        "rss": 29487104
+      },
+      {
+        "timestamp": "2025-07-28T11:22:10.399Z",
+        "heap_used": 21698936,
+        "heap_total": 23810048,
+        "external": 3733949,
+        "rss": 27516928
+      },
+      {
+        "timestamp": "2025-07-28T11:23:10.410Z",
+        "heap_used": 13794336,
+        "heap_total": 24858624,
+        "external": 3626472,
+        "rss": 35848192
+      },
+      {
+        "timestamp": "2025-07-28T11:24:10.420Z",
+        "heap_used": 14129512,
+        "heap_total": 24858624,
+        "external": 3626472,
+        "rss": 35856384
+      },
+      {
+        "timestamp": "2025-07-28T11:25:10.423Z",
+        "heap_used": 13872664,
+        "heap_total": 23810048,
+        "external": 3626472,
+        "rss": 35880960
+      },
+      {
+        "timestamp": "2025-07-28T11:26:10.425Z",
+        "heap_used": 14208968,
+        "heap_total": 23810048,
+        "external": 3602877,
+        "rss": 35880960
+      },
+      {
+        "timestamp": "2025-07-28T11:27:10.430Z",
+        "heap_used": 14089160,
+        "heap_total": 23810048,
+        "external": 3602877,
+        "rss": 35491840
+      },
+      {
+        "timestamp": "2025-07-28T11:28:10.433Z",
+        "heap_used": 14548896,
+        "heap_total": 23810048,
+        "external": 3634664,
+        "rss": 35491840
+      },
+      {
+        "timestamp": "2025-07-28T11:29:10.433Z",
+        "heap_used": 14406872,
+        "heap_total": 23810048,
+        "external": 3611069,
+        "rss": 35725312
+      },
+      {
+        "timestamp": "2025-07-28T11:30:10.441Z",
+        "heap_used": 14799840,
+        "heap_total": 23810048,
+        "external": 3611069,
+        "rss": 35725312
+      },
+      {
+        "timestamp": "2025-07-28T11:31:10.449Z",
+        "heap_used": 14614680,
+        "heap_total": 23810048,
+        "external": 3611069,
+        "rss": 35725312
+      },
+      {
+        "timestamp": "2025-07-28T11:32:10.452Z",
+        "heap_used": 14963968,
+        "heap_total": 23810048,
+        "external": 3611069,
+        "rss": 35364864
+      },
+      {
+        "timestamp": "2025-07-28T11:33:10.453Z",
+        "heap_used": 14950144,
+        "heap_total": 24858624,
+        "external": 3642857,
+        "rss": 35291136
+      },
+      {
+        "timestamp": "2025-07-28T11:34:10.456Z",
+        "heap_used": 15287112,
+        "heap_total": 24858624,
+        "external": 3642857,
+        "rss": 35540992
+      },
+      {
+        "timestamp": "2025-07-28T11:35:10.470Z",
+        "heap_used": 15121000,
+        "heap_total": 23810048,
+        "external": 3642857,
+        "rss": 35561472
+      },
+      {
+        "timestamp": "2025-07-28T11:36:10.484Z",
+        "heap_used": 15510512,
+        "heap_total": 23810048,
+        "external": 3619261,
+        "rss": 35565568
+      },
+      {
+        "timestamp": "2025-07-28T11:37:10.489Z",
+        "heap_used": 15359112,
+        "heap_total": 23810048,
+        "external": 3619261,
+        "rss": 35184640
+      }
+    ],
+    "cpu_usage": [
+      {
+        "timestamp": "2025-07-28T07:40:28.963Z",
+        "user": 2171000,
+        "system": 1203000
+      },
+      {
+        "timestamp": "2025-07-28T07:41:28.960Z",
+        "user": 2171000,
+        "system": 1203000
+      },
+      {
+        "timestamp": "2025-07-28T07:42:28.961Z",
+        "user": 2171000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:43:28.964Z",
+        "user": 2171000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:44:28.954Z",
+        "user": 2187000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:45:28.944Z",
+        "user": 2187000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:46:28.943Z",
+        "user": 2187000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:47:28.931Z",
+        "user": 2203000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:48:28.927Z",
+        "user": 2203000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:49:28.921Z",
+        "user": 2218000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:50:28.911Z",
+        "user": 2218000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:51:28.903Z",
+        "user": 2218000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:52:28.900Z",
+        "user": 2234000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:53:28.896Z",
+        "user": 2250000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:54:28.894Z",
+        "user": 2265000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:55:28.887Z",
+        "user": 2281000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:56:28.887Z",
+        "user": 2281000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:57:28.888Z",
+        "user": 2281000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:58:28.887Z",
+        "user": 2281000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T07:59:28.883Z",
+        "user": 2296000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T08:00:28.885Z",
+        "user": 2312000,
+        "system": 1234000
+      },
+      {
+        "timestamp": "2025-07-28T08:01:28.888Z",
+        "user": 2312000,
+        "system": 1250000
+      },
+      {
+        "timestamp": "2025-07-28T08:02:28.885Z",
+        "user": 2312000,
+        "system": 1250000
+      },
+      {
+        "timestamp": "2025-07-28T08:03:28.881Z",
+        "user": 2312000,
+        "system": 1250000
+      },
+      {
+        "timestamp": "2025-07-28T08:04:28.881Z",
+        "user": 2312000,
+        "system": 1265000
+      },
+      {
+        "timestamp": "2025-07-28T08:05:28.881Z",
+        "user": 2312000,
+        "system": 1265000
+      },
+      {
+        "timestamp": "2025-07-28T08:06:28.887Z",
+        "user": 2312000,
+        "system": 1281000
+      },
+      {
+        "timestamp": "2025-07-28T08:07:28.893Z",
+        "user": 2312000,
+        "system": 1281000
+      },
+      {
+        "timestamp": "2025-07-28T08:08:28.902Z",
+        "user": 2312000,
+        "system": 1281000
+      },
+      {
+        "timestamp": "2025-07-28T08:09:28.911Z",
+        "user": 2312000,
+        "system": 1281000
+      },
+      {
+        "timestamp": "2025-07-28T08:10:28.915Z",
+        "user": 2312000,
+        "system": 1296000
+      },
+      {
+        "timestamp": "2025-07-28T08:11:28.913Z",
+        "user": 2312000,
+        "system": 1296000
+      },
+      {
+        "timestamp": "2025-07-28T08:12:28.914Z",
+        "user": 2312000,
+        "system": 1296000
+      },
+      {
+        "timestamp": "2025-07-28T08:13:28.909Z",
+        "user": 2312000,
+        "system": 1296000
+      },
+      {
+        "timestamp": "2025-07-28T08:14:28.904Z",
+        "user": 2328000,
+        "system": 1296000
+      },
+      {
+        "timestamp": "2025-07-28T08:15:28.900Z",
+        "user": 2328000,
+        "system": 1296000
+      },
+      {
+        "timestamp": "2025-07-28T08:16:28.901Z",
+        "user": 2328000,
+        "system": 1296000
+      },
+      {
+        "timestamp": "2025-07-28T08:17:28.903Z",
+        "user": 2328000,
+        "system": 1296000
+      },
+      {
+        "timestamp": "2025-07-28T08:18:28.909Z",
+        "user": 2328000,
+        "system": 1296000
+      },
+      {
+        "timestamp": "2025-07-28T08:19:28.907Z",
+        "user": 2343000,
+        "system": 1328000
+      },
+      {
+        "timestamp": "2025-07-28T10:38:10.107Z",
+        "user": 2343000,
+        "system": 1328000
+      },
+      {
+        "timestamp": "2025-07-28T10:39:10.108Z",
+        "user": 2343000,
+        "system": 1328000
+      },
+      {
+        "timestamp": "2025-07-28T10:40:10.115Z",
+        "user": 2359000,
+        "system": 1343000
+      },
+      {
+        "timestamp": "2025-07-28T10:41:10.119Z",
+        "user": 2359000,
+        "system": 1343000
+      },
+      {
+        "timestamp": "2025-07-28T10:42:10.124Z",
+        "user": 2359000,
+        "system": 1359000
+      },
+      {
+        "timestamp": "2025-07-28T10:43:10.125Z",
+        "user": 2359000,
+        "system": 1375000
+      },
+      {
+        "timestamp": "2025-07-28T10:44:10.135Z",
+        "user": 2390000,
+        "system": 1375000
+      },
+      {
+        "timestamp": "2025-07-28T10:45:10.143Z",
+        "user": 2406000,
+        "system": 1375000
+      },
+      {
+        "timestamp": "2025-07-28T10:46:10.152Z",
+        "user": 2421000,
+        "system": 1375000
+      },
+      {
+        "timestamp": "2025-07-28T10:47:10.160Z",
+        "user": 2421000,
+        "system": 1390000
+      },
+      {
+        "timestamp": "2025-07-28T10:48:10.170Z",
+        "user": 2437000,
+        "system": 1390000
+      },
+      {
+        "timestamp": "2025-07-28T10:49:10.171Z",
+        "user": 2484000,
+        "system": 1390000
+      },
+      {
+        "timestamp": "2025-07-28T10:50:10.184Z",
+        "user": 2546000,
+        "system": 1390000
+      },
+      {
+        "timestamp": "2025-07-28T10:51:10.187Z",
+        "user": 2578000,
+        "system": 1421000
+      },
+      {
+        "timestamp": "2025-07-28T10:52:10.191Z",
+        "user": 2609000,
+        "system": 1437000
+      },
+      {
+        "timestamp": "2025-07-28T10:53:10.202Z",
+        "user": 2625000,
+        "system": 1468000
+      },
+      {
+        "timestamp": "2025-07-28T10:54:10.203Z",
+        "user": 2625000,
+        "system": 1468000
+      },
+      {
+        "timestamp": "2025-07-28T10:55:10.205Z",
+        "user": 2640000,
+        "system": 1484000
+      },
+      {
+        "timestamp": "2025-07-28T10:56:10.208Z",
+        "user": 2656000,
+        "system": 1515000
+      },
+      {
+        "timestamp": "2025-07-28T10:57:10.209Z",
+        "user": 2671000,
+        "system": 1531000
+      },
+      {
+        "timestamp": "2025-07-28T10:58:10.222Z",
+        "user": 2703000,
+        "system": 1546000
+      },
+      {
+        "timestamp": "2025-07-28T10:59:10.227Z",
+        "user": 2734000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:00:10.241Z",
+        "user": 2750000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:01:10.246Z",
+        "user": 2781000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:02:10.260Z",
+        "user": 2796000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:03:10.266Z",
+        "user": 2859000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:04:10.273Z",
+        "user": 2875000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:05:10.286Z",
+        "user": 2875000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:06:10.287Z",
+        "user": 2875000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:07:10.289Z",
+        "user": 2906000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:08:10.297Z",
+        "user": 2921000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:09:10.306Z",
+        "user": 2921000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:10:10.314Z",
+        "user": 2937000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:11:10.317Z",
+        "user": 2968000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:12:10.329Z",
+        "user": 2968000,
+        "system": 1562000
+      },
+      {
+        "timestamp": "2025-07-28T11:13:10.341Z",
+        "user": 3015000,
+        "system": 1593000
+      },
+      {
+        "timestamp": "2025-07-28T11:14:10.343Z",
+        "user": 3031000,
+        "system": 1609000
+      },
+      {
+        "timestamp": "2025-07-28T11:15:10.349Z",
+        "user": 3031000,
+        "system": 1625000
+      },
+      {
+        "timestamp": "2025-07-28T11:16:10.356Z",
+        "user": 3062000,
+        "system": 1625000
+      },
+      {
+        "timestamp": "2025-07-28T11:17:10.360Z",
+        "user": 3062000,
+        "system": 1640000
+      },
+      {
+        "timestamp": "2025-07-28T11:18:10.362Z",
+        "user": 3093000,
+        "system": 1640000
+      },
+      {
+        "timestamp": "2025-07-28T11:19:10.376Z",
+        "user": 3109000,
+        "system": 1640000
+      },
+      {
+        "timestamp": "2025-07-28T11:20:10.391Z",
+        "user": 3109000,
+        "system": 1640000
+      },
+      {
+        "timestamp": "2025-07-28T11:21:10.393Z",
+        "user": 3125000,
+        "system": 1656000
+      },
+      {
+        "timestamp": "2025-07-28T11:22:10.399Z",
+        "user": 3125000,
+        "system": 1656000
+      },
+      {
+        "timestamp": "2025-07-28T11:23:10.410Z",
+        "user": 3218000,
+        "system": 1781000
+      },
+      {
+        "timestamp": "2025-07-28T11:24:10.420Z",
+        "user": 3250000,
+        "system": 1781000
+      },
+      {
+        "timestamp": "2025-07-28T11:25:10.423Z",
+        "user": 3250000,
+        "system": 1781000
+      },
+      {
+        "timestamp": "2025-07-28T11:26:10.425Z",
+        "user": 3281000,
+        "system": 1796000
+      },
+      {
+        "timestamp": "2025-07-28T11:27:10.431Z",
+        "user": 3312000,
+        "system": 1812000
+      },
+      {
+        "timestamp": "2025-07-28T11:28:10.433Z",
+        "user": 3328000,
+        "system": 1812000
+      },
+      {
+        "timestamp": "2025-07-28T11:29:10.433Z",
+        "user": 3343000,
+        "system": 1812000
+      },
+      {
+        "timestamp": "2025-07-28T11:30:10.441Z",
+        "user": 3359000,
+        "system": 1812000
+      },
+      {
+        "timestamp": "2025-07-28T11:31:10.450Z",
+        "user": 3375000,
+        "system": 1828000
+      },
+      {
+        "timestamp": "2025-07-28T11:32:10.452Z",
+        "user": 3390000,
+        "system": 1859000
+      },
+      {
+        "timestamp": "2025-07-28T11:33:10.453Z",
+        "user": 3421000,
+        "system": 1875000
+      },
+      {
+        "timestamp": "2025-07-28T11:34:10.456Z",
+        "user": 3437000,
+        "system": 1875000
+      },
+      {
+        "timestamp": "2025-07-28T11:35:10.470Z",
+        "user": 3437000,
+        "system": 1875000
+      },
+      {
+        "timestamp": "2025-07-28T11:36:10.484Z",
+        "user": 3437000,
+        "system": 1921000
+      },
+      {
+        "timestamp": "2025-07-28T11:37:10.489Z",
+        "user": 3453000,
+        "system": 1953000
+      }
+    ],
+    "db_connections": 0
+  }
+}

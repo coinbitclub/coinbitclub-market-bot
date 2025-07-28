@@ -1,0 +1,66 @@
+{
+  "timestamp": "2025-07-28T02:56:40.202Z",
+  "summary": {
+    "totalTime": 846,
+    "successRate": "96.52",
+    "throughput": 2482,
+    "performanceRating": "🟢 EXCELENTE"
+  },
+  "detailed_metrics": {
+    "startTime": 1753671399352,
+    "endTime": 1753671400198,
+    "totalOperations": 2100,
+    "successfulOperations": 2027,
+    "failedOperations": 73,
+    "averageResponseTime": 0,
+    "maxResponseTime": 310,
+    "minResponseTime": 88,
+    "memoryUsage": [
+      {
+        "testType": "user_login",
+        "heapUsed": 4806240,
+        "heapTotal": 5828608,
+        "external": 1544813,
+        "timestamp": 1753671399561
+      },
+      {
+        "testType": "signal_processing",
+        "heapUsed": 5053376,
+        "heapTotal": 7401472,
+        "external": 1544853,
+        "timestamp": 1753671399668
+      },
+      {
+        "testType": "financial_ops",
+        "heapUsed": 5458712,
+        "heapTotal": 7401472,
+        "external": 1544853,
+        "timestamp": 1753671399980
+      },
+      {
+        "testType": "notifications",
+        "heapUsed": 6410104,
+        "heapTotal": 9498624,
+        "external": 1544853,
+        "timestamp": 1753671400076
+      },
+      {
+        "testType": "websocket",
+        "heapUsed": 5223192,
+        "heapTotal": 9760768,
+        "external": 1544853,
+        "timestamp": 1753671400198
+      }
+    ],
+    "cpuUsage": [],
+    "concurrentUsers": 0,
+    "errors": []
+  },
+  "recommendations": [
+    {
+      "priority": "low",
+      "category": "monitoring",
+      "action": "Implementar monitoramento contínuo de performance"
+    }
+  ]
+}

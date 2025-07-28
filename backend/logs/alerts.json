@@ -1,0 +1,13 @@
+[
+  {
+    "id": "alert_1753659265625_5x11xnk1s",
+    "type": "DATABASE_ERROR",
+    "message": "Erro de conexão PostgreSQL: password authentication failed for user \"erica\"",
+    "data": {
+      "error": "password authentication failed for user \"erica\""
+    },
+    "timestamp": "2025-07-27T23:34:25.625Z",
+    "severity": "HIGH",
+    "resolved": false
+  }
+]

@@ -1,33 +1,21 @@
-# 🎯 INTEGRAÇÃO COMPLETA FINALIZADA - CoinBitClub Admin System
+# 🔌 CoinBitClub Market Bot - Integração Completa de APIs
 
-## ✅ STATUS: PRODUÇÃO PRONTA
+## � Visão Geral da Integração
 
-### 📊 MÓDULOS INTEGRADOS (8/8)
+Este documento detalha a integração completa entre o frontend Next.js e o backend Express.js do CoinBitClub Market Bot, incluindo todos os endpoints, autenticação, tratamento de erros e funcionalidades em tempo real.
 
-1. **👥 USUÁRIOS** (`/admin/users-new.tsx`)
-   - ✅ API Real: `/api/admin/users.ts`
-   - ✅ CRUD Completo: Create, Read, Update, Delete
-   - ✅ Filtros: Status, Plano, País, Busca
-   - ✅ Ações: Ativar/Suspender, Upgrade Plano
-   - ✅ Estatísticas: Total, Ativos, Suspensos, por Plano
+## 🏗️ Arquitetura da API
 
-2. **🤝 AFILIADOS** (`/admin/affiliates-new.tsx`)
-   - ✅ API Real: `/api/admin/affiliates.ts`
-   - ✅ Sistema de Tiers: Bronze, Silver, Gold, Diamond
-   - ✅ Comissões: Tracking completo e pagamentos
-   - ✅ Códigos: Geração e cópia automática
-   - ✅ Performance: Conversão e métricas
-
-3. **📈 OPERAÇÕES** (`/admin/operations-new.tsx`)
-   - ✅ API Real: `/api/admin/operations.ts`
-   - ✅ Real-time: PnL, Status, Sinais
-   - ✅ Múltiplas fontes: TradingView, AI, Manual
-   - ✅ Risk Management: Stop Loss, Take Profit
-   - ✅ Monitoramento: Live tracking
-
-4. **🔔 ALERTAS** (`/admin/alerts-new.tsx`)
-   - ✅ API Real: `/api/admin/alerts.ts` (NOVA)
-   - ✅ Workflow: Aprovação, Envio, Tracking
+### 🌐 API Gateway Structure
+```
+🔌 API Gateway (Express.js)
+├── 🏠 Base URL: https://coinbitclub-market-bot.up.railway.app
+├── 📝 API Version: v1
+├── � Authentication: JWT Bearer Token
+├── 📊 Rate Limiting: 100 requests/minute per IP
+├── 🛡️ Security: Helmet + CORS + Validation
+└── 📚 Documentation: Swagger/OpenAPI 3.0
+```
    - ✅ Multi-canal: Email, SMS, Push, Telegram
    - ✅ Prioritização: Low, Medium, High, Urgent
    - ✅ Analytics: Reads, Clicks, Delivery
