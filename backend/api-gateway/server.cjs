@@ -852,7 +852,130 @@ app.use((error, req, res, next) => {
   });
 });
 
-// ===== WEBHOOK TRADINGVIEW ENDPOINT =====
+// ===== WEBHOOK ENDPOINTS =====
+
+// Webhook signal endpoint (para compatibilidade)
+app.post('/api/webhooks/signal', async (req, res) => {
+  console.log('📡 WEBHOOK SIGNAL RECEBIDO');
+  console.log('📊 Payload:', JSON.stringify(req.body, null, 2));
+  
+  try {
+    const { token, strategy, symbol, action, price, timestamp, indicators, test_mode } = req.body;
+    
+    // Validar token
+    const expectedToken = 'coinbitclub_webhook_secret_2024';
+    if (token !== expectedToken) {
+      console.log('❌ Token inválido recebido:', token);
+      return res.status(401).json({
+        success: false,
+        error: 'Token de webhook inválido',
+        received_token: token ? 'token_presente_mas_incorreto' : 'token_ausente'
+      });
+    }
+
+    // Log do sinal recebido
+    console.log(`📈 SINAL: ${action?.toUpperCase()} ${symbol} - ${strategy}`);
+    
+    // Processar sinal (aqui você adicionaria a lógica de negociação)
+    const signalData = {
+      id: crypto.randomBytes(16).toString('hex'),
+      strategy,
+      symbol,
+      action,
+      price,
+      timestamp: timestamp || new Date().toISOString(),
+      indicators: indicators || {},
+      test_mode: test_mode || false,
+      processed_at: new Date().toISOString()
+    };
+    
+    // Salvar no banco (opcional - criar tabela se necessário)
+    try {
+      // Primeiro, verificar se a tabela existe
+      const tableCheck = await pool.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_name = 'trading_signals'
+        );
+      `);
+      
+      if (tableCheck.rows[0].exists) {
+        await pool.query(`
+          INSERT INTO trading_signals (
+            signal_id, strategy, symbol, action, price, 
+            timestamp, indicators, test_mode, processed_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `, [
+          signalData.id,
+          signalData.strategy,
+          signalData.symbol,
+          signalData.action,
+          signalData.price,
+          signalData.timestamp,
+          JSON.stringify(signalData.indicators),
+          signalData.test_mode,
+          signalData.processed_at
+        ]);
+        console.log('✅ Sinal salvo no banco de dados');
+      } else {
+        // Criar tabela se não existir
+        await pool.query(`
+          CREATE TABLE IF NOT EXISTS trading_signals (
+            id SERIAL PRIMARY KEY,
+            signal_id VARCHAR(255) UNIQUE NOT NULL,
+            strategy VARCHAR(100),
+            symbol VARCHAR(20),
+            action VARCHAR(10),
+            price DECIMAL(15,8),
+            timestamp TIMESTAMP,
+            indicators JSONB,
+            test_mode BOOLEAN DEFAULT false,
+            processed_at TIMESTAMP DEFAULT NOW(),
+            created_at TIMESTAMP DEFAULT NOW()
+          );
+        `);
+        
+        // Inserir o sinal
+        await pool.query(`
+          INSERT INTO trading_signals (
+            signal_id, strategy, symbol, action, price, 
+            timestamp, indicators, test_mode, processed_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `, [
+          signalData.id,
+          signalData.strategy,
+          signalData.symbol,
+          signalData.action,
+          signalData.price,
+          signalData.timestamp,
+          JSON.stringify(signalData.indicators),
+          signalData.test_mode,
+          signalData.processed_at
+        ]);
+        console.log('✅ Tabela criada e sinal salvo no banco de dados');
+      }
+    } catch (dbError) {
+      console.log('⚠️ Erro ao salvar no banco (continuando):', dbError.message);
+    }
+    
+    res.json({
+      success: true,
+      message: 'Sinal processado com sucesso',
+      signal_id: signalData.id,
+      data: signalData
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro no webhook signal:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno no processamento do sinal',
+      message: error.message
+    });
+  }
+});
+
+// Webhook TradingView endpoint (mantido para compatibilidade)
 app.post('/api/webhooks/tradingview', async (req, res) => {
   console.log('📡 WEBHOOK TRADINGVIEW RECEBIDO');
   console.log('📊 Payload:', JSON.stringify(req.body, null, 2));
@@ -1042,7 +1165,8 @@ const server = app.listen(PORT, HOST, () => {
   console.log('   ✏️  PUT  /api/admin/affiliates/:id');
   console.log('   🔄 PATCH /api/admin/affiliates/:id/toggle');
   console.log('   📊 GET  /api/test');
-  console.log('   📡 POST /api/webhooks/tradingview');
+  console.log('   📡 POST /api/webhooks/signal        - Webhook sinais');
+  console.log('   📡 POST /api/webhooks/tradingview      - Webhooks TradingView');
   console.log('   ⚡ GET  /api/status');
   console.log('   🏥 GET  /api/health');
   console.log('   🏥 GET  /health (Railway healthcheck)');
