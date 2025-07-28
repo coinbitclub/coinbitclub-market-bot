@@ -1,0 +1,784 @@
+{
+  "pages": [
+    {
+      "category": "pages",
+      "test": "Frontend Connectivity",
+      "success": true,
+      "message": "Frontend respondendo (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:02.964Z",
+      "duration": 247
+    },
+    {
+      "category": "pages",
+      "test": "Homepage",
+      "success": true,
+      "message": "Página carregou com sucesso (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:02.996Z",
+      "duration": 278
+    },
+    {
+      "category": "pages",
+      "test": "Login Page",
+      "success": true,
+      "message": "Página carregou com sucesso (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:03.464Z",
+      "duration": 746
+    },
+    {
+      "category": "pages",
+      "test": "Signup Page",
+      "success": true,
+      "message": "Página carregou com sucesso (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:04.034Z",
+      "duration": 1316
+    },
+    {
+      "category": "pages",
+      "test": "Main Dashboard",
+      "success": true,
+      "message": "Página carregou com sucesso (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:04.256Z",
+      "duration": 1538
+    },
+    {
+      "category": "pages",
+      "test": "Privacy Policy",
+      "success": true,
+      "message": "Página carregou com sucesso (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:04.475Z",
+      "duration": 1757
+    },
+    {
+      "category": "pages",
+      "test": "Coupons Page",
+      "success": true,
+      "message": "Página carregou com sucesso (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:04.637Z",
+      "duration": 1919
+    },
+    {
+      "category": "pages",
+      "test": "Admin Dashboard",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:04.826Z",
+      "duration": 2108
+    },
+    {
+      "category": "pages",
+      "test": "Admin Dashboard Complete",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:05.042Z",
+      "duration": 2324
+    },
+    {
+      "category": "pages",
+      "test": "Admin Dashboard Executive",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:05.234Z",
+      "duration": 2516
+    },
+    {
+      "category": "pages",
+      "test": "Admin Dashboard Integrated",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:05.593Z",
+      "duration": 2875
+    },
+    {
+      "category": "pages",
+      "test": "Admin Users Management",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:05.767Z",
+      "duration": 3049
+    },
+    {
+      "category": "pages",
+      "test": "Admin Users New",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:05.926Z",
+      "duration": 3208
+    },
+    {
+      "category": "pages",
+      "test": "Admin Affiliates Management",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:06.103Z",
+      "duration": 3385
+    },
+    {
+      "category": "pages",
+      "test": "Admin Affiliates New",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:06.265Z",
+      "duration": 3547
+    },
+    {
+      "category": "pages",
+      "test": "Admin Operations",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:06.424Z",
+      "duration": 3706
+    },
+    {
+      "category": "pages",
+      "test": "Admin Operations New",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:06.587Z",
+      "duration": 3869
+    },
+    {
+      "category": "pages",
+      "test": "Admin Accounting",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:06.753Z",
+      "duration": 4035
+    },
+    {
+      "category": "pages",
+      "test": "Admin Accounting New",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:06.936Z",
+      "duration": 4218
+    },
+    {
+      "category": "pages",
+      "test": "Admin Adjustments",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:07.097Z",
+      "duration": 4379
+    },
+    {
+      "category": "pages",
+      "test": "Admin Adjustments New",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:07.279Z",
+      "duration": 4561
+    },
+    {
+      "category": "pages",
+      "test": "Admin Alerts",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:07.478Z",
+      "duration": 4760
+    },
+    {
+      "category": "pages",
+      "test": "Admin Alerts New",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:07.661Z",
+      "duration": 4943
+    },
+    {
+      "category": "pages",
+      "test": "Admin Settings",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:07.853Z",
+      "duration": 5135
+    },
+    {
+      "category": "pages",
+      "test": "Admin Credits Management",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:08.040Z",
+      "duration": 5322
+    },
+    {
+      "category": "pages",
+      "test": "Admin Integration Report",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:08.227Z",
+      "duration": 5509
+    },
+    {
+      "category": "pages",
+      "test": "Admin Test Dashboard",
+      "success": true,
+      "message": "Página admin carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:08.406Z",
+      "duration": 5688
+    },
+    {
+      "category": "pages",
+      "test": "User Dashboard",
+      "success": true,
+      "message": "Página usuário carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:08.611Z",
+      "duration": 5893
+    },
+    {
+      "category": "pages",
+      "test": "User Dashboard Complete",
+      "success": true,
+      "message": "Página usuário carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:08.805Z",
+      "duration": 6087
+    },
+    {
+      "category": "pages",
+      "test": "User Dashboard Integrated",
+      "success": true,
+      "message": "Página usuário carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:09.014Z",
+      "duration": 6296
+    },
+    {
+      "category": "pages",
+      "test": "User Operations",
+      "success": true,
+      "message": "Página usuário carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:09.220Z",
+      "duration": 6502
+    },
+    {
+      "category": "pages",
+      "test": "User Operations Complete",
+      "success": true,
+      "message": "Página usuário carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:09.421Z",
+      "duration": 6703
+    },
+    {
+      "category": "pages",
+      "test": "User Settings",
+      "success": true,
+      "message": "Página usuário carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:09.659Z",
+      "duration": 6941
+    },
+    {
+      "category": "pages",
+      "test": "User Settings Complete",
+      "success": true,
+      "message": "Página usuário carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:09.875Z",
+      "duration": 7157
+    },
+    {
+      "category": "pages",
+      "test": "User Plans",
+      "success": true,
+      "message": "Página usuário carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:10.082Z",
+      "duration": 7364
+    },
+    {
+      "category": "pages",
+      "test": "User Plans New",
+      "success": true,
+      "message": "Página usuário carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:10.284Z",
+      "duration": 7566
+    },
+    {
+      "category": "pages",
+      "test": "User Pricing",
+      "success": true,
+      "message": "Página usuário carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:10.492Z",
+      "duration": 7774
+    },
+    {
+      "category": "pages",
+      "test": "User Subscription",
+      "success": true,
+      "message": "Página usuário carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:10.713Z",
+      "duration": 7995
+    },
+    {
+      "category": "pages",
+      "test": "User Test Plans",
+      "success": true,
+      "message": "Página usuário carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:10.937Z",
+      "duration": 8219
+    },
+    {
+      "category": "pages",
+      "test": "Affiliate Dashboard",
+      "success": true,
+      "message": "Página afiliado carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:11.172Z",
+      "duration": 8454
+    },
+    {
+      "category": "pages",
+      "test": "Affiliate Dashboard Complete",
+      "success": true,
+      "message": "Página afiliado carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:11.399Z",
+      "duration": 8681
+    },
+    {
+      "category": "pages",
+      "test": "Affiliate Dashboard Integrated",
+      "success": true,
+      "message": "Página afiliado carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:11.642Z",
+      "duration": 8924
+    },
+    {
+      "category": "pages",
+      "test": "Affiliate Commissions",
+      "success": true,
+      "message": "Página afiliado carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:11.910Z",
+      "duration": 9192
+    },
+    {
+      "category": "pages",
+      "test": "Affiliate Referrals Complete",
+      "success": true,
+      "message": "Página afiliado carregou (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.155Z",
+      "duration": 9437
+    }
+  ],
+  "apis": [
+    {
+      "category": "apis",
+      "test": "Backend Connectivity",
+      "success": true,
+      "message": "Backend respondendo - Uptime: 1094.1056251s",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:02.973Z",
+      "duration": 255
+    },
+    {
+      "category": "apis",
+      "test": "Admin Dashboard API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.174Z",
+      "duration": 9456
+    },
+    {
+      "category": "apis",
+      "test": "Admin Users API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.177Z",
+      "duration": 9459
+    },
+    {
+      "category": "apis",
+      "test": "Admin Affiliates API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.179Z",
+      "duration": 9461
+    },
+    {
+      "category": "apis",
+      "test": "Admin Financial API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.183Z",
+      "duration": 9465
+    },
+    {
+      "category": "apis",
+      "test": "Admin WhatsApp API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.186Z",
+      "duration": 9468
+    },
+    {
+      "category": "apis",
+      "test": "User Dashboard API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.189Z",
+      "duration": 9471
+    },
+    {
+      "category": "apis",
+      "test": "User Profile API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.193Z",
+      "duration": 9475
+    },
+    {
+      "category": "apis",
+      "test": "User Balance API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.196Z",
+      "duration": 9478
+    },
+    {
+      "category": "apis",
+      "test": "User Operations API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.200Z",
+      "duration": 9482
+    },
+    {
+      "category": "apis",
+      "test": "Affiliate Dashboard API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.203Z",
+      "duration": 9485
+    },
+    {
+      "category": "apis",
+      "test": "Affiliate Data API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.206Z",
+      "duration": 9488
+    },
+    {
+      "category": "apis",
+      "test": "Affiliate Commissions API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.209Z",
+      "duration": 9491
+    },
+    {
+      "category": "apis",
+      "test": "Health Check API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.212Z",
+      "duration": 9494
+    },
+    {
+      "category": "apis",
+      "test": "Status API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.216Z",
+      "duration": 9498
+    },
+    {
+      "category": "apis",
+      "test": "Database Test API",
+      "success": true,
+      "message": "API funcionando (200)",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.219Z",
+      "duration": 9501
+    }
+  ],
+  "integrations": [
+    {
+      "category": "integrations",
+      "test": "Login Flow",
+      "success": true,
+      "message": "Login funcionando - Token: Presente",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.162Z",
+      "duration": 9444
+    },
+    {
+      "category": "integrations",
+      "test": "Register Flow",
+      "success": true,
+      "message": "Registro funcionando",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.166Z",
+      "duration": 9448
+    },
+    {
+      "category": "integrations",
+      "test": "Password Reset Flow",
+      "success": true,
+      "message": "Reset de senha funcionando",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.170Z",
+      "duration": 9452
+    },
+    {
+      "category": "integrations",
+      "test": "API Connection",
+      "success": true,
+      "message": "Integração funcionando",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.223Z",
+      "duration": 9505
+    },
+    {
+      "category": "integrations",
+      "test": "Data Flow",
+      "success": true,
+      "message": "Integração funcionando",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.226Z",
+      "duration": 9508
+    },
+    {
+      "category": "integrations",
+      "test": "Error Handling",
+      "success": true,
+      "message": "Integração funcionando",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.231Z",
+      "duration": 9513
+    },
+    {
+      "category": "integrations",
+      "test": "Authentication Integration",
+      "success": true,
+      "message": "Integração funcionando",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.235Z",
+      "duration": 9517
+    },
+    {
+      "category": "integrations",
+      "test": "WhatsApp Integration",
+      "success": true,
+      "message": "Funcionalidade operacional",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.239Z",
+      "duration": 9521
+    },
+    {
+      "category": "integrations",
+      "test": "Payment Processing",
+      "success": true,
+      "message": "Funcionalidade operacional",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.242Z",
+      "duration": 9524
+    },
+    {
+      "category": "integrations",
+      "test": "Notifications System",
+      "success": true,
+      "message": "Funcionalidade operacional",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.245Z",
+      "duration": 9527
+    },
+    {
+      "category": "integrations",
+      "test": "Trading Signals",
+      "success": true,
+      "message": "Funcionalidade operacional",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.248Z",
+      "duration": 9530
+    },
+    {
+      "category": "integrations",
+      "test": "Credits System",
+      "success": true,
+      "message": "Funcionalidade operacional",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.251Z",
+      "duration": 9533
+    },
+    {
+      "category": "integrations",
+      "test": "Health Check Load",
+      "success": true,
+      "message": "Load test passed: 50/50 requests in 138ms",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.390Z",
+      "duration": 9672
+    },
+    {
+      "category": "integrations",
+      "test": "Status API Load",
+      "success": true,
+      "message": "Load test passed: 30/30 requests in 50ms",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.440Z",
+      "duration": 9722
+    },
+    {
+      "category": "integrations",
+      "test": "Dashboard Load",
+      "success": true,
+      "message": "Load test passed: 20/20 requests in 38ms",
+      "data": null,
+      "severity": "INFO",
+      "timestamp": "2025-07-28T13:16:12.479Z",
+      "duration": 9761
+    }
+  ],
+  "errors": [],
+  "summary": {
+    "totalTests": 75,
+    "passedTests": 75,
+    "failedTests": 0,
+    "successRate": 100,
+    "duration": 9762,
+    "timestamp": "2025-07-28T13:16:12.480Z",
+    "categories": {
+      "pages": {
+        "total": 44,
+        "passed": 44,
+        "rate": "100.0"
+      },
+      "apis": {
+        "total": 16,
+        "passed": 16,
+        "rate": "100.0"
+      },
+      "integrations": {
+        "total": 15,
+        "passed": 15,
+        "rate": "100.0"
+      }
+    }
+  }
+}

@@ -1,29 +1,20 @@
 {
   "version": 2,
   "name": "coinbitclub-frontend",
-  "buildCommand": "cd coinbitclub-frontend-premium && npm run build",
-  "outputDirectory": "coinbitclub-frontend-premium/.next",
-  "installCommand": "cd coinbitclub-frontend-premium && npm install",
-  "devCommand": "cd coinbitclub-frontend-premium && npm run dev",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "devCommand": "npm run dev",
   "framework": "nextjs",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://coinbitclub-market-bot.up.railway.app",
-    "NEXT_PUBLIC_FRONTEND_URL": "https://coinbitclub-frontend.vercel.app",
-    "NODE_ENV": "production"
-  },
   "functions": {
-    "coinbitclub-frontend-premium/pages/api/*.js": {
+    "pages/api/**/*.js": {
       "runtime": "@vercel/node"
     }
   },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "https://coinbitclub-market-bot.up.railway.app/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/coinbitclub-frontend-premium/$1"
+      "source": "/api/external/:path*",
+      "destination": "https://coinbitclub-market-bot.up.railway.app/api/:path*"
     }
   ]
 }
