@@ -1,3 +1,0 @@
-﻿[deploy]
-startCommand = "node main.js"
-healthcheckPath = "/health"
