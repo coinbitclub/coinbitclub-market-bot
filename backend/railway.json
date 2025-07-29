@@ -1,0 +1,26 @@
+{
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "npm start",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 300,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  },
+  "environments": {
+    "production": {
+      "variables": {
+        "NODE_ENV": "production",
+        "PORT": "${{RAILWAY_PORT}}",
+        "DATABASE_URL": "${{DATABASE_URL}}",
+        "JWT_SECRET": "${{JWT_SECRET}}",
+        "ENCRYPTION_KEY": "${{ENCRYPTION_KEY}}",
+        "TWILIO_ACCOUNT_SID": "${{TWILIO_ACCOUNT_SID}}",
+        "TWILIO_AUTH_TOKEN": "${{TWILIO_AUTH_TOKEN}}",
+        "TWILIO_PHONE_NUMBER": "${{TWILIO_PHONE_NUMBER}}"
+      }
+    }
+  }
+}

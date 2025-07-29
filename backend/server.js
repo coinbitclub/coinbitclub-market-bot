@@ -10,6 +10,11 @@ const rateLimit = require('express-rate-limit');
 const whatsappRoutes = require('./routes/whatsappRoutes');
 const zapiWebhookRoutes = require('./routes/zapiWebhookRoutes');
 
+// Importar rotas dos gestores
+const chavesRoutes = require('./routes/chavesRoutes');
+const usuariosRoutes = require('./routes/usuariosRoutes');
+const afiliadosRoutes = require('./routes/afiliadosRoutes');
+
 console.log('🚀 INICIANDO SERVIDOR COINBITCLUB COMPLETO...');
 
 const app = express();
@@ -86,6 +91,17 @@ app.get('/api/status', (req, res) => {
 
 // ===== ROTAS WhatsApp VERIFICATION =====
 app.use('/api', whatsappRoutes);
+
+// Debug middleware para verificar rotas dos gestores
+app.use('/api/gestores', (req, res, next) => {
+    console.log('🔍 Debug - Rota gestor acessada:', req.method, req.originalUrl);
+    next();
+});
+
+// ===== ROTAS DOS GESTORES =====
+app.use('/api/gestores/chaves', chavesRoutes);
+app.use('/api/gestores/usuarios', usuariosRoutes);
+app.use('/api/gestores/afiliados', afiliadosRoutes);
 
 // ===== ROTAS WEBHOOK ZAPI (TEMPORÁRIAS) =====
 app.post('/api/webhooks/zapi/configure', async (req, res) => {

@@ -1,0 +1,152 @@
+{
+  "timestamp": "2025-07-28T16:44:53.254Z",
+  "summary": {
+    "successRate": 73.3,
+    "criticalSuccessRate": 83.3,
+    "total": 15,
+    "passed": 11,
+    "failed": 4,
+    "critical": 6,
+    "criticalPassed": 5
+  },
+  "details": [
+    {
+      "name": "Backend Health Check",
+      "success": true,
+      "critical": true,
+      "status": 200,
+      "responseTime": 30,
+      "error": null,
+      "data": "{\"status\":\"healthy\",\"service\":\"coinbitclub-market-bot\",\"database\":\"connected\",\"timestamp\":\"2025-07-28T16:44:47.577Z\",\"uptime\":181.0729982,\"railway_healthcheck\":true}"
+    },
+    {
+      "name": "Frontend Home Page",
+      "success": false,
+      "critical": true,
+      "status": "ERROR",
+      "responseTime": 5,
+      "error": null,
+      "data": null
+    },
+    {
+      "name": "Database Connection",
+      "success": true,
+      "critical": true,
+      "responseTime": 100,
+      "error": null,
+      "data": {
+        "current_time": "2025-07-28T16:44:48.518Z",
+        "db_version": "PostgreSQL 16.8 (Debian 16.8-1.pgdg120+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14) 12.2.0, 64-bit"
+      }
+    },
+    {
+      "name": "API Health Endpoint",
+      "success": true,
+      "critical": true,
+      "status": 200,
+      "responseTime": 8,
+      "error": null,
+      "data": "{\"status\":\"healthy\",\"service\":\"coinbitclub-market-bot\",\"database\":\"connected\",\"timestamp\":\"2025-07-28T16:44:49.159Z\"}"
+    },
+    {
+      "name": "API Status Endpoint",
+      "success": true,
+      "critical": true,
+      "status": 200,
+      "responseTime": 2,
+      "error": null,
+      "data": "{\"status\":\"active\",\"service\":\"coinbitclub-market-bot\",\"version\":\"1.0.0\",\"timestamp\":\"2025-07-28T16:44:49.164Z\",\"uptime\":182.6597483,\"endpoints\":{\"webhook_tradingview\":\"/api/webhooks/tradingview\",\"health\":\"/api/status\"}}"
+    },
+    {
+      "name": "Webhook Signal Processing",
+      "success": true,
+      "critical": true,
+      "status": 200,
+      "responseTime": 1704,
+      "error": null,
+      "data": "{\"success\":true,\"message\":\"Sinal processado com sucesso\",\"signal_id\":\"09e96845d48428ae9cf518462224b44c\",\"data\":{\"id\":\"09e96845d48428ae9cf518462224b44c\",\"strategy\":\"HOMOLOGATION_TEST\",\"price\":50000,\"timestamp\":\"2025-07-28T16:44:49.165Z\",\"indicators\":{},\"test_mode\":false,\"processed_at\":\"2025-07-28T16:44:49.169Z\"}}"
+    },
+    {
+      "name": "OTP Request Endpoint",
+      "success": true,
+      "critical": false,
+      "status": 200,
+      "responseTime": 4,
+      "error": null,
+      "data": "{\"success\":true,\"message\":\"Código OTP enviado com sucesso\",\"expires_in\":600,\"phone_masked\":\"+551199999****\"}"
+    },
+    {
+      "name": "User Registration",
+      "success": false,
+      "critical": false,
+      "status": 400,
+      "responseTime": 1939,
+      "error": null,
+      "data": "{\"error\":\"Email já cadastrado\"}"
+    },
+    {
+      "name": "Frontend Login Page",
+      "success": false,
+      "critical": false,
+      "status": "ERROR",
+      "responseTime": 3,
+      "error": null,
+      "data": null
+    },
+    {
+      "name": "Frontend Dashboard Access",
+      "success": false,
+      "critical": false,
+      "status": "ERROR",
+      "responseTime": 3,
+      "error": null,
+      "data": null
+    },
+    {
+      "name": "Signal Ingestor Service",
+      "success": true,
+      "critical": false,
+      "status": 200,
+      "responseTime": 3,
+      "error": null,
+      "data": "{\"service\":\"Signal Ingestor\",\"status\":\"ONLINE\",\"uptime\":186.3201893,\"last_heartbeat\":\"2025-07-28T16:44:52.824Z\",\"processed_signals\":42,\"queue_size\":0,\"version\":\"1.0.0\"}"
+    },
+    {
+      "name": "Decision Engine Service",
+      "success": true,
+      "critical": false,
+      "status": 200,
+      "responseTime": 3,
+      "error": null,
+      "data": "{\"service\":\"Decision Engine\",\"status\":\"ONLINE\",\"uptime\":186.3231996,\"last_decision\":\"2025-07-28T16:44:52.827Z\",\"decisions_made\":28,\"accuracy\":87.5,\"version\":\"1.0.0\"}"
+    },
+    {
+      "name": "Security: Invalid Webhook Token",
+      "success": true,
+      "critical": false,
+      "status": 401,
+      "responseTime": 5,
+      "error": null,
+      "data": "{\"success\":false,\"error\":\"Token de webhook inválido\",\"received_token\":\"token_ausente\"}"
+    },
+    {
+      "name": "Security: SQL Injection Protection",
+      "success": true,
+      "critical": false,
+      "status": 200,
+      "responseTime": 390,
+      "error": null,
+      "data": "{\"success\":true,\"message\":\"Sinal processado com sucesso\",\"signal_id\":\"6bf21b423290c9e2ad37fff25586266a\",\"data\":{\"id\":\"6bf21b423290c9e2ad37fff25586266a\",\"timestamp\":\"2025-07-28T16:44:52.838Z\",\"indicators\":{},\"test_mode\":false,\"processed_at\":\"2025-07-28T16:44:52.838Z\"}}"
+    },
+    {
+      "name": "Performance: Concurrent Requests",
+      "success": true,
+      "critical": false,
+      "status": 200,
+      "responseTime": 16,
+      "error": null,
+      "data": null
+    }
+  ],
+  "status": "REJECTED"
+}

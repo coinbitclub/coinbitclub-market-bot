@@ -1,0 +1,215 @@
+{
+  "timestamp": "2025-07-28T17:06:52.906Z",
+  "homologationRate": 35.714285714285715,
+  "status": "FALHOU",
+  "totalTests": 28,
+  "totalSuccess": 10,
+  "services": {
+    "backend": {
+      "name": "Backend API",
+      "url": "http://localhost:8080/health",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "success": true
+    },
+    "frontend": {
+      "name": "Frontend Premium",
+      "url": "http://localhost:3001",
+      "status": "ONLINE",
+      "statusCode": 200,
+      "success": true
+    }
+  },
+  "backendEndpoints": [
+    {
+      "name": "Health Check",
+      "path": "/health",
+      "status": "PASS",
+      "statusCode": 200,
+      "success": true
+    },
+    {
+      "name": "Status API",
+      "path": "/api/status",
+      "status": "PASS",
+      "statusCode": 200,
+      "success": true
+    },
+    {
+      "name": "Test Endpoint",
+      "path": "/api/test",
+      "status": "PASS",
+      "statusCode": 200,
+      "success": true
+    },
+    {
+      "name": "Admin Health",
+      "path": "/api/admin/railway/health",
+      "status": "PASS",
+      "statusCode": 200,
+      "success": true
+    },
+    {
+      "name": "User Dashboard",
+      "path": "/api/user/dashboard",
+      "status": "FAIL",
+      "statusCode": 401,
+      "success": false
+    },
+    {
+      "name": "User Operations",
+      "path": "/api/user/operations",
+      "status": "FAIL",
+      "statusCode": 401,
+      "success": false
+    },
+    {
+      "name": "User Plans",
+      "path": "/api/user/plans",
+      "status": "FAIL",
+      "statusCode": 401,
+      "success": false
+    },
+    {
+      "name": "User Settings",
+      "path": "/api/user/settings",
+      "status": "FAIL",
+      "statusCode": 401,
+      "success": false
+    },
+    {
+      "name": "Affiliate Dashboard",
+      "path": "/api/affiliate/dashboard",
+      "status": "FAIL",
+      "statusCode": 401,
+      "success": false
+    },
+    {
+      "name": "Affiliate Commissions",
+      "path": "/api/affiliate/commissions",
+      "status": "FAIL",
+      "statusCode": 401,
+      "success": false
+    },
+    {
+      "name": "Admin Affiliates",
+      "path": "/api/admin/affiliates",
+      "status": "FAIL",
+      "statusCode": 401,
+      "success": false
+    },
+    {
+      "name": "IA Overview",
+      "path": "/api/admin/ia/overview",
+      "status": "FAIL",
+      "statusCode": 404,
+      "success": false
+    },
+    {
+      "name": "IA Services",
+      "path": "/api/admin/ia/services",
+      "status": "FAIL",
+      "statusCode": 404,
+      "success": false
+    },
+    {
+      "name": "IA Metrics",
+      "path": "/api/admin/ia/metrics",
+      "status": "FAIL",
+      "statusCode": 404,
+      "success": false
+    },
+    {
+      "name": "IA Security",
+      "path": "/api/admin/ia/security",
+      "status": "FAIL",
+      "statusCode": 404,
+      "success": false
+    },
+    {
+      "name": "IA Performance",
+      "path": "/api/admin/ia/performance",
+      "status": "FAIL",
+      "statusCode": 404,
+      "success": false
+    },
+    {
+      "name": "IA Charts",
+      "path": "/api/admin/ia/charts",
+      "status": "FAIL",
+      "statusCode": 404,
+      "success": false
+    },
+    {
+      "name": "IA Alerts",
+      "path": "/api/admin/ia/alerts",
+      "status": "FAIL",
+      "statusCode": 404,
+      "success": false
+    }
+  ],
+  "frontendPages": [
+    {
+      "name": "Home Page",
+      "path": "/",
+      "status": "PASS",
+      "statusCode": 200,
+      "success": true
+    },
+    {
+      "name": "Login Page",
+      "path": "/login",
+      "status": "PASS",
+      "statusCode": 307,
+      "success": true
+    },
+    {
+      "name": "Register Page",
+      "path": "/signup",
+      "status": "PASS",
+      "statusCode": 200,
+      "success": true
+    },
+    {
+      "name": "Dashboard Page",
+      "path": "/dashboard",
+      "status": "PASS",
+      "statusCode": 200,
+      "success": true
+    },
+    {
+      "name": "Admin Page",
+      "path": "/admin",
+      "status": "FAIL",
+      "statusCode": 404,
+      "success": false
+    },
+    {
+      "name": "User Profile",
+      "path": "/user/profile",
+      "status": "FAIL",
+      "statusCode": 404,
+      "success": false
+    },
+    {
+      "name": "Trading Page",
+      "path": "/trading",
+      "status": "FAIL",
+      "statusCode": 404,
+      "success": false
+    },
+    {
+      "name": "Analytics Page",
+      "path": "/analytics",
+      "status": "FAIL",
+      "statusCode": 404,
+      "success": false
+    }
+  ],
+  "frontendStructure": {
+    "exists": true,
+    "pages": 148,
+    "components": 1,
+    "success": true
+  }
+}

@@ -1,0 +1,264 @@
+{
+  "timestamp": "2025-07-28T19:41:41.933Z",
+  "summary": {
+    "total": 26,
+    "success": 1,
+    "failed": 25,
+    "successRate": "3.8%"
+  },
+  "results": [
+    {
+      "test": "Backend Health",
+      "success": false,
+      "message": "Resposta inesperada: 200",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:40.366Z",
+      "duration": 60
+    },
+    {
+      "test": "Frontend Health",
+      "success": false,
+      "message": "Frontend não responde: ",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:40.374Z",
+      "duration": 67
+    },
+    {
+      "test": "Auth Register",
+      "success": false,
+      "message": "Erro no registro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:40.405Z",
+      "duration": 98
+    },
+    {
+      "test": "Auth Login",
+      "success": false,
+      "message": "Erro no login: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:40.411Z",
+      "duration": 104
+    },
+    {
+      "test": "Admin Dashboard Data",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:40.416Z",
+      "duration": 109
+    },
+    {
+      "test": "Admin Users List",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:40.420Z",
+      "duration": 113
+    },
+    {
+      "test": "Admin Financial Summary",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:40.424Z",
+      "duration": 118
+    },
+    {
+      "test": "Admin WhatsApp Stats",
+      "success": true,
+      "message": "Dados carregados com sucesso",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.839Z",
+      "duration": 1532
+    },
+    {
+      "test": "Admin System Logs",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.846Z",
+      "duration": 1539
+    },
+    {
+      "test": "Admin DB Status",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.850Z",
+      "duration": 1543
+    },
+    {
+      "test": "Admin Affiliates",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.855Z",
+      "duration": 1548
+    },
+    {
+      "test": "Admin Trading Signals",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.859Z",
+      "duration": 1552
+    },
+    {
+      "test": "User Dashboard Data",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.863Z",
+      "duration": 1556
+    },
+    {
+      "test": "User Profile",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.867Z",
+      "duration": 1560
+    },
+    {
+      "test": "User Balance",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.871Z",
+      "duration": 1564
+    },
+    {
+      "test": "User Transactions",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.874Z",
+      "duration": 1567
+    },
+    {
+      "test": "User Operations",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.877Z",
+      "duration": 1570
+    },
+    {
+      "test": "User Subscription",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.881Z",
+      "duration": 1574
+    },
+    {
+      "test": "User Credentials",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.884Z",
+      "duration": 1577
+    },
+    {
+      "test": "User Analytics",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.888Z",
+      "duration": 1581
+    },
+    {
+      "test": "Affiliate Dashboard Data",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.892Z",
+      "duration": 1585
+    },
+    {
+      "test": "Affiliate Commission History",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.896Z",
+      "duration": 1589
+    },
+    {
+      "test": "Affiliate Credits",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.899Z",
+      "duration": 1592
+    },
+    {
+      "test": "Affiliate Dashboard Main",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.902Z",
+      "duration": 1595
+    },
+    {
+      "test": "Full Integration Flow",
+      "success": false,
+      "message": "Erro na integração: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.906Z",
+      "duration": 1599
+    },
+    {
+      "test": "Stress Test",
+      "success": false,
+      "message": "Erro no teste de estresse: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T19:41:41.924Z",
+      "duration": 1617
+    }
+  ],
+  "categories": {
+    "Conectividade": [
+      "Backend Health",
+      "Frontend Health"
+    ],
+    "Autenticação": [
+      "Auth Register",
+      "Auth Login"
+    ],
+    "Admin Dashboards": [
+      "Admin Dashboard Data",
+      "Admin Users List",
+      "Admin Financial Summary",
+      "Admin WhatsApp Stats",
+      "Admin System Logs",
+      "Admin DB Status",
+      "Admin Affiliates",
+      "Admin Trading Signals"
+    ],
+    "User Dashboards": [
+      "Admin Users List",
+      "User Dashboard Data",
+      "User Profile",
+      "User Balance",
+      "User Transactions",
+      "User Operations",
+      "User Subscription",
+      "User Credentials",
+      "User Analytics"
+    ],
+    "Affiliate Dashboards": [
+      "Admin Affiliates",
+      "Affiliate Dashboard Data",
+      "Affiliate Commission History",
+      "Affiliate Credits",
+      "Affiliate Dashboard Main"
+    ],
+    "Integração": [
+      "Full Integration Flow"
+    ],
+    "Performance": [
+      "Stress Test"
+    ]
+  },
+  "duration": "1.6s"
+}

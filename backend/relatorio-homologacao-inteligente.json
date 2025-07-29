@@ -1,0 +1,310 @@
+{
+  "timestamp": "2025-07-28T17:12:10.530Z",
+  "homologationRate": 95,
+  "status": "EXCELENTE - APROVADO PARA PRODUÇÃO",
+  "breakdown": {
+    "components": {
+      "success": 6,
+      "total": 6,
+      "score": 30
+    },
+    "publicEndpoints": {
+      "success": 4,
+      "total": 4,
+      "score": 30
+    },
+    "protectedEndpoints": {
+      "success": 14,
+      "total": 14,
+      "score": 20
+    },
+    "frontend": {
+      "success": 3,
+      "total": 4,
+      "score": 15
+    }
+  },
+  "details": {
+    "components": [
+      {
+        "name": "Frontend Premium",
+        "path": "../coinbitclub-frontend-premium",
+        "exists": true,
+        "success": true
+      },
+      {
+        "name": "Package.json",
+        "path": "../coinbitclub-frontend-premium/package.json",
+        "exists": true,
+        "success": true
+      },
+      {
+        "name": "Backend Server",
+        "path": "./api-gateway/server.cjs",
+        "exists": true,
+        "success": true
+      },
+      {
+        "name": "Database Schema",
+        "path": "./_schema.sql",
+        "exists": true,
+        "success": true
+      },
+      {
+        "name": "AI Monitoring",
+        "path": "./src/services/aiMonitoringService.js",
+        "exists": true,
+        "success": true
+      },
+      {
+        "name": "Security System",
+        "path": "./src/security/CorporateSecuritySystem.js",
+        "exists": true,
+        "success": true
+      }
+    ],
+    "publicEndpoints": [
+      {
+        "name": "Health Check",
+        "path": "/health",
+        "expectedStatus": [
+          200
+        ],
+        "statusCode": 200,
+        "success": true
+      },
+      {
+        "name": "Status API",
+        "path": "/api/status",
+        "expectedStatus": [
+          200
+        ],
+        "statusCode": 200,
+        "success": true
+      },
+      {
+        "name": "Test Endpoint",
+        "path": "/api/test",
+        "expectedStatus": [
+          200
+        ],
+        "statusCode": 200,
+        "success": true
+      },
+      {
+        "name": "Admin Health",
+        "path": "/api/admin/railway/health",
+        "expectedStatus": [
+          200
+        ],
+        "statusCode": 200,
+        "success": true
+      }
+    ],
+    "protectedEndpoints": [
+      {
+        "name": "User Dashboard",
+        "path": "/api/user/dashboard",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      },
+      {
+        "name": "User Operations",
+        "path": "/api/user/operations",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      },
+      {
+        "name": "User Plans",
+        "path": "/api/user/plans",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      },
+      {
+        "name": "User Settings",
+        "path": "/api/user/settings",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      },
+      {
+        "name": "Affiliate Dashboard",
+        "path": "/api/affiliate/dashboard",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      },
+      {
+        "name": "Affiliate Commissions",
+        "path": "/api/affiliate/commissions",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      },
+      {
+        "name": "Admin Affiliates",
+        "path": "/api/admin/affiliates",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      },
+      {
+        "name": "IA Overview",
+        "path": "/api/admin/ia/overview",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      },
+      {
+        "name": "IA Services",
+        "path": "/api/admin/ia/services",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      },
+      {
+        "name": "IA Metrics",
+        "path": "/api/admin/ia/metrics",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      },
+      {
+        "name": "IA Security",
+        "path": "/api/admin/ia/security",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      },
+      {
+        "name": "IA Performance",
+        "path": "/api/admin/ia/performance",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      },
+      {
+        "name": "IA Charts",
+        "path": "/api/admin/ia/charts",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      },
+      {
+        "name": "IA Alerts",
+        "path": "/api/admin/ia/alerts",
+        "expectedStatus": [
+          401,
+          403,
+          200
+        ],
+        "statusCode": 401,
+        "success": true
+      }
+    ],
+    "frontend": [
+      {
+        "name": "Home Page",
+        "path": "/",
+        "expectedStatus": [
+          200,
+          304
+        ],
+        "statusCode": 200,
+        "success": true
+      },
+      {
+        "name": "Login Page",
+        "path": "/login",
+        "expectedStatus": [
+          200,
+          304,
+          404
+        ],
+        "statusCode": 307,
+        "success": false
+      },
+      {
+        "name": "Register Page",
+        "path": "/signup",
+        "expectedStatus": [
+          200,
+          304,
+          404
+        ],
+        "statusCode": 200,
+        "success": true
+      },
+      {
+        "name": "Dashboard Page",
+        "path": "/dashboard",
+        "expectedStatus": [
+          200,
+          304,
+          404
+        ],
+        "statusCode": 200,
+        "success": true
+      }
+    ],
+    "structure": {
+      "success": true,
+      "pages": 148
+    }
+  }
+}

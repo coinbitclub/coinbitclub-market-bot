@@ -1,1 +1,2 @@
-web: cd api-gateway && node server-cache-bust.cjs
+web: node server-multiusuario-limpo.js
+release: node aplicar-schema-completo.js

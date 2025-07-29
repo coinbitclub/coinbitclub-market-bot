@@ -42,7 +42,18 @@ class FrontendBackendTester {
 
   // 🚀 Executar todos os testes de integração
   async runAllTests() {
-    console.log('🧪 INICIANDO TESTES COMPLETOS DE INTEGRAÇÃO FRONTEND-BACKEND');
+    /**
+ * 🧪 TESTE COMPLETO DE INTEGRAÇÃO E ESTRESSE
+ * Teste de todos os serviços, integração backend-frontend e exchanges
+ * Atualizado com testes específicos para 2 operações por usuário
+ */
+
+const axios = require('axios');
+const { performance } = require('perf_hooks');
+
+console.log('🧪 TESTE COMPLETO DE INTEGRAÇÃO E ESTRESSE');
+console.log('🔄 ATUALIZADO - 2 OPERAÇÕES POR USUÁRIO');
+console.log('==========================================');
     console.log(`🌐 Frontend: ${this.frontendURL}`);
     console.log(`📡 Backend: ${this.backendURL}`);
     console.log(`🔑 Token Admin: ${this.adminToken}`);

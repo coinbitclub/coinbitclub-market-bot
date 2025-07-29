@@ -1,0 +1,19 @@
+{
+  "ambiente": "PRODUCTION",
+  "debug": false,
+  "testnet": false,
+  "maxUsuariosSimultaneos": 100,
+  "limiteOperacoesPorMinuto": 60,
+  "parametrosDefault": {
+    "maxExposure": 1000,
+    "riskPercentage": 2,
+    "stopLossPercentage": 2,
+    "takeProfitPercentage": 6
+  },
+  "exchanges": {
+    "binance": {
+      "timeout": 30000,
+      "recvWindow": 5000
+    }
+  }
+}
