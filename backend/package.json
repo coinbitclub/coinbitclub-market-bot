@@ -1,12 +1,24 @@
 {
-  "name": "coinbitclub-trading-bot",
-  "version": "1.0.0",
-  "description": "Sistema de Trading Bot Multiusuário com SMS",
-  "main": "server-multiusuario-limpo.js",
+  "name": "coinbitclub-market-bot",
+  "version": "2.0.0",
+  "description": "Sistema completo de trading automatizado com IA Guardian, Fear & Greed Index e integração TradingView",
+  "main": "servidor-webhook-completo.js",
   "scripts": {
-    "start": "node server-multiusuario-limpo.js",
-    "dev": "nodemon server-multiusuario-limpo.js",
-    "test": "node teste-final-sistema.js"
+    "start": "node sistema-final-integrado.js",
+    "dev": "nodemon sistema-final-integrado.js",
+    "test": "node teste-final-sistema.js",
+    "test-sistema": "node sistema-integrado-completo.js",
+    "test-ia": "node ia-sequence-guardian.js",
+    "test-fear-greed": "node fear-greed-integration.js",
+    "test-supervisor": "node testar-supervisor-backoffice.js",
+    "supervisor-backoffice": "node ia-supervisor-financeiro.js",
+    "supervisor-trade-real": "node ia-supervisor-trade-tempo-real.js",
+    "configurar-db": "node corrigir-tp-sl-configuracoes.js",
+    "webhook-server": "node servidor-webhook-completo.js",
+    "sistema-completo": "node sistema-integrado-completo.js",
+    "sistema-final": "node sistema-final-integrado.js",
+    "supervisor-financeiro": "node ia-supervisor-financeiro.js",
+    "legacy-server": "node server-multiusuario-limpo.js"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -25,19 +37,27 @@
     "twilio": "^4.14.0",
     "express-rate-limit": "^6.7.0",
     "express-validator": "^7.0.1",
-    "dotenv": "^16.1.4"
+    "dotenv": "^16.1.4",
+    "cheerio": "^1.0.0-rc.12",
+    "node-cron": "^3.0.3",
+    "winston": "^3.11.0",
+    "rate-limiter-flexible": "^4.0.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
   },
   "keywords": [
     "trading",
-    "bot",
     "cryptocurrency",
-    "multiuser",
-    "sms",
-    "twilio"
+    "automation",
+    "bybit",
+    "tradingview",
+    "fear-greed",
+    "ai-guardian",
+    "coinbitclub",
+    "bot",
+    "multiuser"
   ],
-  "author": "CoinBitClub",
+  "author": "CoinBitClub Team",
   "license": "MIT"
 }

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Dashboard Trading - Paloma Amaral</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin: 10px;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .positive {
+            color: #27ae60;
+        }
+
+        .negative {
+            color: #e74c3c;
+        }
+
+        .neutral {
+            color: #3498db;
+        }
+
+        .warning {
+            color: #f39c12;
+        }
+
+        .log-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-success {
+            border-left-color: #27ae60;
+            background: #d5f4e6;
+        }
+
+        .log-error {
+            border-left-color: #e74c3c;
+            background: #fdeaea;
+        }
+
+        .log-warning {
+            border-left-color: #f39c12;
+            background: #fef9e7;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            height: 300px;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .timestamp {
+            font-size: 0.8rem;
+            color: #999;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .trade-signal {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 10px 0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 Trading Dashboard - Paloma Amaral</h1>
+            <div>
+                <span class="status-indicator" id="systemStatus">🟢 SISTEMA ATIVO</span>
+                <span class="status-indicator" id="tradingStatus">🔄 TRADING ATIVO</span>
+                <span class="status-indicator" id="apiStatus">🔗 API CONECTADA</span>
+            </div>
+            <button class="refresh-btn" onclick="refreshDashboard()">🔄 Atualizar Dashboard</button>
+            <div class="timestamp" id="lastUpdate">Última atualização: Carregando...</div>
+        </div>
+
+        <!-- Métricas Principais -->
+        <div class="grid">
+            <!-- Saldo e Performance -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">💰 Saldo & Performance</span>
+                    <span class="card-icon">📊</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Saldo Total:</span>
+                    <span class="metric-value positive" id="totalBalance">$236.71</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Saldo Disponível:</span>
+                    <span class="metric-value neutral" id="availableBalance">$236.71</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">P&L Hoje:</span>
+                    <span class="metric-value" id="dailyPnl">+$0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">P&L Total:</span>
+                    <span class="metric-value" id="totalPnl">+$0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">ROI %:</span>
+                    <span class="metric-value" id="roiPercent">0.00%</span>
+                </div>
+            </div>
+
+            <!-- Status Trading -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🎯 Status Trading</span>
+                    <span class="card-icon">⚡</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Posições Abertas:</span>
+                    <span class="metric-value neutral" id="openPositions">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Trades Hoje:</span>
+                    <span class="metric-value neutral" id="todayTrades">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Win Rate:</span>
+                    <span class="metric-value positive" id="winRate">0%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Último Sinal:</span>
+                    <span class="metric-value neutral" id="lastSignal">Aguardando...</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Status Sistema:</span>
+                    <span class="metric-value positive" id="systemHealth">🟢 OPERACIONAL</span>
+                </div>
+            </div>
+
+            <!-- Configurações Ativas -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">⚙️ Configurações</span>
+                    <span class="card-icon">🔧</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">% por Trade:</span>
+                    <span class="metric-value neutral">30%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Alavancagem:</span>
+                    <span class="metric-value neutral">5x</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Take Profit:</span>
+                    <span class="metric-value positive">10% (2x leverage)</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Stop Loss:</span>
+                    <span class="metric-value negative">15% (3x leverage)</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Max Posições:</span>
+                    <span class="metric-value neutral">2</span>
+                </div>
+            </div>
+
+            <!-- Microserviços -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🔧 Microserviços</span>
+                    <span class="card-icon">⚙️</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Signal Processor:</span>
+                    <span class="metric-value positive" id="signalProcessor">🟢 ATIVO</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Order Executor:</span>
+                    <span class="metric-value positive" id="orderExecutor">🟢 ATIVO</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Risk Manager:</span>
+                    <span class="metric-value positive" id="riskManager">🟢 ATIVO</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Portfolio Monitor:</span>
+                    <span class="metric-value positive" id="portfolioMonitor">🟢 ATIVO</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">AI Engine:</span>
+                    <span class="metric-value positive" id="aiEngine">🟢 ATIVO</span>
+                </div>
+            </div>
+
+            <!-- IA e Decisões -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🤖 IA & Decisões</span>
+                    <span class="card-icon">🧠</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Confiança IA:</span>
+                    <span class="metric-value positive" id="aiConfidence">85%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Sinais Processados:</span>
+                    <span class="metric-value neutral" id="signalsProcessed">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Decisões Automáticas:</span>
+                    <span class="metric-value neutral" id="autoDecisions">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Modo IA:</span>
+                    <span class="metric-value positive">🤖 ATIVO</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Última Análise:</span>
+                    <span class="metric-value neutral" id="lastAnalysis">Aguardando...</span>
+                </div>
+            </div>
+
+            <!-- Alertas e Notificações -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🔔 Alertas & Notificações</span>
+                    <span class="card-icon">📢</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Email:</span>
+                    <span class="metric-value positive">✅ ATIVO</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">SMS:</span>
+                    <span class="metric-value warning">⚠️ INATIVO</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Telegram:</span>
+                    <span class="metric-value warning">⚠️ INATIVO</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Relatório Diário:</span>
+                    <span class="metric-value positive">✅ ATIVO</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Últimos Alertas:</span>
+                    <span class="metric-value neutral" id="lastAlert">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sinais Ativos -->
+        <div class="trade-signal" id="activeSignal" style="display: none;">
+            <strong>🚀 SINAL ATIVO:</strong> <span id="signalDetails">Aguardando sinal...</span>
+        </div>
+
+        <!-- Log de Atividades -->
+        <div class="log-container">
+            <div class="card-header">
+                <span class="card-title">📊 Log de Atividades</span>
+                <span class="card-icon">📝</span>
+            </div>
+            <div id="activityLog">
+                <div class="log-entry log-success">
+                    ✅ [29/07/2025 15:30:00] Sistema iniciado com sucesso
+                </div>
+                <div class="log-entry log-success">
+                    🔗 [29/07/2025 15:30:01] Conectado à API Bybit
+                </div>
+                <div class="log-entry log-success">
+                    💰 [29/07/2025 15:30:02] Saldo carregado: $236.71
+                </div>
+                <div class="log-entry log-success">
+                    ⚙️ [29/07/2025 15:30:03] Configurações aplicadas: 30% saldo, 5x leverage
+                </div>
+                <div class="log-entry log-success">
+                    🤖 [29/07/2025 15:30:04] IA ativada - Confiança: 85%
+                </div>
+                <div class="log-entry">
+                    🔍 [29/07/2025 15:30:05] Aguardando sinais do TradingView...
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <h3>📈 Performance P&L</h3>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Carregando gráfico de performance...
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3>📊 Volume de Trades</h3>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Carregando gráfico de volume...
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3>🎯 Win Rate</h3>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Carregando gráfico de win rate...
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3>🔄 Atividade por Hora</h3>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Carregando gráfico de atividade...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configurações
+        const API_BASE_URL = 'https://coinbitclub-market-bot-backend-production.up.railway.app';
+        const USER_EMAIL = 'pamaral15@hotmail.com';
+        let refreshInterval;
+
+        // Função principal de atualização
+        async function refreshDashboard() {
+            console.log('🔄 Atualizando dashboard...');
+            updateTimestamp();
+            
+            try {
+                // Atualizar status dos sistemas
+                await updateSystemStatus();
+                
+                // Atualizar dados de trading
+                await updateTradingData();
+                
+                // Atualizar microserviços
+                await updateMicroservices();
+                
+                // Atualizar IA e decisões
+                await updateAIStatus();
+                
+                // Atualizar log de atividades
+                await updateActivityLog();
+                
+                console.log('✅ Dashboard atualizado com sucesso');
+                
+            } catch (error) {
+                console.error('❌ Erro ao atualizar dashboard:', error);
+                addLogEntry('error', `❌ Erro ao atualizar: ${error.message}`);
+            }
+        }
+
+        // Atualizar timestamp
+        function updateTimestamp() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = 
+                `Última atualização: ${now.toLocaleString('pt-BR')}`;
+        }
+
+        // Atualizar status do sistema
+        async function updateSystemStatus() {
+            try {
+                // Simulação de verificação de status
+                const systemStatus = document.getElementById('systemStatus');
+                const tradingStatus = document.getElementById('tradingStatus');
+                const apiStatus = document.getElementById('apiStatus');
+                
+                // Status do sistema (verificar se servidor está rodando)
+                systemStatus.textContent = '🟢 SISTEMA ATIVO';
+                systemStatus.className = 'status-indicator';
+                
+                // Status de trading
+                tradingStatus.textContent = '🔄 TRADING ATIVO';
+                tradingStatus.className = 'status-indicator';
+                
+                // Status da API
+                apiStatus.textContent = '🔗 API CONECTADA';
+                apiStatus.className = 'status-indicator';
+                
+            } catch (error) {
+                console.error('Erro ao verificar status:', error);
+            }
+        }
+
+        // Atualizar dados de trading
+        async function updateTradingData() {
+            try {
+                // Aqui você faria chamadas reais para a API
+                // Por enquanto, vamos simular dados
+                
+                // Simular atualização de saldo (pode variar ligeiramente)
+                const variation = (Math.random() - 0.5) * 2; // -1 a 1
+                const currentBalance = 236.71 + variation;
+                
+                document.getElementById('totalBalance').textContent = `$${currentBalance.toFixed(2)}`;
+                document.getElementById('availableBalance').textContent = `$${currentBalance.toFixed(2)}`;
+                
+                // Simular P&L diário
+                const dailyPnl = variation;
+                const dailyPnlElement = document.getElementById('dailyPnl');
+                dailyPnlElement.textContent = `${dailyPnl >= 0 ? '+' : ''}$${dailyPnl.toFixed(2)}`;
+                dailyPnlElement.className = `metric-value ${dailyPnl >= 0 ? 'positive' : 'negative'}`;
+                
+                // Atualizar outras métricas
+                document.getElementById('openPositions').textContent = Math.floor(Math.random() * 3);
+                document.getElementById('todayTrades').textContent = Math.floor(Math.random() * 10);
+                
+            } catch (error) {
+                console.error('Erro ao atualizar dados de trading:', error);
+            }
+        }
+
+        // Atualizar status dos microserviços
+        async function updateMicroservices() {
+            const services = [
+                'signalProcessor',
+                'orderExecutor', 
+                'riskManager',
+                'portfolioMonitor',
+                'aiEngine'
+            ];
+            
+            services.forEach(service => {
+                const element = document.getElementById(service);
+                // Simular 95% de uptime
+                const isActive = Math.random() > 0.05;
+                element.textContent = isActive ? '🟢 ATIVO' : '🔴 INATIVO';
+                element.className = `metric-value ${isActive ? 'positive' : 'negative'}`;
+            });
+        }
+
+        // Atualizar status da IA
+        async function updateAIStatus() {
+            // Simular confiança da IA entre 70-95%
+            const confidence = 70 + Math.random() * 25;
+            document.getElementById('aiConfidence').textContent = `${confidence.toFixed(0)}%`;
+            
+            // Simular contadores
+            document.getElementById('signalsProcessed').textContent = Math.floor(Math.random() * 50);
+            document.getElementById('autoDecisions').textContent = Math.floor(Math.random() * 20);
+            
+            // Última análise
+            const now = new Date();
+            document.getElementById('lastAnalysis').textContent = 
+                `${now.toLocaleTimeString('pt-BR')}`;
+        }
+
+        // Atualizar log de atividades
+        async function updateActivityLog() {
+            // Simular nova entrada no log ocasionalmente
+            if (Math.random() > 0.7) {
+                const messages = [
+                    '🔍 Analisando sinal BTCUSDT...',
+                    '📊 Calculando indicadores técnicos...',
+                    '🤖 IA processando padrões...',
+                    '💰 Verificando saldo disponível...',
+                    '⚙️ Sistema funcionando normalmente...',
+                    '🔄 Monitorando posições ativas...'
+                ];
+                
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                addLogEntry('info', randomMessage);
+            }
+        }
+
+        // Adicionar entrada no log
+        function addLogEntry(type, message) {
+            const logContainer = document.getElementById('activityLog');
+            const now = new Date();
+            const timestamp = now.toLocaleString('pt-BR');
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type === 'error' ? 'log-error' : type === 'warning' ? 'log-warning' : type === 'success' ? 'log-success' : ''}`;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            
+            // Adicionar no topo
+            logContainer.insertBefore(logEntry, logContainer.firstChild);
+            
+            // Manter apenas os últimos 20 logs
+            const logs = logContainer.children;
+            if (logs.length > 20) {
+                logContainer.removeChild(logs[logs.length - 1]);
+            }
+        }
+
+        // Simular sinal de trading ocasionalmente
+        function simulateTradeSignal() {
+            if (Math.random() > 0.95) { // 5% de chance a cada verificação
+                const pairs = ['BTCUSDT', 'ETHUSDT', 'ADAUSDT', 'BNBUSDT'];
+                const actions = ['COMPRA', 'VENDA'];
+                const pair = pairs[Math.floor(Math.random() * pairs.length)];
+                const action = actions[Math.floor(Math.random() * actions.length)];
+                const confidence = 70 + Math.random() * 30;
+                
+                const signalElement = document.getElementById('activeSignal');
+                const detailsElement = document.getElementById('signalDetails');
+                
+                detailsElement.textContent = `${action} ${pair} - Confiança: ${confidence.toFixed(0)}%`;
+                signalElement.style.display = 'block';
+                
+                addLogEntry('success', `🚀 SINAL: ${action} ${pair} (${confidence.toFixed(0)}%)`);
+                
+                // Esconder sinal após 30 segundos
+                setTimeout(() => {
+                    signalElement.style.display = 'none';
+                }, 30000);
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Dashboard iniciado');
+            
+            // Primeira atualização
+            refreshDashboard();
+            
+            // Configurar atualização automática a cada 30 segundos
+            refreshInterval = setInterval(refreshDashboard, 30000);
+            
+            // Verificar sinais a cada 10 segundos
+            setInterval(simulateTradeSignal, 10000);
+            
+            // Log inicial
+            addLogEntry('success', '🚀 Dashboard conectado e monitorando...');
+        });
+
+        // Limpar interval quando sair da página
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>

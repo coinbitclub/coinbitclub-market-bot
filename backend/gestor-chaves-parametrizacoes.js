@@ -71,17 +71,26 @@ class GestorChavesAPI {
 
     definirParametrizacoesPadrao() {
         return {
-            // Configurações de Trading - Conforme especificação
+            // Configurações de Trading - FÓRMULA CORRETA
             trading: {
                 balance_percentage: 30,             // 30% do saldo por operação
                 leverage_default: 5,                // 5x alavancagem padrão
-                take_profit_multiplier: 3,          // TP = 3x alavancagem
-                stop_loss_multiplier: 2,            // SL = 2x alavancagem
+                take_profit_multiplier: 2,          // TP = 2x alavancagem (5x = 10%)
+                stop_loss_multiplier: 3,            // SL = 3x alavancagem (5x = 15%)
                 max_open_positions: 2,              // Máximo 2 operações simultâneas
                 trailing_stop: false,               // Sem trailing stop
                 risk_reward_ratio: 1.5,             // Relação risco/retorno 1:1.5
                 min_signal_confidence: 0.7,         // Confiança mínima do sinal (70%)
-                max_slippage_percent: 0.1           // Slippage máximo 0.1%
+                max_slippage_percent: 0.1,          // Slippage máximo 0.1%
+                
+                // Configurações de direção do mercado
+                market_direction: {
+                    mode: 'BOTH',                   // LONG, SHORT, ou BOTH
+                    long_enabled: true,             // Permitir operações LONG
+                    short_enabled: true,            // Permitir operações SHORT
+                    trend_filter: false,            // Filtrar por tendência
+                    market_sentiment: 'NEUTRAL'     // BULLISH, BEARISH, NEUTRAL
+                }
             },
 
             // Limites e Segurança
@@ -557,8 +566,8 @@ class GestorChavesAPI {
                     10.00,  // valor_minimo_trade
                     5000.00, // valor_maximo_trade
                     30.00,  // percentual_saldo
-                    3.00,   // take_profit_multiplier
-                    2.00,   // stop_loss_multiplier
+                    2.00,   // take_profit_multiplier (CORRIGIDO: 2x leverage)
+                    3.00,   // stop_loss_multiplier (CORRIGIDO: 3x leverage)
                     20,     // max_operacoes_diarias
                     JSON.stringify(['binance', 'bybit']) // exchanges_ativas
                 ]);
@@ -932,8 +941,8 @@ class GestorChavesAPI {
                     // Usar os valores EXATOS da tabela user_trading_params
                     balance_percentage: parseFloat(params.percentual_saldo) || 30,
                     leverage_default: parseInt(params.alavancagem) || 5,
-                    take_profit_multiplier: parseFloat(params.take_profit_multiplier) || 3,
-                    stop_loss_multiplier: parseFloat(params.stop_loss_multiplier) || 2,
+                    take_profit_multiplier: parseFloat(params.take_profit_multiplier) || 2,  // CORRIGIDO: 2x leverage
+                    stop_loss_multiplier: parseFloat(params.stop_loss_multiplier) || 3,   // CORRIGIDO: 3x leverage
                     max_open_positions: 2,  // Fixo conforme especificação
                     trailing_stop: false,   // Fixo conforme especificação
                     risk_reward_ratio: 1.5, // Fixo conforme especificação
