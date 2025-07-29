@@ -1,0 +1,9 @@
+# RAILWAY CACHE BUST - ULTIMA TENTATIVA
+# Timestamp: 2025-07-29T17:05:00.000Z
+# UUID: f9e8d7c6-b5a4-3f2e-1d0c-9b8a7e6f5d4c
+# Deploy ID: FINAL-PRODUCTION-ULTIMATE-29072025
+# Cache Version: v4.0.0
+# Force Rebuild: TRUE
+
+Este arquivo força o Railway a reconhecer mudanças definitivas no projeto.
+Dockerfile utilizado: Dockerfile.FINAL-PRODUCTION-29072025
