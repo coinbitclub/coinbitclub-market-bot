@@ -604,6 +604,103 @@ app.post('/api/webhooks/tradingview', async (req, res) => {
   }
 });
 
+// Webhook para sinais TradingView - endpoint específico /api/webhooks/signal
+app.post('/api/webhooks/signal', async (req, res) => {
+  console.log('📡 WEBHOOK SIGNAL TRADINGVIEW RECEBIDO');
+  console.log('📦 Payload:', JSON.stringify(req.body, null, 2));
+  console.log('🔍 Headers:', JSON.stringify(req.headers, null, 2));
+  
+  incrementCounter(req.app, 'webhookCount');
+  req.app.locals.lastActivity = new Date().toISOString();
+  
+  try {
+    // Validação de token flexível
+    const token = req.headers.authorization?.replace('Bearer ', '') || 
+                  req.headers['x-webhook-token'] || 
+                  req.query.token || 
+                  req.body?.token;
+    
+    const validTokens = ['210406', 'coinbitclub-webhook-2025', 'tradingview-secret-key'];
+    
+    // Permitir IPs do TradingView sem token
+    const tradingViewIPs = ['34.212.75.30', '52.32.178.7', '52.89.214.238'];
+    const clientIP = req.ip || req.headers['x-forwarded-for']?.split(',')[0]?.trim();
+    
+    if (!token && !tradingViewIPs.includes(clientIP)) {
+      return res.status(401).json({ 
+        error: 'Token necessário', 
+        timestamp: new Date().toISOString(),
+        server_id: SERVER_ID
+      });
+    }
+    
+    if (token && !validTokens.includes(token)) {
+      return res.status(401).json({ 
+        error: 'Token inválido', 
+        timestamp: new Date().toISOString(),
+        server_id: SERVER_ID
+      });
+    }
+    
+    // Processar sinal
+    const signalData = {
+      id: `signal_${Date.now()}`,
+      source: 'tradingview_signal',
+      payload: req.body,
+      status: 'received',
+      server_id: SERVER_ID,
+      version: SERVER_VERSION,
+      received_at: new Date().toISOString(),
+      client_ip: clientIP,
+      auth_method: token ? 'token' : 'ip_whitelist'
+    };
+    
+    // Salvar no banco
+    await saveToDatabase('raw_webhook', signalData);
+    
+    console.log('✅ Sinal TradingView processado:', signalData.id);
+    
+    res.json({
+      success: true,
+      message: 'Sinal recebido com sucesso',
+      signalId: signalData.id,
+      timestamp: signalData.received_at,
+      server_id: SERVER_ID
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro no webhook signal:', error);
+    incrementCounter(req.app, 'errorCount');
+    
+    res.status(500).json({
+      error: 'Erro interno',
+      message: error.message,
+      timestamp: new Date().toISOString(),
+      server_id: SERVER_ID
+    });
+  }
+});
+
+// Endpoint de teste para webhook signal
+app.get('/api/webhooks/signal/test', (req, res) => {
+  console.log('🧪 Teste webhook signal acessado');
+  
+  res.json({
+    message: 'Endpoint de webhook signal ativo',
+    timestamp: new Date().toISOString(),
+    server_id: SERVER_ID,
+    version: SERVER_VERSION,
+    tokens: ['210406', 'coinbitclub-webhook-2025'],
+    authMethods: [
+      'Header: Authorization: Bearer TOKEN',
+      'Header: X-Webhook-Token: TOKEN',
+      'Query: ?token=TOKEN',
+      'Body: {"token": "TOKEN"}',
+      'IP Whitelist (TradingView IPs)'
+    ]
+  });
+});
+
 // Webhook genérico
 app.post('/webhook/:signal', async (req, res) => {
   const signal = req.params.signal;
