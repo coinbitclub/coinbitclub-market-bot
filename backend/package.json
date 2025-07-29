@@ -1,10 +1,12 @@
 ﻿{
-  "name": "coinbitclub-market-bot",
-  "version": "3.0.20250729183900",
-  "description": "CoinBitClub Market Bot V3 - Cache Cleared",
+  "name": "coinbitclub-market-bot-v3-only",
+  "version": "3.0.20250729184129",
+  "description": "CoinBitClub Market Bot V3 ONLY - NO MULTISERVICE",
   "main": "main.js",
   "scripts": {
-    "start": "node main.js"
+    "start": "node main.js",
+    "dev": "node main.js",
+    "production": "node main.js"
   },
   "engines": {
     "node": ">=18.0.0"
