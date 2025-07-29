@@ -1,22 +1,20 @@
-{
-  "name": "coinbitclub-market-bot",
-  "version": "3.0.191306",
-  "description": "CoinBitClub Market Bot V3",
-  "main": "main.js",
-  "scripts": {
-    "start": "node main.js",
-    "build": "./build.sh"
-  },
-  "engines": {
-    "node": "18.x"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.0.0",
-    "compression": "^1.7.4",
-    "ws": "^8.13.0",
-    "pg": "^8.11.3",
-    "axios": "^1.4.0"
-  }
+﻿{
+    "version":  "3.0.0",
+    "name":  "coinbitclub-market-bot",
+    "scripts":  {
+                    "start":  "node main.js"
+                },
+    "dependencies":  {
+                         "axios":  "^1.4.0",
+                         "cors":  "^2.8.5",
+                         "ws":  "^8.13.0",
+                         "pg":  "^8.11.3",
+                         "helmet":  "^7.0.0",
+                         "compression":  "^1.7.4",
+                         "express":  "^4.18.2"
+                     },
+    "engines":  {
+                    "node":  "18.x"
+                },
+    "main":  "main.js"
 }
