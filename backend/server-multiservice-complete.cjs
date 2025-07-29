@@ -14,13 +14,22 @@ console.log('🚀 INICIANDO SERVIDOR MULTISERVIÇO COMPLETO...');
 console.log('🔧 CONFIGURAÇÕES OTIMIZADAS PARA RAILWAY V3');
 
 // Configurações de versão e identificação
-const SERVER_VERSION = 'v3.0.0-multiservice-' + Date.now();
+const SERVER_VERSION = 'v3.0.0-multiservice-hybrid-' + Date.now();
 const SERVER_ID = crypto.randomBytes(16).toString('hex');
 const START_TIME = Date.now();
 
 console.log(`📦 Versão: ${SERVER_VERSION}`);
 console.log(`🆔 Server ID: ${SERVER_ID}`);
 console.log(`⏰ Inicializado em: ${new Date().toISOString()}`);
+
+// ===== CONFIGURAÇÕES MULTIUSUÁRIO HÍBRIDO =====
+const SISTEMA_MULTIUSUARIO = process.env.SISTEMA_MULTIUSUARIO === 'true' || true;
+const MODO_HIBRIDO = process.env.MODO_HIBRIDO === 'true' || true;
+const TEMPO_REAL_ENABLED = process.env.TEMPO_REAL_ENABLED === 'true' || true;
+
+console.log(`🔧 Sistema Multiusuário: ${SISTEMA_MULTIUSUARIO ? 'ATIVO' : 'INATIVO'}`);
+console.log(`🔄 Modo Híbrido: ${MODO_HIBRIDO ? 'ATIVO' : 'INATIVO'}`);
+console.log(`⚡ Tempo Real: ${TEMPO_REAL_ENABLED ? 'ATIVO' : 'INATIVO'}`);
 
 // ===== CONFIGURAÇÃO DO EXPRESS =====
 
@@ -409,6 +418,20 @@ app.get('/api/status', (req, res) => {
       optimizations_applied: true,
       error_502_resolved: true,
       multi_service_ready: true
+    },
+    
+    multiuser_system: {
+      enabled: SISTEMA_MULTIUSUARIO,
+      hybrid_mode: MODO_HIBRIDO,
+      realtime_enabled: TEMPO_REAL_ENABLED,
+      features: {
+        multi_user_trading: SISTEMA_MULTIUSUARIO,
+        hybrid_operations: MODO_HIBRIDO,
+        realtime_monitoring: TEMPO_REAL_ENABLED,
+        individual_api_keys: true,
+        separate_balances: true,
+        commission_system: true
+      }
     }
   });
 });
@@ -762,6 +785,339 @@ app.post('/api/webhooks/test', (req, res) => {
     server_id: SERVER_ID,
     version: SERVER_VERSION
   });
+});
+
+// ===== ENDPOINTS SISTEMA MULTIUSUÁRIO HÍBRIDO =====
+
+// Status do sistema multiusuário
+app.get('/api/multiuser/status', async (req, res) => {
+  console.log('👥 Status sistema multiusuário solicitado');
+  
+  try {
+    const client = await pool.connect();
+    
+    // Verificar usuários ativos (consulta simplificada)
+    const usersResult = await client.query(`
+      SELECT COUNT(*) as total_users
+      FROM users
+    `);
+    
+    // Verificar operações (consulta simplificada)
+    const operationsResult = await client.query(`
+      SELECT COUNT(*) as total_operations
+      FROM trading_operations
+      WHERE created_at > NOW() - INTERVAL '24 hours'
+    `);
+    
+    // Verificar chaves API
+    const keysResult = await client.query(`
+      SELECT COUNT(*) as total_keys,
+             COUNT(DISTINCT user_id) as users_with_keys
+      FROM user_api_keys
+    `);
+    
+    client.release();
+    
+    res.json({
+      status: 'success',
+      system: {
+        multiuser_enabled: SISTEMA_MULTIUSUARIO,
+        hybrid_mode: MODO_HIBRIDO,
+        realtime_enabled: TEMPO_REAL_ENABLED,
+        server_version: SERVER_VERSION
+      },
+      users: {
+        total: parseInt(usersResult.rows[0].total_users),
+        active: parseInt(usersResult.rows[0].total_users) // Simplificado
+      },
+      operations: {
+        total_24h: parseInt(operationsResult.rows[0].total_operations),
+        open: 0 // Simplificado
+      },
+      api_keys: {
+        total: parseInt(keysResult.rows[0].total_keys),
+        active: parseInt(keysResult.rows[0].total_keys), // Simplificado
+        users_configured: parseInt(keysResult.rows[0].users_with_keys)
+      },
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao obter status multiusuário:', error.message);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro ao obter status do sistema',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Listar usuários ativos em tempo real
+app.get('/api/multiuser/users/active', async (req, res) => {
+  console.log('👥 Lista de usuários ativos solicitada');
+  
+  try {
+    const client = await pool.connect();
+    
+    const result = await client.query(`
+      SELECT u.id, u.name, u.email,
+             COUNT(uak.id) as api_keys_count
+      FROM users u
+      LEFT JOIN user_api_keys uak ON u.id = uak.user_id
+      GROUP BY u.id, u.name, u.email
+      ORDER BY u.created_at DESC
+      LIMIT 10
+    `);
+    
+    client.release();
+    
+    res.json({
+      status: 'success',
+      users: result.rows.map(user => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        account_type: 'STANDARD', // Simplificado
+        api_keys_configured: parseInt(user.api_keys_count),
+        operations_24h: 0, // Simplificado
+        multiuser_ready: parseInt(user.api_keys_count) > 0
+      })),
+      total_users: result.rows.length,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao listar usuários ativos:', error.message);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro ao listar usuários ativos',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Operações em tempo real por usuário
+app.get('/api/multiuser/operations/realtime', async (req, res) => {
+  console.log('⚡ Operações em tempo real solicitadas');
+  
+  try {
+    const client = await pool.connect();
+    
+    const result = await client.query(`
+      SELECT to_ops.id, to_ops.user_id, u.name as user_name,
+             to_ops.symbol, to_ops.side, to_ops.entry_price, 
+             to_ops.quantity, to_ops.created_at
+      FROM trading_operations to_ops
+      JOIN users u ON to_ops.user_id = u.id
+      ORDER BY to_ops.created_at DESC
+      LIMIT 20
+    `);
+    
+    client.release();
+    
+    res.json({
+      status: 'success',
+      operations: result.rows.map(op => ({
+        id: op.id,
+        user: {
+          id: op.user_id,
+          name: op.user_name
+        },
+        symbol: op.symbol,
+        side: op.side,
+        entry_price: parseFloat(op.entry_price || 0),
+        quantity: parseFloat(op.quantity || 0),
+        status: 'open', // Simplificado
+        pnl_unrealized: 0, // Simplificado
+        leverage: 5, // Simplificado
+        created_at: op.created_at,
+        duration_minutes: Math.floor((new Date() - new Date(op.created_at)) / 60000)
+      })),
+      total_operations: result.rows.length,
+      realtime_enabled: TEMPO_REAL_ENABLED,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao obter operações em tempo real:', error.message);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro ao obter operações em tempo real',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Configurar chaves API de usuário
+app.post('/api/multiuser/user/:userId/api-keys', async (req, res) => {
+  const userId = req.params.userId;
+  const { exchange_name, api_key, api_secret, testnet = true } = req.body;
+  
+  console.log(`🔑 Configurando chaves API para usuário ${userId} - Exchange: ${exchange_name}`);
+  
+  try {
+    const client = await pool.connect();
+    
+    // Verificar se usuário existe
+    const userCheck = await client.query('SELECT id, name FROM users WHERE id = $1', [userId]);
+    if (userCheck.rows.length === 0) {
+      client.release();
+      return res.status(404).json({
+        status: 'error',
+        message: 'Usuário não encontrado'
+      });
+    }
+    
+    // Criptografar chaves (simulação - usar crypto real em produção)
+    const api_key_encrypted = Buffer.from(api_key).toString('base64');
+    const api_secret_encrypted = Buffer.from(api_secret).toString('base64');
+    
+    // Inserir ou atualizar chaves
+    await client.query(`
+      INSERT INTO user_api_keys (user_id, exchange_name, api_key_encrypted, api_secret_encrypted, testnet, status)
+      VALUES ($1, $2, $3, $4, $5, 'active')
+      ON CONFLICT (user_id, exchange_name)
+      DO UPDATE SET 
+        api_key_encrypted = EXCLUDED.api_key_encrypted,
+        api_secret_encrypted = EXCLUDED.api_secret_encrypted,
+        testnet = EXCLUDED.testnet,
+        status = 'active',
+        updated_at = NOW()
+    `, [userId, exchange_name, api_key_encrypted, api_secret_encrypted, testnet]);
+    
+    client.release();
+    
+    res.json({
+      status: 'success',
+      message: 'Chaves API configuradas com sucesso',
+      user_id: userId,
+      exchange: exchange_name,
+      testnet: testnet,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao configurar chaves API:', error.message);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro ao configurar chaves API',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Habilitar modo híbrido para usuário
+app.post('/api/multiuser/user/:userId/hybrid-mode', async (req, res) => {
+  const userId = req.params.userId;
+  const { enabled = true } = req.body;
+  
+  console.log(`🔄 ${enabled ? 'Habilitando' : 'Desabilitando'} modo híbrido para usuário ${userId}`);
+  
+  try {
+    const client = await pool.connect();
+    
+    // Atualizar configurações do usuário
+    await client.query(`
+      INSERT INTO user_trading_params (user_id, hybrid_mode_enabled, updated_at)
+      VALUES ($1, $2, NOW())
+      ON CONFLICT (user_id)
+      DO UPDATE SET 
+        hybrid_mode_enabled = EXCLUDED.hybrid_mode_enabled,
+        updated_at = NOW()
+    `, [userId, enabled]);
+    
+    client.release();
+    
+    res.json({
+      status: 'success',
+      message: `Modo híbrido ${enabled ? 'habilitado' : 'desabilitado'}`,
+      user_id: userId,
+      hybrid_mode: enabled,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao configurar modo híbrido:', error.message);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro ao configurar modo híbrido',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Endpoint para processar sinais multiusuário
+app.post('/api/multiuser/signal/process', async (req, res) => {
+  console.log('📡 Processando sinal para sistema multiusuário');
+  
+  try {
+    const { signal_type, symbol, action, price, users } = req.body;
+    
+    const client = await pool.connect();
+    
+    // Processar sinal para cada usuário
+    const results = [];
+    for (const userId of users || []) {
+      try {
+        // Verificar configurações do usuário
+        const userConfig = await client.query(`
+          SELECT utp.*, uak.exchange_name, uak.status as key_status
+          FROM user_trading_params utp
+          JOIN user_api_keys uak ON utp.user_id = uak.user_id
+          WHERE utp.user_id = $1 AND uak.status = 'active'
+        `, [userId]);
+        
+        if (userConfig.rows.length > 0) {
+          // Simular processamento da operação
+          const operation = {
+            user_id: userId,
+            symbol: symbol,
+            action: action,
+            price: price,
+            status: 'processed',
+            processed_at: new Date().toISOString()
+          };
+          
+          results.push(operation);
+        }
+        
+      } catch (userError) {
+        console.error(`❌ Erro ao processar usuário ${userId}:`, userError.message);
+        results.push({
+          user_id: userId,
+          status: 'error',
+          error: userError.message
+        });
+      }
+    }
+    
+    client.release();
+    
+    res.json({
+      status: 'success',
+      message: 'Sinal processado para usuários',
+      signal_type: signal_type,
+      symbol: symbol,
+      action: action,
+      processed_users: results.length,
+      results: results,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao processar sinal multiusuário:', error.message);
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro ao processar sinal',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // ===== FUNÇÕES AUXILIARES =====

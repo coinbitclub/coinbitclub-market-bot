@@ -8,15 +8,16 @@ RUN apk add --no-cache dumb-init
 WORKDIR /app
 
 # Copy package files first for better caching
-COPY package*.json ./
+COPY backend/package*.json ./
 
 # Install dependencies
 RUN npm ci --only=production || npm install --production
 
-# Copy the server file and necessary files
-COPY server-multiservice-complete.cjs ./
-COPY *.js ./
-COPY *.json ./
+# Copy the specific server file
+COPY backend/server-multiservice-complete.cjs ./server.js
+
+# Copy other necessary files
+COPY backend/ ./
 
 # Add nodejs user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
@@ -38,4 +39,4 @@ EXPOSE 3000
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start the application
-CMD ["node", "server-multiservice-complete.cjs"]
+CMD ["node", "server.js"]

@@ -2,12 +2,12 @@
 ❌ ERRO NA CONSOLIDAÇÃO FINAL
 ============================
 
-🔍 ERRO: Erro no teste básico: Tabela essencial ausente: trading_operations
-📅 Data: 2025-07-29T00:03:35.442Z
-⏹️ Etapa interrompida: 1 - Consolidação do Servidor
+🔍 ERRO: Erro na validação de chaves: Coluna essencial ausente: exchange_name
+📅 Data: 2025-07-29T16:16:31.982Z
+⏹️ Etapa interrompida: 3 - Validação Multiusuário
 
 📊 STATUS DA EXECUÇÃO:
-- ✅ Etapas concluídas: 
+- ✅ Etapas concluídas: 1, 2
 - ⚠️ Warnings: 0
 - ❌ Erros totais: 3
 
@@ -18,6 +18,6 @@
 4. Entre em contato com suporte se necessário
 
 🔍 DETALHES DOS ERROS:
-- ❌ ERRO NA ETAPA 1: Erro no teste básico: Tabela essencial ausente: trading_operations
-- ❌ ERRO CRÍTICO: Erro no teste básico: Tabela essencial ausente: trading_operations
+- ❌ ERRO NA ETAPA 3: Erro na validação de chaves: Coluna essencial ausente: exchange_name
+- ❌ ERRO CRÍTICO: Erro na validação de chaves: Coluna essencial ausente: exchange_name
         

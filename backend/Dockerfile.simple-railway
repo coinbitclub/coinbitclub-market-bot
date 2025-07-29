@@ -1,0 +1,23 @@
+# Simple Railway Dockerfile
+FROM node:18-alpine
+
+# Install dumb-init
+RUN apk add --no-cache dumb-init
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install --production
+
+# Copy server file
+COPY server-multiservice-complete.cjs ./
+
+# Expose port
+EXPOSE 3000
+
+# Start app
+CMD ["node", "server-multiservice-complete.cjs"]

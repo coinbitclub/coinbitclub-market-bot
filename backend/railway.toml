@@ -1,5 +1,6 @@
 [build]
 builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.simple-railway"
 
 [deploy]
 startCommand = "node server-multiservice-complete.cjs"

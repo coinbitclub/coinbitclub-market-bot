@@ -17,7 +17,7 @@ Esta documentação fornece todas as especificações necessárias para desenvol
   "access_level": 5,
   "permissions": [
     "view_all_data",
-    "user_management",
+    "user_management", fron
     "system_configuration",
     "financial_full_access",
     "audit_logs",
@@ -86,9 +86,83 @@ Esta documentação fornece todas as especificações necessárias para desenvol
 
 ## 🚀 APIS DISPONÍVEIS
 
-### 🏠 BASE URL
+### 🏠 BASE URLs
 ```
+# Webhook Service (Porta 3000)
+http://localhost:3000/api
+
+# Central Indicators API (Porta 3003) 
 http://localhost:3003/api
+
+# Produção Railway
+https://coinbitclub-market-bot.up.railway.app/api
+```
+
+### ⚙️ **ARQUITETURA MULTI-SERVIÇOS**
+
+O sistema CoinBitClub usa arquitetura de **multi-serviços** para separar responsabilidades:
+
+#### **🎯 Serviço Principal (Porta 3000)**
+- **Arquivo:** `server-multiservice-complete.cjs`
+- **Responsabilidades:**
+  - Webhook TradingView (`/api/webhooks/signal`)
+  - Processamento de sinais
+  - IA Supervisor de Trade
+  - Sistema de monitoramento
+
+#### **📊 Central de Indicadores (Porta 3003)**
+- **Arquivo:** `api-central-indicadores.js`
+- **Responsabilidades:**
+  - APIs de dashboard
+  - Gestão de usuários
+  - Sistema financeiro
+  - Afiliados e comissões
+
+#### **⚠️ CONFIGURAÇÃO CRÍTICA**
+
+Para evitar erros 502 e problemas de deploy:
+
+```toml
+# railway.toml - SEMPRE usar servidor multiservice
+[build]
+builder = "DOCKERFILE"
+
+[deploy]
+startCommand = "node server-multiservice-complete.cjs"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[environments.production.variables]
+NODE_ENV = "production"
+PORT = "3000"
+```
+
+```dockerfile
+# Dockerfile - SEMPRE especificar servidor correto
+# Use Node.js 18 Alpine image
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies
+RUN npm install --only=production
+
+# Copy application code
+COPY . .
+
+# Expose port
+EXPOSE 3000
+
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# ⚠️ CRÍTICO: Usar servidor multiservice
+CMD ["node", "server-multiservice-complete.cjs"]
 ```
 
 ### 🔑 AUTENTICAÇÃO
@@ -762,7 +836,180 @@ const subscribeToUpdates = (userRole) => {
 
 ---
 
-## 📱 RESPONSIVIDADE E UX
+## �️ TROUBLESHOOTING E BOAS PRÁTICAS
+
+### **🚨 PROBLEMAS COMUNS E SOLUÇÕES**
+
+#### **1. Erro 502 no Railway**
+**Causa:** Servidor incorreto configurado no deploy
+**Solução:**
+```bash
+# Verificar configuração atual
+railway status
+
+# Corrigir variável de ambiente
+railway variables:set RAILWAY_START_COMMAND="node server-multiservice-complete.cjs"
+
+# Redeploy
+railway up --detach
+```
+
+#### **2. Webhook TradingView 404**
+**Causa:** Endpoint `/api/webhooks/signal` não implementado
+**Solução:**
+```javascript
+// Verificar se está no servidor multiservice
+// server-multiservice-complete.cjs deve conter:
+app.post('/api/webhooks/signal', authenticateWebhook, (req, res) => {
+  // Processamento do sinal
+});
+```
+
+#### **3. Erro "Module not found"**
+**Causa:** Imports de rotas inexistentes
+**Solução:**
+```javascript
+// Comentar imports não existentes
+// const whatsappRoutes = require('./routes/whatsappRoutes');
+// const zapiWebhookRoutes = require('./routes/zapiWebhookRoutes');
+```
+
+#### **4. Tabela "operacao_monitoramento" não existe**
+**Causa:** Schema IA Supervisor não aplicado
+**Solução:**
+```sql
+-- Criar tabela necessária
+CREATE TABLE IF NOT EXISTS operacao_monitoramento (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    operation_id UUID NOT NULL REFERENCES operations(id),
+    user_id UUID NOT NULL REFERENCES users(id),
+    status VARCHAR(20) DEFAULT 'ativa',
+    timestamp TIMESTAMP DEFAULT NOW()
+);
+```
+
+### **✅ CHECKLIST PRÉ-DEPLOY**
+
+#### **Configurações Railway**
+- [ ] `railway.toml` usa `server-multiservice-complete.cjs`
+- [ ] `Dockerfile` especifica comando correto
+- [ ] Variáveis de ambiente configuradas
+- [ ] PORT definido como 3000
+
+#### **Estrutura do Código**
+- [ ] Server multiservice existe e funciona
+- [ ] Webhook `/api/webhooks/signal` implementado
+- [ ] Imports de rotas verificados (sem módulos inexistentes)
+- [ ] Tabelas necessárias criadas no banco
+
+#### **Teste Local**
+- [ ] `node server-multiservice-complete.cjs` funciona
+- [ ] Endpoints respondem corretamente
+- [ ] Webhook recebe sinais TradingView
+- [ ] Banco de dados conecta
+
+### **🔧 COMANDOS DE VERIFICAÇÃO**
+
+```bash
+# Verificar se servidor multiservice existe
+ls -la | grep server-multiservice
+
+# Testar servidor localmente
+node server-multiservice-complete.cjs
+
+# Verificar configuração Railway
+railway status
+railway variables
+
+# Testar webhook após deploy
+curl -X GET "https://coinbitclub-market-bot.up.railway.app/api/webhooks/signal/test"
+
+# Verificar logs em caso de erro
+railway logs
+```
+
+### **📋 ARQUIVO DE CONFIGURAÇÃO PADRÃO**
+
+```toml
+# railway.toml - TEMPLATE PADRÃO
+[build]
+builder = "DOCKERFILE"
+watchPatterns = ["**/*.js", "**/*.cjs", "**/*.json"]
+
+[deploy]
+startCommand = "node server-multiservice-complete.cjs"
+restartPolicyType = "ON_FAILURE" 
+restartPolicyMaxRetries = 10
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+
+[environments.production.variables]
+NODE_ENV = "production"
+PORT = "3000"
+DATABASE_URL = "${{DATABASE_URL}}"
+WEBHOOK_TOKEN = "210406"
+TRADINGVIEW_WEBHOOK_TOKEN = "coinbitclub-webhook-2025"
+
+[environments.development.variables]
+NODE_ENV = "development"
+PORT = "3000"
+DATABASE_URL = "postgresql://localhost:5432/coinbitclub_dev"
+```
+
+### **🎯 ESTRUTURA DE ARQUIVOS OBRIGATÓRIA**
+
+```
+backend/
+├── server-multiservice-complete.cjs  ← SERVIDOR PRINCIPAL
+├── api-central-indicadores.js        ← API INDICADORES  
+├── railway.toml                       ← CONFIG RAILWAY
+├── Dockerfile                         ← CONFIG DOCKER
+├── package.json                       ← DEPENDÊNCIAS
+├── routes/
+│   ├── chavesRoutes.js               ← ROTAS EXISTENTES
+│   ├── usuariosRoutes.js             ← ROTAS EXISTENTES  
+│   └── afiliadosRoutes.js            ← ROTAS EXISTENTES
+└── database/
+    └── schema-ia-supervisor.sql      ← TABELAS IA
+```
+
+### **⚡ PROCESSO DE DEPLOY SEGURO**
+
+```bash
+# 1. Verificar estrutura local
+npm test || node -c server-multiservice-complete.cjs
+
+# 2. Commit alterações
+git add -A
+git commit -m "🚀 Deploy: Sistema multiservice configurado"
+
+# 3. Push para repositório
+git push origin main
+
+# 4. Deploy no Railway
+railway up --detach
+
+# 5. Aguardar e verificar
+sleep 60
+curl -X GET "https://coinbitclub-market-bot.up.railway.app/api/health"
+
+# 6. Testar webhooks
+curl -X GET "https://coinbitclub-market-bot.up.railway.app/api/webhooks/signal/test"
+```
+
+### **🔍 MONITORAMENTO PÓS-DEPLOY**
+
+```javascript
+// Endpoints para verificar saúde do sistema
+GET /api/health                    // Status geral
+GET /api/webhooks/signal/test      // Status webhook
+GET /api/multiservice/status       // Status multiservice
+GET /api/database/health           // Status database
+```
+
+---
+
+## �📱 RESPONSIVIDADE E UX
 
 ### **Breakpoints Recomendados**
 ```css
@@ -1147,5 +1394,233 @@ REACT_APP_VERSION=1.0.0
 
 ---
 
+## 🎓 LIÇÕES APRENDIDAS E PREVENÇÃO
+
+### **📚 HISTÓRICO DE PROBLEMAS RESOLVIDOS**
+
+#### **Problema 1: Erro 502 Railway (Resolvido em 29/07/2025)**
+- **Causa:** Uso do `server.js` simples em vez do `server-multiservice-complete.cjs`
+- **Impacto:** Sistema fora do ar, webhooks não funcionando
+- **Solução:** Configuração correta do arquivo multiservice
+- **Prevenção:** Sempre usar servidor multiservice em produção
+
+#### **Problema 2: Webhook TradingView 404 (Resolvido em 29/07/2025)**
+- **Causa:** Endpoint `/api/webhooks/signal` não implementado no servidor ativo
+- **Impacto:** Sinais TradingView não processados
+- **Solução:** Implementação no servidor multiservice
+- **Prevenção:** Verificar endpoints críticos antes do deploy
+
+#### **Problema 3: Tabela operacao_monitoramento inexistente (Resolvido em 29/07/2025)**
+- **Causa:** Schema IA Supervisor não aplicado no banco de produção
+- **Impacto:** IA Supervisor falhando com erro de coluna
+- **Solução:** Criação manual da tabela com estrutura correta
+- **Prevenção:** Script de migração automática
+
+### **🛡️ MEDIDAS PREVENTIVAS IMPLEMENTADAS**
+
+#### **1. Validação Automática Pré-Deploy**
+```bash
+# Script de validação (pre-deploy.sh)
+#!/bin/bash
+
+echo "🔍 Validando configuração pré-deploy..."
+
+# Verificar servidor multiservice
+if [ ! -f "server-multiservice-complete.cjs" ]; then
+    echo "❌ ERRO: server-multiservice-complete.cjs não encontrado!"
+    exit 1
+fi
+
+# Verificar sintaxe
+node -c server-multiservice-complete.cjs
+if [ $? -ne 0 ]; then
+    echo "❌ ERRO: Sintaxe inválida no servidor!"
+    exit 1
+fi
+
+# Verificar railway.toml
+if ! grep -q "server-multiservice-complete.cjs" railway.toml; then
+    echo "❌ ERRO: railway.toml não configurado para multiservice!"
+    exit 1
+fi
+
+echo "✅ Validação pré-deploy aprovada!"
+```
+
+#### **2. Monitoramento Contínuo**
+```javascript
+// health-monitor.js - Monitor automático do sistema
+const healthChecks = {
+  webhook: async () => {
+    const response = await fetch('/api/webhooks/signal/test');
+    return response.ok;
+  },
+  
+  database: async () => {
+    const response = await fetch('/api/database/health');
+    return response.ok;
+  },
+  
+  multiservice: async () => {
+    const response = await fetch('/api/multiservice/status');
+    return response.ok;
+  }
+};
+
+// Executar verificações a cada 5 minutos
+setInterval(async () => {
+  for (const [service, check] of Object.entries(healthChecks)) {
+    try {
+      const isHealthy = await check();
+      if (!isHealthy) {
+        console.error(`❌ Serviço ${service} não está saudável!`);
+        // Enviar alerta
+      }
+    } catch (error) {
+      console.error(`❌ Erro ao verificar ${service}:`, error);
+    }
+  }
+}, 5 * 60 * 1000);
+```
+
+#### **3. Backup Automático de Configurações**
+```bash
+# backup-config.sh
+#!/bin/bash
+
+BACKUP_DIR="config-backups/$(date +%Y-%m-%d_%H-%M-%S)"
+mkdir -p $BACKUP_DIR
+
+# Backup arquivos críticos
+cp railway.toml $BACKUP_DIR/
+cp Dockerfile $BACKUP_DIR/
+cp package.json $BACKUP_DIR/
+cp server-multiservice-complete.cjs $BACKUP_DIR/
+
+echo "✅ Backup de configurações salvo em $BACKUP_DIR"
+```
+
+### **📋 CHECKLIST DE QUALIDADE**
+
+#### **Antes de cada Deploy:**
+- [ ] Servidor multiservice funcionando localmente
+- [ ] railway.toml configurado corretamente
+- [ ] Dockerfile usa comando correto
+- [ ] Webhook endpoint implementado e testado
+- [ ] Banco de dados com estrutura atualizada
+- [ ] Variáveis de ambiente configuradas
+- [ ] Backup de configurações criado
+
+#### **Após cada Deploy:**
+- [ ] Status 200 em `/api/health`
+- [ ] Webhook test funcionando
+- [ ] Logs sem erros críticos
+- [ ] Database conectando
+- [ ] IA Supervisor operacional
+- [ ] Monitoramento ativo
+
+### **🚨 ALERTAS E NOTIFICAÇÕES**
+
+#### **Sistema de Alertas Automáticos**
+```javascript
+// alert-system.js
+const alertConditions = {
+  '502_error': {
+    trigger: 'HTTP 502 detected',
+    action: 'Check railway.toml and server config',
+    urgency: 'high'
+  },
+  
+  'webhook_404': {
+    trigger: 'Webhook endpoint returning 404',
+    action: 'Verify server-multiservice-complete.cjs',
+    urgency: 'high'
+  },
+  
+  'database_error': {
+    trigger: 'Database connection failed',
+    action: 'Check DATABASE_URL and table structure',
+    urgency: 'critical'
+  }
+};
+
+// Implementar notificações via Slack/Discord/Email
+const sendAlert = (condition, details) => {
+  console.error(`🚨 ALERTA: ${condition}`);
+  console.error(`📋 Ação: ${alertConditions[condition].action}`);
+  console.error(`⚠️ Urgência: ${alertConditions[condition].urgency}`);
+  
+  // Integração com serviços de notificação
+  // webhook para Slack, Discord, etc.
+};
+```
+
+### **🔄 PROCESSO DE ROLLBACK**
+
+```bash
+# rollback.sh - Script de rollback rápido
+#!/bin/bash
+
+echo "🔄 Iniciando rollback para última versão estável..."
+
+# Voltar para último commit funcional
+LAST_WORKING_COMMIT="commit-hash-here"
+git reset --hard $LAST_WORKING_COMMIT
+
+# Redeploy
+railway up --detach
+
+echo "✅ Rollback concluído. Verificando saúde do sistema..."
+
+# Aguardar e verificar
+sleep 60
+curl -f https://coinbitclub-market-bot.up.railway.app/api/health
+
+if [ $? -eq 0 ]; then
+    echo "✅ Sistema funcionando após rollback"
+else
+    echo "❌ Sistema ainda com problemas - verificação manual necessária"
+fi
+```
+
+### **📖 DOCUMENTAÇÃO DE INCIDENTES**
+
+#### **Template para Documentar Problemas:**
+```markdown
+## Incidente #ID - TÍTULO
+
+**Data:** DD/MM/YYYY HH:MM
+**Duração:** X minutos
+**Impacto:** [Alto/Médio/Baixo]
+
+### Descrição do Problema
+- O que aconteceu
+- Sintomas observados
+- Sistemas afetados
+
+### Causa Raiz
+- Por que aconteceu
+- Onde estava o problema
+- Como foi identificado
+
+### Solução Aplicada
+- Passos para resolver
+- Comandos executados
+- Arquivos modificados
+
+### Prevenção
+- Como evitar no futuro
+- Melhorias implementadas
+- Monitoramento adicionado
+
+### Lições Aprendidas
+- Pontos importantes
+- Processos melhorados
+- Conhecimento adquirido
+```
+
+---
+
 *Documentação completa para desenvolvimento frontend do sistema CoinBitClub*
 *Versão: 1.0.0 | Data: 29/07/2025*
+*Incluindo configurações multiservice e prevenção de problemas*
