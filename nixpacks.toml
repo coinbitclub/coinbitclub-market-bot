@@ -1,0 +1,8 @@
+[variables]
+NPM_CONFIG_PACKAGE_LOCK = "false"
+
+[phases.build]
+cmds = ["chmod +x build.sh", "./build.sh"]
+
+[start]
+cmd = "node main.js"
