@@ -11,6 +11,8 @@ import {
   MobileNav, MobileCard, ResponsiveGrid, MobileInput,
   MobileButton, MobileModal, MobileTabs, MobileAlert
 } from '../../components/mobile/MobileComponents';
+import RobotOperationTimeline from '../../src/components/trading/RobotOperationTimeline';
+import CompactRobotStatus from '../../src/components/trading/CompactRobotStatus';
 
 interface DashboardData {
   timestamp: string;
@@ -511,6 +513,15 @@ export default function ExecutiveDashboard() {
                 </div>
               </div>
             </MobileCard>
+
+            {/* Timeline do Robô - Seção Premium */}
+            <div className="mb-6 lg:mb-8">
+              <RobotOperationTimeline 
+                isActive={systemStatus === 'active'} 
+                speed="normal"
+                compact={false}
+              />
+            </div>
 
             {/* Métricas Principais - Mobile/Desktop Responsive */}
             <div className="mb-6 lg:mb-8">

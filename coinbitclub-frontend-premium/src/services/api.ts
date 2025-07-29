@@ -383,44 +383,6 @@ export const apiUtils = {
   }
 };
 
-// Export da instância principal
-export default api;
-  }
-);
-
-// 🔄 Interceptor para tratar respostas e erros
-api.interceptors.response.use(
-  (response) => {
-    console.log(`✅ API Response: ${response.status} ${response.config.url}`);
-    return response;
-  },
-  (error) => {
-    const status = error.response?.status;
-    const url = error.config?.url;
-    
-    console.error(`❌ API Error: ${status} ${url}`, error.response?.data);
-    
-    if (status === 401) {
-      console.log('🔓 Token expirado, redirecionando para login...');
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('admin_token');
-        sessionStorage.removeItem('auth_token');
-        
-        // Redirecionar baseado na rota atual
-        const currentPath = window.location.pathname;
-        if (currentPath.includes('/admin')) {
-          window.location.href = '/admin/login';
-        } else {
-          window.location.href = '/login';
-        }
-      }
-    }
-    
-    return Promise.reject(error);
-  }
-);
-
 // ============================================================================
 // 🔍 SERVIÇOS DE SISTEMA E SAÚDE
 // ============================================================================
@@ -852,6 +814,20 @@ export const expenseService = {
   async create(data: any) {
     return api.post('/api/operations', data);
   }
+};
+
+// Export unificado de todos os serviços
+export const apiServices = {
+  auth: authService,
+  user: userService,
+  dashboard: dashboardService,
+  operations: signalsService,
+  affiliate: affiliateService,
+  subscription: subscriptionService,
+  notification: notificationService,
+  admin: adminService,
+  system: systemService,
+  financial: expenseService
 };
 
 // Export principal da API

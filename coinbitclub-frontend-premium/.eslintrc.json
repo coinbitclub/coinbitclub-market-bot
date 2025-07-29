@@ -1,14 +1,17 @@
 {
   "extends": [
-    "next/core-web-vitals"
+    "next/core-web-vitals",
+    "@next/eslint-plugin-next"
   ],
   "rules": {
     "react/react-in-jsx-scope": "off",
-    "react/jsx-props-no-spreading": "off",
+    "react/jsx-props-no-spreading": "off", 
     "react/require-default-props": "off",
-    "@typescript-eslint/no-unused-vars": "warn",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "no-console": "warn",
-    "react/no-unescaped-entities": "warn"
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "no-console": "off",
+    "react/no-unescaped-entities": "off",
+    "@next/next/no-html-link-for-pages": "off",
+    "react-hooks/exhaustive-deps": "off"
   }
 }

@@ -20,14 +20,14 @@ const LoginPremiumPage: NextPage = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       const redirectMap = {
-        admin: '/admin/dashboard',
-        affiliate: '/affiliate/dashboard',
-        user: '/dashboard',
-        operator: '/operator/dashboard',
-        manager: '/manager/dashboard'
+        ADMIN: '/admin/dashboard',
+        GESTOR: '/gestor/dashboard',
+        OPERADOR: '/operador/dashboard',
+        AFILIADO: '/affiliate/dashboard',
+        USUARIO: '/user/dashboard'
       };
       
-      const redirectPath = redirectMap[user.role] || '/dashboard';
+      const redirectPath = redirectMap[user.role as keyof typeof redirectMap] || '/user/dashboard';
       router.replace(redirectPath);
     }
   }, [isAuthenticated, user, router]);

@@ -6,6 +6,8 @@ import {
   FiUser, FiShield, FiZap, FiTarget, FiArrowUp, FiArrowDown,
   FiCreditCard, FiWifi, FiCalendar, FiPercent, FiBell
 } from 'react-icons/fi';
+import RobotOperationTimeline from '../../src/components/trading/RobotOperationTimeline';
+import CompactRobotStatus from '../../src/components/trading/CompactRobotStatus';
 
 interface UserDashboardData {
   user: {
@@ -207,6 +209,15 @@ export default function UserDashboard() {
 
           {/* Content */}
           <main className="p-8 bg-black min-h-screen">
+            {/* Timeline do Robô */}
+            <div className="mb-8">
+              <RobotOperationTimeline 
+                isActive={true} 
+                speed="normal"
+                compact={false}
+              />
+            </div>
+
             {/* Performance Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="bg-black/80 backdrop-blur-sm rounded-xl p-6 border-2 border-green-400/50 shadow-[0_0_20px_rgba(34,197,94,0.3)]">

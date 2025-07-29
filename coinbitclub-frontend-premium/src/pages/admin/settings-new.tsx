@@ -399,11 +399,11 @@ export default function SystemSettings() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {renderInput('default_commission_rate', 'Comissão Padrão (%)', 'number', '10')}
+                      {renderInput('default_commission_rate', 'Comissão Padrão (%)', 'number', '1.5')}
                       {renderInput('minimum_payout', 'Pagamento Mínimo (USD)', 'number', '100')}
                       {renderInput('cookie_duration_days', 'Duração Cookie (dias)', 'number', '30')}
-                      {renderInput('tier_2_commission', 'Comissão Nível 2 (%)', 'number', '5')}
-                      {renderInput('tier_3_commission', 'Comissão Nível 3 (%)', 'number', '2')}
+                      {renderInput('tier_2_commission', 'Comissão Nível 2 (%)', 'number', '1.5')}
+                      {renderInput('tier_3_commission', 'Comissão Nível 3 (%)', 'number', '1.5')}
                     </div>
                   </div>
                 )}

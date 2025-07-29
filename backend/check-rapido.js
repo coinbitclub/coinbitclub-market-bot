@@ -8,7 +8,7 @@ async function quickCheck() {
     console.log('⚡ VERIFICAÇÃO RÁPIDA DO RAILWAY...');
     console.log('==================================');
     
-    const url = 'https://coinbitclub-market-bot-production.up.railway.app/health';
+    const URL = 'https://coinbitclub-market-bot.up.railway.app/health';
     
     return new Promise((resolve) => {
         console.log(`🔍 Testando: ${url}`);

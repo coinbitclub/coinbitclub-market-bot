@@ -97,7 +97,7 @@ export default function AffiliatesManagementStandalone() {
             active_referrals: 12,
             total_commission: 2450.75,
             this_month_commission: 450.30,
-            commission_rate: 10.0,
+            commission_rate: 1.5,
             level: 2,
             total_volume: 24507.50
           },
@@ -115,7 +115,7 @@ export default function AffiliatesManagementStandalone() {
             active_referrals: 6,
             total_commission: 1280.40,
             this_month_commission: 280.15,
-            commission_rate: 8.0,
+            commission_rate: 1.5,
             level: 1,
             total_volume: 16005.00
           },
@@ -133,7 +133,7 @@ export default function AffiliatesManagementStandalone() {
             active_referrals: 1,
             total_commission: 189.25,
             this_month_commission: 0.00,
-            commission_rate: 5.0,
+            commission_rate: 1.5,
             level: 1,
             total_volume: 3785.00
           },
@@ -151,7 +151,7 @@ export default function AffiliatesManagementStandalone() {
             active_referrals: 22,
             total_commission: 4890.80,
             this_month_commission: 890.50,
-            commission_rate: 12.0,
+            commission_rate: 1.5,
             level: 3,
             total_volume: 40756.67
           }

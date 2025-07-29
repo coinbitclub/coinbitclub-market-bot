@@ -95,7 +95,7 @@ export default function AffiliatesManagement() {
           lastLogin: '2024-01-20 14:30:00',
           referralCode: 'MARCOS2024',
           referralLink: 'https://coinbitclub.com/r/MARCOS2024',
-          commissionRate: 5.0,
+          commissionRate: 1.5,
           totalCommissions: 15000.00,
           paidCommissions: 12000.00,
           pendingCommissions: 3000.00,
@@ -537,7 +537,7 @@ export default function AffiliatesManagement() {
                   status: 'active',
                   registrationDate: new Date().toISOString().split('T')[0],
                   lastLogin: '',
-                  commissionRate: formData.get('type') === 'vip' ? 5.0 : 1.5
+                  commissionRate: 1.5
                 });
               }}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

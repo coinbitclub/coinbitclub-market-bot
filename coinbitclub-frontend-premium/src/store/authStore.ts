@@ -1,11 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export type UserRole = 'ADMIN' | 'GESTOR' | 'OPERADOR' | 'AFILIADO' | 'USUARIO';
+
 interface User {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'user' | 'affiliate' | 'operator' | 'manager';
+  role: UserRole;
+  access_level: number;
+  permissions: string[];
   profile?: {
     avatar?: string;
     phone?: string;
@@ -13,6 +17,24 @@ interface User {
     timezone?: string;
   };
 }
+
+// Configuração de rotas por perfil
+const ROLE_ROUTES = {
+  ADMIN: ['/admin/**'],
+  GESTOR: ['/gestor/**', '/admin/operations', '/admin/affiliates'],  
+  OPERADOR: ['/operador/**'],
+  AFILIADO: ['/affiliate/**'],
+  USUARIO: ['/user/**']
+};
+
+// Permissões por perfil
+const ROLE_PERMISSIONS = {
+  ADMIN: ['view_all', 'financial_data', 'user_management', 'system_config', 'affiliate_data'],
+  GESTOR: ['view_operations', 'financial_data', 'user_data', 'affiliate_data'],
+  OPERADOR: ['view_operations', 'basic_financial', 'user_data'],
+  AFILIADO: ['view_own_data', 'affiliate_earnings', 'referral_data'],
+  USUARIO: ['view_own_operations']
+};
 
 interface AuthState {
   // Estado
@@ -28,6 +50,11 @@ interface AuthState {
   refreshToken: () => Promise<void>;
   setUser: (user: User) => void;
   clearError: () => void;
+  
+  // Novas ações para controle de acesso
+  hasPermission: (permission: string) => boolean;
+  canAccessRoute: (route: string) => boolean;
+  getDashboardRoute: () => string;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -149,6 +176,47 @@ export const useAuthStore = create<AuthState>()(
       clearError: () => {
         set({ error: null });
       },
+      
+      // Verificar permissões
+      hasPermission: (permission: string) => {
+        const { user } = get();
+        if (!user) return false;
+        
+        const rolePermissions = ROLE_PERMISSIONS[user.role] || [];
+        return rolePermissions.includes(permission) || (user.permissions && user.permissions.includes(permission));
+      },
+      
+      // Verificar acesso a rota
+      canAccessRoute: (route: string) => {
+        const { user } = get();
+        if (!user) return false;
+        
+        const allowedRoutes = ROLE_ROUTES[user.role] || [];
+        
+        return allowedRoutes.some(allowedRoute => {
+          if (allowedRoute.endsWith('/**')) {
+            const basePath = allowedRoute.slice(0, -3);
+            return route.startsWith(basePath);
+          }
+          return route === allowedRoute;
+        });
+      },
+      
+      // Obter rota do dashboard por perfil
+      getDashboardRoute: () => {
+        const { user } = get();
+        if (!user) return '/auth/login';
+        
+        const dashboardRoutes = {
+          ADMIN: '/admin/dashboard',
+          GESTOR: '/gestor/dashboard',
+          OPERADOR: '/operador/dashboard', 
+          AFILIADO: '/affiliate/dashboard',
+          USUARIO: '/user/dashboard'
+        };
+        
+        return dashboardRoutes[user.role] || '/user/dashboard';
+      },
     }),
     {
       name: 'coinbitclub-auth',
@@ -167,12 +235,16 @@ export const useAuth = () => {
   
   return {
     ...store,
-    // Computed properties
-    isAdmin: store.user?.role === 'admin',
-    isAffiliate: store.user?.role === 'affiliate',
-    isUser: store.user?.role === 'user',
+    // Computed properties atualizadas para os 5 perfis
+    isAdmin: store.user?.role === 'ADMIN',
+    isGestor: store.user?.role === 'GESTOR',
+    isOperador: store.user?.role === 'OPERADOR',
+    isAffiliate: store.user?.role === 'AFILIADO',
+    isUser: store.user?.role === 'USUARIO',
     userRole: store.user?.role,
     userName: store.user?.name || 'Usuário',
     userEmail: store.user?.email,
+    userAccessLevel: store.user?.access_level || 1,
+    userPermissions: store.user?.permissions || [],
   };
 };

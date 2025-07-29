@@ -80,7 +80,7 @@ console.log('');
 console.log('🔍 VERIFICAÇÃO RECOMENDADA:');
 console.log('');
 console.log('Execute: node check-rapido.js');
-console.log('URL: https://coinbitclub-market-bot-production.up.railway.app/health');
+console.log('URL: https://coinbitclub-market-bot.up.railway.app/health');
 console.log('');
 console.log('Quando estiver 200 OK:');
 console.log('1. Acessar: /control');

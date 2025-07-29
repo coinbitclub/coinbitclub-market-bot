@@ -13,3 +13,8 @@ const Page: NextPage = () => {
 };
 
 export default Page;
+    </div>
+  );
+};
+
+export default Page;

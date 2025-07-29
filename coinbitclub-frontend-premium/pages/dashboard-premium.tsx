@@ -4,6 +4,8 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useAuth } from '../src/store/authStore';
 import { DashboardService } from '../src/services/api';
+import RobotOperationTimeline from '../src/components/trading/RobotOperationTimeline';
+import CompactRobotStatus from '../src/components/trading/CompactRobotStatus';
 
 interface DashboardData {
   usuario?: {
@@ -180,6 +182,15 @@ const DashboardPage: NextPage = () => {
 
         {/* Main Content */}
         <main className="p-6">
+          {/* Timeline do Robô */}
+          <div className="mb-8">
+            <RobotOperationTimeline 
+              isActive={true} 
+              speed="normal"
+              compact={false}
+            />
+          </div>
+
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6">

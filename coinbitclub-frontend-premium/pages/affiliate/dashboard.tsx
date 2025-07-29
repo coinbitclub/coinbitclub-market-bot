@@ -96,7 +96,7 @@ export default function AffiliateDashboard() {
       level: 3,
       total_referrals: 47,
       active_referrals: 32,
-      commission_rate: 25.0,
+      commission_rate: 1.5,
       bonus_rate: 5.0,
       total_earned: 18547.80,
       pending_commission: 1247.50,
