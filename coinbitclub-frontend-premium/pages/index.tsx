@@ -1,9 +1,51 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useAuth } from '../src/store/authStore';
 
 const LandingPage: NextPage = () => {
+  const router = useRouter();
+  const { isAuthenticated, user, loading } = useAuth();
+
+  useEffect(() => {
+    // Se o usuário já estiver autenticado, redirecionar para o dashboard
+    if (!loading && isAuthenticated && user) {
+      const redirectMap = {
+        admin: '/admin/dashboard',
+        affiliate: '/affiliate/dashboard',
+        user: '/dashboard-premium',
+        operator: '/operator/dashboard',
+        manager: '/manager/dashboard'
+      };
+      
+      const redirectPath = redirectMap[user.role] || '/dashboard-premium';
+      router.replace(redirectPath);
+    }
+  }, [isAuthenticated, user, loading, router]);
+
+  // Se estiver carregando ou autenticado, mostrar loading
+  if (loading || (isAuthenticated && user)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+          <div className="mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center text-black font-bold text-xl mx-auto mb-4">
+              ₿
+            </div>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 bg-clip-text text-transparent">
+              CoinBitClub
+            </h1>
+          </div>
+          <p className="text-white mb-2">Redirecionando para Dashboard...</p>
+          <p className="text-gray-400 text-sm">Sistema premium carregando</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <Head>
@@ -43,7 +85,7 @@ const LandingPage: NextPage = () => {
             alignItems: 'center',
             flexWrap: 'wrap',
           }}>
-            <Link href="/auth/login" style={{
+            <Link href="/auth/login-premium" style={{
               padding: '0.75rem 1.5rem',
               borderRadius: '12px',
               border: '2px solid #00BFFF',
@@ -57,7 +99,7 @@ const LandingPage: NextPage = () => {
               display: 'inline-block',
               textAlign: 'center',
             }}>
-              🔑 LOGIN
+              🔑 LOGIN PREMIUM
             </Link>
             <Link href="/auth/register" style={{
               padding: '0.75rem 1.5rem',
