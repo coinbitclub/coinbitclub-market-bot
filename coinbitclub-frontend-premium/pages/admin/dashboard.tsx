@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { PremiumLayout } from '../../src/components/layout/PremiumLayout';
+import PremiumLayout from '../../src/components/Layout/PremiumLayout';
 import { useAuth } from '../../src/store/authStore';
 import { apiServices } from '../../src/services/api';
 

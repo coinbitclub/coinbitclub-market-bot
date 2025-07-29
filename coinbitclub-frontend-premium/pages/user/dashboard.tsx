@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NextPage } from 'next';
-import { UserLayout } from '../../src/components/layout/UserLayout';
+import UserLayout from '../../src/components/Layout/UserLayout';
 import RobotOperationTimeline from '../../src/components/trading/RobotOperationTimeline';
 import CompactRobotStatus from '../../src/components/trading/CompactRobotStatus';
 import { 

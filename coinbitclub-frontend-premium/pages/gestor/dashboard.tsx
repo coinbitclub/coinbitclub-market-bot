@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import GestorLayout from '../../src/components/layout/GestorLayout';
+import GestorLayout from '../../src/components/Layout/GestorLayout';
 import RobotOperationTimeline from '../../src/components/trading/RobotOperationTimeline';
 import CompactRobotStatus from '../../src/components/trading/CompactRobotStatus';
 import { 

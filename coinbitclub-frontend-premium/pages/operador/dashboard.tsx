@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import OperadorLayout from '../../src/components/layout/OperadorLayout';
+import OperadorLayout from '../../src/components/Layout/OperadorLayout';
 import RobotOperationTimeline from '../../src/components/trading/RobotOperationTimeline';
 import CompactRobotStatus from '../../src/components/trading/CompactRobotStatus';
 import { 
