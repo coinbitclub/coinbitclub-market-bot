@@ -1,5 +1,8 @@
 [variables]
 NPM_CONFIG_PACKAGE_LOCK = "false"
 
-[phases.install]
-cmds = ["npm install"]
+[phases.build]
+cmds = ["chmod +x build.sh", "./build.sh"]
+
+[start]
+cmd = "node main.js"

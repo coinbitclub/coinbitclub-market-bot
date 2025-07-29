@@ -1,10 +1,11 @@
 {
   "name": "coinbitclub-market-bot",
-  "version": "3.0.0",
+  "version": "3.0.191306",
   "description": "CoinBitClub Market Bot V3",
   "main": "main.js",
   "scripts": {
-    "start": "node main.js"
+    "start": "node main.js",
+    "build": "./build.sh"
   },
   "engines": {
     "node": "18.x"
