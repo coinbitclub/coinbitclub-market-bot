@@ -1,0 +1,189 @@
+VARIAVEIS COMPLETAS PARA RAILWAY DASHBOARD - SISTEMA COINBITCLUB V3
+====================================================================
+
+INSTRUCOES:
+1. Acesse Railway Dashboard
+2. Va em Settings > Variables  
+3. Clique "Add Variable" para cada uma abaixo
+4. Copie o NOME e VALOR exatamente como esta
+
+====================================================================
+
+=== GRUPO 1: CONFIGURACOES BASICAS (OBRIGATORIAS) ===
+
+NOME: DATABASE_URL
+VALOR: postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway
+
+NOME: NODE_ENV
+VALOR: production
+
+NOME: PORT
+VALOR: 3000
+
+NOME: JWT_SECRET
+VALOR: coinbitclub-production-secret-2025-ultra-secure
+
+NOME: ENCRYPTION_KEY
+VALOR: coinbitclub-encryption-key-production-2025
+
+NOME: SESSION_SECRET
+VALOR: coinbitclub-session-secret-2025-ultra-secure
+
+NOME: WEBHOOK_SECRET
+VALOR: coinbitclub-webhook-secret-2025
+
+=== GRUPO 2: SISTEMA DE TRADING ===
+
+NOME: SISTEMA_MULTIUSUARIO
+VALOR: true
+
+NOME: MODO_HIBRIDO
+VALOR: true
+
+NOME: DEFAULT_LEVERAGE
+VALOR: 10
+
+NOME: DEFAULT_RISK_PERCENTAGE
+VALOR: 2
+
+NOME: MAX_CONCURRENT_TRADES
+VALOR: 5
+
+=== GRUPO 3: FRONTEND E CORS ===
+
+NOME: CORS_ORIGIN
+VALOR: https://coinbitclub-market-bot.vercel.app
+
+NOME: FRONTEND_URL
+VALOR: https://coinbitclub-market-bot.vercel.app
+
+NOME: BACKEND_URL
+VALOR: [SUBSTITUA_PELA_URL_DO_SEU_PROJETO]
+
+=== GRUPO 4: EXCHANGES (OBRIGATORIAS PARA TRADING REAL) ===
+
+NOME: BINANCE_API_KEY
+VALOR: [CONFIGURAR_COM_SUA_CHAVE_BINANCE]
+
+NOME: BINANCE_SECRET_KEY
+VALOR: [CONFIGURAR_COM_SEU_SECRET_BINANCE]
+
+NOME: BYBIT_API_KEY
+VALOR: [CONFIGURAR_COM_SUA_CHAVE_BYBIT]
+
+NOME: BYBIT_SECRET_KEY
+VALOR: [CONFIGURAR_COM_SEU_SECRET_BYBIT]
+
+=== GRUPO 5: FEAR & GREED INDEX E INDICADORES ===
+
+NOME: COINSTATS_API_KEY
+VALOR: [OBTER_EM_COINSTATS.APP]
+
+NOME: FEAR_GREED_API_URL
+VALOR: https://api.alternative.me/fng/
+
+NOME: COINMARKETCAP_API_KEY
+VALOR: [OPCIONAL_COINMARKETCAP]
+
+=== GRUPO 6: NOTIFICACOES SMS (TWILIO) ===
+
+NOME: TWILIO_ACCOUNT_SID
+VALOR: [SEU_TWILIO_ACCOUNT_SID]
+
+NOME: TWILIO_AUTH_TOKEN
+VALOR: [SEU_TWILIO_AUTH_TOKEN]
+
+NOME: TWILIO_PHONE_NUMBER
+VALOR: [SEU_NUMERO_TWILIO]
+
+=== GRUPO 7: PAGAMENTOS (STRIPE) ===
+
+NOME: STRIPE_SECRET_KEY
+VALOR: [SUA_CHAVE_STRIPE_SECRETA]
+
+NOME: STRIPE_PUBLISHABLE_KEY
+VALOR: [SUA_CHAVE_STRIPE_PUBLICA]
+
+NOME: STRIPE_WEBHOOK_SECRET
+VALOR: [SEU_WEBHOOK_SECRET_STRIPE]
+
+=== GRUPO 8: TELEGRAM E NOTIFICACOES ===
+
+NOME: TELEGRAM_BOT_TOKEN
+VALOR: [SEU_BOT_TOKEN_TELEGRAM]
+
+NOME: TELEGRAM_CHAT_ID
+VALOR: [SEU_CHAT_ID_TELEGRAM]
+
+=== GRUPO 9: EMAIL (SMTP) ===
+
+NOME: SMTP_HOST
+VALOR: [SEU_SMTP_HOST]
+
+NOME: SMTP_PORT
+VALOR: 587
+
+NOME: SMTP_USER
+VALOR: [SEU_USUARIO_EMAIL]
+
+NOME: SMTP_PASS
+VALOR: [SUA_SENHA_EMAIL]
+
+=== GRUPO 10: IA E PROCESSAMENTO ===
+
+NOME: OPENAI_API_KEY
+VALOR: [SUA_CHAVE_OPENAI]
+
+NOME: AI_GUARDIAN_ENABLED
+VALOR: true
+
+=== GRUPO 11: RATE LIMITING E SEGURANCA ===
+
+NOME: RATE_LIMIT_WINDOW_MS
+VALOR: 900000
+
+NOME: RATE_LIMIT_MAX_REQUESTS
+VALOR: 100
+
+NOME: LOG_LEVEL
+VALOR: info
+
+NOME: LOG_FORMAT
+VALOR: json
+
+NOME: HEALTH_CHECK_PATH
+VALOR: /health
+
+NOME: METRICS_PATH
+VALOR: /metrics
+
+====================================================================
+
+RESUMO TOTAL:
+- GRUPO 1 (Básicas): 7 variáveis - OBRIGATÓRIAS 
+- GRUPO 2 (Trading): 5 variáveis - OBRIGATÓRIAS
+- GRUPO 3 (Frontend): 3 variáveis - OBRIGATÓRIAS  
+- GRUPO 4 (Exchanges): 4 variáveis - OBRIGATÓRIAS PARA TRADING
+- GRUPO 5 (Indicadores): 3 variáveis - OBRIGATÓRIAS PARA FEAR&GREED
+- GRUPO 6 (SMS): 3 variáveis - OPCIONAIS
+- GRUPO 7 (Pagamentos): 3 variáveis - OPCIONAIS
+- GRUPO 8 (Telegram): 2 variáveis - OPCIONAIS  
+- GRUPO 9 (Email): 4 variáveis - OPCIONAIS
+- GRUPO 10 (IA): 2 variáveis - OPCIONAIS
+- GRUPO 11 (Segurança): 6 variáveis - RECOMENDADAS
+
+TOTAL: 42 variáveis (18 obrigatórias + 24 opcionais)
+
+PRIORIDADE DE CONFIGURACAO:
+1. Configure GRUPOS 1-3 primeiro (sistema básico funciona)
+2. Configure GRUPO 5 para Fear & Greed Index funcionar  
+3. Configure GRUPO 4 para trading real
+4. Configure outros grupos conforme necessário
+
+APOS CONFIGURAR GRUPOS 1-3 e 5:
+- Sistema funcionará com Fear & Greed Index
+- Painel de controle disponível
+- Indicadores de mercado ativos
+- Só faltará trading real (precisa GRUPO 4)
+
+====================================================================

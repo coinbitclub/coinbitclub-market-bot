@@ -1,0 +1,147 @@
+VARIAVEIS PARA COPIAR E COLAR NO RAILWAY DASHBOARD
+==================================================
+
+INSTRUCOES:
+1. Acesse Railway Dashboard
+2. Va em Settings > Variables  
+3. Clique "Add Variable" para cada uma abaixo
+4. Copie o NOME e VALOR exatamente como esta
+
+==================================================
+
+NOME: DATABASE_URL
+VALOR: postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway
+
+NOME: NODE_ENV
+VALOR: production
+
+NOME: PORT
+VALOR: 3000
+
+NOME: JWT_SECRET
+VALOR: coinbitclub-production-secret-2025-ultra-secure
+
+NOME: ENCRYPTION_KEY
+VALOR: coinbitclub-encryption-key-production-2025
+
+NOME: SESSION_SECRET
+VALOR: coinbitclub-session-secret-2025-ultra-secure
+
+NOME: WEBHOOK_SECRET
+VALOR: coinbitclub-webhook-secret-2025
+
+NOME: SISTEMA_MULTIUSUARIO
+VALOR: true
+
+NOME: MODO_HIBRIDO
+VALOR: true
+
+NOME: DEFAULT_LEVERAGE
+VALOR: 10
+
+NOME: DEFAULT_RISK_PERCENTAGE
+VALOR: 2
+
+NOME: MAX_CONCURRENT_TRADES
+VALOR: 5
+
+NOME: CORS_ORIGIN
+VALOR: https://coinbitclub-market-bot.vercel.app
+
+NOME: FRONTEND_URL
+VALOR: https://coinbitclub-market-bot.vercel.app
+
+NOME: BACKEND_URL
+VALOR: https://coinbitclub-market-bot.up.railway.app
+
+==================================================
+VARIAVEIS DE INTEGRACAO COM SERVICOS EXTERNOS
+==================================================
+
+NOME: BINANCE_API_KEY
+VALOR: [CONFIGURAR_COM_CHAVE_REAL_BINANCE]
+
+NOME: BINANCE_SECRET_KEY
+VALOR: [CONFIGURAR_COM_SECRET_REAL_BINANCE]
+
+NOME: BYBIT_API_KEY
+VALOR: [CONFIGURAR_COM_CHAVE_REAL_BYBIT]
+
+NOME: BYBIT_SECRET_KEY
+VALOR: [CONFIGURAR_COM_SECRET_REAL_BYBIT]
+
+NOME: TWILIO_ACCOUNT_SID
+VALOR: [SE_TEM_SMS_CONFIGURADO]
+
+NOME: TWILIO_AUTH_TOKEN
+VALOR: [SE_TEM_SMS_CONFIGURADO]
+
+NOME: TWILIO_PHONE_NUMBER
+VALOR: [SE_TEM_SMS_CONFIGURADO]
+
+NOME: STRIPE_SECRET_KEY
+VALOR: [SE_TEM_PAGAMENTOS_CONFIGURADO]
+
+NOME: STRIPE_PUBLISHABLE_KEY
+VALOR: [SE_TEM_PAGAMENTOS_CONFIGURADO]
+
+NOME: TELEGRAM_BOT_TOKEN
+VALOR: [SE_TEM_TELEGRAM_CONFIGURADO]
+
+NOME: TELEGRAM_CHAT_ID
+VALOR: [SE_TEM_TELEGRAM_CONFIGURADO]
+
+NOME: OPENAI_API_KEY
+VALOR: [SE_TEM_IA_CONFIGURADO]
+
+==================================================
+VARIAVEIS AVANCADAS DE SISTEMA
+==================================================
+
+NOME: RATE_LIMIT_WINDOW_MS
+VALOR: 900000
+
+NOME: RATE_LIMIT_MAX_REQUESTS
+VALOR: 100
+
+NOME: LOG_LEVEL
+VALOR: info
+
+NOME: LOG_FORMAT
+VALOR: json
+
+NOME: HEALTH_CHECK_PATH
+VALOR: /health
+
+NOME: METRICS_PATH
+VALOR: /metrics
+
+NOME: JWT_EXPIRES_IN
+VALOR: 24h
+
+NOME: DB_SSL
+VALOR: true
+
+NOME: DB_POOL_MIN
+VALOR: 2
+
+NOME: DB_POOL_MAX
+VALOR: 10
+
+==================================================
+
+TOTAL COMPLETO: 36 variaveis (15 principais + 21 extras)
+
+ORDEM DE CONFIGURACAO:
+1. PRIMEIRO: 15 variaveis principais (essenciais)
+2. SEGUNDO: Chaves exchanges (BINANCE/BYBIT) - OBRIGATORIO para trading
+3. TERCEIRO: Outras integracoes (SMS, Pagamentos, etc) - OPCIONAL
+4. QUARTO: Variaveis avancadas - OPCIONAL
+
+APOS ADICIONAR AS 15 PRINCIPAIS:
+- Deploy automatico em 2-3 minutos
+- Testar com: node testar-novo-projeto.js [nova-url]
+- Sistema funcionara basicamente
+- Adicionar exchanges para trading real
+
+==================================================

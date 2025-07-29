@@ -1,28 +1,25 @@
-# CoinBitClub Market Bot V3 - FORCE NEW SYSTEM - 29/07/2025 16:22
+# CoinBitClub Market Bot V3 - ÚLTIMA TENTATIVA - 29/07/2025 16:25
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Remove ANY old files first
-RUN rm -rf * || true
+# Limpar tudo primeiro
+RUN rm -rf /app/* || true
 
-# Copy our package file
+# Copiar package
 COPY package-clean.json ./package.json
 
-# Install dependencies
+# Instalar dependências
 RUN npm install --production
 
-# Copy ONLY our V3 system files
-COPY app.js ./
-COPY sistema-orquestrador-completo.js ./
-COPY dashboard-live-data.js ./
-COPY controlador-sistema-web.js ./
+# Copiar APENAS o arquivo final
+COPY main.js ./
 
-# Set environment
+# Ambiente
 ENV NODE_ENV=production
 ENV PORT=3000
 
 EXPOSE 3000
 
-# Start our V3 system ONLY
-CMD ["node", "app.js"]
+# Executar arquivo final
+CMD ["node", "main.js"]

@@ -1,0 +1,71 @@
+# CHECKLIST DE VARIAVEIS - VERIFICACAO FINAL
+# URL do projeto: https://coinbitclub-market-bot.up.railway.app
+
+VARIAVEIS OBRIGATORIAS PARA VERIFICAR NO RAILWAY:
+===============================================
+
+[ ] DATABASE_URL = postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway
+[ ] NODE_ENV = production
+[ ] PORT = 3000
+
+SEGURANCA:
+[ ] JWT_SECRET = coinbitclub-production-secret-2025-ultra-secure
+[ ] ENCRYPTION_KEY = coinbitclub-encryption-key-production-2025
+[ ] SESSION_SECRET = coinbitclub-session-secret-2025-ultra-secure
+[ ] WEBHOOK_SECRET = coinbitclub-webhook-secret-2025
+
+SISTEMA:
+[ ] SISTEMA_MULTIUSUARIO = true
+[ ] MODO_HIBRIDO = true
+[ ] DEFAULT_LEVERAGE = 10
+[ ] DEFAULT_RISK_PERCENTAGE = 2
+[ ] MAX_CONCURRENT_TRADES = 5
+
+FRONTEND/CORS:
+[ ] CORS_ORIGIN = https://coinbitclub-market-bot.vercel.app
+[ ] FRONTEND_URL = https://coinbitclub-market-bot.vercel.app
+[ ] BACKEND_URL = https://coinbitclub-market-bot.up.railway.app
+
+EXCHANGES (OBRIGATORIAS PARA TRADING):
+[ ] BINANCE_API_KEY = [CONFIGURAR_COM_SUA_CHAVE]
+[ ] BINANCE_SECRET_KEY = [CONFIGURAR_COM_SEU_SECRET]
+[ ] BYBIT_API_KEY = [CONFIGURAR_COM_SUA_CHAVE]
+[ ] BYBIT_SECRET_KEY = [CONFIGURAR_COM_SEU_SECRET]
+
+APIS EXTERNAS:
+[ ] COINSTATS_API_KEY = [OBTER_EM_COINSTATS.APP]
+[ ] FEAR_GREED_API_URL = https://api.alternative.me/fng/
+
+OPCIONAIS (SE CONFIGURADO):
+[ ] TWILIO_ACCOUNT_SID = [SE_TEM_SMS]
+[ ] TWILIO_AUTH_TOKEN = [SE_TEM_SMS]
+[ ] TWILIO_PHONE_NUMBER = [SE_TEM_SMS]
+[ ] STRIPE_SECRET_KEY = [SE_TEM_PAGAMENTOS]
+[ ] STRIPE_PUBLISHABLE_KEY = [SE_TEM_PAGAMENTOS]
+[ ] TELEGRAM_BOT_TOKEN = [SE_TEM_TELEGRAM]
+[ ] TELEGRAM_CHAT_ID = [SE_TEM_TELEGRAM]
+
+PRINCIPAIS ATUALIZACOES NECESSARIAS:
+==================================
+
+1. ATUALIZAR BACKEND_URL:
+   Nome: BACKEND_URL
+   Valor: https://coinbitclub-market-bot.up.railway.app
+
+2. VERIFICAR COINSTATS_API_KEY:
+   - Ir para: https://coinstats.app/api/
+   - Criar conta gratuita
+   - Obter API Key
+   - Adicionar: COINSTATS_API_KEY = [sua_chave]
+
+3. CONFIGURAR EXCHANGES (OBRIGATORIO PARA TRADING):
+   - Obter chaves reais Binance e Bybit
+   - Adicionar nas variaveis correspondentes
+
+TESTE FINAL:
+===========
+Apos atualizar, acessar:
+https://coinbitclub-market-bot.up.railway.app/control
+
+Se mostrar interface com botoes = SUCESSO!
+Se erro 404 = Sistema antigo ainda ativo

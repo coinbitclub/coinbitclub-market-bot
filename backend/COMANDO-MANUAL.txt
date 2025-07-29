@@ -1,0 +1,16 @@
+# 🚀 COMANDO PARA EXECUTAR MANUALMENTE
+# Copie e cole este comando em uma NOVA janela PowerShell
+
+# Navegue para o diretório
+cd "c:\Nova pasta\coinbitclub-market-bot\backend"
+
+# Execute o script de correção
+.\fix-railway-deployment.ps1
+
+# Após executar, faça o commit e push
+git add .
+git commit -m "Fix: Força deployment Sistema V3 - remove arquivos antigos"
+git push origin main
+
+# Aguarde 2-3 minutos e teste
+Write-Host "🔗 Teste em: https://coinbitclub-market-bot.up.railway.app/control" -ForegroundColor Green
