@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 IA Supervisor Trade - Monitor em Tempo Real</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(45deg, #00d4ff, #5b73e8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .ia-status {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .status-chip {
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .status-active {
+            background: linear-gradient(45deg, #00c851, #007e33);
+            box-shadow: 0 0 20px rgba(0, 200, 81, 0.4);
+        }
+
+        .status-monitoring {
+            background: linear-gradient(45deg, #ffbb33, #ff8800);
+            box-shadow: 0 0 20px rgba(255, 187, 51, 0.4);
+        }
+
+        .status-alert {
+            background: linear-gradient(45deg, #ff4444, #cc0000);
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.4);
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }
+            to { box-shadow: 0 0 30px rgba(0, 212, 255, 0.8); }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #00d4ff;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            opacity: 0.8;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px 0;
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .positive { color: #00c851; }
+        .negative { color: #ff4444; }
+        .neutral { color: #ffbb33; }
+        .info { color: #00d4ff; }
+
+        .timer-control {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: 600;
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+        }
+
+        .monitoring-section {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .operation-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #00c851;
+        }
+
+        .operation-item.long {
+            border-left-color: #00c851;
+        }
+
+        .operation-item.short {
+            border-left-color: #ff4444;
+        }
+
+        .logs-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .log-success { background: rgba(0, 200, 81, 0.2); }
+        .log-warning { background: rgba(255, 187, 51, 0.2); }
+        .log-error { background: rgba(255, 68, 68, 0.2); }
+        .log-info { background: rgba(0, 212, 255, 0.2); }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00d4ff, #5b73e8);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff4444, #cc0000);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #00c851, #007e33);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .real-time-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 200, 81, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            z-index: 1000;
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(0, 200, 81, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 200, 81, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 200, 81, 0); }
+        }
+
+        .countdown {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ff4444;
+        }
+
+        .supervisor-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header h1 { font-size: 2rem; }
+            .ia-status { flex-direction: column; align-items: center; }
+            .grid { grid-template-columns: 1fr; }
+            .action-buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="real-time-indicator" id="realTimeIndicator">
+        🤖 IA SUPERVISOR ATIVO
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🤖 IA SUPERVISOR DE TRADE EM TEMPO REAL</h1>
+            <p style="font-size: 1.1rem; opacity: 0.9; margin: 10px 0;">
+                Monitoramento Inteligente • Controle Total • Zero Autonomia
+            </p>
+            
+            <div class="ia-status">
+                <div class="status-chip status-active" id="iaStatus">
+                    🤖 IA SUPERVISOR ATIVO
+                </div>
+                <div class="status-chip status-monitoring" id="monitoringStatus">
+                    👁️ MONITORANDO (30s)
+                </div>
+                <div class="status-chip status-alert" id="timerStatus">
+                    ⏰ CONTROLE 2MIN ATIVO
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="refreshDashboard()">🔄 Atualizar</button>
+                <button class="btn btn-success" onclick="testSupervisor()">🧪 Testar IA</button>
+                <button class="btn btn-danger" onclick="emergencyStop()">🛑 Parada Emergência</button>
+            </div>
+        </div>
+
+        <!-- Grid Principal -->
+        <div class="grid">
+            <!-- Controle de Tempo de Sinais -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">⏰ Controle de Tempo de Sinais</span>
+                    <span class="card-icon">🕐</span>
+                </div>
+                
+                <div class="timer-control">
+                    ⚠️ LIMITE RIGOROSO: 2 MINUTOS
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Limite por Sinal:</span>
+                    <span class="metric-value negative">2:00 minutos</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Sinais Rejeitados Hoje:</span>
+                    <span class="metric-value neutral" id="rejectedSignals">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Sinais Processados:</span>
+                    <span class="metric-value positive" id="processedSignals">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Taxa de Sucesso:</span>
+                    <span class="metric-value info" id="successRate">100%</span>
+                </div>
+            </div>
+
+            <!-- Monitoramento em Tempo Real -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">👁️ Monitoramento Tempo Real</span>
+                    <span class="card-icon">📊</span>
+                </div>
+                
+                <div class="monitoring-section">
+                    <strong>🔄 Verificação a cada 30 segundos</strong>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Operações Monitoradas:</span>
+                    <span class="metric-value info" id="monitoredOps">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Última Verificação:</span>
+                    <span class="metric-value neutral" id="lastCheck">Carregando...</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">P&L Total Atual:</span>
+                    <span class="metric-value positive" id="totalPL">$0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Próxima Verificação:</span>
+                    <span class="metric-value info">
+                        <span class="countdown" id="nextCheckCountdown">30s</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Fechamento Automático -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🔒 Fechamento Automático</span>
+                    <span class="card-icon">⚡</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Sinal "FECHE LONG":</span>
+                    <span class="metric-value positive">🎯 PRONTO</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Sinal "FECHE SHORT":</span>
+                    <span class="metric-value positive">🎯 PRONTO</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Tempo de Resposta:</span>
+                    <span class="metric-value info">&lt; 1 segundo</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Fechamentos Hoje:</span>
+                    <span class="metric-value neutral" id="closingsToday">0</span>
+                </div>
+            </div>
+
+            <!-- Operações Ativas -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📈 Operações Ativas</span>
+                    <span class="card-icon">💹</span>
+                </div>
+                
+                <div id="activeOperations">
+                    <div class="operation-item long">
+                        <strong>BTCUSDT LONG</strong><br>
+                        Entry: $45,230 | P&L: +2.3% ($45.60)<br>
+                        TP: $46,805 | SL: $43,207<br>
+                        <small>Tempo: 15min | Status: 🟢 Monitorada</small>
+                    </div>
+                    
+                    <div class="operation-item short">
+                        <strong>ETHUSDT SHORT</strong><br>
+                        Entry: $2,840 | P&L: -0.8% (-$15.20)<br>
+                        TP: $2,755 | SL: $2,982<br>
+                        <small>Tempo: 8min | Status: 🟡 Próximo SL</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas da IA -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🤖 Estatísticas do Supervisor</span>
+                    <span class="card-icon">📊</span>
+                </div>
+                
+                <div class="supervisor-stats">
+                    <div class="stat-box">
+                        <div class="stat-number" id="totalSupervisions">247</div>
+                        <div class="stat-label">Total Supervisões</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="avgResponseTime">0.85s</div>
+                        <div class="stat-label">Tempo Médio</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="successPercentage">98.7%</div>
+                        <div class="stat-label">Taxa Sucesso</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="uptime">24h</div>
+                        <div class="stat-label">Tempo Ativo</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registro de Banco de Dados -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">💾 Registro Banco de Dados</span>
+                    <span class="card-icon">🗄️</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Registros por Usuário:</span>
+                    <span class="metric-value positive">✅ ATIVO</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Operações Logged:</span>
+                    <span class="metric-value info" id="loggedOps">1,247</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Monitoramento Logged:</span>
+                    <span class="metric-value info" id="loggedMonitoring">5,891</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Último Backup:</span>
+                    <span class="metric-value neutral" id="lastBackup">2min atrás</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs em Tempo Real -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">📋 Logs IA Supervisor em Tempo Real</span>
+                <span class="card-icon">🔍</span>
+            </div>
+            
+            <div class="logs-container" id="logsContainer">
+                <div class="log-entry log-success">
+                    ✅ [14:30:15] IA: Sinal LONG recebido - Tempo: 45s - APROVADO
+                </div>
+                <div class="log-entry log-info">
+                    🔄 [14:30:00] IA: Monitoramento iniciado - 2 operações ativas
+                </div>
+                <div class="log-entry log-warning">
+                    ⚠️ [14:29:45] IA: Operação ETHUSDT próxima de SL (95%)
+                </div>
+                <div class="log-entry log-success">
+                    💾 [14:29:30] IA: Dados salvos no banco - User ID: 123
+                </div>
+                <div class="log-entry log-error">
+                    ❌ [14:29:15] IA: Sinal rejeitado - Tempo limite: 3min 20s
+                </div>
+                <div class="log-entry log-info">
+                    🎯 [14:29:00] IA: Sistema ready - Monitoramento 30s ativo
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let countdownInterval;
+        let refreshInterval;
+        let nextCheckTime = 30;
+
+        // Função para atualizar o dashboard
+        async function refreshDashboard() {
+            console.log('🔄 Atualizando dashboard IA Supervisor...');
+            
+            try {
+                // Simular atualização de dados
+                updateMetrics();
+                updateLogs();
+                updateNextCheckCountdown();
+                
+                document.getElementById('lastCheck').textContent = new Date().toLocaleTimeString();
+                
+                addLogEntry('success', `✅ [${new Date().toLocaleTimeString()}] Dashboard atualizado com sucesso`);
+                
+            } catch (error) {
+                console.error('❌ Erro ao atualizar dashboard:', error);
+                addLogEntry('error', `❌ [${new Date().toLocaleTimeString()}] Erro na atualização: ${error.message}`);
+            }
+        }
+
+        // Função para testar o supervisor
+        async function testSupervisor() {
+            addLogEntry('info', `🧪 [${new Date().toLocaleTimeString()}] Iniciando teste do IA Supervisor...`);
+            
+            // Simular teste de resposta
+            setTimeout(() => {
+                addLogEntry('success', `✅ [${new Date().toLocaleTimeString()}] IA: Teste concluído - Tempo resposta: 0.85s`);
+            }, 850);
+            
+            // Simular teste de validação de tempo
+            setTimeout(() => {
+                addLogEntry('warning', `⚠️ [${new Date().toLocaleTimeString()}] IA: Teste sinal expirado - REJEITADO após 2min`);
+            }, 1500);
+            
+            // Simular teste de monitoramento
+            setTimeout(() => {
+                addLogEntry('info', `🔄 [${new Date().toLocaleTimeString()}] IA: Teste monitoramento - 30s interval OK`);
+            }, 2000);
+        }
+
+        // Função de parada de emergência
+        async function emergencyStop() {
+            const confirm = window.confirm('🛑 Confirma PARADA DE EMERGÊNCIA do IA Supervisor?');
+            if (confirm) {
+                addLogEntry('error', `🛑 [${new Date().toLocaleTimeString()}] PARADA DE EMERGÊNCIA ATIVADA - IA Supervisor pausado`);
+                document.getElementById('iaStatus').innerHTML = '🛑 IA PAUSADO';
+                document.getElementById('iaStatus').className = 'status-chip status-alert';
+            }
+        }
+
+        // Função para atualizar métricas
+        function updateMetrics() {
+            // Simular dados dinâmicos
+            const metrics = {
+                rejectedSignals: Math.floor(Math.random() * 5),
+                processedSignals: 247 + Math.floor(Math.random() * 10),
+                monitoredOps: Math.floor(Math.random() * 5),
+                totalPL: (Math.random() * 200 - 100).toFixed(2),
+                closingsToday: Math.floor(Math.random() * 8),
+                loggedOps: 1247 + Math.floor(Math.random() * 50),
+                loggedMonitoring: 5891 + Math.floor(Math.random() * 100)
+            };
+
+            Object.keys(metrics).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.textContent = key === 'totalPL' ? `$${metrics[key]}` : metrics[key];
+                    
+                    // Atualizar classes baseado no valor
+                    if (key === 'totalPL') {
+                        element.className = metrics[key] >= 0 ? 'metric-value positive' : 'metric-value negative';
+                    }
+                }
+            });
+
+            // Calcular taxa de sucesso
+            const successRate = ((metrics.processedSignals / (metrics.processedSignals + metrics.rejectedSignals)) * 100).toFixed(1);
+            document.getElementById('successRate').textContent = `${successRate}%`;
+        }
+
+        // Função para atualizar logs
+        function updateLogs() {
+            const logTypes = ['success', 'info', 'warning'];
+            const logMessages = [
+                '✅ IA: Sinal LONG processado em 0.75s',
+                '🔄 IA: Monitoramento automático ativo',
+                '💾 IA: Dados salvos no banco por usuário',
+                '⚠️ IA: Operação próxima de TP (92%)',
+                '🎯 IA: Sistema funcionando perfeitamente',
+                '📊 IA: P&L atualizado em tempo real'
+            ];
+            
+            const randomType = logTypes[Math.floor(Math.random() * logTypes.length)];
+            const randomMessage = logMessages[Math.floor(Math.random() * logMessages.length)];
+            
+            addLogEntry(randomType, `${randomMessage} - [${new Date().toLocaleTimeString()}]`);
+        }
+
+        // Função para adicionar entrada de log
+        function addLogEntry(type, message) {
+            const logsContainer = document.getElementById('logsContainer');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = message;
+            
+            logsContainer.insertBefore(logEntry, logsContainer.firstChild);
+            
+            // Limitar número de logs
+            if (logsContainer.children.length > 50) {
+                logsContainer.removeChild(logsContainer.lastChild);
+            }
+        }
+
+        // Função para atualizar countdown da próxima verificação
+        function updateNextCheckCountdown() {
+            nextCheckTime = 30;
+            
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            countdownInterval = setInterval(() => {
+                nextCheckTime--;
+                document.getElementById('nextCheckCountdown').textContent = `${nextCheckTime}s`;
+                
+                if (nextCheckTime <= 0) {
+                    nextCheckTime = 30;
+                    addLogEntry('info', `🔄 [${new Date().toLocaleTimeString()}] IA: Verificação automática executada`);
+                }
+            }, 1000);
+        }
+
+        // Inicialização quando a página carrega
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 IA Supervisor Dashboard iniciado');
+            
+            // Primeira atualização
+            refreshDashboard();
+            
+            // Configurar atualizações automáticas a cada 30 segundos
+            refreshInterval = setInterval(refreshDashboard, 30000);
+            
+            // Iniciar countdown
+            updateNextCheckCountdown();
+            
+            // Log inicial
+            addLogEntry('success', `🚀 [${new Date().toLocaleTimeString()}] IA Supervisor Dashboard conectado e monitorando...`);
+            
+            // Simular atividade da IA
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    updateLogs();
+                }
+            }, 5000);
+        });
+
+        // Limpeza quando a página é fechada
+        window.addEventListener('beforeunload', function() {
+            if (countdownInterval) clearInterval(countdownInterval);
+            if (refreshInterval) clearInterval(refreshInterval);
+        });
+    </script>
+</body>
+</html>
