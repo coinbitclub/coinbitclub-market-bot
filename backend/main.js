@@ -1,7 +1,7 @@
-/**
- * 🚀 COINBITCLUB MARKET BOT V3 - SISTEMA FINAL
- * Sistema de Trading Automatizado com Orquestração Completa
- * Última tentativa de deployment - sobrescreve TUDO
+﻿/**
+ * ðŸš€ COINBITCLUB MARKET BOT V3 - SISTEMA FINAL
+ * Sistema de Trading Automatizado com OrquestraÃ§Ã£o Completa
+ * Ãšltima tentativa de deployment - sobrescreve TUDO
  */
 
 const express = require('express');
@@ -12,12 +12,12 @@ const http = require('http');
 const WebSocket = require('ws');
 const { Pool } = require('pg');
 
-// Configuração do servidor
+// ConfiguraÃ§Ã£o do servidor
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-// Configuração de segurança e middlewares
+// ConfiguraÃ§Ã£o de seguranÃ§a e middlewares
 app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false
@@ -32,7 +32,7 @@ app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Sistema de versão único para identificar
+// Sistema de versÃ£o Ãºnico para identificar
 const SYSTEM_VERSION = `v3.0.0-integrated-final-${Date.now()}`;
 const SERVER_ID = Math.random().toString(36).substring(2, 15);
 
@@ -57,13 +57,13 @@ const pool = new Pool({
 
 // Middleware de logging
 app.use((req, res, next) => {
-    console.log(`🌐 ${new Date().toISOString()} - ${req.method} ${req.path} - IP: ${req.ip}`);
+    console.log(`ðŸŒ ${new Date().toISOString()} - ${req.method} ${req.path} - IP: ${req.ip}`);
     next();
 });
 
 // ==================== ENDPOINTS PRINCIPAIS ====================
 
-// Endpoint raiz - identificação do sistema
+// Endpoint raiz - identificaÃ§Ã£o do sistema
 app.get('/', (req, res) => {
     res.json({
         service: "CoinBitClub Market Bot V3 - Sistema Integrado Final",
@@ -90,7 +90,7 @@ app.get('/', (req, res) => {
 // Health check simplificado
 app.get('/health', async (req, res) => {
     try {
-        // Teste básico do banco
+        // Teste bÃ¡sico do banco
         const dbTest = await pool.query('SELECT NOW()');
         
         res.json({
@@ -220,32 +220,32 @@ app.get('/control', (req, res) => {
 </head>
 <body>
     <div class="container">
-        <h1>🚀 CoinBitClub V3</h1>
+        <h1>ðŸš€ CoinBitClub V3</h1>
         <div class="subtitle">Sistema de Trading Automatizado</div>
         
         <div class="status">
-            <h3>📊 Status do Sistema</h3>
+            <h3>ðŸ“Š Status do Sistema</h3>
             <div class="info">
-                <div>🔧 Versão: ${SYSTEM_VERSION}</div>
-                <div>🆔 Server ID: ${SERVER_ID}</div>
-                <div>⏰ Timestamp: ${new Date().toISOString()}</div>
-                <div>🎯 Status: ${systemState.active ? '🟢 ATIVO' : '🔴 INATIVO'}</div>
-                <div>📡 WebSocket Clients: ${wss.clients.size}</div>
+                <div>ðŸ”§ VersÃ£o: ${SYSTEM_VERSION}</div>
+                <div>ðŸ†” Server ID: ${SERVER_ID}</div>
+                <div>â° Timestamp: ${new Date().toISOString()}</div>
+                <div>ðŸŽ¯ Status: ${systemState.active ? 'ðŸŸ¢ ATIVO' : 'ðŸ”´ INATIVO'}</div>
+                <div>ðŸ“¡ WebSocket Clients: ${wss.clients.size}</div>
             </div>
         </div>
 
         <div style="margin: 30px 0;">
-            <button class="btn" onclick="toggleSystem(true)">🟢 Ligar Sistema</button>
-            <button class="btn danger" onclick="toggleSystem(false)">🔴 Desligar Sistema</button>
+            <button class="btn" onclick="toggleSystem(true)">ðŸŸ¢ Ligar Sistema</button>
+            <button class="btn danger" onclick="toggleSystem(false)">ðŸ”´ Desligar Sistema</button>
         </div>
 
         <div class="info">
-            <strong>✅ SISTEMA V3 FUNCIONANDO!</strong><br>
-            Este é o sistema integrado final com:<br>
-            • Orquestração completa de trading<br>
-            • Dashboard live data via WebSocket<br>
-            • Controle total do robô<br>
-            • Multiusuário com comissionamento
+            <strong>âœ… SISTEMA V3 FUNCIONANDO!</strong><br>
+            Este Ã© o sistema integrado final com:<br>
+            â€¢ OrquestraÃ§Ã£o completa de trading<br>
+            â€¢ Dashboard live data via WebSocket<br>
+            â€¢ Controle total do robÃ´<br>
+            â€¢ MultiusuÃ¡rio com comissionamento
         </div>
     </div>
 
@@ -291,8 +291,8 @@ app.post('/api/system/toggle', async (req, res) => {
             systemState.active = true;
             systemState.lastActivity = new Date().toISOString();
             
-            // Simular inicialização do orquestrador
-            console.log('🟢 Sistema ativado!');
+            // Simular inicializaÃ§Ã£o do orquestrador
+            console.log('ðŸŸ¢ Sistema ativado!');
             
             res.json({
                 success: true,
@@ -302,7 +302,7 @@ app.post('/api/system/toggle', async (req, res) => {
         } else {
             systemState.active = false;
             
-            console.log('🔴 Sistema desativado!');
+            console.log('ðŸ”´ Sistema desativado!');
             
             res.json({
                 success: true,
@@ -340,7 +340,7 @@ app.get('/api/system/status', (req, res) => {
 // ==================== WEBSOCKET PARA DASHBOARD ====================
 
 wss.on('connection', (ws, req) => {
-    console.log(`📡 Nova conexão WebSocket: ${req.socket.remoteAddress}`);
+    console.log(`ðŸ“¡ Nova conexÃ£o WebSocket: ${req.socket.remoteAddress}`);
     
     // Enviar status inicial
     ws.send(JSON.stringify({
@@ -367,7 +367,7 @@ wss.on('connection', (ws, req) => {
     }, 30000);
     
     ws.on('close', () => {
-        console.log('📡 Conexão WebSocket fechada');
+        console.log('ðŸ“¡ ConexÃ£o WebSocket fechada');
         clearInterval(heartbeat);
     });
 });
@@ -376,7 +376,7 @@ wss.on('connection', (ws, req) => {
 
 app.use('*', (req, res) => {
     res.status(404).json({
-        error: "Endpoint não encontrado",
+        error: "Endpoint nÃ£o encontrado",
         method: req.method,
         path: req.originalUrl,
         available_endpoints: {
@@ -394,56 +394,57 @@ app.use('*', (req, res) => {
     });
 });
 
-// ==================== INICIALIZAÇÃO DO SERVIDOR ====================
+// ==================== INICIALIZAÃ‡ÃƒO DO SERVIDOR ====================
 
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, '0.0.0.0', async () => {
-    console.log('\n🚀 ========================================');
+    console.log('\nðŸš€ ========================================');
     console.log('   COINBITCLUB MARKET BOT V3 FINAL');
     console.log('   Sistema Integrado Completo');
-    console.log('🚀 ========================================');
-    console.log(`📦 Versão: ${SYSTEM_VERSION}`);
-    console.log(`🆔 Server ID: ${SERVER_ID}`);
-    console.log(`🌐 Servidor rodando em: http://0.0.0.0:${PORT}`);
-    console.log(`⏰ Inicializado em: ${new Date().toISOString()}`);
-    console.log('🎯 ENDPOINTS PRINCIPAIS:');
-    console.log(`   📊 Status: http://0.0.0.0:${PORT}/`);
-    console.log(`   🏥 Health: http://0.0.0.0:${PORT}/health`);
-    console.log(`   🎮 Controle: http://0.0.0.0:${PORT}/control`);
-    console.log(`   📡 WebSocket: ws://0.0.0.0:${PORT}/ws`);
-    console.log('✅ SISTEMA V3 FINAL INICIADO COM SUCESSO!');
-    console.log('🚀 ========================================\n');
+    console.log('ðŸš€ ========================================');
+    console.log(`ðŸ“¦ VersÃ£o: ${SYSTEM_VERSION}`);
+    console.log(`ðŸ†” Server ID: ${SERVER_ID}`);
+    console.log(`ðŸŒ Servidor rodando em: http://0.0.0.0:${PORT}`);
+    console.log(`â° Inicializado em: ${new Date().toISOString()}`);
+    console.log('ðŸŽ¯ ENDPOINTS PRINCIPAIS:');
+    console.log(`   ðŸ“Š Status: http://0.0.0.0:${PORT}/`);
+    console.log(`   ðŸ¥ Health: http://0.0.0.0:${PORT}/health`);
+    console.log(`   ðŸŽ® Controle: http://0.0.0.0:${PORT}/control`);
+    console.log(`   ðŸ“¡ WebSocket: ws://0.0.0.0:${PORT}/ws`);
+    console.log('âœ… SISTEMA V3 FINAL INICIADO COM SUCESSO!');
+    console.log('ðŸš€ ========================================\n');
     
-    // Teste de conexão com banco
+    // Teste de conexÃ£o com banco
     try {
         const result = await pool.query('SELECT NOW() as current_time');
-        console.log(`✅ PostgreSQL conectado: ${result.rows[0].current_time}`);
+        console.log(`âœ… PostgreSQL conectado: ${result.rows[0].current_time}`);
         
         const tablesResult = await pool.query('SELECT COUNT(*) as count FROM information_schema.tables WHERE table_schema = \'public\'');
-        console.log(`📊 Tabelas encontradas: ${tablesResult.rows[0].count}`);
+        console.log(`ðŸ“Š Tabelas encontradas: ${tablesResult.rows[0].count}`);
     } catch (error) {
-        console.log(`❌ Erro PostgreSQL: ${error.message}`);
+        console.log(`âŒ Erro PostgreSQL: ${error.message}`);
     }
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-    console.log('🔄 SIGTERM recebido, encerrando servidor...');
+    console.log('ðŸ”„ SIGTERM recebido, encerrando servidor...');
     server.close(() => {
-        console.log('✅ Servidor encerrado');
+        console.log('âœ… Servidor encerrado');
         pool.end();
         process.exit(0);
     });
 });
 
 process.on('SIGINT', () => {
-    console.log('🔄 SIGINT recebido, encerrando servidor...');
+    console.log('ðŸ”„ SIGINT recebido, encerrando servidor...');
     server.close(() => {
-        console.log('✅ Servidor encerrado');
+        console.log('âœ… Servidor encerrado');
         pool.end();
         process.exit(0);
     });
 });
 
 module.exports = { app, server, pool, systemState };
+

@@ -1,15 +1,3 @@
-﻿[build]
-builder = "NIXPACKS"
-
-[deploy]
+﻿[deploy]
 startCommand = "node main.js"
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 2
 healthcheckPath = "/health"
-healthcheckTimeout = 30
-
-[environments.production.variables]
-NODE_ENV = "production"
-PORT = "3000"
-CACHE_INVALIDATE = "20250729184129"
-FORCE_V3_ONLY = "true"
