@@ -6,9 +6,9 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
-// Importar rotas WhatsApp e Zapi
-const whatsappRoutes = require('./routes/whatsappRoutes');
-const zapiWebhookRoutes = require('./routes/zapiWebhookRoutes');
+// Importar rotas WhatsApp e Zapi (comentado temporariamente)
+// const whatsappRoutes = require('./routes/whatsappRoutes');
+// const zapiWebhookRoutes = require('./routes/zapiWebhookRoutes');
 
 // Importar rotas dos gestores
 const chavesRoutes = require('./routes/chavesRoutes');
@@ -89,8 +89,8 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// ===== ROTAS WhatsApp VERIFICATION =====
-app.use('/api', whatsappRoutes);
+// ===== ROTAS WhatsApp VERIFICATION (comentado temporariamente) =====
+// app.use('/api', whatsappRoutes);
 
 // Debug middleware para verificar rotas dos gestores
 app.use('/api/gestores', (req, res, next) => {
