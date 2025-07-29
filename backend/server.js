@@ -15,6 +15,9 @@ const chavesRoutes = require('./routes/chavesRoutes');
 const usuariosRoutes = require('./routes/usuariosRoutes');
 const afiliadosRoutes = require('./routes/afiliadosRoutes');
 
+// Importar webhook do TradingView
+const { createWebhookRoute } = require('./correcao-webhook-tradingview');
+
 console.log('🚀 INICIANDO SERVIDOR COINBITCLUB COMPLETO...');
 
 const app = express();
@@ -102,6 +105,10 @@ app.use('/api/gestores', (req, res, next) => {
 app.use('/api/gestores/chaves', chavesRoutes);
 app.use('/api/gestores/usuarios', usuariosRoutes);
 app.use('/api/gestores/afiliados', afiliadosRoutes);
+
+// ===== CONFIGURAR WEBHOOK TRADINGVIEW =====
+createWebhookRoute(app);
+console.log('📡 Webhook TradingView configurado: /api/webhooks/signal');
 
 // ===== ROTAS WEBHOOK ZAPI (TEMPORÁRIAS) =====
 app.post('/api/webhooks/zapi/configure', async (req, res) => {

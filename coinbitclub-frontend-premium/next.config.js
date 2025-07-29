@@ -1,11 +1,28 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false,
-  typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
-  swcMinify: false,
-  experimental: {
-    serverComponentsExternalPackages: []
+  reactStrictMode: true,
+  swcMinify: true,
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:3000/api/:path*'
+      }
+    ];
+  },
+  async redirects() {
+    return [
+      {
+        source: '/login',
+        destination: '/auth/login',
+        permanent: false
+      },
+      {
+        source: '/register',
+        destination: '/auth/register',
+        permanent: false
+      }
+    ];
   }
 };
 

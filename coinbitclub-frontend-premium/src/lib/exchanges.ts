@@ -68,14 +68,50 @@ const EXCHANGE_URLS = {
   }
 };
 
+// IP fixo Railway para whitelist das exchanges
+const RAILWAY_IP = '132.255.160.140';
+
+// Configurações de segurança para IP fixo
+const SECURITY_CONFIG = {
+  railwayIP: RAILWAY_IP,
+  allowedIPs: [RAILWAY_IP, '127.0.0.1', 'localhost'],
+  ipCheckEnabled: process.env.NODE_ENV === 'production',
+  timeout: 10000,
+  retries: 3
+};
+
 export class ExchangeAPI {
   private config: ExchangeConfig;
-
   private baseUrl: string;
 
   constructor(config: ExchangeConfig) {
     this.config = config;
     this.baseUrl = EXCHANGE_URLS[config.exchange][config.testnet ? 'testnet' : 'mainnet'];
+    
+    // Log de configuração para debug
+    console.log(`🔧 Exchange API initialized: ${config.exchange} (${config.testnet ? 'testnet' : 'mainnet'})`);
+    console.log(`🌐 Base URL: ${this.baseUrl}`);
+    console.log(`📍 Railway IP: ${SECURITY_CONFIG.railwayIP}`);
+  }
+
+  // Obter headers com identificação do Railway
+  private getSecureHeaders(exchange: string, apiKey: string, additionalHeaders: Record<string, string> = {}): Record<string, string> {
+    const baseHeaders = {
+      'Content-Type': 'application/json',
+      'User-Agent': 'CoinBitClub-Bot/1.0',
+      'X-Source-IP': SECURITY_CONFIG.railwayIP,
+      'X-Railway-Service': 'coinbitclub-market-bot',
+      'X-Request-ID': `${exchange}-${Date.now()}`,
+      ...additionalHeaders
+    };
+
+    if (exchange === 'binance') {
+      baseHeaders['X-MBX-APIKEY'] = apiKey;
+    } else if (exchange === 'bybit') {
+      baseHeaders['X-BAPI-API-KEY'] = apiKey;
+    }
+
+    return baseHeaders;
   }
 
   // Gerar assinatura para Binance
@@ -116,22 +152,31 @@ export class ExchangeAPI {
       
       const url = `${this.baseUrl}${endpoint}?${queryString}&signature=${signature}`;
       
+      // Headers seguros com identificação Railway
+      const headers = this.getSecureHeaders('binance', this.config.apiKey);
+      
+      // Implementar timeout manual
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), SECURITY_CONFIG.timeout);
+      
       const response = await fetch(url, {
         method,
-        headers: {
-          'X-MBX-APIKEY': this.config.apiKey,
-          'Content-Type': 'application/json'
-        }
+        headers,
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
       const data = await response.json();
       
       if (!response.ok) {
+        console.error(`❌ Binance Error: ${data.msg || 'Unknown error'} (Code: ${data.code || 'N/A'})`);
         return { success: false, error: data.msg || 'Erro na requisição Binance' };
       }
 
+      console.log(`✅ Binance Request: ${method} ${endpoint} - Success`);
       return { success: true, data };
     } catch (error) {
+      console.error(`❌ Binance Request Failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
     }
   }
@@ -146,12 +191,11 @@ export class ExchangeAPI {
       const timestamp = Date.now().toString();
       const signature = this.generateBybitSignature(params);
       
-      const headers = {
-        'X-BAPI-API-KEY': this.config.apiKey,
+      // Headers seguros com identificação Railway
+      const headers = this.getSecureHeaders('bybit', this.config.apiKey, {
         'X-BAPI-TIMESTAMP': timestamp,
-        'X-BAPI-SIGN': signature,
-        'Content-Type': 'application/json'
-      };
+        'X-BAPI-SIGN': signature
+      });
 
       let url = `${this.baseUrl}${endpoint}`;
       let body: string | undefined;
@@ -163,20 +207,29 @@ export class ExchangeAPI {
         body = JSON.stringify(params);
       }
 
+      // Implementar timeout manual
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), SECURITY_CONFIG.timeout);
+
       const response = await fetch(url, {
         method,
         headers,
-        body
+        body,
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
       const data = await response.json();
       
       if (data.retCode !== 0) {
+        console.error(`❌ Bybit Error: ${data.retMsg || 'Unknown error'} (Code: ${data.retCode || 'N/A'})`);
         return { success: false, error: data.retMsg || 'Erro na requisição Bybit' };
       }
 
+      console.log(`✅ Bybit Request: ${method} ${endpoint} - Success`);
       return { success: true, data: data.result };
     } catch (error) {
+      console.error(`❌ Bybit Request Failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       return { success: false, error: error instanceof Error ? error.message : 'Erro desconhecido' };
     }
   }
