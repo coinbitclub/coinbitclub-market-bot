@@ -1,4 +1,4 @@
-[variables]
+﻿[variables]
 NPM_CONFIG_PACKAGE_LOCK = "false"
 
 [phases.build]

@@ -1,7 +1,8 @@
-#!/bin/bash
-echo " Custom build script executando..."
-echo " Removendo package-lock.json se existir..."
+﻿#!/bin/bash
+set -e
+echo "🔧 Iniciando build customizado..."
+echo "📦 Removendo package-lock.json..."
 rm -f package-lock.json
-echo " Instalando dependências com npm install..."
-npm install --no-package-lock
-echo " Build concluído!"
+echo "⬇️ Instalando dependências..."
+npm install --no-package-lock --production
+echo "✅ Build concluído com sucesso!"
