@@ -1,32 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useAuth } from '../src/store/authStore';
 
 const LandingPage: NextPage = () => {
   const router = useRouter();
-  const { isAuthenticated, user, loading } = useAuth();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Se o usuário já estiver autenticado, redirecionar para o dashboard
-    if (!loading && isAuthenticated && user) {
-      const redirectMap = {
-        admin: '/admin/dashboard',
-        affiliate: '/affiliate/dashboard',
-        user: '/dashboard-premium',
-        operator: '/operator/dashboard',
-        manager: '/manager/dashboard'
-      };
-      
-      const redirectPath = redirectMap[user.role] || '/dashboard-premium';
-      router.replace(redirectPath);
-    }
-  }, [isAuthenticated, user, loading, router]);
+    setMounted(true);
+  }, []);
 
-  // Se estiver carregando ou autenticado, mostrar loading
-  if (loading || (isAuthenticated && user)) {
+  // Se estiver carregando, mostrar loading
+  if (!mounted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-slate-900 flex items-center justify-center">
         <div className="text-center">
@@ -39,8 +26,8 @@ const LandingPage: NextPage = () => {
               CoinBitClub
             </h1>
           </div>
-          <p className="text-white mb-2">Redirecionando para Dashboard...</p>
-          <p className="text-gray-400 text-sm">Sistema premium carregando</p>
+          <p className="text-white mb-2">Carregando página inicial...</p>
+          <p className="text-gray-400 text-sm">Sistema premium iniciando</p>
         </div>
       </div>
     );

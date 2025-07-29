@@ -1,8 +1,7 @@
 import type { AppProps } from 'next/app';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { GlobalPremiumStyles } from '../src/styles/GlobalPremiumStyles';
-import { useAuth } from '../src/store/authStore';
 import '../styles/globals.css';
 
 // Páginas que não precisam de autenticação
@@ -20,37 +19,15 @@ const publicPages = [
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  const { isAuthenticated, user, loading } = useAuth();
+  const [mounted, setMounted] = useState(false);
 
-  // Verificar autenticação e redirecionar conforme necessário
+  // Garantir que só executa no cliente
   useEffect(() => {
-    const isPublicPage = publicPages.includes(router.pathname);
-    
-    // Se não estiver carregando e não for página pública
-    if (!loading && !isPublicPage) {
-      if (!isAuthenticated) {
-        // Redirecionar para login se não autenticado
-        router.replace('/auth/login-premium');
-      } else if (isAuthenticated && user) {
-        // Redirecionar para dashboard apropriado se na página de login
-        if (router.pathname === '/auth/login-premium' || router.pathname === '/auth/login') {
-          const redirectMap = {
-            admin: '/admin/dashboard',
-            affiliate: '/affiliate/dashboard',
-            user: '/dashboard-premium',
-            operator: '/operator/dashboard',
-            manager: '/manager/dashboard'
-          };
-          
-          const redirectPath = redirectMap[user.role] || '/dashboard-premium';
-          router.replace(redirectPath);
-        }
-      }
-    }
-  }, [isAuthenticated, user, loading, router]);
+    setMounted(true);
+  }, []);
 
-  // Loading state
-  if (loading) {
+  // Loading state para SSR
+  if (!mounted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-slate-900 flex items-center justify-center">
         <GlobalPremiumStyles />
@@ -65,7 +42,7 @@ export default function App({ Component, pageProps }: AppProps) {
             </h1>
           </div>
           <p className="text-white mb-2">Carregando MarketBot Premium...</p>
-          <p className="text-gray-400 text-sm">Conectando com sistemas de trading</p>
+          <p className="text-gray-400 text-sm">Inicializando sistema</p>
         </div>
       </div>
     );
