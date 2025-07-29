@@ -2,12 +2,12 @@
   "name": "coinbitclub-market-bot",
   "version": "2.0.0",
   "description": "Sistema completo de trading automatizado com IA Guardian, Fear & Greed Index e integracao TradingView",
-  "main": "server-clean.cjs",
+  "main": "servidor-integrado-completo.js",
   "scripts": {
-    "start": "node server-clean.cjs",
-    "dev": "nodemon server-clean.cjs",
+    "start": "node servidor-integrado-completo.js",
+    "dev": "nodemon servidor-integrado-completo.js",
     "test": "node teste-final-sistema.js",
-    "production": "NODE_ENV=production node server-clean.cjs"
+    "production": "NODE_ENV=production node servidor-integrado-completo.js"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -32,7 +32,7 @@
     "socket.io": "^4.7.1",
     "twilio": "^4.14.0",
     "winston": "^3.11.0",
-    "ws": "^8.18.3"
+    "ws": "^8.14.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

@@ -1,0 +1,43 @@
+# CoinBitClub Market Bot - Dockerfile Corrigido Railway
+FROM node:18-alpine
+
+# Instalar dumb-init para gerenciamento de sinais
+RUN apk update && apk add --no-cache dumb-init
+
+# Definir diretorio de trabalho
+WORKDIR /app
+
+# Copiar arquivos de package primeiro (cache de layers)
+COPY package-clean.json ./package.json
+
+# Instalar dependencias
+RUN npm ci --only=production --no-audit --no-fund
+
+# Copiar servidor limpo
+COPY server-clean.cjs ./
+
+# Criar usuario nodejs
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+
+# Alterar ownership para usuario nodejs
+RUN chown -R nodejs:nodejs /app
+
+# Mudar para usuario nodejs
+USER nodejs
+
+# Configurar variaveis de ambiente
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Expor porta
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# Usar dumb-init para gerenciamento de sinais
+ENTRYPOINT ["dumb-init", "--"]
+
+# Iniciar aplicacao
+CMD ["node", "server-clean.cjs"]
