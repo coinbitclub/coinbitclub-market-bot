@@ -13,8 +13,8 @@ const { Pool } = require('pg');
 const axios = require('axios');
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway',
-    ssl: { rejectUnauthorized: false }
+    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/coinbitclub',
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 class IASupervisorTradeTempoReal {
@@ -94,14 +94,14 @@ class IASupervisorTradeTempoReal {
     async carregarOperacoesAtivas() {
         const query = `
             SELECT 
-                uo.id, uo.user_id, uo.symbol, uo.side,
-                uo.entry_price, uo.quantity, uo.leverage,
-                uo.take_profit_price, uo.stop_loss_price,
+                uo.id, uo.user_id, uo.symbol, uo.operation_type as side,
+                uo.entry_price, uo.amount as quantity, uo.leverage,
+                uo.take_profit, uo.stop_loss,
                 uo.status, uo.created_at,
                 u.name as user_name, u.email
             FROM user_operations uo
             JOIN users u ON uo.user_id = u.id
-            WHERE uo.status IN ('OPEN', 'PENDING')
+            WHERE uo.status IN ('open', 'closed')
             ORDER BY uo.created_at DESC
         `;
 
@@ -221,15 +221,15 @@ class IASupervisorTradeTempoReal {
     async buscarOperacoesAtivas() {
         const query = `
             SELECT 
-                uo.id, uo.user_id, uo.symbol, uo.side,
-                uo.entry_price, uo.current_price, uo.quantity, uo.leverage,
-                uo.take_profit_price, uo.stop_loss_price,
+                uo.id, uo.user_id, uo.symbol, uo.operation_type as side,
+                uo.entry_price, uo.current_price, uo.amount as quantity, uo.leverage,
+                uo.take_profit, uo.stop_loss,
                 uo.status, uo.created_at, uo.updated_at,
                 u.name as user_name, u.email,
                 EXTRACT(MINUTES FROM (NOW() - uo.created_at)) as minutos_aberta
             FROM user_operations uo
             JOIN users u ON uo.user_id = u.id
-            WHERE uo.status IN ('OPEN', 'PENDING')
+            WHERE uo.status = 'open'
             ORDER BY uo.created_at ASC
         `;
 
@@ -274,8 +274,8 @@ class IASupervisorTradeTempoReal {
     }
 
     async verificarAlertasProximidade(operacao, pl) {
-        const tpPrice = parseFloat(operacao.take_profit_price);
-        const slPrice = parseFloat(operacao.stop_loss_price);
+        const tpPrice = parseFloat(operacao.take_profit);
+        const slPrice = parseFloat(operacao.stop_loss);
         const currentPrice = parseFloat(operacao.current_price);
 
         // Verificar proximidade de TP (95% do caminho)
@@ -347,12 +347,12 @@ class IASupervisorTradeTempoReal {
     async buscarOperacoesPorDirecao(direcao) {
         const query = `
             SELECT 
-                uo.id, uo.user_id, uo.symbol, uo.side,
-                uo.entry_price, uo.current_price, uo.quantity,
+                uo.id, uo.user_id, uo.symbol, uo.operation_type as side,
+                uo.entry_price, uo.current_price, uo.amount as quantity,
                 uo.created_at, u.name as user_name
             FROM user_operations uo
             JOIN users u ON uo.user_id = u.id
-            WHERE uo.status = 'OPEN' AND uo.side = $1
+            WHERE uo.status = 'open' AND uo.operation_type = $1
             ORDER BY uo.created_at ASC
         `;
 

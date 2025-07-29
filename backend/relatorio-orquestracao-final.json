@@ -1,0 +1,194 @@
+{
+  "timestamp": "2025-07-29T14:41:26.549Z",
+  "status_geral": true,
+  "categorias": {
+    "database": {
+      "status": true,
+      "detalhes": [
+        {
+          "test": "Conexão principal",
+          "status": true,
+          "value": {
+            "timestamp": "2025-07-29T14:41:23.679Z",
+            "version": "PostgreSQL 16.8 (Debian 16.8-1.pgdg120+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14) 12.2.0, 64-bit"
+          }
+        },
+        {
+          "test": "Tabela usuario_configuracoes",
+          "status": true,
+          "value": {
+            "count": "9"
+          }
+        },
+        {
+          "test": "Usuários ativos",
+          "status": true,
+          "value": {
+            "count": "9"
+          }
+        },
+        {
+          "test": "Operações em andamento",
+          "status": true,
+          "value": {
+            "count": "0"
+          }
+        },
+        {
+          "test": "Logs de sistema recentes",
+          "status": true,
+          "value": {
+            "count": "4"
+          }
+        }
+      ]
+    },
+    "services": {
+      "status": true,
+      "detalhes": [
+        {
+          "servico": "sistema-webhook-automatico.js",
+          "status": true,
+          "tamanho": "14.82KB",
+          "modificado": "2025-07-29T13:56:17.855Z"
+        },
+        {
+          "servico": "central-indicadores-final.js",
+          "status": true,
+          "tamanho": "30.39KB",
+          "modificado": "2025-07-29T14:26:29.577Z"
+        },
+        {
+          "servico": "gestor-comissionamento-final.js",
+          "status": true,
+          "tamanho": "14.68KB",
+          "modificado": "2025-07-29T13:53:13.605Z"
+        },
+        {
+          "servico": "monitor-inteligente-operacoes.js",
+          "status": true,
+          "tamanho": "23.10KB",
+          "modificado": "2025-07-29T13:32:53.872Z"
+        },
+        {
+          "servico": "usuario-configuracoes-tp-sl.js",
+          "status": true,
+          "tamanho": "0.93KB",
+          "modificado": "2025-07-29T14:39:44.273Z"
+        },
+        {
+          "servico": "auditoria-completa-sistema.js",
+          "status": true,
+          "tamanho": "24.53KB",
+          "modificado": "2025-07-29T14:32:19.818Z"
+        }
+      ]
+    },
+    "integrations": {
+      "status": true,
+      "detalhes": [
+        {
+          "api": "Fear & Greed",
+          "status": true,
+          "valor": "73",
+          "classificacao": "Greed"
+        },
+        {
+          "tipo": "env",
+          "nome": "DATABASE_URL",
+          "status": true
+        },
+        {
+          "tipo": "env",
+          "nome": "NODE_ENV",
+          "status": false
+        }
+      ]
+    },
+    "processes": {
+      "status": true,
+      "detalhes": [
+        {
+          "processo": "Processamento de sinais",
+          "status": false,
+          "eventos": 0
+        },
+        {
+          "processo": "Monitoramento IA",
+          "status": true,
+          "eventos": 2
+        },
+        {
+          "processo": "Comissionamento automático",
+          "status": false,
+          "eventos": 0
+        },
+        {
+          "processo": "Webhook logs",
+          "status": false,
+          "eventos": 0
+        }
+      ]
+    },
+    "automation": {
+      "status": true,
+      "detalhes": [
+        {
+          "tabela": "users",
+          "status": true,
+          "registros": 9,
+          "colunas": 31
+        },
+        {
+          "tabela": "operations",
+          "status": true,
+          "registros": 3,
+          "colunas": 20
+        },
+        {
+          "tabela": "signals",
+          "status": true,
+          "registros": 0,
+          "colunas": 11
+        },
+        {
+          "tabela": "commissions",
+          "status": true,
+          "registros": 0,
+          "colunas": 5
+        },
+        {
+          "tabela": "affiliates",
+          "status": true,
+          "registros": 2,
+          "colunas": 14
+        },
+        {
+          "tabela": "usuario_configuracoes",
+          "status": true,
+          "registros": 9,
+          "colunas": 16
+        },
+        {
+          "tabela": "ai_logs",
+          "status": true,
+          "registros": 4,
+          "colunas": 6
+        },
+        {
+          "tabela": "webhook_logs",
+          "status": true,
+          "registros": 2,
+          "colunas": 11
+        }
+      ]
+    }
+  },
+  "resumo": {
+    "database_ok": true,
+    "services_ok": true,
+    "integrations_ok": true,
+    "processes_ok": true,
+    "automation_ok": true
+  }
+}

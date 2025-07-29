@@ -1,0 +1,39 @@
+{
+  "timestamp": "2025-07-29T13:48:54.594Z",
+  "conformidade": {
+    "receitas_stripe": false,
+    "sistema_creditos": false,
+    "comissionamento": false,
+    "saldos_minimos": false,
+    "conversao_cambio": false
+  },
+  "problemas": [
+    "Coluna users.plan_type não encontrada",
+    "Coluna users.country não encontrada",
+    "Coluna user_operations.commission_amount não encontrada",
+    "Coluna payments.stripe_payment_id não encontrada",
+    "Coluna commission_calculations.commission_type não encontrada",
+    "Erro na análise de planos",
+    "Erro na verificação do comissionamento",
+    "Erro na análise do sistema de créditos",
+    "Erro na verificação de saldos mínimos",
+    "Erro na análise de conversão de câmbio"
+  ],
+  "sucessos": [
+    "Tabela users encontrada",
+    "Tabela user_operations encontrada",
+    "Tabela payments encontrada",
+    "Tabela subscriptions encontrada",
+    "Tabela affiliate_commissions encontrada",
+    "Tabela user_balances encontrada",
+    "Tabela commission_calculations encontrada",
+    "Gestores especializados identificados"
+  ],
+  "implementacoes_encontradas": {
+    "dia2-sistema-comissoes-correto.js": "Localizado no sistema",
+    "adicionar-creditos-final.js": "Localizado no sistema",
+    "sistema-webhook-automatico.js": "Localizado no sistema",
+    "monitor-inteligente-operacoes.js": "Localizado no sistema"
+  },
+  "recomendacoes": []
+}

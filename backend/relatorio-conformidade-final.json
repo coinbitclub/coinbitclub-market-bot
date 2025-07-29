@@ -1,0 +1,72 @@
+{
+  "timestamp": "2025-07-29T13:35:03.312Z",
+  "conformidade": false,
+  "problemas": [
+    "Webhook não processa sinais"
+  ],
+  "sucessos": [
+    "Sistema principal funcionando",
+    "Monitor inteligente funcionando",
+    "Sistema de comissões conforme especificação",
+    "Ausência de duplicidades confirmada",
+    "Integração inteligente implementada"
+  ],
+  "componentes": {
+    "sistema": {
+      "status": "ATIVO",
+      "dados": {
+        "status": "ATIVO",
+        "sistema": "Webhook Automatico Simplificado",
+        "fearGreed": {
+          "valor": 50,
+          "categoria": "Neutral",
+          "fonte": "Fallback"
+        },
+        "estatisticas": {
+          "sinaisRecebidos": 0,
+          "operacoesAbertas": 0,
+          "sinaisRejeitados": 0,
+          "iniciadoEm": "2025-07-29T13:33:54.831Z"
+        },
+        "timestamp": "2025-07-29T13:35:01.251Z"
+      }
+    },
+    "monitor": {
+      "status": "ATIVO",
+      "stats": {
+        "operacoesMonitoradas": 0,
+        "fechamentosTP": 0,
+        "fechamentosSL": 0,
+        "fechamentosManuais": 0,
+        "comissoesCalculadas": 0,
+        "receitaTotal": 0,
+        "operacoesAtivas": 0,
+        "monitoramentoAtivo": true,
+        "ultimaAtualizacao": "2025-07-29T13:35:01.290Z"
+      },
+      "relatorio": {
+        "estatisticas": {
+          "operacoesMonitoradas": 0,
+          "fechamentosTP": 0,
+          "fechamentosSL": 0,
+          "fechamentosManuais": 0,
+          "comissoesCalculadas": 0,
+          "receitaTotal": 0,
+          "operacoesAtivas": 0,
+          "monitoramentoAtivo": true,
+          "ultimaAtualizacao": "2025-07-29T13:35:01.295Z"
+        },
+        "operacoesMonitoradas": [],
+        "configuracao": {
+          "intervalMonitoramento": 30000,
+          "limiteTempo": 120000,
+          "percentualTP": 15,
+          "percentualSL": 10,
+          "alavancagem": 5,
+          "percentualComissao": 0.3
+        }
+      }
+    }
+  },
+  "conclusao": "SISTEMA REQUER CORREÇÕES"
+}
