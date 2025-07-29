@@ -271,12 +271,20 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health Check principal - Completo
+// Health Check principal - Completo e Robusto
 app.get('/health', async (req, res) => {
   console.log('🏥 Health check multiserviço requisitado');
   
   try {
-    const dbStatus = await testDatabaseConnection();
+    // Tentar conexão DB mas não falhar se não conseguir
+    let dbStatus;
+    try {
+      dbStatus = await testDatabaseConnection();
+    } catch (dbError) {
+      console.log('⚠️ DB não disponível no health check, mas servidor OK');
+      dbStatus = { connected: false, error: 'DB unavailable during healthcheck' };
+    }
+    
     const uptime = Math.floor((Date.now() - START_TIME) / 1000);
     const memoryUsage = process.memoryUsage();
     
@@ -1322,5 +1330,3 @@ process.on('SIGINT', () => {
 });
 
 module.exports = app;
-/ /   R a i l w a y   D e p l o y   T i m e s t a m p :   2 0 2 5 - 0 7 - 2 9   1 4 : 1 5 : 0 1  
- 

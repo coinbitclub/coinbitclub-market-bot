@@ -271,12 +271,20 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health Check principal - Completo
+// Health Check principal - Completo e Robusto
 app.get('/health', async (req, res) => {
   console.log('🏥 Health check multiserviço requisitado');
   
   try {
-    const dbStatus = await testDatabaseConnection();
+    // Tentar conexão DB mas não falhar se não conseguir
+    let dbStatus;
+    try {
+      dbStatus = await testDatabaseConnection();
+    } catch (dbError) {
+      console.log('⚠️ DB não disponível no health check, mas servidor OK');
+      dbStatus = { connected: false, error: 'DB unavailable during healthcheck' };
+    }
+    
     const uptime = Math.floor((Date.now() - START_TIME) / 1000);
     const memoryUsage = process.memoryUsage();
     
