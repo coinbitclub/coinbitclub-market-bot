@@ -15,9 +15,6 @@ const chavesRoutes = require('./routes/chavesRoutes');
 const usuariosRoutes = require('./routes/usuariosRoutes');
 const afiliadosRoutes = require('./routes/afiliadosRoutes');
 
-// Importar webhook do TradingView
-const { createWebhookRoute } = require('./correcao-webhook-tradingview');
-
 console.log('🚀 INICIANDO SERVIDOR COINBITCLUB COMPLETO...');
 
 const app = express();
@@ -106,8 +103,63 @@ app.use('/api/gestores/chaves', chavesRoutes);
 app.use('/api/gestores/usuarios', usuariosRoutes);
 app.use('/api/gestores/afiliados', afiliadosRoutes);
 
-// ===== CONFIGURAR WEBHOOK TRADINGVIEW =====
-createWebhookRoute(app);
+// ===== WEBHOOK TRADINGVIEW =====
+// Middleware de autenticação simples para webhook
+const authenticateWebhook = (req, res, next) => {
+  const token = req.headers.authorization?.replace('Bearer ', '') || 
+                req.headers['x-webhook-token'] || 
+                req.query.token || 
+                req.body?.token;
+  
+  const validTokens = ['210406', 'coinbitclub-webhook-2025', 'tradingview-secret-key'];
+  
+  if (token && validTokens.includes(token)) {
+    return next();
+  }
+  
+  // Permitir IPs do TradingView
+  const tradingViewIPs = ['34.212.75.30', '52.32.178.7', '52.89.214.238'];
+  const clientIP = req.ip || req.headers['x-forwarded-for']?.split(',')[0]?.trim();
+  
+  if (tradingViewIPs.includes(clientIP)) {
+    return next();
+  }
+  
+  return res.status(401).json({ error: 'Unauthorized', message: 'Token necessário' });
+};
+
+// Rota principal do webhook
+app.post('/api/webhooks/signal', authenticateWebhook, (req, res) => {
+  try {
+    console.log('📡 SINAL TRADINGVIEW RECEBIDO:', JSON.stringify(req.body));
+    
+    const signal = {
+      id: `signal_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      data: req.body
+    };
+    
+    res.status(200).json({
+      success: true,
+      message: 'Sinal recebido com sucesso',
+      signalId: signal.id,
+      timestamp: signal.timestamp
+    });
+  } catch (error) {
+    console.error('❌ Erro ao processar sinal:', error.message);
+    res.status(500).json({ error: 'Erro interno', message: error.message });
+  }
+});
+
+// Rota de teste
+app.get('/api/webhooks/signal/test', (req, res) => {
+  res.json({
+    message: 'Endpoint de webhook ativo',
+    timestamp: new Date().toISOString(),
+    tokens: ['210406', 'coinbitclub-webhook-2025']
+  });
+});
+
 console.log('📡 Webhook TradingView configurado: /api/webhooks/signal');
 
 // ===== ROTAS WEBHOOK ZAPI (TEMPORÁRIAS) =====
