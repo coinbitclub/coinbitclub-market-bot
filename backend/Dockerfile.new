@@ -1,0 +1,37 @@
+# Railway Deployment - Fixed Configuration
+FROM node:18-alpine
+
+# Update package index and install dumb-init
+RUN apk update && apk add --no-cache dumb-init
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies only
+RUN npm ci --only=production --no-audit --no-fund
+
+# Copy main server file
+COPY server-multiservice-complete.cjs ./
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+
+# Change ownership
+RUN chown -R nodejs:nodejs /app
+
+# Switch to non-root user
+USER nodejs
+
+# Expose port
+EXPOSE 3000
+
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Start application with dumb-init
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "server-multiservice-complete.cjs"]
