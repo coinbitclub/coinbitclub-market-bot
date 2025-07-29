@@ -1,4 +1,4 @@
-# Use Node.js 18 Alpine image
+# CoinBitClub Market Bot V3 - Sistema Integrado
 FROM node:18-alpine
 
 # Install dumb-init for proper signal handling
@@ -8,15 +8,16 @@ RUN apk add --no-cache dumb-init
 WORKDIR /app
 
 # Copy package files first for better caching
-COPY package*.json ./
+COPY package-clean.json ./package.json
 
 # Install dependencies
-RUN npm ci --only=production || npm install --production
+RUN npm ci --only=production --no-audit --no-fund
 
-# Copy the server file and necessary files
-COPY server-multiservice-complete.cjs ./
-COPY *.js ./
-COPY *.json ./
+# Copy the integrated system files
+COPY servidor-integrado-completo.js ./
+COPY sistema-orquestrador-completo.js ./
+COPY controlador-sistema-web.js ./
+COPY dashboard-live-data.js ./
 
 # Add nodejs user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
@@ -38,4 +39,4 @@ EXPOSE 3000
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start the application
-CMD ["node", "server-multiservice-complete.cjs"]
+CMD ["node", "servidor-integrado-completo.js"]
