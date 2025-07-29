@@ -1,4 +1,4 @@
-﻿nixpacks.toml
-.nixpacks
-node_modules/
-*.log
+﻿*.backup
+*.old
+server-multiservice*
+servidor-integrado*
