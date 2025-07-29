@@ -28,7 +28,7 @@ async function iniciarSistemaCompleto() {
         console.log('\n1️⃣ VERIFICANDO ARQUIVOS...');
         const arquivosNecessarios = [
             'ia-supervisor-trade-tempo-real.js',
-            'schema-ia-supervisor-tempo-real.sql',
+            'schema-ia-supervisor-tempo-real-simplificado.sql',
             'dashboard-ia-supervisor-tempo-real.html'
         ];
 
@@ -44,7 +44,7 @@ async function iniciarSistemaCompleto() {
         // 2. Aplicar schema no banco de dados
         console.log('\n2️⃣ APLICANDO SCHEMA NO BANCO DE DADOS...');
         
-        const schemaSQL = fs.readFileSync('schema-ia-supervisor-tempo-real.sql', 'utf8');
+        const schemaSQL = fs.readFileSync('schema-ia-supervisor-tempo-real-simplificado.sql', 'utf8');
         await pool.query(schemaSQL);
         console.log('   ✅ Schema aplicado com sucesso');
 
@@ -81,25 +81,22 @@ async function iniciarSistemaCompleto() {
         console.log('\n5️⃣ VERIFICANDO CONFIGURAÇÕES DE USUÁRIOS...');
         
         const usuariosQuery = `
-            SELECT u.id, u.name, u.email, 
-                   uc.leverage_default, uc.take_profit_multiplier, uc.stop_loss_multiplier
+            SELECT u.id, u.name, u.email
             FROM users u
-            LEFT JOIN usuario_configuracoes uc ON u.id = uc.user_id
             WHERE u.email IN ('pamaral15@hotmail.com')
             LIMIT 5;
         `;
         
         const usuarios = await pool.query(usuariosQuery);
-        console.log(`   ✅ ${usuarios.rows.length} usuários configurados:`);
+        console.log(`   ✅ ${usuarios.rows.length} usuários encontrados:`);
         
         usuarios.rows.forEach(user => {
-            console.log(`      👤 ${user.name} (${user.email})`);
-            if (user.leverage_default) {
-                console.log(`         🎯 Leverage: ${user.leverage_default}x | TP: ${user.take_profit_multiplier}x | SL: ${user.stop_loss_multiplier}x`);
-            } else {
-                console.log('         ⚠️ Configurações não encontradas - executar corrigir-tp-sl-configuracoes.js');
-            }
+            console.log(`      👤 ${user.name} (${user.email}) - ID: ${user.id}`);
         });
+        
+        if (usuarios.rows.length === 0) {
+            console.log('   ⚠️ Nenhum usuário encontrado - Execute npm run configurar-db');
+        }
 
         // 6. Abrir dashboard no navegador
         console.log('\n6️⃣ ABRINDO DASHBOARD DE MONITORAMENTO...');
