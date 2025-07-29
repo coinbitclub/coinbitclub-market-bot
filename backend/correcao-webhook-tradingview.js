@@ -4,6 +4,8 @@
  * Configuração de autenticação para receber sinais
  */
 
+const express = require('express');
+
 // Middleware de autenticação para webhooks TradingView
 function authenticateWebhook(req, res, next) {
     // Método 1: Token no header
