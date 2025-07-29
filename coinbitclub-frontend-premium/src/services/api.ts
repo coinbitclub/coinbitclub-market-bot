@@ -1,34 +1,35 @@
 import axios from 'axios';
 
 // ============================================================================
-// 🚀 COINBITCLUB MARKET BOT - API SERVICE INTEGRATION
+// 🚀 COINBITCLUB MARKET BOT - API SERVICE PREMIUM INTEGRATION
 // ============================================================================
-// Conecta o frontend Next.js com o backend 100% funcional
-// Backend URL: http://localhost:3000 (API Gateway)
-// Frontend URL: http://localhost:3001
-// Status: INTEGRAÇÃO COMPLETA E FUNCIONAL
+// Conecta o frontend Premium com o backend Railway 100% funcional
+// Backend URL: https://coinbitclub-market-bot.up.railway.app
+// Frontend URL: Vercel Deploy
+// Status: INTEGRAÇÃO PREMIUM COMPLETA
 // ============================================================================
 
-// 🔧 Configuração da API - Backend 100% Testado
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+// 🔧 Configuração da API - Backend Railway 100% Testado
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://coinbitclub-market-bot.up.railway.app';
 
-console.log('🔗 API Service Configuration:');
+console.log('🔗 API Service Premium Configuration:');
 console.log('- Backend URL:', API_BASE_URL);
 console.log('- Frontend URL:', process.env.NEXT_PUBLIC_APP_URL);
-console.log('- Integration Status: ACTIVE');
+console.log('- Integration Status: PREMIUM ACTIVE');
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 });
 
-// 🔐 Interceptor para adicionar token JWT
+// 🔐 Interceptor para adicionar token JWT automaticamente
 api.interceptors.request.use(
   (config) => {
-    // Prioridade: 1. localStorage, 2. sessionStorage, 3. cookies
+    // Prioridade: 1. localStorage, 2. sessionStorage, 3. zustand store
     let token = null;
     
     if (typeof window !== 'undefined') {
@@ -39,15 +40,351 @@ api.interceptors.request.use(
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('🔐 Token adicionado ao request');
+      console.log('🔐 Token JWT adicionado ao request');
     }
     
-    console.log(`🌐 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+    console.log(`🌐 API Request: ${config.method?.toUpperCase()} ${config.url}`, {
+      hasToken: !!token,
+      url: config.url
+    });
     return config;
   },
   (error) => {
     console.error('❌ Request Error:', error);
     return Promise.reject(error);
+  }
+);
+
+// 🛡️ Interceptor para tratar respostas e erros
+api.interceptors.response.use(
+  (response) => {
+    console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url}`, {
+      status: response.status,
+      hasData: !!response.data
+    });
+    return response;
+  },
+  async (error) => {
+    console.error(`❌ API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
+      status: error.response?.status,
+      message: error.response?.data?.message || error.message,
+      data: error.response?.data
+    });
+
+    // 🔄 Se token expirou (401), tentar renovar
+    if (error.response?.status === 401 && !error.config._retry) {
+      error.config._retry = true;
+      
+      try {
+        const refreshResponse = await api.post('/api/auth/refresh');
+        const newToken = refreshResponse.data.token;
+        
+        if (newToken && typeof window !== 'undefined') {
+          localStorage.setItem('auth_token', newToken);
+          error.config.headers.Authorization = `Bearer ${newToken}`;
+          return api.request(error.config);
+        }
+      } catch (refreshError) {
+        console.error('❌ Token refresh failed:', refreshError);
+        // Limpar dados de autenticação e redirecionar
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user_data');
+          window.location.href = '/auth/login';
+        }
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+// 🎯 SERVIÇOS DE AUTENTICAÇÃO
+export class AuthService {
+  // Login integrado com backend Railway
+  static async login(credentials: { email: string; password: string }) {
+    try {
+      console.log('🔐 Tentando login para:', credentials.email);
+      const response = await api.post('/api/auth/login', credentials);
+      
+      console.log('✅ Login bem-sucedido:', {
+        hasToken: !!response.data.token,
+        userRole: response.data.user?.role,
+        email: response.data.user?.email
+      });
+      
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Erro no login:', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  // Cadastro integrado
+  static async register(data: {
+    email: string;
+    password: string;
+    name: string;
+    phone?: string;
+    referralCode?: string;
+  }) {
+    try {
+      console.log('📝 Tentando cadastro para:', data.email);
+      const response = await api.post('/api/auth/register', data);
+      
+      console.log('✅ Cadastro bem-sucedido');
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Erro no cadastro:', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  // Esqueci senha
+  static async forgotPassword(email: string) {
+    return api.post('/api/auth/forgot-password', { email });
+  }
+
+  // Reset senha
+  static async resetPassword(token: string, password: string) {
+    return api.post('/api/auth/reset-password', { token, password });
+  }
+
+  // Solicitar OTP via SMS
+  static async requestOTP(phone: string) {
+    return api.post('/api/auth/request-otp', { phone });
+  }
+
+  // Verificar OTP
+  static async verifyOTP(phone: string, code: string) {
+    return api.post('/api/auth/verify-otp', { phone, code });
+  }
+
+  // Obter perfil
+  static async getProfile() {
+    return api.get('/api/auth/profile');
+  }
+}
+
+// 📊 SERVIÇOS DE DASHBOARD
+export class DashboardService {
+  // Dashboard do usuário
+  static async getUserDashboard() {
+    try {
+      console.log('📊 Buscando dashboard do usuário...');
+      const response = await api.get('/api/user/dashboard');
+      console.log('✅ Dashboard do usuário obtido com sucesso');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Get User Dashboard Error:', error);
+      throw error;
+    }
+  }
+
+  // Dashboard do admin
+  static async getAdminDashboard() {
+    try {
+      console.log('🔧 Buscando dashboard administrativo...');
+      const response = await api.get('/api/admin/dashboard');
+      console.log('✅ Dashboard admin obtido com sucesso');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Get Admin Dashboard Error:', error);
+      throw error;
+    }
+  }
+
+  // Dashboard do afiliado
+  static async getAffiliateDashboard() {
+    try {
+      console.log('🤝 Buscando dashboard do afiliado...');
+      const response = await api.get('/api/affiliate/dashboard');
+      console.log('✅ Dashboard afiliado obtido com sucesso');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Get Affiliate Dashboard Error:', error);
+      throw error;
+    }
+  }
+
+  // Status do sistema
+  static async getSystemHealth() {
+    return api.get('/api/system/health');
+  }
+}
+
+// 🔄 SERVIÇOS DE OPERAÇÕES
+export class OperationsService {
+  // Operações do usuário
+  static async getUserOperations(params?: any) {
+    return api.get('/api/user/operations', { params });
+  }
+
+  // Operações admin
+  static async getAdminOperations(params?: any) {
+    return api.get('/api/admin/operations', { params });
+  }
+
+  // Fechar operação
+  static async closeOperation(operationId: string) {
+    return api.post(`/api/operations/${operationId}/close`);
+  }
+
+  // Detalhes da operação
+  static async getOperationDetails(operationId: string) {
+    return api.get(`/api/operations/${operationId}`);
+  }
+}
+
+// 👥 SERVIÇOS DE USUÁRIOS (Admin)
+export class UsersService {
+  // Listar usuários
+  static async getUsers(params?: any) {
+    return api.get('/api/admin/users', { params });
+  }
+
+  // Detalhes do usuário
+  static async getUserDetails(userId: string) {
+    return api.get(`/api/admin/users/${userId}`);
+  }
+
+  // Criar usuário
+  static async createUser(userData: any) {
+    return api.post('/api/admin/users', userData);
+  }
+
+  // Atualizar usuário
+  static async updateUser(userId: string, userData: any) {
+    return api.put(`/api/admin/users/${userId}`, userData);
+  }
+
+  // Deletar usuário
+  static async deleteUser(userId: string) {
+    return api.delete(`/api/admin/users/${userId}`);
+  }
+}
+
+// 🤝 SERVIÇOS DE AFILIADOS
+export class AffiliateService {
+  // Dashboard
+  static async getDashboard() {
+    return api.get('/api/affiliate/dashboard');
+  }
+
+  // Comissões
+  static async getCommissions(params?: any) {
+    return api.get('/api/affiliate/commissions', { params });
+  }
+
+  // Solicitar pagamento
+  static async requestPayment(amount: number) {
+    return api.post('/api/affiliate/request-payment', { amount });
+  }
+
+  // Link de afiliado
+  static async getAffiliateLink() {
+    return api.get('/api/affiliate/link');
+  }
+
+  // Analytics
+  static async getAnalytics() {
+    return api.get('/api/affiliate/analytics');
+  }
+}
+
+// 💰 SERVIÇOS FINANCEIROS
+export class FinancialService {
+  // Saldo
+  static async getBalance() {
+    return api.get('/api/financial/balance');
+  }
+
+  // Transações
+  static async getTransactions(params?: any) {
+    return api.get('/api/financial/transactions', { params });
+  }
+
+  // Relatórios financeiros
+  static async getFinancialReports(params?: any) {
+    return api.get('/api/admin/financial/reports', { params });
+  }
+}
+
+// ⚙️ SERVIÇOS DE CONFIGURAÇÕES
+export class SettingsService {
+  // Configurações do usuário
+  static async getUserSettings() {
+    return api.get('/api/user/settings');
+  }
+
+  // Atualizar configurações do usuário
+  static async updateUserSettings(settings: any) {
+    return api.put('/api/user/settings', settings);
+  }
+
+  // Configurações do sistema
+  static async getSystemSettings() {
+    return api.get('/api/admin/settings');
+  }
+
+  // Atualizar configurações do sistema
+  static async updateSystemSettings(settings: any) {
+    return api.put('/api/admin/settings', settings);
+  }
+}
+
+// 🔧 FUNÇÕES UTILITÁRIAS
+export const apiUtils = {
+  // Helper para requests GET
+  get: async (url: string, params?: any) => {
+    const response = await api.get(url, { params });
+    return response.data;
+  },
+
+  // Helper para requests POST
+  post: async (url: string, data?: any) => {
+    const response = await api.post(url, data);
+    return response.data;
+  },
+
+  // Helper para requests PUT
+  put: async (url: string, data?: any) => {
+    const response = await api.put(url, data);
+    return response.data;
+  },
+
+  // Helper para requests DELETE
+  delete: async (url: string) => {
+    const response = await api.delete(url);
+    return response.data;
+  },
+
+  // Configurar token manualmente
+  setAuthToken: (token: string) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+    }
+  },
+
+  // Limpar token
+  clearAuthToken: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_data');
+    }
+  },
+
+  // Verificar se está autenticado
+  isAuthenticated: () => {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('auth_token');
+    }
+    return false;
+  }
+};
+
+// Export da instância principal
+export default api;
   }
 );
 

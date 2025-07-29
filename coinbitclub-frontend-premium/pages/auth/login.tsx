@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { NextPage } from 'next';
+import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import { useAuth } from '../../src/store/authStore';
+import { AuthService } from '../../src/services/api';
 
-const LoginPage = () => {
+const LoginPage: NextPage = () => {
+  const router = useRouter();
+  const { login, isAuthenticated, user, loading, error, clearError } = useAuth();
+  
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
