@@ -1,10 +1,5 @@
-﻿providers = ["node"]
+[variables]
+NPM_CONFIG_PACKAGE_LOCK = "false"
 
 [phases.install]
-cmd = "npm ci --only=production"
-
-[phases.start]
-cmd = "node server.js"
-
-[variables]
-NODE_ENV = "production"
+cmds = ["npm install"]
