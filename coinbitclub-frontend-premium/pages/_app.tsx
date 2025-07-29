@@ -1,7 +1,7 @@
 import type { AppProps } from 'next/app';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { GlobalPremiumStyles } from '../src/styles/theme';
+import { GlobalPremiumStyles } from '../src/styles/GlobalPremiumStyles';
 import { useAuth } from '../src/store/authStore';
 import '../styles/globals.css';
 
