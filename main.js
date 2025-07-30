@@ -138,6 +138,8 @@ async function processCoinBitClubSignal(signalData, res) {
         console.log(`   💰 Preço: ${signalData.close}`);
 
         // Salvar na tabela signals (estrutura compatível)
+        const alertMessage = `${signalData.signal || 'SINAL'}: ${symbol}${signalData.diff_btc_ema7 ? ` (diff: ${signalData.diff_btc_ema7}%)` : ''}`;
+        
         const result = await pool.query(`
             INSERT INTO signals (
                 symbol, action, price, quantity, strategy, timeframe, 
@@ -152,7 +154,7 @@ async function processCoinBitClubSignal(signalData, res) {
             null, // quantity não usado no CoinBitClub
             'coinbitclub_v2',
             '30m',
-            `${signalData.signal}: ${symbol} (diff: ${signalData.diff_btc_ema7}%)`,
+            alertMessage,
             false
         ]);
 
