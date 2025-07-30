@@ -156,79 +156,9 @@ async function processCoinBitClubSignal(signalData, res) {
             false
         ]);
 
-        const signalId = result.rows[0].id;
         console.log('✅ Sinal CoinBitClub salvo com ID:', signalId);
 
-        // Tentar salvar dados detalhados (opcional - se falhar, não impede o processamento principal)
-        try {
-            await pool.query(`
-                CREATE TABLE IF NOT EXISTS coinbitclub_signals (
-                    id SERIAL PRIMARY KEY,
-                    signal_id INTEGER REFERENCES signals(id),
-                    symbol VARCHAR(20),
-                    signal_type VARCHAR(50),
-                    signal_strength VARCHAR(20),
-                    diff_btc_ema7 DECIMAL(10,4),
-                    ema9_30 DECIMAL(15,8),
-                    rsi_4h DECIMAL(5,2),
-                    rsi_15 DECIMAL(5,2),
-                    momentum_15 DECIMAL(15,8),
-                    atr_30 DECIMAL(15,8),
-                    atr_pct_30 DECIMAL(5,2),
-                    volume_30 DECIMAL(20,8),
-                    volume_ma_30 DECIMAL(20,8),
-                    crossed_above_ema9 BOOLEAN,
-                    crossed_below_ema9 BOOLEAN,
-                    golden_cross_30 BOOLEAN,
-                    death_cross_30 BOOLEAN,
-                    source_time TIMESTAMP,
-                    raw_data JSONB,
-                    created_at TIMESTAMP DEFAULT NOW()
-                );
-            `);
-
-            // Preparar dados para evitar problemas de JSON
-            const rawDataSafe = JSON.stringify(signalData).replace(/\u0000/g, '');
-
-            await pool.query(`
-                INSERT INTO coinbitclub_signals (
-                    signal_id, symbol, signal_type, signal_strength,
-                    diff_btc_ema7, ema9_30, rsi_4h, rsi_15, momentum_15,
-                    atr_30, atr_pct_30, volume_30, volume_ma_30,
-                    crossed_above_ema9, crossed_below_ema9,
-                    golden_cross_30, death_cross_30,
-                    source_time, raw_data
-                ) VALUES (
-                    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
-                    $14, $15, $16, $17, $18, $19
-                )
-            `, [
-                signalId,
-                symbol,
-                signalData.signal,
-                signalStrength,
-                parseFloat(signalData.diff_btc_ema7) || null,
-                parseFloat(signalData.ema9_30) || null,
-                parseFloat(signalData.rsi_4h) || null,
-                parseFloat(signalData.rsi_15) || null,
-                parseFloat(signalData.momentum_15) || null,
-                parseFloat(signalData.atr_30) || null,
-                parseFloat(signalData.atr_pct_30) || null,
-                parseFloat(signalData.vol_30) || null,
-                parseFloat(signalData.vol_ma_30) || null,
-                signalData.cruzou_acima_ema9 === "1",
-                signalData.cruzou_abaixo_ema9 === "1",
-                signalData.golden_cross_30 === "1",
-                signalData.death_cross_30 === "1",
-                signalData.time ? new Date(signalData.time).toISOString() : new Date().toISOString(),
-                rawDataSafe
-            ]);
-            
-            console.log('✅ Dados detalhados salvos em coinbitclub_signals');
-        } catch (detailError) {
-            console.log('⚠️ Erro ao salvar dados detalhados (não crítico):', detailError.message);
-        }
-
+        // Resposta de sucesso SEMPRE (sem tentar salvar dados detalhados por enquanto)
         return res.status(200).json({
             success: true,
             message: 'Sinal CoinBitClub processado com sucesso',
