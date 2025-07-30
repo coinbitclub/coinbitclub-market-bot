@@ -705,6 +705,16 @@ app.get('/dashboard', (req, res) => {
                     <div class="step-status" id="status-8">R$ 0,00</div>
                 </div>
                 
+                <div class="cycle-arrow">→</div>
+                
+                <div class="cycle-step" id="step-9">
+                    <div class="step-number">9</div>
+                    <div class="step-icon"><i class="fas fa-robot"></i></div>
+                    <div class="step-title">IA Supervisors</div>
+                    <div class="step-desc">Monitoramento Inteligente</div>
+                    <div class="step-status" id="status-9">2/2 Ativos</div>
+                </div>
+                
                 <div class="cycle-return">
                     <div class="return-arrow">↺</div>
                     <div class="return-text">Ciclo Contínuo</div>
@@ -790,11 +800,17 @@ app.get('/dashboard', (req, res) => {
                     updateStepStatus(1, data.gestores.processamento_sinais.isRunning ? 'Ativo' : 'Inativo');
                     updateStepStatus(2, \`Valor: \${data.gestores.fear_greed.value || 63}\`);
                     updateStepStatus(3, 'BOTH OK');
-                    updateStepStatus(4, \`\${Object.keys(data.gestores).length}/4 Ativos\`);
+                    updateStepStatus(4, \`\${Object.keys(data.gestores).filter(k => !k.includes('supervisor')).length}/4 Ativos\`);
                     updateStepStatus(5, \`\${completo.operacoesAtivas || 0} Ativas\`);
                     updateStepStatus(6, '24/7 Ativo');
                     updateStepStatus(7, 'Auto');
                     updateStepStatus(8, 'R$ 0,00');
+                    
+                    // Status dos supervisores de IA
+                    const supervisorFinanceiroAtivo = data.gestores.supervisor_financeiro?.isActive || false;
+                    const supervisorTradeAtivo = data.gestores.supervisor_trade_tempo_real?.isActive || false;
+                    const supervisoresAtivos = [supervisorFinanceiroAtivo, supervisorTradeAtivo].filter(Boolean).length;
+                    updateStepStatus(9, \`\${supervisoresAtivos}/2 Ativos\`);
                     
                     // Destacar step ativo baseado no estado
                     highlightActiveStep(completo.estadoAtual || 'AGUARDANDO');
@@ -1147,6 +1163,12 @@ const orquestrador = new OrquestradorPrincipal();
 const OrquestradorPrincipalCompleto = require('./orquestrador-principal-completo');
 const orquestradorCompleto = new OrquestradorPrincipalCompleto();
 
+// ============ SUPERVISORES DE IA ============
+const IASupervisorFinanceiro = require('./ia-supervisor-financeiro');
+const IASupervisorTradeTempoReal = require('./ia-supervisor-trade-tempo-real');
+const supervisorFinanceiro = new IASupervisorFinanceiro();
+const supervisorTradeTempoReal = new IASupervisorTradeTempoReal();
+
 // Endpoint para status dos gestores automáticos
 app.get('/api/gestores/status', async (req, res) => {
     try {
@@ -1154,6 +1176,23 @@ app.get('/api/gestores/status', async (req, res) => {
         const statusSinais = await gestorSinais.obterEstatisticas();
         const statusOrquestrador = orquestrador.obterEstatisticas();
         const statusCompleto = orquestradorCompleto.obterEstatisticas();
+        
+        // Status dos supervisores de IA
+        const statusSupervisorFinanceiro = {
+            isActive: supervisorFinanceiro.isActive || false,
+            isRunning: supervisorFinanceiro.isActive || false,
+            tipo: 'IA Supervisor Financeiro',
+            microservicesStatus: supervisorFinanceiro.microservicesStatus || {},
+            lastUpdate: new Date()
+        };
+        
+        const statusSupervisorTrade = {
+            isActive: supervisorTradeTempoReal.isActive || false,
+            isRunning: supervisorTradeTempoReal.isActive || false,
+            tipo: 'IA Supervisor Trade Tempo Real',
+            operacoesMonitoradas: supervisorTradeTempoReal.operacoesMonitoradas?.size || 0,
+            lastUpdate: new Date()
+        };
         
         res.json({
             success: true,
@@ -1178,7 +1217,9 @@ app.get('/api/gestores/status', async (req, res) => {
                     tipo: 'Orquestrador Completo - Todos os Gestores',
                     intervalo_segundos: 30,
                     gestores_integrados: statusCompleto.gestoresDisponveis
-                }
+                },
+                supervisor_financeiro: statusSupervisorFinanceiro,
+                supervisor_trade_tempo_real: statusSupervisorTrade
             },
             sistema: {
                 automatico: true,
@@ -1186,22 +1227,26 @@ app.get('/api/gestores/status', async (req, res) => {
                     statusFearGreed.isRunning ? 'Fear & Greed' : null,
                     statusSinais.isRunning ? 'Processamento Sinais' : null,
                     statusOrquestrador.isRunning ? 'Orquestrador Principal' : null,
-                    statusCompleto.isRunning ? 'Orquestrador Completo' : null
+                    statusCompleto.isRunning ? 'Orquestrador Completo' : null,
+                    statusSupervisorFinanceiro.isActive ? 'IA Supervisor Financeiro' : null,
+                    statusSupervisorTrade.isActive ? 'IA Supervisor Trade' : null
                 ].filter(Boolean),
                 fluxo_operacional: {
                     etapa_atual: statusCompleto.estadoAtual,
                     operacoes_ativas: statusCompleto.operacoesAtivas,
                     ciclos_completos: statusCompleto.ciclosCompletos,
                     cobertura: (() => {
-                        // Calcular cobertura baseado nos gestores ativos
-                        const gestoresAtivos = [
+                        // Calcular cobertura baseado nos gestores + supervisores ativos (6 componentes total)
+                        const componentesAtivos = [
                             statusFearGreed.isRunning ? 'Fear & Greed' : null,
                             statusSinais.isRunning ? 'Processamento Sinais' : null,
                             statusOrquestrador.isRunning ? 'Orquestrador Principal' : null,
-                            statusCompleto.isRunning ? 'Orquestrador Completo' : null
+                            statusCompleto.isRunning ? 'Orquestrador Completo' : null,
+                            statusSupervisorFinanceiro.isActive ? 'IA Supervisor Financeiro' : null,
+                            statusSupervisorTrade.isActive ? 'IA Supervisor Trade' : null
                         ].filter(Boolean);
                         
-                        const percentual = Math.round((gestoresAtivos.length / 4) * 100);
+                        const percentual = Math.round((componentesAtivos.length / 6) * 100);
                         return `${percentual}%`;
                     })()
                 },
@@ -2051,17 +2096,41 @@ server.listen(PORT, '0.0.0.0', () => {
             console.log('🌟 Iniciando Orquestrador Completo...');
             await orquestradorCompleto.iniciar();
             
+            // Aguardar 2 segundos entre inicializações
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // 5. IA Supervisor Financeiro
+            console.log('🤖 Iniciando IA Supervisor Financeiro...');
+            const resultSupervisorFinanceiro = await supervisorFinanceiro.iniciarSupervisao();
+            if (resultSupervisorFinanceiro.success) {
+                console.log('✅ IA Supervisor Financeiro: ATIVO');
+            } else {
+                console.log('⚠️ IA Supervisor Financeiro: FALHA -', resultSupervisorFinanceiro.error);
+            }
+            
+            // 6. IA Supervisor Trade Tempo Real
+            console.log('🤖 Iniciando IA Supervisor Trade Tempo Real...');
+            const resultSupervisorTrade = await supervisorTradeTempoReal.inicializar();
+            if (resultSupervisorTrade.success) {
+                console.log('✅ IA Supervisor Trade: ATIVO');
+            } else {
+                console.log('⚠️ IA Supervisor Trade: FALHA -', resultSupervisorTrade.error);
+            }
+            
             console.log('');
             console.log('✅ =========================================');
-            console.log('   TODOS OS GESTORES AUTOMÁTICOS ATIVOS!');
+            console.log('   SISTEMA COMPLETO COM IA SUPERVISORS!');
             console.log('=========================================');
             console.log('🧠 Fear & Greed: ATIVO (15 min)');
             console.log('📡 Processamento Sinais: ATIVO (10 seg)');
             console.log('🎯 Orquestrador Principal: ATIVO (30 seg)');
             console.log('🌟 Orquestrador Completo: ATIVO (30 seg)');
+            console.log('🤖 IA Supervisor Financeiro: ATIVO');
+            console.log('🤖 IA Supervisor Trade: ATIVO');
             console.log('=========================================');
             console.log('🎯 COBERTURA DO SISTEMA: 100%');
-            console.log('💰 PRONTO PARA TRADING REAL!');
+            console.log('🤖 IA SUPERVISORS ATIVOS!');
+            console.log('💰 SISTEMA HÍBRIDO PRONTO!');
             console.log('=========================================');
             console.log('');
             

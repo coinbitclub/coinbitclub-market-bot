@@ -1546,6 +1546,7 @@ class IASupervisorFinanceiroBackoffice {
         this.monitoringIntervals.forEach(interval => {
             clearInterval(interval);
         });
+    }
         
     // ==========================================
     // MÉTODOS UTILITÁRIOS FINAIS

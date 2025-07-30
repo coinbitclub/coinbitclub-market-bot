@@ -81,10 +81,203 @@ app.post('/api/webhooks/signal', async (req, res) => {
 
         const signalData = req.body;
 
-        // Validar dados obrigatórios
-        if (!signalData.symbol || !signalData.action) {
-            return res.status(400).json({ error: 'Dados inválidos - symbol e action são obrigatórios' });
+        // DETECÇÃO AUTOMÁTICA: CoinBitClub vs Sinal Simples
+        const isCoinBitClubSignal = signalData.diff_btc_ema7 !== undefined || 
+                                   signalData.ema9_30 !== undefined ||
+                                   signalData.rsi_4h !== undefined;
+
+        if (isCoinBitClubSignal) {
+            console.log('🎯 SINAL COINBITCLUB DETECTADO');
+            return await processCoinBitClubSignal(signalData, res);
+        } else {
+            console.log('📊 SINAL SIMPLES DETECTADO');
+            return await processSimpleSignal(signalData, res);
         }
+
+    } catch (error) {
+        console.error('❌ Erro no webhook TradingView:', error);
+        return res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+});
+
+// Função para processar sinais do CoinBitClub
+async function processCoinBitClubSignal(signalData, res) {
+    try {
+        // Validar campos obrigatórios do CoinBitClub
+        if (!signalData.ticker && !signalData.symbol) {
+            return res.status(400).json({ 
+                error: 'CoinBitClub: ticker/symbol obrigatório' 
+            });
+        }
+
+        if (!signalData.signal) {
+            return res.status(400).json({ 
+                error: 'CoinBitClub: campo signal obrigatório' 
+            });
+        }
+
+        // Mapear tipos de sinal CoinBitClub para ações
+        const signalAction = getCoinBitClubAction(signalData.signal);
+        const signalStrength = getCoinBitClubStrength(signalData.signal);
+
+        // Extrair símbolo
+        const symbol = signalData.ticker || signalData.symbol;
+
+        // Preparar dados para salvar
+        const processedData = {
+            // Campos básicos
+            symbol: symbol,
+            action: signalAction,
+            price: parseFloat(signalData.close) || null,
+            strategy: 'coinbitclub_v2',
+            timeframe: '30m',
+            signal_type: signalData.signal,
+            signal_strength: signalStrength,
+            
+            // Indicadores CoinBitClub
+            diff_btc_ema7: parseFloat(signalData.diff_btc_ema7) || null,
+            ema9_30: parseFloat(signalData.ema9_30) || null,
+            rsi_4h: parseFloat(signalData.rsi_4h) || null,
+            rsi_15: parseFloat(signalData.rsi_15) || null,
+            momentum_15: parseFloat(signalData.momentum_15) || null,
+            atr_30: parseFloat(signalData.atr_30) || null,
+            atr_pct_30: parseFloat(signalData.atr_pct_30) || null,
+            volume_30: parseFloat(signalData.vol_30) || null,
+            volume_ma_30: parseFloat(signalData.vol_ma_30) || null,
+            
+            // Cruzamentos
+            crossed_above_ema9: signalData.cruzou_acima_ema9 === "1",
+            crossed_below_ema9: signalData.cruzou_abaixo_ema9 === "1",
+            golden_cross_30: signalData.golden_cross_30 === "1",
+            death_cross_30: signalData.death_cross_30 === "1",
+            
+            // Metadados
+            source_time: signalData.time || new Date().toISOString(),
+            raw_data: JSON.stringify(signalData)
+        };
+
+        console.log('🎯 PROCESSANDO SINAL COINBITCLUB:');
+        console.log(`   📊 Símbolo: ${symbol}`);
+        console.log(`   🎯 Sinal: ${signalData.signal}`);
+        console.log(`   📈 Ação: ${signalAction}`);
+        console.log(`   💪 Força: ${signalStrength}`);
+        console.log(`   📊 Diff BTC/EMA7: ${signalData.diff_btc_ema7}%`);
+        console.log(`   💰 Preço: ${signalData.close}`);
+
+        // Salvar na tabela signals (estrutura compatível)
+        const result = await pool.query(`
+            INSERT INTO signals (
+                symbol, action, price, quantity, strategy, timeframe, 
+                alert_message, processed, created_at
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+            RETURNING id
+        `, [
+            processedData.symbol,
+            processedData.action,
+            processedData.price,
+            null, // quantity não usado no CoinBitClub
+            processedData.strategy,
+            processedData.timeframe,
+            `${signalData.signal}: ${symbol} (diff: ${signalData.diff_btc_ema7}%)`,
+            false
+        ]);
+
+        // Salvar dados detalhados em tabela específica do CoinBitClub
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS coinbitclub_signals (
+                id SERIAL PRIMARY KEY,
+                signal_id INTEGER REFERENCES signals(id),
+                symbol VARCHAR(20),
+                signal_type VARCHAR(50),
+                signal_strength VARCHAR(20),
+                diff_btc_ema7 DECIMAL(10,4),
+                ema9_30 DECIMAL(15,8),
+                rsi_4h DECIMAL(5,2),
+                rsi_15 DECIMAL(5,2),
+                momentum_15 DECIMAL(15,8),
+                atr_30 DECIMAL(15,8),
+                atr_pct_30 DECIMAL(5,2),
+                volume_30 DECIMAL(20,8),
+                volume_ma_30 DECIMAL(20,8),
+                crossed_above_ema9 BOOLEAN,
+                crossed_below_ema9 BOOLEAN,
+                golden_cross_30 BOOLEAN,
+                death_cross_30 BOOLEAN,
+                source_time TIMESTAMP,
+                raw_data JSONB,
+                created_at TIMESTAMP DEFAULT NOW()
+            );
+        `);
+
+        await pool.query(`
+            INSERT INTO coinbitclub_signals (
+                signal_id, symbol, signal_type, signal_strength,
+                diff_btc_ema7, ema9_30, rsi_4h, rsi_15, momentum_15,
+                atr_30, atr_pct_30, volume_30, volume_ma_30,
+                crossed_above_ema9, crossed_below_ema9,
+                golden_cross_30, death_cross_30,
+                source_time, raw_data
+            ) VALUES (
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
+                $14, $15, $16, $17, $18, $19
+            )
+        `, [
+            result.rows[0].id,
+            processedData.symbol,
+            processedData.signal_type,
+            processedData.signal_strength,
+            processedData.diff_btc_ema7,
+            processedData.ema9_30,
+            processedData.rsi_4h,
+            processedData.rsi_15,
+            processedData.momentum_15,
+            processedData.atr_30,
+            processedData.atr_pct_30,
+            processedData.volume_30,
+            processedData.volume_ma_30,
+            processedData.crossed_above_ema9,
+            processedData.crossed_below_ema9,
+            processedData.golden_cross_30,
+            processedData.death_cross_30,
+            processedData.source_time,
+            processedData.raw_data
+        ]);
+
+        console.log('✅ Sinal CoinBitClub salvo com ID:', result.rows[0].id);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Sinal CoinBitClub processado com sucesso',
+            signalId: result.rows[0].id,
+            signal_type: signalData.signal,
+            action: signalAction,
+            strength: signalStrength,
+            symbol: symbol,
+            diff_btc_ema7: signalData.diff_btc_ema7,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('❌ Erro ao processar sinal CoinBitClub:', error);
+        return res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+}
+
+// Função para processar sinais simples (compatibilidade)
+async function processSimpleSignal(signalData, res) {
+    try {
+        // Validar dados obrigatórios para sinais simples
+        if (!signalData.symbol || !signalData.action) {
+            return res.status(400).json({ 
+                error: 'Dados inválidos - symbol e action são obrigatórios' 
+            });
+        }
+
+        console.log('📊 PROCESSANDO SINAL SIMPLES:');
+        console.log(`   📊 Símbolo: ${signalData.symbol}`);
+        console.log(`   📈 Ação: ${signalData.action}`);
+        console.log(`   💰 Preço: ${signalData.price || 'N/A'}`);
 
         // Salvar o sinal no banco
         const result = await pool.query(`
@@ -96,12 +289,12 @@ app.post('/api/webhooks/signal', async (req, res) => {
             signalData.action,
             signalData.price || null,
             signalData.quantity || null,
-            signalData.strategy || null,
+            signalData.strategy || 'simple_signal',
             signalData.timeframe || null,
             signalData.alert_message || JSON.stringify(signalData)
         ]);
 
-        console.log('✅ Sinal salvo com ID:', result.rows[0].id);
+        console.log('✅ Sinal simples salvo com ID:', result.rows[0].id);
 
         return res.status(200).json({
             success: true,
@@ -111,10 +304,42 @@ app.post('/api/webhooks/signal', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ Erro no webhook TradingView:', error);
+        console.error('❌ Erro ao processar sinal simples:', error);
         return res.status(500).json({ error: 'Erro interno do servidor' });
     }
-});
+}
+
+// Função para mapear sinais CoinBitClub para ações
+function getCoinBitClubAction(signal) {
+    switch(signal) {
+        case 'SINAL LONG':
+        case 'SINAL LONG FORTE':
+        case 'CONFIRMAÇÃO LONG':
+            return 'BUY';
+            
+        case 'SINAL SHORT':
+        case 'SINAL SHORT FORTE':
+        case 'CONFIRMAÇÃO SHORT':
+            return 'SELL';
+            
+        case 'FECHE LONG':
+            return 'CLOSE_LONG';
+            
+        case 'FECHE SHORT':
+            return 'CLOSE_SHORT';
+            
+        default:
+            return 'UNKNOWN';
+    }
+}
+
+// Função para determinar força do sinal
+function getCoinBitClubStrength(signal) {
+    if (signal.includes('FORTE')) return 'STRONG';
+    if (signal.includes('CONFIRMAÇÃO')) return 'CONFIRMATION';
+    if (signal.includes('FECHE')) return 'EXIT';
+    return 'MEDIUM';
+}
 
 // Webhook alternativo TradingView (compatibilidade)
 app.post('/api/webhooks/tradingview', async (req, res) => {
