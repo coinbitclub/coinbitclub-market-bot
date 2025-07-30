@@ -430,12 +430,12 @@
         // Sugerir correções
         function suggestFixes() {
             const fixes = [
-                "1. ✅ Padronizar roles no banco: ADMIN, GESTOR, OPERADOR, AFILIADO, USUARIO",
-                "2. ✅ Atualizar middleware para usar roles em maiúsculo",
-                "3. ✅ Verificar se todas as páginas de dashboard existem e funcionam",
-                "4. ✅ Sincronizar redirecionamentos entre AuthStore e middleware",
-                "5. ✅ Implementar fallback para roles não reconhecidos",
-                "6. ✅ Adicionar logs detalhados para debug"
+                "1. ✅ Dashboard único: Todos os perfis usam /dashboard-premium",
+                "2. ✅ Middleware atualizado: Redirecionamentos para dashboard principal",
+                "3. ✅ AuthStore sincronizado: getDashboardRoute() retorna /dashboard-premium",
+                "4. ✅ Login corrigido: Redireciona para dashboard principal após login",
+                "5. ✅ Controle de acesso: Perfis têm permissões específicas no mesmo dashboard",
+                "6. ✅ Dashboard adaptativo: Conteúdo muda baseado no role do usuário"
             ];
             
             document.getElementById('fixes-list').innerHTML = 
