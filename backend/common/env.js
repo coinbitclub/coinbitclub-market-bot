@@ -1,71 +1,71 @@
-import Joi from 'joi';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import Joi from 'joi';'
+import dotenv from 'dotenv';'
+import path from 'path';'
+import { fileURLToPath } from 'url';'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load environment variables from backend/.env
-dotenv.config({ path: path.join(__dirname, '..', '.env') });
+dotenv.config({ path: path.join(__dirname, '..', '.env') });'
 
 // Load environment-specific variables if they exist
-const nodeEnv = process.env.NODE_ENV || 'development';
+const nodeEnv = process.env.NODE_ENV || 'development';'
 dotenv.config({ 
-  path: path.join(__dirname, '..', 'api-gateway', `.env.${nodeEnv}`),
-  override: false // Don't override already loaded variables
+  path: path.join(__dirname, '..', 'api-gateway', `.env.${nodeEnv}`),'
+  override: false // Don't override already loaded variables'
 });
 
 export const envSchema = Joi.object({
   // Application
-  NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
+  NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),'
   PORT: Joi.number().default(8080),
-  LOG_LEVEL: Joi.string().valid('error', 'warn', 'info', 'debug').default('info'),
+  LOG_LEVEL: Joi.string().valid('error', 'warn', 'info', 'debug').default('info'),'
 
   // Database
   DATABASE_URL: Joi.string().required(),
-  DATABASE_HOST: Joi.string().default('localhost'),
+  DATABASE_HOST: Joi.string().default('localhost'),'
   DATABASE_PORT: Joi.number().default(5432),
-  DATABASE_USER: Joi.string().default('coinbitclub'),
-  DATABASE_PASSWORD: Joi.string().allow('').default(''),
-  DATABASE_NAME: Joi.string().default('coinbitclub'),
+  DATABASE_USER: Joi.string().default('coinbitclub'),'
+  DATABASE_PASSWORD: Joi.string().allow('').default(''),'
+  DATABASE_NAME: Joi.string().default('coinbitclub'),'
 
   // RabbitMQ
-  AMQP_URL: Joi.string().default('amqp://localhost'),
-  AMQP_HOST: Joi.string().default('localhost'),
+  AMQP_URL: Joi.string().default('amqp://localhost'),'
+  AMQP_HOST: Joi.string().default('localhost'),'
   AMQP_PORT: Joi.number().default(5672),
-  AMQP_USER: Joi.string().default('guest'),
-  AMQP_PASSWORD: Joi.string().default('guest'),
+  AMQP_USER: Joi.string().default('guest'),'
+  AMQP_PASSWORD: Joi.string().default('guest'),'
 
   // API Keys
-  OPENAI_API_KEY: Joi.string().allow('').default(''),
-  COINSTATS_API_KEY: Joi.string().allow('').default(''),
+  OPENAI_API_KEY: Joi.string().allow('').default(''),'
+  COINSTATS_API_KEY: Joi.string().allow('').default(''),'
   
   // Exchange APIs
-  BYBIT_API_KEY: Joi.string().allow('').default(''),
-  BYBIT_API_SECRET: Joi.string().allow('').default(''),
-  BYBIT_TESTNET_API_KEY: Joi.string().allow('').default(''),
-  BYBIT_TESTNET_API_SECRET: Joi.string().allow('').default(''),
-  BINANCE_API_KEY: Joi.string().allow('').default(''),
-  BINANCE_API_SECRET: Joi.string().allow('').default(''),
-  BINANCE_TESTNET_API_KEY: Joi.string().allow('').default(''),
-  BINANCE_TESTNET_API_SECRET: Joi.string().allow('').default(''),
+  BYBIT_API_KEY: Joi.string().allow('').default(''),'
+  BYBIT_API_SECRET: Joi.string().allow('').default(''),'
+  BYBIT_TESTNET_API_KEY: Joi.string().allow('').default(''),'
+  BYBIT_TESTNET_API_SECRET: Joi.string().allow('').default(''),'
+  BINANCE_API_KEY: Joi.string().allow('').default(''),'
+  BINANCE_API_SECRET: Joi.string().allow('').default(''),'
+  BINANCE_TESTNET_API_KEY: Joi.string().allow('').default(''),'
+  BINANCE_TESTNET_API_SECRET: Joi.string().allow('').default(''),'
 
   // JWT
   JWT_SECRET: Joi.string().min(16).required(),
-  JWT_EXPIRES_IN: Joi.string().default('1h'),
+  JWT_EXPIRES_IN: Joi.string().default('1h'),'
 
   // SMTP
-  SMTP_HOST: Joi.string().default('localhost'),
+  SMTP_HOST: Joi.string().default('localhost'),'
   SMTP_PORT: Joi.number().default(587),
   SMTP_SECURE: Joi.boolean().default(false),
-  SMTP_USER: Joi.string().allow('').default(''),
-  SMTP_PASS: Joi.string().allow('').default(''),
-  SMTP_FROM: Joi.string().allow('').default(''),
+  SMTP_USER: Joi.string().allow('').default(''),'
+  SMTP_PASS: Joi.string().allow('').default(''),'
+  SMTP_FROM: Joi.string().allow('').default(''),'
 
   // Stripe
-  STRIPE_SECRET_KEY: Joi.string().allow('').default(''),
-  STRIPE_WEBHOOK_SECRET: Joi.string().allow('').default(''),
+  STRIPE_SECRET_KEY: Joi.string().allow('').default(''),'
+  STRIPE_WEBHOOK_SECRET: Joi.string().allow('').default(''),'
 
   // Service Ports
   API_GATEWAY_PORT: Joi.number().default(8080),
@@ -102,10 +102,10 @@ export const envSchema = Joi.object({
   GRAFANA_PORT: Joi.number().default(3001),
 
   // Cache
-  REDIS_URL: Joi.string().default('redis://localhost:6379'),
+  REDIS_URL: Joi.string().default('redis://localhost:6379'),'
 
   // Webhooks
-  TRADINGVIEW_WEBHOOK_SECRET: Joi.string().allow('').default('')
+  TRADINGVIEW_WEBHOOK_SECRET: Joi.string().allow('').default('')'
 }).unknown(true);
 
 const { error, value } = envSchema.validate(process.env);

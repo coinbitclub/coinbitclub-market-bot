@@ -1,0 +1,460 @@
+const fs = require('fs');''
+const path = require('path');''
+const { exec } = require('child_process');''
+const util = require('util');''
+
+const execAsync = util.promisify(exec);
+
+console.log('🔧 CORRETOR UNIVERSAL DE ERROS DE CÓDIGO');''
+console.log('==========================================');''
+console.log('Detectando e corrigindo TODOS os tipos de erros...\n');''
+
+class UniversalErrorFixer {
+    constructor() {
+        this.errors = [];
+        this.fixes = [];
+        this.rootDir = __dirname;
+    }
+
+    // 1. DETECTAR ERROS DE SINTAXE
+    async detectSyntaxErrors() {
+        console.log('🔍 1. DETECTANDO ERROS DE SINTAXE...');''
+        
+        const jsFiles = await this.findFiles(['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'], [''
+            'node_modules', '.git', '.next', 'dist', 'build'''
+        ]);
+        
+        for (const file of jsFiles) {
+            try {
+                // Para arquivos JS/TS, verificar sintaxe básica
+                const content = fs.readFileSync(file, 'utf8');''
+                
+                // Detectar problemas comuns
+                const issues = [];
+                
+                // Caracteres NUL
+                if (content.includes('\x00')) {''
+                    issues.push({
+                        type: 'NUL_CHARACTERS',''
+                        line: content.split('\n').findIndex(line => line.includes('\x00')) + 1,''
+                        message: 'Caracteres NUL detectados'''
+                    });
+                }
+                
+                // BOMs inválidos
+                if (content.charCodeAt(0) === 0xFEFF) {
+                    issues.push({
+                        type: 'BOM',''
+                        line: 1,
+                        message: 'BOM (Byte Order Mark) inválido'''
+                    });
+                }
+                
+                // Imports inválidos
+                const invalidImports = content.match(/import.*from\s+['""][^'"]*['""];?/g);""
+                if (invalidImports) {
+                    invalidImports.forEach((imp, idx) => {
+                        if (imp.includes('undefined') || imp.includes('null')) {''
+                            issues.push({
+                                type: 'INVALID_IMPORT',''
+                                line: this.getLineNumber(content, imp),
+                                message: `Import inválido: ${imp}`
+                            });
+                        }
+                    });
+                }
+                
+                // Aspas não fechadas
+                const unclosedQuotes = this.detectUnclosedQuotes(content);
+                if (unclosedQuotes.length > 0) {
+                    unclosedQuotes.forEach(issue => {
+                        issues.push({
+                            type: 'UNCLOSED_QUOTES',''
+                            line: issue.line,
+                            message: 'Aspas não fechadas'''
+                        });
+                    });
+                }
+                
+                if (issues.length > 0) {
+                    this.errors.push({
+                        file: path.relative(this.rootDir, file),
+                        issues: issues
+                    });
+                }
+                
+            } catch (error) {
+                this.errors.push({
+                    file: path.relative(this.rootDir, file),
+                    issues: [{
+                        type: 'READ_ERROR',''
+                        line: 1,
+                        message: `Erro ao ler arquivo: ${error.message}`
+                    }]
+                });
+            }
+        }
+        
+        console.log(`   ✅ Analisados ${jsFiles.length} arquivos JavaScript/TypeScript`);
+    }
+
+    // 2. DETECTAR ERROS DE JSON
+    async detectJsonErrors() {
+        console.log('🔍 2. DETECTANDO ERROS DE JSON...');''
+        
+        const jsonFiles = await this.findFiles(['**/*.json'], [''
+            'node_modules', '.git', '.next', 'dist', 'build'''
+        ]);
+        
+        for (const file of jsonFiles) {
+            try {
+                const content = fs.readFileSync(file, 'utf8');''
+                
+                // Tentar fazer parse
+                try {
+                    JSON.parse(content);
+                } catch (jsonError) {
+                    this.errors.push({
+                        file: path.relative(this.rootDir, file),
+                        issues: [{
+                            type: 'JSON_SYNTAX',''
+                            line: this.extractLineFromJsonError(jsonError.message),
+                            message: `JSON inválido: ${jsonError.message}`
+                        }]
+                    });
+                }
+                
+                // Verificar caracteres NUL em JSON
+                if (content.includes('\x00')) {''
+                    this.errors.push({
+                        file: path.relative(this.rootDir, file),
+                        issues: [{
+                            type: 'JSON_NUL',''
+                            line: 1,
+                            message: 'Caracteres NUL em arquivo JSON'''
+                        }]
+                    });
+                }
+                
+            } catch (error) {
+                this.errors.push({
+                    file: path.relative(this.rootDir, file),
+                    issues: [{
+                        type: 'JSON_READ_ERROR',''
+                        line: 1,
+                        message: `Erro ao ler JSON: ${error.message}`
+                    }]
+                });
+            }
+        }
+        
+        console.log(`   ✅ Analisados ${jsonFiles.length} arquivos JSON`);
+    }
+
+    // 3. DETECTAR ERROS DE ENCODING
+    async detectEncodingErrors() {
+        console.log('🔍 3. DETECTANDO ERROS DE ENCODING...');''
+        
+        const allFiles = await this.findFiles(['**/*'], [''
+            'node_modules', '.git', '.next', 'dist', 'build', '**/*.png', '**/*.jpg', '**/*.gif'''
+        ]);
+        
+        for (const file of allFiles) {
+            try {
+                const buffer = fs.readFileSync(file);
+                
+                // Verificar caracteres NUL
+                const nullCount = buffer.filter(byte => byte === 0).length;
+                if (nullCount > 0) {
+                    const ext = path.extname(file);
+                    // Apenas reportar para arquivos de texto
+                    if (['.js', '.ts', '.jsx', '.tsx', '.json', '.md', '.txt', '.css', '.html'].includes(ext)) {''
+                        this.errors.push({
+                            file: path.relative(this.rootDir, file),
+                            issues: [{
+                                type: 'ENCODING_NUL',''
+                                line: 1,
+                                message: `${nullCount} caracteres NUL encontrados`
+                            }]
+                        });
+                    }
+                }
+                
+                // Verificar BOM inválido
+                if (buffer.length >= 3 && buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF) {
+                    this.errors.push({
+                        file: path.relative(this.rootDir, file),
+                        issues: [{
+                            type: 'ENCODING_BOM',''
+                            line: 1,
+                            message: 'BOM UTF-8 desnecessário'''
+                        }]
+                    });
+                }
+                
+            } catch (error) {
+                // Ignorar arquivos binários que não conseguimos ler
+            }
+        }
+        
+        console.log(`   ✅ Analisados arquivos para problemas de encoding`);
+    }
+
+    // 4. DETECTAR ERROS DE DEPENDÊNCIAS
+    async detectDependencyErrors() {
+        console.log('🔍 4. DETECTANDO ERROS DE DEPENDÊNCIAS...');''
+        
+        const packageJsonFiles = await this.findFiles(['**/package.json'], ['node_modules']);''
+        
+        for (const file of packageJsonFiles) {
+            try {
+                const content = fs.readFileSync(file, 'utf8');''
+                const pkg = JSON.parse(content);
+                
+                // Verificar dependências inconsistentes
+                if (pkg.dependencies) {
+                    for (const [dep, version] of Object.entries(pkg.dependencies)) {
+                        if (!version || version === 'undefined' || version === 'null') {''
+                            this.errors.push({
+                                file: path.relative(this.rootDir, file),
+                                issues: [{
+                                    type: 'INVALID_DEPENDENCY',''
+                                    line: 1,
+                                    message: `Dependência inválida: ${dep}@${version}`
+                                }]
+                            });
+                        }
+                    }
+                }
+                
+                // Verificar scripts inválidos
+                if (pkg.scripts) {
+                    for (const [script, command] of Object.entries(pkg.scripts)) {
+                        if (!command || command === 'undefined') {''
+                            this.errors.push({
+                                file: path.relative(this.rootDir, file),
+                                issues: [{
+                                    type: 'INVALID_SCRIPT',''
+                                    line: 1,
+                                    message: `Script inválido: ${script}`
+                                }]
+                            });
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                this.errors.push({
+                    file: path.relative(this.rootDir, file),
+                    issues: [{
+                        type: 'PACKAGE_JSON_ERROR',''
+                        line: 1,
+                        message: `Erro no package.json: ${error.message}`
+                    }]
+                });
+            }
+        }
+        
+        console.log(`   ✅ Analisados ${packageJsonFiles.length} arquivos package.json`);
+    }
+
+    // 5. APLICAR CORREÇÕES
+    async applyFixes() {
+        console.log('\n🔧 APLICANDO CORREÇÕES AUTOMÁTICAS...');''
+        
+        for (const error of this.errors) {
+            const filePath = path.join(this.rootDir, error.file);
+            
+            console.log(`\n📄 Corrigindo: ${error.file}`);
+            
+            for (const issue of error.issues) {
+                console.log(`   🔧 ${issue.type}: ${issue.message}`);
+                
+                try {
+                    await this.fixIssue(filePath, issue);
+                    console.log(`   ✅ Corrigido!`);
+                } catch (fixError) {
+                    console.log(`   ❌ Erro na correção: ${fixError.message}`);
+                }
+            }
+        }
+    }
+
+    // Corrigir um problema específico
+    async fixIssue(filePath, issue) {
+        const content = fs.readFileSync(filePath, 'utf8');''
+        let fixedContent = content;
+        
+        switch (issue.type) {
+            case 'NUL_CHARACTERS':''
+            case 'ENCODING_NUL':''
+            case 'JSON_NUL':''
+                // Remover caracteres NUL
+                fixedContent = content.replace(/\x00/g, '');''
+                break;
+                
+            case 'BOM':''
+            case 'ENCODING_BOM':''
+                // Remover BOM
+                fixedContent = content.replace(/^\uFEFF/, '');''
+                break;
+                
+            case 'JSON_SYNTAX':''
+                // Tentar corrigir JSON básico
+                fixedContent = this.fixBasicJsonSyntax(content);
+                break;
+                
+            case 'UNCLOSED_QUOTES':''
+                // Tentar fechar aspas
+                fixedContent = this.fixUnclosedQuotes(content);
+                break;
+                
+            case 'INVALID_IMPORT':''
+                // Comentar imports inválidos
+                fixedContent = content.replace(
+                    /import.*from\s+['"][^'"]*undefined[^'"]*['"];?/g,""
+                    '// $& // FIXME: Import inválido'''
+                );
+                break;
+        }
+        
+        if (fixedContent !== content) {
+            // Fazer backup
+            const backupPath = filePath + '.error-backup-' + Date.now();''
+            fs.writeFileSync(backupPath, content);
+            
+            // Aplicar correção
+            fs.writeFileSync(filePath, fixedContent, 'utf8');''
+            
+            this.fixes.push({
+                file: path.relative(this.rootDir, filePath),
+                type: issue.type,
+                backup: path.relative(this.rootDir, backupPath)
+            });
+        }
+    }
+
+    // Utilitários
+    async findFiles(patterns, exclude = []) {
+        const glob = require('glob');''
+        const files = [];
+        
+        for (const pattern of patterns) {
+            try {
+                const matches = glob.sync(pattern, {
+                    cwd: this.rootDir,
+                    ignore: exclude.map(ex => `**/${ex}/**`),
+                    absolute: true
+                });
+                files.push(...matches);
+            } catch (error) {
+                // Ignorar erros de glob
+            }
+        }
+        
+        return [...new Set(files)]; // Remove duplicatas
+    }
+
+    getLineNumber(content, searchText) {
+        const lines = content.split('\n');''
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].includes(searchText)) {
+                return i + 1;
+            }
+        }
+        return 1;
+    }
+
+    detectUnclosedQuotes(content) {
+        const issues = [];
+        const lines = content.split('\n');''
+        
+        lines.forEach((line, idx) => {
+            const singleQuotes = (line.match(/'/g) || []).length;''
+            const doubleQuotes = (line.match(/"/g) || []).length;""
+            
+            if (singleQuotes % 2 !== 0 || doubleQuotes % 2 !== 0) {
+                issues.push({ line: idx + 1 });
+            }
+        });
+        
+        return issues;
+    }
+
+    extractLineFromJsonError(errorMessage) {
+        const match = errorMessage.match(/line (\d+)/i);
+        return match ? parseInt(match[1]) : 1;
+    }
+
+    fixBasicJsonSyntax(content) {
+        return content
+            .replace(/,(\s*[}\]])/g, '$1') // Remove vírgulas antes de } ou ]''
+            .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":') // Adiciona aspas em chaves''
+            .replace(/:\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*([,}\]])/g, ':"$1"$2'); // Adiciona aspas em valores string''
+    }
+
+    fixUnclosedQuotes(content) {
+        // Implementação básica - apenas adiciona aspas no final de linhas incompletas
+        return content.replace(/^(.+)(['"])([^'"]*?)$/gm, '$1$2$3$2');''
+    }
+
+    // Relatório final
+    generateReport() {
+        console.log('\n📊 RELATÓRIO FINAL');''
+        console.log('==================');''
+        console.log(`Total de arquivos com erros: ${this.errors.length}`);
+        console.log(`Total de correções aplicadas: ${this.fixes.length}`);
+        
+        if (this.errors.length > 0) {
+            console.log('\n❌ ERROS ENCONTRADOS:');''
+            this.errors.forEach(error => {
+                console.log(`\n📄 ${error.file}:`);
+                error.issues.forEach(issue => {
+                    console.log(`   - Linha ${issue.line}: ${issue.type} - ${issue.message}`);
+                });
+            });
+        }
+        
+        if (this.fixes.length > 0) {
+            console.log('\n✅ CORREÇÕES APLICADAS:');''
+            this.fixes.forEach(fix => {
+                console.log(`   - ${fix.file}: ${fix.type} (backup: ${fix.backup})`);
+            });
+        }
+        
+        if (this.errors.length === 0) {
+            console.log('\n🎉 NENHUM ERRO ENCONTRADO! Código está limpo.');''
+        }
+    }
+
+    // Executar tudo
+    async run() {
+        try {
+            await this.detectSyntaxErrors();
+            await this.detectJsonErrors();
+            await this.detectEncodingErrors();
+            await this.detectDependencyErrors();
+            
+            if (this.errors.length > 0) {
+                await this.applyFixes();
+            }
+            
+            this.generateReport();
+            
+        } catch (error) {
+            console.error('❌ Erro durante execução:', error);''
+        }
+    }
+}
+
+// Instalar glob se não existir
+try {
+    require('glob');''
+} catch (error) {
+    console.log('📦 Instalando dependência glob...');''
+    require('child_process').execSync('npm install glob', { stdio: 'inherit' });''
+}
+
+// Executar
+const fixer = new UniversalErrorFixer();
+fixer.run();

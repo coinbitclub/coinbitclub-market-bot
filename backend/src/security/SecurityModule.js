@@ -6,11 +6,11 @@
  * Inclui IP fixo, rate limiting, verificação de integridade e monitoramento de processos
  */
 
-const crypto = require('crypto');
-const fs = require('fs').promises;
-const path = require('path');
-const { exec } = require('child_process');
-const { promisify } = require('util');
+const crypto = require('crypto');'
+const fs = require('fs').promises;'
+const path = require('path');'
+const { exec } = require('child_process');'
+const { promisify } = require('util');'
 
 const execAsync = promisify(exec);
 
@@ -20,7 +20,7 @@ class SecurityModule {
         this.rateLimiter = new Map();
         
         // Whitelist de IPs conforme Seção 4.1
-        this.whitelist = (process.env.ADMIN_IPS || '132.255.160.140').split(',').map(ip => ip.trim());
+        this.whitelist = (process.env.ADMIN_IPS || '132.255.160.140').split(',').map(ip => ip.trim());'
         
         // Mapa de integridade de arquivos
         this.fileIntegrity = new Map();
@@ -42,8 +42,8 @@ class SecurityModule {
         // Inicializar monitoramento
         this.startSecurityMonitoring();
         
-        console.log('🛡️ Security Module iniciado');
-        console.log(`🔐 IPs autorizados: ${this.config.ipWhitelist.join(', ')}`);
+        console.log('🛡️ Security Module iniciado');'
+        console.log(`🔐 IPs autorizados: ${this.config.ipWhitelist.join(', ')}`);'
     }
     
     // 🌐 Validação de IP conforme Seção 4.1 da especificação
@@ -56,21 +56,21 @@ class SecurityModule {
         
         if (!allowedIPs.includes(clientIP)) {
             const securityEvent = {
-                type: 'unauthorized_ip_access',
+                type: 'unauthorized_ip_access','
                 client_ip: clientIP,
                 allowed_ips: allowedIPs,
-                user_agent: req.headers['user-agent'],
+                user_agent: req.headers['user-agent'],'
                 endpoint: req.originalUrl,
                 timestamp: new Date().toISOString(),
-                severity: 'high'
+                severity: 'high''
             };
             
-            this.logSecurityEvent('IP_ACCESS_DENIED', securityEvent);
+            this.logSecurityEvent('IP_ACCESS_DENIED', securityEvent);'
             
             return res.status(403).json({
-                error: 'IP not allowed',
+                error: 'IP not allowed','
                 ip: clientIP,
-                message: 'Access denied for security reasons'
+                message: 'Access denied for security reasons''
             });
         }
         
@@ -93,7 +93,7 @@ class SecurityModule {
         
         if (validRequests.length >= maxRequests) {
             // Rate limit excedido
-            this.logSecurityEvent('RATE_LIMIT_EXCEEDED', {
+            this.logSecurityEvent('RATE_LIMIT_EXCEEDED', {'
                 ip: ip,
                 endpoint: endpoint,
                 requests_in_window: validRequests.length,
@@ -120,7 +120,7 @@ class SecurityModule {
             
             if (!this.checkRateLimit(clientIP, endpoint)) {
                 return res.status(429).json({
-                    error: 'Rate limit exceeded',
+                    error: 'Rate limit exceeded','
                     message: `Too many requests from ${clientIP}`,
                     retry_after: Math.ceil(this.config.rateLimit.windowMs / 1000)
                 });
@@ -133,17 +133,17 @@ class SecurityModule {
     // 📁 Verificação de Integridade de Arquivos conforme especificação
     async checkFileIntegrity() {
         const criticalFiles = [
-            'package.json',
-            '.env',
-            'src/config/database.js',
-            'src/config/exchanges.js',
-            'src/services/aiMonitoringService.js',
-            'scripts/closeAllOrders.js',
-            'scripts/pauseNewOrders.js',
-            'scripts/retriggerWebhook.js'
+            'package.json','
+            '.env','
+            'src/config/database.js','
+            'src/config/exchanges.js','
+            'src/services/aiMonitoringService.js','
+            'scripts/closeAllOrders.js','
+            'scripts/pauseNewOrders.js','
+            'scripts/retriggerWebhook.js''
         ];
         
-        console.log('🔍 Verificando integridade de arquivos críticos...');
+        console.log('🔍 Verificando integridade de arquivos críticos...');'
         
         const results = [];
         
@@ -157,14 +157,14 @@ class SecurityModule {
                     file: file,
                     current_hash: currentHash,
                     expected_hash: expectedHash,
-                    status: 'ok'
+                    status: 'ok''
                 };
                 
                 if (expectedHash && currentHash !== expectedHash) {
-                    fileResult.status = 'modified';
+                    fileResult.status = 'modified';'
                     
                     await this.notifySecurityBreach(file, {
-                        type: 'file_integrity_violation',
+                        type: 'file_integrity_violation','
                         file: file,
                         expected_hash: expectedHash,
                         current_hash: currentHash,
@@ -175,7 +175,7 @@ class SecurityModule {
                 } else if (!expectedHash) {
                     // Primeira verificação - armazenar hash
                     this.fileIntegrity.set(file, currentHash);
-                    fileResult.status = 'baseline_set';
+                    fileResult.status = 'baseline_set';'
                     console.log(`📝 Hash baseline definido para: ${file}`);
                 }
                 
@@ -184,7 +184,7 @@ class SecurityModule {
             } catch (error) {
                 const errorResult = {
                     file: file,
-                    status: 'error',
+                    status: 'error','
                     error: error.message
                 };
                 
@@ -196,14 +196,14 @@ class SecurityModule {
         // Log dos resultados
         const summary = {
             total_files: criticalFiles.length,
-            ok_files: results.filter(r => r.status === 'ok').length,
-            modified_files: results.filter(r => r.status === 'modified').length,
-            error_files: results.filter(r => r.status === 'error').length,
-            baseline_set: results.filter(r => r.status === 'baseline_set').length,
+            ok_files: results.filter(r => r.status === 'ok').length,'
+            modified_files: results.filter(r => r.status === 'modified').length,'
+            error_files: results.filter(r => r.status === 'error').length,'
+            baseline_set: results.filter(r => r.status === 'baseline_set').length,'
             results: results
         };
         
-        this.logSecurityEvent('FILE_INTEGRITY_CHECK', summary);
+        this.logSecurityEvent('FILE_INTEGRITY_CHECK', summary);'
         
         return summary;
     }
@@ -212,9 +212,9 @@ class SecurityModule {
     async getFileHash(filePath) {
         try {
             const fileBuffer = await fs.readFile(filePath);
-            const hashSum = crypto.createHash('sha256');
+            const hashSum = crypto.createHash('sha256');'
             hashSum.update(fileBuffer);
-            return hashSum.digest('hex');
+            return hashSum.digest('hex');'
         } catch (error) {
             throw new Error(`Erro ao calcular hash de ${filePath}: ${error.message}`);
         }
@@ -223,16 +223,16 @@ class SecurityModule {
     // 🖥️ Monitoramento de Processos conforme especificação
     async monitorProcesses() {
         const suspiciousProcesses = [
-            'cryptominer',
-            'coinminer', 
-            'malware',
-            'xmrig',
-            'ethminer',
-            'cgminer',
-            'bfgminer',
-            'claymore',
-            'phoenixminer',
-            'teamredminer'
+            'cryptominer','
+            'coinminer', '
+            'malware','
+            'xmrig','
+            'ethminer','
+            'cgminer','
+            'bfgminer','
+            'claymore','
+            'phoenixminer','
+            'teamredminer''
         ];
         
         try {
@@ -253,18 +253,18 @@ class SecurityModule {
                             await this.killProcess(process.pid);
                             console.log(`✅ Processo ${process.name} (${process.pid}) eliminado`);
                             
-                            await this.logSecurityEvent('MALICIOUS_PROCESS_KILLED', {
+                            await this.logSecurityEvent('MALICIOUS_PROCESS_KILLED', {'
                                 process_name: process.name,
                                 process_pid: process.pid,
                                 process_cmd: process.cmd,
-                                action: 'killed',
+                                action: 'killed','
                                 timestamp: new Date().toISOString()
                             });
                             
                         } catch (killError) {
                             console.log(`❌ Erro ao eliminar processo ${process.name}:`, killError.message);
                             
-                            await this.logSecurityEvent('MALICIOUS_PROCESS_KILL_FAILED', {
+                            await this.logSecurityEvent('MALICIOUS_PROCESS_KILL_FAILED', {'
                                 process_name: process.name,
                                 process_pid: process.pid,
                                 error: killError.message,
@@ -278,7 +278,7 @@ class SecurityModule {
             }
             
             if (suspiciousFound.length === 0) {
-                console.log('✅ Nenhum processo suspeito detectado');
+                console.log('✅ Nenhum processo suspeito detectado');'
             }
             
             return {
@@ -288,7 +288,7 @@ class SecurityModule {
             };
             
         } catch (error) {
-            console.log('❌ Erro no monitoramento de processos:', error.message);
+            console.log('❌ Erro no monitoramento de processos:', error.message);'
             throw error;
         }
     }
@@ -296,18 +296,18 @@ class SecurityModule {
     // 📊 Obter lista de processos em execução
     async getRunningProcesses() {
         try {
-            const isWindows = process.platform === 'win32';
-            const command = isWindows ? 'tasklist /fo csv' : 'ps aux';
+            const isWindows = process.platform === 'win32';'
+            const command = isWindows ? 'tasklist /fo csv' : 'ps aux';'
             
             const { stdout } = await execAsync(command);
             const processes = [];
             
             if (isWindows) {
                 // Parse Windows tasklist output
-                const lines = stdout.split('\n').slice(1); // Skip header
+                const lines = stdout.split('\n').slice(1); // Skip header'
                 for (const line of lines) {
                     if (line.trim()) {
-                        const parts = line.split(',').map(p => p.replace(/"/g, ''));
+                        const parts = line.split(',').map(p => p.replace(/"/g, ''));'
                         if (parts.length >= 2) {
                             processes.push({
                                 name: parts[0],
@@ -319,7 +319,7 @@ class SecurityModule {
                 }
             } else {
                 // Parse Unix ps output
-                const lines = stdout.split('\n').slice(1); // Skip header
+                const lines = stdout.split('\n').slice(1); // Skip header'
                 for (const line of lines) {
                     if (line.trim()) {
                         const parts = line.trim().split(/\s+/);
@@ -327,7 +327,7 @@ class SecurityModule {
                             processes.push({
                                 name: parts[10],
                                 pid: parts[1],
-                                cmd: parts.slice(10).join(' ')
+                                cmd: parts.slice(10).join(' ')'
                             });
                         }
                     }
@@ -344,7 +344,7 @@ class SecurityModule {
     // 💀 Eliminar processo
     async killProcess(pid) {
         try {
-            const isWindows = process.platform === 'win32';
+            const isWindows = process.platform === 'win32';'
             const command = isWindows ? `taskkill /PID ${pid} /F` : `kill -9 ${pid}`;
             
             await execAsync(command);
@@ -357,23 +357,23 @@ class SecurityModule {
     // 🚨 Notificar violação de segurança
     async notifySecurityBreach(file, details) {
         const alert = {
-            alert_type: 'SECURITY_BREACH',
-            severity: 'CRITICAL',
+            alert_type: 'SECURITY_BREACH','
+            severity: 'CRITICAL','
             file: file,
             details: details,
             timestamp: new Date().toISOString(),
             server_info: {
-                hostname: require('os').hostname(),
+                hostname: require('os').hostname(),'
                 platform: process.platform,
                 node_version: process.version
             }
         };
         
-        console.log('🚨 VIOLAÇÃO DE SEGURANÇA DETECTADA:');
+        console.log('🚨 VIOLAÇÃO DE SEGURANÇA DETECTADA:');'
         console.log(JSON.stringify(alert, null, 2));
         
         // Aqui poderia enviar notificação por email, Slack, etc.
-        await this.logSecurityEvent('SECURITY_BREACH', alert);
+        await this.logSecurityEvent('SECURITY_BREACH', alert);'
     }
     
     // 📝 Log de eventos de segurança
@@ -382,27 +382,27 @@ class SecurityModule {
             event_type: eventType,
             timestamp: new Date().toISOString(),
             data: data,
-            source: 'security_module'
+            source: 'security_module''
         };
         
         try {
             // Salvar em arquivo de log de segurança
-            const logPath = path.join(process.cwd(), 'logs', 'security.log');
-            const logEntry = JSON.stringify(securityLog) + '\n';
+            const logPath = path.join(process.cwd(), 'logs', 'security.log');'
+            const logEntry = JSON.stringify(securityLog) + '\n';'
             
             await fs.appendFile(logPath, logEntry);
             
             // Também salvar na tabela system_events
             await this.saveSystemEvent({
-                event_type: 'security_event',
+                event_type: 'security_event','
                 action: eventType,
                 context: data,
-                status: 'logged',
-                microservice: 'security-module'
+                status: 'logged','
+                microservice: 'security-module''
             });
             
         } catch (error) {
-            console.error('Erro ao salvar log de segurança:', error);
+            console.error('Erro ao salvar log de segurança:', error);'
         }
     }
     
@@ -413,7 +413,7 @@ class SecurityModule {
             try {
                 await this.checkFileIntegrity();
             } catch (error) {
-                console.error('Erro na verificação de integridade:', error);
+                console.error('Erro na verificação de integridade:', error);'
             }
         }, this.config.monitoring.fileCheckInterval);
         
@@ -422,7 +422,7 @@ class SecurityModule {
             try {
                 await this.monitorProcesses();
             } catch (error) {
-                console.error('Erro no monitoramento de processos:', error);
+                console.error('Erro no monitoramento de processos:', error);'
             }
         }, this.config.monitoring.processCheckInterval);
         
@@ -431,17 +431,17 @@ class SecurityModule {
             try {
                 await this.cleanupOldLogs();
             } catch (error) {
-                console.error('Erro na limpeza de logs:', error);
+                console.error('Erro na limpeza de logs:', error);'
             }
         }, 3600000); // 1 hora
         
-        console.log('🔄 Monitoramento de segurança iniciado');
+        console.log('🔄 Monitoramento de segurança iniciado');'
     }
     
     // 🧹 Limpeza de logs antigos
     async cleanupOldLogs() {
         try {
-            const logDir = path.join(process.cwd(), 'logs');
+            const logDir = path.join(process.cwd(), 'logs');'
             const files = await fs.readdir(logDir);
             const cutoffTime = Date.now() - this.config.monitoring.logRetention;
             let deletedCount = 0;
@@ -458,25 +458,25 @@ class SecurityModule {
             }
             
             if (deletedCount > 0) {
-                await this.logSecurityEvent('LOG_CLEANUP', {
+                await this.logSecurityEvent('LOG_CLEANUP', {'
                     deleted_files: deletedCount,
                     retention_days: this.config.monitoring.logRetention / (24 * 60 * 60 * 1000)
                 });
             }
             
         } catch (error) {
-            console.error('Erro na limpeza de logs:', error);
+            console.error('Erro na limpeza de logs:', error);'
         }
     }
     
     // 🌐 Obter IP do cliente
     getClientIP(req) {
-        return req.headers['x-forwarded-for']?.split(',')[0] ||
-               req.headers['x-real-ip'] ||
+        return req.headers['x-forwarded-for']?.split(',')[0] ||'
+               req.headers['x-real-ip'] ||'
                req.connection?.remoteAddress ||
                req.socket?.remoteAddress ||
                req.ip ||
-               '127.0.0.1';
+               '127.0.0.1';'
     }
     
     // 💾 Salvar evento no sistema
@@ -485,15 +485,15 @@ class SecurityModule {
             const event = {
                 ...eventData,
                 timestamp: new Date(),
-                source_ip: require('os').networkInterfaces()?.eth0?.[0]?.address || '127.0.0.1',
+                source_ip: require('os').networkInterfaces()?.eth0?.[0]?.address || '127.0.0.1','
                 created_at: new Date(),
                 updated_at: new Date()
             };
             
-            console.log('💾 Evento de segurança salvo:', event.event_type);
+            console.log('💾 Evento de segurança salvo:', event.event_type);'
             
         } catch (error) {
-            console.error('Erro ao salvar evento do sistema:', error);
+            console.error('Erro ao salvar evento do sistema:', error);'
         }
     }
     

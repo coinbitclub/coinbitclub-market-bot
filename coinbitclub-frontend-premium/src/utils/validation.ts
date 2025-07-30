@@ -44,7 +44,7 @@ export class FormValidator {
 
   private validateField(field: string, value: any, rule: ValidationRule): ValidationError | null {
     // Required validation
-    if (rule.required && (value === undefined || value === null || value === '')) {
+    if (rule.required && (value === undefined || value === null || value === ')) {'
       return { field, message: `${this.getFieldLabel(field)} é obrigatório` };
     }
 
@@ -69,7 +69,7 @@ export class FormValidator {
     }
 
     // String length validations
-    if (typeof value === 'string') {
+    if (typeof value === 'string') {'
       if (rule.minLength && value.length < rule.minLength) {
         return { field, message: `${this.getFieldLabel(field)} deve ter pelo menos ${rule.minLength} caracteres` };
       }
@@ -79,7 +79,7 @@ export class FormValidator {
     }
 
     // Number range validations
-    if (typeof value === 'number') {
+    if (typeof value === 'number') {'
       if (rule.min !== undefined && value < rule.min) {
         return { field, message: `${this.getFieldLabel(field)} deve ser pelo menos ${rule.min}` };
       }
@@ -89,7 +89,7 @@ export class FormValidator {
     }
 
     // Pattern validation
-    if (rule.pattern && typeof value === 'string' && !rule.pattern.test(value)) {
+    if (rule.pattern && typeof value === 'string' && !rule.pattern.test(value)) {'
       return { field, message: `${this.getFieldLabel(field)} tem formato inválido` };
     }
 
@@ -111,7 +111,7 @@ export class FormValidator {
 
   private isValidPhone(phone: string): boolean {
     // Remove all non-digit characters
-    const cleanPhone = phone.replace(/\D/g, '');
+    const cleanPhone = phone.replace(/\D/g, ');'
     // Brazilian phone: 10-11 digits
     return cleanPhone.length >= 10 && cleanPhone.length <= 11;
   }
@@ -123,25 +123,25 @@ export class FormValidator {
 
   private getFieldLabel(field: string): string {
     const labels: Record<string, string> = {
-      name: 'Nome',
-      email: 'Email',
-      phone: 'Telefone',
-      amount: 'Valor',
-      description: 'Descrição',
-      category: 'Categoria',
-      date: 'Data',
-      paymentMethod: 'Método de Pagamento',
-      commission_rate: 'Taxa de Comissão',
-      vipCommissionRate: 'Taxa VIP',
-      password: 'Senha',
-      confirmPassword: 'Confirmação de Senha',
-      country: 'País',
-      notes: 'Observações',
-      apiKey: 'Chave da API',
-      host: 'Servidor',
-      port: 'Porta',
-      user: 'Usuário',
-      fromEmail: 'Email Remetente',
+      name: 'Nome','
+      email: 'Email','
+      phone: 'Telefone','
+      amount: 'Valor','
+      description: 'Descrição','
+      category: 'Categoria','
+      date: 'Data','
+      paymentMethod: 'Método de Pagamento','
+      commission_rate: 'Taxa de Comissão','
+      vipCommissionRate: 'Taxa VIP','
+      password: 'Senha','
+      confirmPassword: 'Confirmação de Senha','
+      country: 'País','
+      notes: 'Observações','
+      apiKey: 'Chave da API','
+      host: 'Servidor','
+      port: 'Porta','
+      user: 'Usuário','
+      fromEmail: 'Email Remetente','
       fromName: 'Nome Remetente'
     };
     return labels[field] || field;
@@ -161,8 +161,8 @@ export const expenseValidator = new FormValidator({
   notes: { maxLength: 500 },
   subscriptionType: {
     custom: (value) => {
-      if (value && !['monthly', 'quarterly', 'yearly'].includes(value)) {
-        return 'Tipo de recorrência inválido';
+      if (value && !['monthly', 'quarterly', 'yearly'].includes(value)) {'
+        return 'Tipo de recorrência inválido';'
       }
       return null;
     }
@@ -180,7 +180,7 @@ export const affiliateValidator = new FormValidator({
     max: 50,
     custom: (value) => {
       if (value !== undefined && value !== null && (isNaN(value) || value < 0 || value > 50)) {
-        return 'Taxa deve estar entre 0% e 50%';
+        return 'Taxa deve estar entre 0% e 50%';'
       }
       return null;
     }
@@ -190,7 +190,7 @@ export const affiliateValidator = new FormValidator({
     max: 10,
     custom: (value) => {
       if (value !== undefined && value !== null && (isNaN(value) || value < 0 || value > 10)) {
-        return 'Taxa VIP deve estar entre 0% e 10%';
+        return 'Taxa VIP deve estar entre 0% e 10%';'
       }
       return null;
     }
@@ -201,41 +201,41 @@ export const affiliateValidator = new FormValidator({
 export const emailConfigValidator = new FormValidator({
   fromEmail: { required: true, email: true },
   fromName: { required: true, minLength: 2, maxLength: 50 },
-  'smtp.host': { 
+  'smtp.host': { '
     required: true,
     custom: (value) => {
       if (value && !/^[a-zA-Z0-9.-]+$/.test(value)) {
-        return 'Servidor SMTP inválido';
+        return 'Servidor SMTP inválido';'
       }
       return null;
     }
   },
-  'smtp.port': { 
+  'smtp.port': { '
     required: true,
     min: 1,
     max: 65535,
     custom: (value) => {
       const port = parseInt(value);
       if (isNaN(port) || port < 1 || port > 65535) {
-        return 'Porta deve ser um número entre 1 e 65535';
+        return 'Porta deve ser um número entre 1 e 65535';'
       }
       return null;
     }
   },
-  'smtp.user': { required: true, email: true },
-  'smtp.password': { required: true, minLength: 1 },
-  'sendgrid.apiKey': {
+  'smtp.user': { required: true, email: true },'
+  'smtp.password': { required: true, minLength: 1 },'
+  'sendgrid.apiKey': {'
     custom: (value) => {
-      if (value && !value.startsWith('SG.')) {
-        return 'Chave da API SendGrid deve começar com SG.';
+      if (value && !value.startsWith('SG.')) {'
+        return 'Chave da API SendGrid deve começar com SG.';'
       }
       return null;
     }
   },
-  'mailgun.domain': {
+  'mailgun.domain': {'
     custom: (value) => {
       if (value && !/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) {
-        return 'Domínio Mailgun inválido';
+        return 'Domínio Mailgun inválido';'
       }
       return null;
     }
@@ -244,14 +244,14 @@ export const emailConfigValidator = new FormValidator({
 
 // Validador para configurações gerais
 export const systemConfigValidator = new FormValidator({
-  'general.siteName': { required: true, minLength: 2, maxLength: 100 },
-  'general.adminEmail': { required: true, email: true },
-  'general.timezone': { required: true },
-  'security.sessionTimeout': { required: true, min: 5, max: 1440 },
-  'security.passwordMinLength': { required: true, min: 6, max: 32 },
-  'affiliate.defaultCommission': { required: true, min: 0, max: 50 },
-  'affiliate.vipCommission': { required: true, min: 0, max: 10 },
-  'affiliate.payoutThreshold': { required: true, min: 1 }
+  'general.siteName': { required: true, minLength: 2, maxLength: 100 },'
+  'general.adminEmail': { required: true, email: true },'
+  'general.timezone': { required: true },'
+  'security.sessionTimeout': { required: true, min: 5, max: 1440 },'
+  'security.passwordMinLength': { required: true, min: 6, max: 32 },'
+  'affiliate.defaultCommission': { required: true, min: 0, max: 50 },'
+  'affiliate.vipCommission': { required: true, min: 0, max: 10 },'
+  'affiliate.payoutThreshold': { required: true, min: 1 }'
 });
 
 // ====== UTILITÁRIOS DE VALIDAÇÃO ======
@@ -260,7 +260,7 @@ export const systemConfigValidator = new FormValidator({
 export const sanitizeInput = (value: string): string => {
   return value
     .trim()
-    .replace(/[<>'"]/g, '') // Remove caracteres potencialmente perigosos
+    .replace(/[<>']/g, ') // Remove caracteres potencialmente perigosos'
     .substring(0, 1000); // Limita o tamanho
 };
 
@@ -277,13 +277,13 @@ export const validateFile = (file: File, options: {
   }
 
   if (allowedTypes.length > 0 && !allowedTypes.includes(file.type)) {
-    return `Tipo de arquivo não permitido. Tipos aceitos: ${allowedTypes.join(', ')}`;
+    return `Tipo de arquivo não permitido. Tipos aceitos: ${allowedTypes.join(', ')}`;'
   }
 
   if (allowedExtensions.length > 0) {
-    const extension = file.name.split('.').pop()?.toLowerCase();
+    const extension = file.name.split('.').pop()?.toLowerCase();'
     if (!extension || !allowedExtensions.includes(extension)) {
-      return `Extensão não permitida. Extensões aceitas: ${allowedExtensions.join(', ')}`;
+      return `Extensão não permitida. Extensões aceitas: ${allowedExtensions.join(', ')}`;'
     }
   }
 
@@ -300,25 +300,25 @@ export const validateDate = (date: string, options: {
   const dateObj = new Date(date);
   
   if (isNaN(dateObj.getTime())) {
-    return 'Data inválida';
+    return 'Data inválida';'
   }
 
   const now = new Date();
   
   if (options.futureOnly && dateObj <= now) {
-    return 'Data deve ser no futuro';
+    return 'Data deve ser no futuro';'
   }
 
   if (options.pastOnly && dateObj >= now) {
-    return 'Data deve ser no passado';
+    return 'Data deve ser no passado';'
   }
 
   if (options.minDate && dateObj < options.minDate) {
-    return `Data deve ser após ${options.minDate.toLocaleDateString('pt-BR')}`;
+    return `Data deve ser após ${options.minDate.toLocaleDateString('pt-BR')}`;'
   }
 
   if (options.maxDate && dateObj > options.maxDate) {
-    return `Data deve ser antes de ${options.maxDate.toLocaleDateString('pt-BR')}`;
+    return `Data deve ser antes de ${options.maxDate.toLocaleDateString('pt-BR')}`;'
   }
 
   return null;
@@ -326,7 +326,7 @@ export const validateDate = (date: string, options: {
 
 // Validação de CPF/CNPJ
 export const validateCPF = (cpf: string): boolean => {
-  cpf = cpf.replace(/\D/g, '');
+  cpf = cpf.replace(/\D/g, ');'
   
   if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) {
     return false;
@@ -350,7 +350,7 @@ export const validateCPF = (cpf: string): boolean => {
 };
 
 export const validateCNPJ = (cnpj: string): boolean => {
-  cnpj = cnpj.replace(/\D/g, '');
+  cnpj = cnpj.replace(/\D/g, ');'
   
   if (cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) {
     return false;

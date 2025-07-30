@@ -7,11 +7,11 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatCurrency(
   value: number,
-  currency: string = 'USD',
+  currency: string = 'USD','
   locale: string = 'en-US'
 ): string {
   return new Intl.NumberFormat(locale, {
-    style: 'currency',
+    style: 'currency','
     currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 8,
@@ -22,7 +22,7 @@ export function formatPercentage(
   value: number,
   decimals: number = 2
 ): string {
-  return `${value >= 0 ? '+' : ''}${value.toFixed(decimals)}%`;
+  return `${value >= 0 ? '+' : '}${value.toFixed(decimals)}%`;'
 }
 
 export function formatNumber(
@@ -38,39 +38,39 @@ export function formatNumber(
 
 export function formatDate(
   date: string | Date,
-  format: 'short' | 'medium' | 'long' | 'full' = 'medium',
+  format: 'short' | 'medium' | 'long' | 'full' = 'medium','
   locale: string = 'en-US'
 ): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const dateObj = typeof date === 'string' ? new Date(date) : date;'
     const formats: Record<string, Intl.DateTimeFormatOptions> = {
     short: { 
-      year: '2-digit', 
-      month: 'short', 
-      day: 'numeric' 
+      year: '2-digit', '
+      month: 'short', '
+      day: 'numeric' '
     },
     medium: { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit' 
+      year: 'numeric', '
+      month: 'short', '
+      day: 'numeric', '
+      hour: '2-digit', '
+      minute: '2-digit' '
     },
     long: { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
+      year: 'numeric', '
+      month: 'long', '
+      day: 'numeric', '
+      hour: '2-digit', '
+      minute: '2-digit', '
+      second: '2-digit' '
     },
     full: { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
+      weekday: 'long', '
+      year: 'numeric', '
+      month: 'long', '
+      day: 'numeric', '
+      hour: '2-digit', '
+      minute: '2-digit', '
+      second: '2-digit' '
     }
   };
 
@@ -92,37 +92,37 @@ export function formatDuration(seconds: number): string {
 }
 
 export function getPnlColor(value: number): string {
-  if (value > 0) return 'text-success';
-  if (value < 0) return 'text-destructive';
-  return 'text-muted-foreground';
+  if (value > 0) return 'text-success';'
+  if (value < 0) return 'text-destructive';'
+  return 'text-muted-foreground';'
 }
 
 export function getStatusColor(status: string): string {
   const statusMap: Record<string, string> = {
-    active: 'text-success',
-    inactive: 'text-muted-foreground',
-    error: 'text-destructive',
-    pending: 'text-warning',
-    filled: 'text-success',
-    cancelled: 'text-muted-foreground',
-    rejected: 'text-destructive',
+    active: 'text-success','
+    inactive: 'text-muted-foreground','
+    error: 'text-destructive','
+    pending: 'text-warning','
+    filled: 'text-success','
+    cancelled: 'text-muted-foreground','
+    rejected: 'text-destructive','
   };
   
-  return statusMap[status.toLowerCase()] || 'text-muted-foreground';
+  return statusMap[status.toLowerCase()] || 'text-muted-foreground';'
 }
 
 export function getStatusBadgeClass(status: string): string {
   const statusMap: Record<string, string> = {
-    active: 'status-active',
-    inactive: 'status-inactive',
-    error: 'status-error',
-    pending: 'status-pending',
-    filled: 'status-active',
-    cancelled: 'status-inactive',
-    rejected: 'status-error',
+    active: 'status-active','
+    inactive: 'status-inactive','
+    error: 'status-error','
+    pending: 'status-pending','
+    filled: 'status-active','
+    cancelled: 'status-inactive','
+    rejected: 'status-error','
   };
   
-  return statusMap[status.toLowerCase()] || 'status-inactive';
+  return statusMap[status.toLowerCase()] || 'status-inactive';'
 }
 
 export function copyToClipboard(text: string): Promise<void> {
@@ -134,26 +134,26 @@ export function downloadCsv(data: any[], filename: string): void {
   
   const headers = Object.keys(data[0]);
   const csvContent = [
-    headers.join(','),
+    headers.join(','),'
     ...data.map(row => 
       headers.map(header => {
         const value = row[header];
-        if (typeof value === 'string' && value.includes(',')) {
-          return `"${value}"`;
+        if (typeof value === 'string' && value.includes(',')) {'
+          return `"${value}"`;"
         }
         return value;
-      }).join(',')
+      }).join(',')'
     )
-  ].join('\n');
+  ].join('\n');'
   
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });'
+  const link = document.createElement('a');'
   
   if (link.download !== undefined) {
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${filename}.csv`);
-    link.style.visibility = 'hidden';
+    link.setAttribute('href', url);'
+    link.setAttribute('download', `${filename}.csv`);'
+    link.style.visibility = 'hidden';'
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -162,14 +162,14 @@ export function downloadCsv(data: any[], filename: string): void {
 
 export function downloadJson(data: any, filename: string): void {
   const jsonContent = JSON.stringify(data, null, 2);
-  const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-  const link = document.createElement('a');
+  const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });'
+  const link = document.createElement('a');'
   
   if (link.download !== undefined) {
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${filename}.json`);
-    link.style.visibility = 'hidden';
+    link.setAttribute('href', url);'
+    link.setAttribute('download', `${filename}.json`);'
+    link.style.visibility = 'hidden';'
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -220,23 +220,23 @@ export function validatePassword(password: string): {
   const errors: string[] = [];
   
   if (password.length < 8) {
-    errors.push('Password must be at least 8 characters long');
+    errors.push('Password must be at least 8 characters long');'
   }
   
   if (!/[A-Z]/.test(password)) {
-    errors.push('Password must contain at least one uppercase letter');
+    errors.push('Password must contain at least one uppercase letter');'
   }
   
   if (!/[a-z]/.test(password)) {
-    errors.push('Password must contain at least one lowercase letter');
+    errors.push('Password must contain at least one lowercase letter');'
   }
   
   if (!/\d/.test(password)) {
-    errors.push('Password must contain at least one number');
+    errors.push('Password must contain at least one number');'
   }
   
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    errors.push('Password must contain at least one special character');
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {"
+    errors.push('Password must contain at least one special character');'
   }
   
   return {
@@ -247,7 +247,7 @@ export function validatePassword(password: string): {
 
 export function truncateString(str: string, length: number): string {
   if (str.length <= length) return str;
-  return str.substring(0, length) + '...';
+  return str.substring(0, length) + '...';'
 }
 
 export function generateRandomId(): string {

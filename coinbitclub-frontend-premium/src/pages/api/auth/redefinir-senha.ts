@@ -1,13 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:9997';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:9997';'
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método não permitido' });
+  if (req.method !== 'POST') {'
+    return res.status(405).json({ error: 'Método não permitido' });'
   }
 
   try {
@@ -15,19 +15,19 @@ export default async function handler(
 
     // Validações
     if (!token) {
-      return res.status(400).json({ error: 'Token é obrigatório' });
+      return res.status(400).json({ error: 'Token é obrigatório' });'
     }
 
     if (!novaSenha) {
-      return res.status(400).json({ error: 'Nova senha é obrigatória' });
+      return res.status(400).json({ error: 'Nova senha é obrigatória' });'
     }
 
     if (!confirmarSenha) {
-      return res.status(400).json({ error: 'Confirmação de senha é obrigatória' });
+      return res.status(400).json({ error: 'Confirmação de senha é obrigatória' });'
     }
 
     if (novaSenha !== confirmarSenha) {
-      return res.status(400).json({ error: 'As senhas não coincidem' });
+      return res.status(400).json({ error: 'As senhas não coincidem' });'
     }
 
     // Validar força da senha
@@ -37,7 +37,7 @@ export default async function handler(
         maiuscula: /[A-Z]/.test(senha),
         minuscula: /[a-z]/.test(senha),
         numero: /\d/.test(senha),
-        especial: /[!@#$%^&*(),.?":{}|<>]/.test(senha),
+        especial: /[!@#$%^&*(),.?":{}|<>]/.test(senha),"
       };
     };
 
@@ -46,16 +46,16 @@ export default async function handler(
 
     if (!senhaValida) {
       return res.status(400).json({ 
-        error: 'A senha não atende aos requisitos de segurança',
+        error: 'A senha não atende aos requisitos de segurança','
         requisitos,
       });
     }
 
     // Enviar para o backend
     const backendResponse = await fetch(`${BACKEND_URL}/auth/reset-password`, {
-      method: 'POST',
+      method: 'POST','
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json','
       },
       body: JSON.stringify({
         token,
@@ -72,15 +72,15 @@ export default async function handler(
 
     // Retornar sucesso
     res.status(200).json({
-      message: 'Senha redefinida com sucesso',
+      message: 'Senha redefinida com sucesso','
       success: true,
     });
 
   } catch (error) {
-    console.error('Erro na API redefinir-senha:', error);
+    console.error('Erro na API redefinir-senha:', error);'
     res.status(500).json({ 
-      error: 'Erro interno do servidor',
-      message: 'Tente novamente mais tarde' 
+      error: 'Erro interno do servidor','
+      message: 'Tente novamente mais tarde' '
     });
   }
 }

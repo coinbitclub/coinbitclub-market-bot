@@ -1,4 +1,4 @@
-﻿# Railway FORÇA BUILD - ae87a320-0921-4d32-9b35-d3f923839d5a
+# Railway FORÇA BUILD - ae87a320-0921-4d32-9b35-d3f923839d5a
 [build]
 builder = "dockerfile"
 dockerfilePath = "Dockerfile.force-build"

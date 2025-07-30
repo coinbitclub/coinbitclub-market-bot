@@ -1,20 +1,20 @@
-import amqp from 'amqplib';
-import retry from 'async-retry';
-import logger from './logger.js';
-import { env } from './env.js';
+import amqp from 'amqplib';'
+import retry from 'async-retry';'
+import logger from './logger.js';'
+import { env } from './env.js';'
 
 let connection;
 let channel;
 
 // Queue configurations
 const QUEUES = {
-  WEBHOOK_RECEIVED: 'webhook.received',
-  SIGNAL_FILTERED: 'signal.filtered',
-  ORDER_REQUEST: 'order.request',
-  ORDER_EXECUTED: 'order.executed',
-  ORDER_CLOSED: 'order.closed',
-  NOTIFICATION_EMAIL: 'notification.email',
-  NOTIFICATION_SSE: 'notification.sse'
+  WEBHOOK_RECEIVED: 'webhook.received','
+  SIGNAL_FILTERED: 'signal.filtered','
+  ORDER_REQUEST: 'order.request','
+  ORDER_EXECUTED: 'order.executed','
+  ORDER_CLOSED: 'order.closed','
+  NOTIFICATION_EMAIL: 'notification.email','
+  NOTIFICATION_SSE: 'notification.sse''
 };
 
 // Connection with health check and graceful shutdown
@@ -34,27 +34,27 @@ export async function connect() {
       await channel.prefetch(10);
       
       // Setup connection error handlers
-      connection.on('error', (err) => {
-        logger.error({ err }, 'RabbitMQ connection error');
+      connection.on('error', (err) => {'
+        logger.error({ err }, 'RabbitMQ connection error');'
       });
       
-      connection.on('close', () => {
-        logger.warn('RabbitMQ connection closed');
+      connection.on('close', () => {'
+        logger.warn('RabbitMQ connection closed');'
         connection = null;
         channel = null;
       });
       
-      logger.info('RabbitMQ connected successfully');
+      logger.info('RabbitMQ connected successfully');'
     }, {
       retries: 5,
       minTimeout: 1000,
       maxTimeout: 5000,
-      onRetry: (err, attempt) => logger.warn({ err, attempt }, 'RabbitMQ reconnect attempt')
+      onRetry: (err, attempt) => logger.warn({ err, attempt }, 'RabbitMQ reconnect attempt')'
     });
     
     return channel;
   } catch (error) {
-    logger.error({ error }, 'Failed to connect to RabbitMQ');
+    logger.error({ error }, 'Failed to connect to RabbitMQ');'
     throw error;
   }
 }
@@ -74,14 +74,14 @@ export async function publish(queue, msg, options = {}) {
     const published = ch.sendToQueue(queue, messageBuffer, publishOptions);
     
     if (!published) {
-      logger.warn({ queue, msg }, 'Message not published - queue full');
+      logger.warn({ queue, msg }, 'Message not published - queue full');'
       return false;
     }
     
-    logger.debug({ queue, msg }, 'Message published');
+    logger.debug({ queue, msg }, 'Message published');'
     return true;
   } catch (error) {
-    logger.error({ error, queue, msg }, 'Failed to publish message');
+    logger.error({ error, queue, msg }, 'Failed to publish message');'
     throw error;
   }
 }
@@ -99,7 +99,7 @@ export async function consume(queue, handler, options = {}) {
     
     await ch.consume(queue, async (msg) => {
       if (!msg) {
-        logger.warn({ queue }, 'Received null message');
+        logger.warn({ queue }, 'Received null message');'
         return;
       }
       
@@ -108,14 +108,14 @@ export async function consume(queue, handler, options = {}) {
       
       try {
         const content = JSON.parse(msg.content.toString());
-        logger.debug({ queue, messageId, content }, 'Processing message');
+        logger.debug({ queue, messageId, content }, 'Processing message');'
         
         await handler(content, msg);
         
         ch.ack(msg);
         
         const processingTime = Date.now() - startTime;
-        logger.debug({ queue, messageId, processingTime }, 'Message processed successfully');
+        logger.debug({ queue, messageId, processingTime }, 'Message processed successfully');'
         
       } catch (error) {
         const processingTime = Date.now() - startTime;
@@ -125,23 +125,23 @@ export async function consume(queue, handler, options = {}) {
           messageId, 
           processingTime,
           redelivered: msg.fields.redelivered 
-        }, 'Message processing failed');
+        }, 'Message processing failed');'
         
         // Check if message was already redelivered
         if (msg.fields.redelivered) {
-          logger.warn({ queue, messageId }, 'Message rejected - too many retries');
-          ch.nack(msg, false, false); // Don't requeue
+          logger.warn({ queue, messageId }, 'Message rejected - too many retries');'
+          ch.nack(msg, false, false); // Don't requeue'
         } else {
-          logger.info({ queue, messageId }, 'Message requeued for retry');
+          logger.info({ queue, messageId }, 'Message requeued for retry');'
           ch.nack(msg, false, true); // Requeue for retry
         }
       }
     }, consumerOptions);
     
-    logger.info({ queue }, 'Consumer started');
+    logger.info({ queue }, 'Consumer started');'
     
   } catch (error) {
-    logger.error({ error, queue }, 'Failed to setup consumer');
+    logger.error({ error, queue }, 'Failed to setup consumer');'
     throw error;
   }
 }
@@ -157,9 +157,9 @@ export async function close() {
       await connection.close();
       connection = null;
     }
-    logger.info('RabbitMQ connections closed');
+    logger.info('RabbitMQ connections closed');'
   } catch (error) {
-    logger.error({ error }, 'Error closing RabbitMQ connections');
+    logger.error({ error }, 'Error closing RabbitMQ connections');'
   }
 }
 
@@ -167,7 +167,7 @@ export async function close() {
 export async function healthCheck() {
   try {
     if (!connection || connection.closed) {
-      return { status: 'disconnected' };
+      return { status: 'disconnected' };'
     }
     
     // Simple ping by asserting a temporary queue
@@ -176,9 +176,9 @@ export async function healthCheck() {
     await ch.assertQueue(testQueue, { autoDelete: true });
     await ch.deleteQueue(testQueue);
     
-    return { status: 'connected' };
+    return { status: 'connected' };'
   } catch (error) {
-    return { status: 'error', error: error.message };
+    return { status: 'error', error: error.message };'
   }
 }
 
@@ -186,6 +186,6 @@ export async function healthCheck() {
 export { QUEUES };
 
 // Setup graceful shutdown handlers
-process.on('SIGINT', close);
-process.on('SIGTERM', close);
-process.on('exit', close);
+process.on('SIGINT', close);'
+process.on('SIGTERM', close);'
+process.on('exit', close);'

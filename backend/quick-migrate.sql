@@ -1,4 +1,4 @@
-﻿CREATE TABLE IF NOT EXISTS raw_webhook (
+CREATE TABLE IF NOT EXISTS raw_webhook (
     id SERIAL PRIMARY KEY,
     source VARCHAR(50) NOT NULL,
     payload JSONB NOT NULL,

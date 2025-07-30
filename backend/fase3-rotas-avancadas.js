@@ -1,8 +1,8 @@
 // 🚀 FASE 3 - ROTAS AVANÇADAS SISTEMA CRÉDITO TESTE
 // APIs administrativas avançadas com analytics, bulk operations e relatórios
 
-const express = require('express');
-const { TestCreditSystemAdvanced } = require('./fase3-implementacao');
+const express = require('express');'
+const { TestCreditSystemAdvanced } = require('./fase3-implementacao');'
 
 // Função para criar as rotas avançadas da Fase 3
 function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
@@ -12,15 +12,15 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
   // ===== ANALYTICS AVANÇADO =====
 
   // 📊 Analytics Dashboard - Métricas avançadas
-  router.get('/analytics/:timeframe?', authenticateAdmin, async (req, res) => {
+  router.get('/analytics/:timeframe?', authenticateAdmin, async (req, res) => {'
     try {
-      const { timeframe = '7d' } = req.params;
-      const validTimeframes = ['1d', '7d', '30d', '90d'];
+      const { timeframe = '7d' } = req.params;'
+      const validTimeframes = ['1d', '7d', '30d', '90d'];'
       
       if (!validTimeframes.includes(timeframe)) {
         return res.status(400).json({
           success: false,
-          error: 'Timeframe deve ser: 1d, 7d, 30d ou 90d',
+          error: 'Timeframe deve ser: 1d, 7d, 30d ou 90d','
           valid_options: validTimeframes
         });
       }
@@ -29,7 +29,7 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
       
       const analytics = await testCreditSystem.getAdvancedAnalytics(timeframe);
       
-      monitoring.logAdminAction('analytics_view', req.user.id, { timeframe });
+      monitoring.logAdminAction('analytics_view', req.user.id, { timeframe });'
       
       res.json({
         success: true,
@@ -39,32 +39,32 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
       });
 
     } catch (error) {
-      console.error('❌ Erro analytics avançado:', error);
-      monitoring.createAlert('ANALYTICS_ERROR', `Erro no analytics: ${error.message}`, { timeframe: req.params.timeframe });
+      console.error('❌ Erro analytics avançado:', error);'
+      monitoring.createAlert('ANALYTICS_ERROR', `Erro no analytics: ${error.message}`, { timeframe: req.params.timeframe });'
       res.status(500).json({
         success: false,
-        error: 'Erro interno no analytics'
+        error: 'Erro interno no analytics''
       });
     }
   });
 
   // 📈 Métricas em tempo real
-  router.get('/metrics/realtime', authenticateAdmin, async (req, res) => {
+  router.get('/metrics/realtime', authenticateAdmin, async (req, res) => {'
     try {
       console.log(`📈 [FASE 3] Métricas em tempo real`);
 
       const realTimeQuery = `
         WITH recent_activity AS (
           SELECT 
-            COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '1 hour') as last_hour,
-            COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '24 hours') as last_24h,
-            COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days') as last_7d
+            COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '1 hour') as last_hour,'
+            COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '24 hours') as last_24h,'
+            COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days') as last_7d'
           FROM test_credits
         ),
         active_users AS (
           SELECT COUNT(DISTINCT user_id) as count
           FROM test_credits 
-          WHERE created_at >= NOW() - INTERVAL '24 hours'
+          WHERE created_at >= NOW() - INTERVAL '24 hours''
         ),
         system_health AS (
           SELECT 
@@ -94,16 +94,16 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
           },
           active_users_24h: parseInt(metrics.active_users_24h || 0),
           users_with_balance: parseInt(metrics.total_users_with_balance || 0),
-          system_status: 'operational',
+          system_status: 'operational','
           last_updated: new Date().toISOString()
         }
       });
 
     } catch (error) {
-      console.error('❌ Erro métricas tempo real:', error);
+      console.error('❌ Erro métricas tempo real:', error);'
       res.status(500).json({
         success: false,
-        error: 'Erro ao buscar métricas em tempo real'
+        error: 'Erro ao buscar métricas em tempo real''
       });
     }
   });
@@ -111,21 +111,21 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
   // ===== BULK OPERATIONS =====
 
   // 🎯 Liberação em lote
-  router.post('/bulk-grant', authenticateAdmin, async (req, res) => {
+  router.post('/bulk-grant', authenticateAdmin, async (req, res) => {'
     try {
       const { grants, dry_run = false } = req.body;
 
       if (!grants || !Array.isArray(grants) || grants.length === 0) {
         return res.status(400).json({
           success: false,
-          error: 'Array de grants é obrigatório e não pode estar vazio'
+          error: 'Array de grants é obrigatório e não pode estar vazio''
         });
       }
 
       if (grants.length > 100) {
         return res.status(400).json({
           success: false,
-          error: 'Máximo de 100 grants por lote'
+          error: 'Máximo de 100 grants por lote''
         });
       }
 
@@ -143,7 +143,7 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
       if (errors.length > 0) {
         return res.status(400).json({
           success: false,
-          error: 'Validação falhou',
+          error: 'Validação falhou','
           details: errors
         });
       }
@@ -158,12 +158,12 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
             total_amount: grants.reduce((sum, g) => sum + g.amount, 0),
             estimated_time: `${grants.length * 0.5}s`
           },
-          message: 'Simulação concluída. Use dry_run=false para executar.'
+          message: 'Simulação concluída. Use dry_run=false para executar.''
         });
       } else {
         const result = await testCreditSystem.bulkGrantCredits(grants, req.user.id);
         
-        monitoring.logAdminAction('bulk_grant', req.user.id, { 
+        monitoring.logAdminAction('bulk_grant', req.user.id, { '
           total: grants.length, 
           success_count: result.success_count 
         });
@@ -175,10 +175,10 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
       }
 
     } catch (error) {
-      console.error('❌ Erro bulk grant:', error);
+      console.error('❌ Erro bulk grant:', error);'
       res.status(500).json({
         success: false,
-        error: 'Erro interno na operação em lote'
+        error: 'Erro interno na operação em lote''
       });
     }
   });
@@ -186,7 +186,7 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
   // ===== RELATÓRIOS AVANÇADOS =====
 
   // 📋 Relatório personalizado
-  router.post('/reports/custom', authenticateAdmin, async (req, res) => {
+  router.post('/reports/custom', authenticateAdmin, async (req, res) => {'
     try {
       const filters = req.body;
       
@@ -194,7 +194,7 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
 
       const report = await testCreditSystem.generateAdvancedReport(filters);
       
-      monitoring.logAdminAction('custom_report', req.user.id, { filters });
+      monitoring.logAdminAction('custom_report', req.user.id, { filters });'
 
       res.json({
         success: true,
@@ -202,24 +202,24 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
       });
 
     } catch (error) {
-      console.error('❌ Erro relatório personalizado:', error);
+      console.error('❌ Erro relatório personalizado:', error);'
       res.status(500).json({
         success: false,
-        error: 'Erro ao gerar relatório personalizado'
+        error: 'Erro ao gerar relatório personalizado''
       });
     }
   });
 
   // 📄 Exportar relatório (CSV/Excel)
-  router.get('/reports/export/:format', authenticateAdmin, async (req, res) => {
+  router.get('/reports/export/:format', authenticateAdmin, async (req, res) => {'
     try {
       const { format } = req.params;
       const filters = req.query;
 
-      if (!['csv', 'excel'].includes(format)) {
+      if (!['csv', 'excel'].includes(format)) {'
         return res.status(400).json({
           success: false,
-          error: 'Formato deve ser csv ou excel'
+          error: 'Formato deve ser csv ou excel''
         });
       }
 
@@ -227,29 +227,29 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
 
       const report = await testCreditSystem.generateAdvancedReport(filters);
       
-      if (format === 'csv') {
+      if (format === 'csv') {'
         const csv = convertToCSV(report.data);
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', `attachment; filename="test-credits-${Date.now()}.csv"`);
+        res.setHeader('Content-Type', 'text/csv');'
+        res.setHeader('Content-Disposition', `attachment; filename="test-credits-${Date.now()}.csv"`);"
         res.send(csv);
       } else {
         // Para Excel, retornar dados estruturados que o frontend pode processar
         res.json({
           success: true,
-          format: 'excel',
+          format: 'excel','
           data: report.data,
           filename: `test-credits-${Date.now()}.xlsx`,
           summary: report.summary
         });
       }
 
-      monitoring.logAdminAction('export_report', req.user.id, { format, filters });
+      monitoring.logAdminAction('export_report', req.user.id, { format, filters });'
 
     } catch (error) {
-      console.error('❌ Erro exportar relatório:', error);
+      console.error('❌ Erro exportar relatório:', error);'
       res.status(500).json({
         success: false,
-        error: 'Erro ao exportar relatório'
+        error: 'Erro ao exportar relatório''
       });
     }
   });
@@ -257,16 +257,16 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
   // ===== VALIDAÇÃO E MANUTENÇÃO =====
 
   // 🔍 Validação integridade do sistema
-  router.get('/system/integrity', authenticateAdmin, async (req, res) => {
+  router.get('/system/integrity', authenticateAdmin, async (req, res) => {'
     try {
       console.log(`🔍 [FASE 3] Validação integridade do sistema`);
 
       const integrity = await testCreditSystem.validateSystemIntegrity();
       
-      monitoring.logAdminAction('system_check', req.user.id, { status: integrity.overall_status });
+      monitoring.logAdminAction('system_check', req.user.id, { status: integrity.overall_status });'
 
-      if (integrity.overall_status !== 'HEALTHY') {
-        monitoring.createAlert('SYSTEM_INTEGRITY', 'Problemas de integridade detectados', integrity);
+      if (integrity.overall_status !== 'HEALTHY') {'
+        monitoring.createAlert('SYSTEM_INTEGRITY', 'Problemas de integridade detectados', integrity);'
       }
 
       res.json({
@@ -275,27 +275,27 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
       });
 
     } catch (error) {
-      console.error('❌ Erro validação integridade:', error);
+      console.error('❌ Erro validação integridade:', error);'
       res.status(500).json({
         success: false,
-        error: 'Erro ao validar integridade do sistema'
+        error: 'Erro ao validar integridade do sistema''
       });
     }
   });
 
   // 🛠️ Manutenção automática
-  router.post('/system/maintenance', authenticateAdmin, async (req, res) => {
+  router.post('/system/maintenance', authenticateAdmin, async (req, res) => {'
     try {
       const { action, params = {} } = req.body;
       
       console.log(`🛠️ [FASE 3] Manutenção - ação: ${action}`);
 
-      const validActions = ['cleanup_expired', 'recalculate_balances', 'optimize_indexes'];
+      const validActions = ['cleanup_expired', 'recalculate_balances', 'optimize_indexes'];'
       
       if (!validActions.includes(action)) {
         return res.status(400).json({
           success: false,
-          error: 'Ação inválida',
+          error: 'Ação inválida','
           valid_actions: validActions
         });
       }
@@ -303,18 +303,18 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
       let result = {};
 
       switch (action) {
-        case 'cleanup_expired':
+        case 'cleanup_expired':'
           result = await performCleanupExpired(pool, params);
           break;
-        case 'recalculate_balances':
+        case 'recalculate_balances':'
           result = await recalculateBalances(pool, params);
           break;
-        case 'optimize_indexes':
+        case 'optimize_indexes':'
           result = await optimizeIndexes(pool, params);
           break;
       }
 
-      monitoring.logAdminAction('maintenance', req.user.id, { action, result });
+      monitoring.logAdminAction('maintenance', req.user.id, { action, result });'
 
       res.json({
         success: true,
@@ -323,10 +323,10 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
       });
 
     } catch (error) {
-      console.error('❌ Erro manutenção:', error);
+      console.error('❌ Erro manutenção:', error);'
       res.status(500).json({
         success: false,
-        error: 'Erro na operação de manutenção'
+        error: 'Erro na operação de manutenção''
       });
     }
   });
@@ -337,20 +337,20 @@ function createAdvancedTestCreditRoutes(pool, monitoring, authenticateAdmin) {
 // ===== FUNÇÕES AUXILIARES =====
 
 function convertToCSV(data) {
-  if (!data || data.length === 0) return '';
+  if (!data || data.length === 0) return '';'
   
   const headers = Object.keys(data[0]);
-  const csvRows = [headers.join(',')];
+  const csvRows = [headers.join(',')];'
   
   data.forEach(row => {
     const values = headers.map(header => {
       const value = row[header];
-      return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;
+      return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;"
     });
-    csvRows.push(values.join(','));
+    csvRows.push(values.join(','));'
   });
   
-  return csvRows.join('\n');
+  return csvRows.join('\n');'
 }
 
 async function performCleanupExpired(pool, params) {
@@ -358,7 +358,7 @@ async function performCleanupExpired(pool, params) {
   
   const result = await pool.query(`
     DELETE FROM test_credits 
-    WHERE created_at < NOW() - INTERVAL '${days_threshold} days'
+    WHERE created_at < NOW() - INTERVAL '${days_threshold} days''
       AND id NOT IN (
         SELECT DISTINCT tc.id 
         FROM test_credits tc
@@ -368,7 +368,7 @@ async function performCleanupExpired(pool, params) {
   `);
 
   return {
-    action: 'cleanup_expired',
+    action: 'cleanup_expired','
     deleted_records: result.rowCount,
     threshold_days: days_threshold
   };
@@ -396,20 +396,20 @@ async function recalculateBalances(pool, params) {
   `);
 
   return {
-    action: 'recalculate_balances',
+    action: 'recalculate_balances','
     updated_records: result.rowCount
   };
 }
 
 async function optimizeIndexes(pool, params) {
   // Reindexar tabelas principais
-  await pool.query('REINDEX TABLE test_credits');
-  await pool.query('REINDEX TABLE user_balances');
+  await pool.query('REINDEX TABLE test_credits');'
+  await pool.query('REINDEX TABLE user_balances');'
   
   return {
-    action: 'optimize_indexes',
-    status: 'completed',
-    tables: ['test_credits', 'user_balances']
+    action: 'optimize_indexes','
+    status: 'completed','
+    tables: ['test_credits', 'user_balances']'
   };
 }
 

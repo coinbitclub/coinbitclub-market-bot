@@ -1,8 +1,8 @@
-const { Pool } = require('pg');
-const fs = require('fs');
+const { Pool } = require('pg');''
+const fs = require('fs');''
 
 // URL do banco atual que você forneceu
-const CURRENT_DATABASE_URL = 'postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway';
+const CURRENT_DATABASE_URL = 'postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway';''
 
 const pool = new Pool({
   connectionString: CURRENT_DATABASE_URL,
@@ -13,18 +13,18 @@ const pool = new Pool({
 });
 
 async function createFullBackup() {
-  console.log('🚀 CRIANDO BACKUP COMPLETO DO BANCO DE DADOS');
-  console.log('=============================================');
+  console.log('🚀 CRIANDO BACKUP COMPLETO DO BANCO DE DADOS');''
+  console.log('=============================================');''
   
   try {
     const client = await pool.connect();
-    console.log('✅ Conectado ao banco atual');
+    console.log('✅ Conectado ao banco atual');''
     
     // Obter todas as tabelas
     const tablesResult = await client.query(`
       SELECT table_name 
       FROM information_schema.tables 
-      WHERE table_schema = 'public'
+      WHERE table_schema = 'public'''
       ORDER BY table_name
     `);
     
@@ -39,8 +39,8 @@ async function createFullBackup() {
 -- Tabelas: ${tablesResult.rows.length}
 -- ==========================================
 
-SET CLIENT_ENCODING TO 'UTF8';
-SET STANDARD_CONFORMING_STRINGS TO 'on';
+SET CLIENT_ENCODING TO 'UTF8';''
+SET STANDARD_CONFORMING_STRINGS TO 'on';''
 
 `;
 
@@ -53,7 +53,7 @@ SET STANDARD_CONFORMING_STRINGS TO 'on';
       const structureResult = await client.query(`
         SELECT column_name, data_type, is_nullable, column_default, character_maximum_length
         FROM information_schema.columns 
-        WHERE table_name = $1 AND table_schema = 'public'
+        WHERE table_name = $1 AND table_schema = 'public'''
         ORDER BY ordinal_position
       `, [tableName]);
       
@@ -70,56 +70,56 @@ SET STANDARD_CONFORMING_STRINGS TO 'on';
         
         // Mapear tipos de dados
         switch (col.data_type) {
-          case 'integer':
-            columnDef += 'INTEGER';
+          case 'integer':''
+            columnDef += 'INTEGER';''
             break;
-          case 'bigint':
-            columnDef += 'BIGINT';
+          case 'bigint':''
+            columnDef += 'BIGINT';''
             break;
-          case 'character varying':
+          case 'character varying':''
             columnDef += `VARCHAR(${col.character_maximum_length || 255})`;
             break;
-          case 'text':
-            columnDef += 'TEXT';
+          case 'text':''
+            columnDef += 'TEXT';''
             break;
-          case 'boolean':
-            columnDef += 'BOOLEAN';
+          case 'boolean':''
+            columnDef += 'BOOLEAN';''
             break;
-          case 'timestamp without time zone':
-            columnDef += 'TIMESTAMP';
+          case 'timestamp without time zone':''
+            columnDef += 'TIMESTAMP';''
             break;
-          case 'timestamp with time zone':
-            columnDef += 'TIMESTAMP WITH TIME ZONE';
+          case 'timestamp with time zone':''
+            columnDef += 'TIMESTAMP WITH TIME ZONE';''
             break;
-          case 'jsonb':
-            columnDef += 'JSONB';
+          case 'jsonb':''
+            columnDef += 'JSONB';''
             break;
-          case 'numeric':
-            columnDef += 'DECIMAL(15,8)';
+          case 'numeric':''
+            columnDef += 'DECIMAL(15,8)';''
             break;
-          case 'date':
-            columnDef += 'DATE';
+          case 'date':''
+            columnDef += 'DATE';''
             break;
           default:
             columnDef += col.data_type.toUpperCase();
         }
         
-        if (col.is_nullable === 'NO') {
-          columnDef += ' NOT NULL';
+        if (col.is_nullable === 'NO') {''
+          columnDef += ' NOT NULL';''
         }
         
         if (col.column_default) {
-          if (col.column_default.includes('nextval')) {
+          if (col.column_default.includes('nextval')) {''
             // É uma sequência (SERIAL)
-            if (col.data_type === 'integer') {
+            if (col.data_type === 'integer') {''
               columnDef = `    ${col.column_name} SERIAL`;
-            } else if (col.data_type === 'bigint') {
+            } else if (col.data_type === 'bigint') {''
               columnDef = `    ${col.column_name} BIGSERIAL`;
             }
-            if (col.is_nullable === 'NO') {
-              columnDef += ' NOT NULL';
+            if (col.is_nullable === 'NO') {''
+              columnDef += ' NOT NULL';''
             }
-          } else if (!col.column_default.includes('nextval')) {
+          } else if (!col.column_default.includes('nextval')) {''
             columnDef += ` DEFAULT ${col.column_default}`;
           }
         }
@@ -127,7 +127,7 @@ SET STANDARD_CONFORMING_STRINGS TO 'on';
         return columnDef;
       });
       
-      backupSQL += columns.join(',\\n') + '\\n';
+      backupSQL += columns.join(',\\n') + '\\n';''
       backupSQL += `);\\n\\n`;
       
       // Obter chaves primárias
@@ -139,7 +139,7 @@ SET STANDARD_CONFORMING_STRINGS TO 'on';
       `, [tableName]);
       
       if (primaryKeyResult.rows.length > 0) {
-        const pkColumns = primaryKeyResult.rows.map(row => row.attname).join(', ');
+        const pkColumns = primaryKeyResult.rows.map(row => row.attname).join(', ');''
         backupSQL += `ALTER TABLE ${tableName} ADD PRIMARY KEY (${pkColumns});\\n\\n`;
       }
       
@@ -147,8 +147,8 @@ SET STANDARD_CONFORMING_STRINGS TO 'on';
       const indexResult = await client.query(`
         SELECT indexname, indexdef
         FROM pg_indexes
-        WHERE tablename = $1 AND schemaname = 'public'
-        AND indexname NOT LIKE '%_pkey'
+        WHERE tablename = $1 AND schemaname = 'public'''
+        AND indexname NOT LIKE '%_pkey'''
       `, [tableName]);
       
       if (indexResult.rows.length > 0) {
@@ -174,21 +174,21 @@ SET STANDARD_CONFORMING_STRINGS TO 'on';
           const values = columnNames.map(col => {
             const value = row[col];
             if (value === null) {
-              return 'NULL';
-            } else if (typeof value === 'string') {
-              return `'${value.replace(/'/g, "''")}'`;
-            } else if (typeof value === 'object') {
-              return `'${JSON.stringify(value).replace(/'/g, "''")}'`;
-            } else if (typeof value === 'boolean') {
-              return value ? 'TRUE' : 'FALSE';
+              return 'NULL';''
+            } else if (typeof value === 'string') {''
+              return `'${value.replace(/'/g, "''")}'`;''
+            } else if (typeof value === 'object') {''
+              return `'${JSON.stringify(value).replace(/'/g, "''")}'`;''
+            } else if (typeof value === 'boolean') {''
+              return value ? 'TRUE' : 'FALSE';''
             } else if (value instanceof Date) {
-              return `'${value.toISOString()}'`;
+              return `'${value.toISOString()}'`;''
             } else {
               return value;
             }
           });
           
-          backupSQL += `INSERT INTO ${tableName} (${columnNames.join(', ')}) VALUES (${values.join(', ')});\\n`;
+          backupSQL += `INSERT INTO ${tableName} (${columnNames.join(', ')}) VALUES (${values.join(', ')});\\n`;''
         }
         backupSQL += `\\n`;
       }
@@ -198,8 +198,8 @@ SET STANDARD_CONFORMING_STRINGS TO 'on';
     const functionsResult = await client.query(`
       SELECT routine_name, routine_definition
       FROM information_schema.routines
-      WHERE routine_schema = 'public'
-      AND routine_type = 'FUNCTION'
+      WHERE routine_schema = 'public'''
+      AND routine_type = 'FUNCTION'''
     `);
     
     if (functionsResult.rows.length > 0) {
@@ -216,8 +216,8 @@ SET STANDARD_CONFORMING_STRINGS TO 'on';
     }
     
     // Salvar backup em arquivo
-    const backupFileName = `complete_backup_${new Date().toISOString().replace(/[:.]/g, '-')}.sql`;
-    fs.writeFileSync(backupFileName, backupSQL, 'utf8');
+    const backupFileName = `complete_backup_${new Date().toISOString().replace(/[:.]/g, '-')}.sql`;''
+    fs.writeFileSync(backupFileName, backupSQL, 'utf8');''
     
     console.log(`\\n✅ BACKUP COMPLETO CRIADO: ${backupFileName}`);
     console.log(`📊 Tamanho: ${(fs.statSync(backupFileName).size / 1024).toFixed(2)} KB`);
@@ -234,12 +234,12 @@ SET STANDARD_CONFORMING_STRINGS TO 'on';
     console.log(`\\n📊 TOTAL DE REGISTROS: ${totalRecords}`);
     
     client.release();
-    console.log('\\n🎉 BACKUP COMPLETO FINALIZADO!');
+    console.log('\\n🎉 BACKUP COMPLETO FINALIZADO!');''
     return backupFileName;
     
   } catch (error) {
-    console.error('❌ ERRO NO BACKUP:', error.message);
-    console.error('Stack:', error.stack);
+    console.error('❌ ERRO NO BACKUP:', error.message);''
+    console.error('Stack:', error.stack);''
     throw error;
   } finally {
     await pool.end();

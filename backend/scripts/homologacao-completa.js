@@ -5,19 +5,19 @@
  * Sistema de validação com meta de 95%+ de aproveitamento
  */
 
-const https = require('https');
-const http = require('http');
-const { Pool } = require('pg');
+const https = require('https');'
+const http = require('http');'
+const { Pool } = require('pg');'
 
 // ✅ CONFIGURAÇÕES DO SISTEMA
 const CONFIG = {
-  BACKEND_URL: 'http://localhost:8080', // Usar servidor local
-  FRONTEND_URL: 'http://localhost:3000', // Frontend local
-  RAILWAY_URL: 'https://coinbitclub-market-bot-up.railway.app',
-  VERCEL_URL: 'https://coinbitclub-market-bot.vercel.app',
-  DATABASE_URL: 'postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway',
-  WEBHOOK_SECRET: 'coinbitclub_webhook_secret_2024',
-  ADMIN_TOKEN: 'admin-emergency-token'
+  BACKEND_URL: 'http://localhost:8080', // Usar servidor local'
+  FRONTEND_URL: 'http://localhost:3000', // Frontend local'
+  RAILWAY_URL: 'https://coinbitclub-market-bot-up.railway.app','
+  VERCEL_URL: 'https://coinbitclub-market-bot.vercel.app','
+  DATABASE_URL: 'postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway','
+  WEBHOOK_SECRET: 'coinbitclub_webhook_secret_2024','
+  ADMIN_TOKEN: 'admin-emergency-token''
 };
 
 // 📊 MÉTRICAS DE HOMOLOGAÇÃO
@@ -33,13 +33,13 @@ let testResults = {
 // 🧪 FUNÇÕES DE TESTE
 
 // Test HTTP endpoint
-async function testEndpoint(url, method = 'GET', body = null, headers = {}) {
+async function testEndpoint(url, method = 'GET', body = null, headers = {}) {'
   return new Promise((resolve) => {
-    const protocol = url.startsWith('https') ? https : http;
+    const protocol = url.startsWith('https') ? https : http;'
     const options = {
       method,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json','
         ...headers
       }
     };
@@ -47,10 +47,10 @@ async function testEndpoint(url, method = 'GET', body = null, headers = {}) {
     const startTime = Date.now();
     const req = protocol.request(url, options, (res) => {
       const responseTime = Date.now() - startTime;
-      let data = '';
+      let data = '';'
       
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
+      res.on('data', chunk => data += chunk);'
+      res.on('end', () => {'
         resolve({
           success: res.statusCode < 400,
           status: res.statusCode,
@@ -61,10 +61,10 @@ async function testEndpoint(url, method = 'GET', body = null, headers = {}) {
       });
     });
 
-    req.on('error', (error) => {
+    req.on('error', (error) => {'
       resolve({
         success: false,
-        status: 'ERROR',
+        status: 'ERROR','
         responseTime: Date.now() - startTime,
         error: error.message
       });
@@ -74,14 +74,14 @@ async function testEndpoint(url, method = 'GET', body = null, headers = {}) {
       req.destroy();
       resolve({
         success: false,
-        status: 'TIMEOUT',
+        status: 'TIMEOUT','
         responseTime: 10000,
-        error: 'Request timeout'
+        error: 'Request timeout''
       });
     });
 
     if (body) {
-      req.write(typeof body === 'string' ? body : JSON.stringify(body));
+      req.write(typeof body === 'string' ? body : JSON.stringify(body));'
     }
     req.end();
   });
@@ -96,7 +96,7 @@ async function testDatabase() {
     });
     
     const client = await pool.connect();
-    const result = await client.query('SELECT NOW() as current_time, version() as db_version');
+    const result = await client.query('SELECT NOW() as current_time, version() as db_version');'
     client.release();
     await pool.end();
     
@@ -136,125 +136,125 @@ function addTestResult(name, result, isCritical = false) {
     data: result.data || null
   });
   
-  const icon = result.success ? '✅' : '❌';
-  const criticalIcon = isCritical ? '🔥' : '📋';
+  const icon = result.success ? '✅' : '❌';'
+  const criticalIcon = isCritical ? '🔥' : '📋';'
   console.log(`${icon} ${criticalIcon} ${name}: ${result.status} (${result.responseTime}ms)`);
   if (result.error) console.log(`   Error: ${result.error}`);
 }
 
 // 🚀 EXECUÇÃO DA HOMOLOGAÇÃO COMPLETA
 async function runCompleteHomologation() {
-  console.log('🏆 HOMOLOGAÇÃO COMPLETA COINBITCLUB MARKETBOT');
-  console.log('==============================================');
+  console.log('🏆 HOMOLOGAÇÃO COMPLETA COINBITCLUB MARKETBOT');'
+  console.log('==============================================');'
   console.log(`📅 Executado em: ${new Date().toISOString()}`);
-  console.log('🎯 Meta: 95%+ de aproveitamento\n');
+  console.log('🎯 Meta: 95%+ de aproveitamento\n');'
 
   // ===== 1. TESTES CRÍTICOS DE INFRAESTRUTURA =====
-  console.log('🔥 1. TESTES CRÍTICOS DE INFRAESTRUTURA');
-  console.log('========================================');
+  console.log('🔥 1. TESTES CRÍTICOS DE INFRAESTRUTURA');'
+  console.log('========================================');'
 
   // Backend Health
   let result = await testEndpoint(`${CONFIG.BACKEND_URL}/health`);
-  addTestResult('Backend Health Check', result, true);
+  addTestResult('Backend Health Check', result, true);'
 
   // Frontend Home
   result = await testEndpoint(CONFIG.FRONTEND_URL);
-  addTestResult('Frontend Home Page', result, true);
+  addTestResult('Frontend Home Page', result, true);'
 
   // Database Connection
   result = await testDatabase();
-  addTestResult('Database Connection', result, true);
+  addTestResult('Database Connection', result, true);'
 
   // ===== 2. TESTES DE ENDPOINTS ESSENCIAIS =====
-  console.log('\n📡 2. TESTES DE ENDPOINTS ESSENCIAIS');
-  console.log('====================================');
+  console.log('\n📡 2. TESTES DE ENDPOINTS ESSENCIAIS');'
+  console.log('====================================');'
 
   // API Health
   result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/health`);
-  addTestResult('API Health Endpoint', result, true);
+  addTestResult('API Health Endpoint', result, true);'
 
   // API Status
   result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/status`);
-  addTestResult('API Status Endpoint', result, true);
+  addTestResult('API Status Endpoint', result, true);'
 
   // Webhook Signal Test
   const signalPayload = {
     token: CONFIG.WEBHOOK_SECRET,
-    ticker: 'BTCUSDT',
-    side: 'BUY',
+    ticker: 'BTCUSDT','
+    side: 'BUY','
     price: 50000,
-    strategy: 'HOMOLOGATION_TEST',
+    strategy: 'HOMOLOGATION_TEST','
     timestamp: new Date().toISOString()
   };
   
-  result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/webhooks/signal`, 'POST', signalPayload);
-  addTestResult('Webhook Signal Processing', result, true);
+  result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/webhooks/signal`, 'POST', signalPayload);'
+  addTestResult('Webhook Signal Processing', result, true);'
 
   // ===== 3. TESTES DE AUTENTICAÇÃO =====
-  console.log('\n🔐 3. TESTES DE AUTENTICAÇÃO');
-  console.log('============================');
+  console.log('\n🔐 3. TESTES DE AUTENTICAÇÃO');'
+  console.log('============================');'
 
   // OTP Request Test
   const otpPayload = {
-    email: 'homologacao@coinbitclub.com',
-    phone: '+5511999999999'
+    email: 'homologacao@coinbitclub.com','
+    phone: '+5511999999999''
   };
   
-  result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/auth/request-otp`, 'POST', otpPayload);
-  addTestResult('OTP Request Endpoint', result, false);
+  result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/auth/request-otp`, 'POST', otpPayload);'
+  addTestResult('OTP Request Endpoint', result, false);'
 
   // Register Test
   const registerPayload = {
-    email: 'teste.homologacao@coinbitclub.com',
-    password: 'SecurePass123!',
-    name: 'Teste Homologação',
-    phone: '+5511888888888'
+    email: 'teste.homologacao@coinbitclub.com','
+    password: 'SecurePass123!','
+    name: 'Teste Homologação','
+    phone: '+5511888888888''
   };
   
-  result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/auth/register`, 'POST', registerPayload);
-  addTestResult('User Registration', result, false);
+  result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/auth/register`, 'POST', registerPayload);'
+  addTestResult('User Registration', result, false);'
 
   // ===== 4. TESTES DE FRONTEND INTEGRADO =====
-  console.log('\n🌐 4. TESTES DE FRONTEND INTEGRADO');
-  console.log('==================================');
+  console.log('\n🌐 4. TESTES DE FRONTEND INTEGRADO');'
+  console.log('==================================');'
 
   // Login Page
   result = await testEndpoint(`${CONFIG.FRONTEND_URL}/login-integrated`);
-  addTestResult('Frontend Login Page', result, false);
+  addTestResult('Frontend Login Page', result, false);'
 
   // Dashboard (expected auth required)
   result = await testEndpoint(`${CONFIG.FRONTEND_URL}/dashboard`);
-  addTestResult('Frontend Dashboard Access', result, false);
+  addTestResult('Frontend Dashboard Access', result, false);'
 
   // ===== 5. TESTES DE MICROSERVIÇOS =====
-  console.log('\n🧠 5. TESTES DE MICROSERVIÇOS');
-  console.log('=============================');
+  console.log('\n🧠 5. TESTES DE MICROSERVIÇOS');'
+  console.log('=============================');'
 
   // Signal Ingestor Status
   result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/services/signal-ingestor/status`);
-  addTestResult('Signal Ingestor Service', result, false);
+  addTestResult('Signal Ingestor Service', result, false);'
 
   // Decision Engine Status  
   result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/services/decision-engine/status`);
-  addTestResult('Decision Engine Service', result, false);
+  addTestResult('Decision Engine Service', result, false);'
 
   // ===== 6. TESTES DE SEGURANÇA =====
-  console.log('\n🛡️ 6. TESTES DE SEGURANÇA');
-  console.log('=========================');
+  console.log('\n🛡️ 6. TESTES DE SEGURANÇA');'
+  console.log('=========================');'
 
   // Webhook without token (should fail)
-  const invalidPayload = { ticker: 'BTCUSDT', side: 'BUY' };
-  result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/webhooks/signal`, 'POST', invalidPayload);
-  addTestResult('Security: Invalid Webhook Token', { ...result, success: !result.success }, false);
+  const invalidPayload = { ticker: 'BTCUSDT', side: 'BUY' };'
+  result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/webhooks/signal`, 'POST', invalidPayload);'
+  addTestResult('Security: Invalid Webhook Token', { ...result, success: !result.success }, false);'
 
   // SQL Injection Test
-  const sqlPayload = { token: CONFIG.WEBHOOK_SECRET, ticker: "'; DROP TABLE users; --" };
-  result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/webhooks/signal`, 'POST', sqlPayload);
-  addTestResult('Security: SQL Injection Protection', result, false);
+  const sqlPayload = { token: CONFIG.WEBHOOK_SECRET, ticker: "'; DROP TABLE users; --" };"
+  result = await testEndpoint(`${CONFIG.BACKEND_URL}/api/webhooks/signal`, 'POST', sqlPayload);'
+  addTestResult('Security: SQL Injection Protection', result, false);'
 
   // ===== 7. TESTES DE PERFORMANCE =====
-  console.log('\n⚡ 7. TESTES DE PERFORMANCE');
-  console.log('===========================');
+  console.log('\n⚡ 7. TESTES DE PERFORMANCE');'
+  console.log('===========================');'
 
   // Multiple concurrent requests
   const promises = [];
@@ -266,15 +266,15 @@ async function runCompleteHomologation() {
   const avgResponseTime = concurrentResults.reduce((sum, r) => sum + r.responseTime, 0) / concurrentResults.length;
   const allSuccess = concurrentResults.every(r => r.success);
   
-  addTestResult('Performance: Concurrent Requests', {
+  addTestResult('Performance: Concurrent Requests', {'
     success: allSuccess && avgResponseTime < 1000,
     responseTime: Math.round(avgResponseTime),
-    status: allSuccess ? 200 : 'MIXED'
+    status: allSuccess ? 200 : 'MIXED''
   }, false);
 
   // ===== RELATÓRIO FINAL =====
-  console.log('\n📊 RELATÓRIO FINAL DA HOMOLOGAÇÃO');
-  console.log('==================================');
+  console.log('\n📊 RELATÓRIO FINAL DA HOMOLOGAÇÃO');'
+  console.log('==================================');'
   
   const successRate = (testResults.passed / testResults.total * 100).toFixed(1);
   const criticalSuccessRate = testResults.critical > 0 ? (testResults.criticalPassed / testResults.critical * 100).toFixed(1) : 100;
@@ -286,24 +286,24 @@ async function runCompleteHomologation() {
   console.log(`❌ Testes Falharam: ${testResults.failed}`);
   
   // Status final
-  console.log('\n🎯 AVALIAÇÃO FINAL:');
+  console.log('\n🎯 AVALIAÇÃO FINAL:');'
   if (successRate >= 95 && criticalSuccessRate >= 90) {
-    console.log('🏆 SISTEMA APROVADO! Meta de 95%+ atingida!');
-    console.log('✅ Pronto para produção!');
+    console.log('🏆 SISTEMA APROVADO! Meta de 95%+ atingida!');'
+    console.log('✅ Pronto para produção!');'
   } else if (successRate >= 80 && criticalSuccessRate >= 80) {
-    console.log('⚠️ SISTEMA APROVADO COM RESSALVAS');
-    console.log('🔧 Algumas melhorias recomendadas');
+    console.log('⚠️ SISTEMA APROVADO COM RESSALVAS');'
+    console.log('🔧 Algumas melhorias recomendadas');'
   } else {
-    console.log('❌ SISTEMA REPROVADO');
-    console.log('🚫 Correções críticas necessárias');
+    console.log('❌ SISTEMA REPROVADO');'
+    console.log('🚫 Correções críticas necessárias');'
   }
   
   // Detalhes dos falhas
   const failures = testResults.details.filter(t => !t.success);
   if (failures.length > 0) {
-    console.log('\n❌ FALHAS DETECTADAS:');
+    console.log('\n❌ FALHAS DETECTADAS:');'
     failures.forEach(f => {
-      console.log(`   ${f.critical ? '🔥' : '📋'} ${f.name}: ${f.status} - ${f.error || 'Unknown error'}`);
+      console.log(`   ${f.critical ? '🔥' : '📋'} ${f.name}: ${f.status} - ${f.error || 'Unknown error'}`);'
     });
   }
   
@@ -320,12 +320,12 @@ async function runCompleteHomologation() {
       criticalPassed: testResults.criticalPassed
     },
     details: testResults.details,
-    status: successRate >= 95 && criticalSuccessRate >= 90 ? 'APPROVED' : 
-            successRate >= 80 && criticalSuccessRate >= 80 ? 'APPROVED_WITH_CONDITIONS' : 'REJECTED'
+    status: successRate >= 95 && criticalSuccessRate >= 90 ? 'APPROVED' : '
+            successRate >= 80 && criticalSuccessRate >= 80 ? 'APPROVED_WITH_CONDITIONS' : 'REJECTED''
   };
   
-  require('fs').writeFileSync('homologation-report.json', JSON.stringify(report, null, 2));
-  console.log('\n📄 Relatório salvo em: homologation-report.json');
+  require('fs').writeFileSync('homologation-report.json', JSON.stringify(report, null, 2));'
+  console.log('\n📄 Relatório salvo em: homologation-report.json');'
   
   return report;
 }

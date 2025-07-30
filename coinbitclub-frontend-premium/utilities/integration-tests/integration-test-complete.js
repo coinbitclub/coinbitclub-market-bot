@@ -14,26 +14,26 @@
  * @date 2025-01-25
  */
 
-const fetch = require('node-fetch');
-const fs = require('fs');
-const path = require('path');
+const fetch = require('node-fetch');'
+const fs = require('fs');'
+const path = require('path');'
 
 // Configurações do teste
-const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000';
+const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000';'
 const API_BASE = `${BASE_URL}/api`;
 const TIMEOUT = 30000; // 30 segundos
 
 // Cores para output no terminal
 const colors = {
-  green: '\x1b[32m',
-  red: '\x1b[31m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
-  white: '\x1b[37m',
-  bold: '\x1b[1m',
-  reset: '\x1b[0m'
+  green: '\x1b[32m','
+  red: '\x1b[31m','
+  yellow: '\x1b[33m','
+  blue: '\x1b[34m','
+  magenta: '\x1b[35m','
+  cyan: '\x1b[36m','
+  white: '\x1b[37m','
+  bold: '\x1b[1m','
+  reset: '\x1b[0m''
 };
 
 // Utilitários de log
@@ -58,41 +58,41 @@ let testStats = {
 // Dados de teste
 const testData = {
   user: {
-    name: 'Test User Integration',
+    name: 'Test User Integration','
     email: `test_integration_${Date.now()}@coinbitclub.com`,
-    password: 'TestPassword123!',
-    plan: 'premium',
-    country: 'Brazil',
-    phone: '+5511999887766'
+    password: 'TestPassword123!','
+    plan: 'premium','
+    country: 'Brazil','
+    phone: '+5511999887766''
   },
   affiliate: {
-    name: 'Test Affiliate Integration',
+    name: 'Test Affiliate Integration','
     email: `affiliate_integration_${Date.now()}@coinbitclub.com`,
-    tier: 'gold',
+    tier: 'gold','
     commission_rate: 15.5,
-    status: 'active'
+    status: 'active''
   },
   operation: {
-    symbol: 'BTCUSDT',
-    side: 'LONG',
+    symbol: 'BTCUSDT','
+    side: 'LONG','
     amount: 1000.00,
     entry_price: 43500.00,
     stop_loss: 42000.00,
     take_profit: 45000.00
   },
   alert: {
-    type: 'market_signal',
-    title: 'Test Market Alert',
-    message: 'Bitcoin breakout detected above $44,000',
-    priority: 'high',
-    channels: ['email', 'push']
+    type: 'market_signal','
+    title: 'Test Market Alert','
+    message: 'Bitcoin breakout detected above $44,000','
+    priority: 'high','
+    channels: ['email', 'push']'
   },
   adjustment: {
     user_id: null, // Will be set during test
-    type: 'credit',
+    type: 'credit','
     amount: 500.00,
-    category: 'bonus',
-    description: 'Test integration bonus',
+    category: 'bonus','
+    description: 'Test integration bonus','
     reference_id: `TEST_${Date.now()}`
   }
 };
@@ -101,7 +101,7 @@ const testData = {
  * Função principal de execução dos testes
  */
 async function runCompleteIntegrationTest() {
-  log.title('INICIANDO TESTE DE INTEGRAÇÃO COMPLETO');
+  log.title('INICIANDO TESTE DE INTEGRAÇÃO COMPLETO');'
   log.info(`Base URL: ${BASE_URL}`);
   log.info(`Timeout: ${TIMEOUT}ms`);
   console.log();
@@ -141,19 +141,19 @@ async function runCompleteIntegrationTest() {
  * 1. TESTE DE CONECTIVIDADE
  */
 async function testConnectivity() {
-  log.title('1. TESTE DE CONECTIVIDADE');
+  log.title('1. TESTE DE CONECTIVIDADE');'
   
-  await runTest('Conectividade com servidor', async () => {
+  await runTest('Conectividade com servidor', async () => {'
     const response = await fetch(BASE_URL, { timeout: TIMEOUT });
     if (!response.ok) throw new Error(`Status: ${response.status}`);
     return true;
   });
   
-  await runTest('API Health Check', async () => {
+  await runTest('API Health Check', async () => {'
     const response = await fetch(`${API_BASE}/health`, { timeout: TIMEOUT });
     if (response.status === 404) {
-      log.warning('Endpoint /api/health não encontrado - criando...');
-      return 'warning';
+      log.warning('Endpoint /api/health não encontrado - criando...');'
+      return 'warning';'
     }
     return response.ok;
   });
@@ -165,19 +165,19 @@ async function testConnectivity() {
  * 2. TESTE DAS PÁGINAS FRONTEND
  */
 async function testFrontendPages() {
-  log.title('2. TESTE DAS PÁGINAS FRONTEND');
+  log.title('2. TESTE DAS PÁGINAS FRONTEND');'
   
   const pages = [
-    { name: 'Home Page', url: '/' },
-    { name: 'Login Page', url: '/login' },
-    { name: 'Admin Dashboard', url: '/admin/dashboard-executive' },
-    { name: 'Users Management', url: '/admin/users-new' },
-    { name: 'Affiliates Management', url: '/admin/affiliates-new' },
-    { name: 'Operations Management', url: '/admin/operations-new' },
-    { name: 'Alerts Management', url: '/admin/alerts-new' },
-    { name: 'Adjustments Management', url: '/admin/adjustments-new' },
-    { name: 'Accounting Management', url: '/admin/accounting-new' },
-    { name: 'Settings Management', url: '/admin/settings-new' }
+    { name: 'Home Page', url: '/' },'
+    { name: 'Login Page', url: '/login' },'
+    { name: 'Admin Dashboard', url: '/admin/dashboard-executive' },'
+    { name: 'Users Management', url: '/admin/users-new' },'
+    { name: 'Affiliates Management', url: '/admin/affiliates-new' },'
+    { name: 'Operations Management', url: '/admin/operations-new' },'
+    { name: 'Alerts Management', url: '/admin/alerts-new' },'
+    { name: 'Adjustments Management', url: '/admin/adjustments-new' },'
+    { name: 'Accounting Management', url: '/admin/accounting-new' },'
+    { name: 'Settings Management', url: '/admin/settings-new' }'
   ];
   
   for (const page of pages) {
@@ -197,24 +197,24 @@ async function testFrontendPages() {
  * 3. TESTE DAS APIs ADMIN
  */
 async function testAdminAPIs() {
-  log.title('3. TESTE DAS APIs ADMIN');
+  log.title('3. TESTE DAS APIs ADMIN');'
   
   const apis = [
-    { name: 'Users API', endpoint: '/admin/users' },
-    { name: 'Affiliates API', endpoint: '/admin/affiliates' },
-    { name: 'Operations API', endpoint: '/admin/operations' },
-    { name: 'Alerts API', endpoint: '/admin/alerts' },
-    { name: 'Adjustments API', endpoint: '/admin/adjustments' },
-    { name: 'Accounting API', endpoint: '/admin/accounting' },
-    { name: 'Settings API', endpoint: '/admin/settings' },
-    { name: 'Dashboard API', endpoint: '/admin/dashboard-complete' }
+    { name: 'Users API', endpoint: '/admin/users' },'
+    { name: 'Affiliates API', endpoint: '/admin/affiliates' },'
+    { name: 'Operations API', endpoint: '/admin/operations' },'
+    { name: 'Alerts API', endpoint: '/admin/alerts' },'
+    { name: 'Adjustments API', endpoint: '/admin/adjustments' },'
+    { name: 'Accounting API', endpoint: '/admin/accounting' },'
+    { name: 'Settings API', endpoint: '/admin/settings' },'
+    { name: 'Dashboard API', endpoint: '/admin/dashboard-complete' }'
   ];
   
   for (const api of apis) {
     await runTest(`API: ${api.name}`, async () => {
       const response = await fetch(`${API_BASE}${api.endpoint}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'GET','
+        headers: { 'Content-Type': 'application/json' },'
         timeout: TIMEOUT
       });
       
@@ -234,16 +234,16 @@ async function testAdminAPIs() {
  * 4. TESTE DE CRUD COMPLETO
  */
 async function testCRUDOperations() {
-  log.title('4. TESTE DE OPERAÇÕES CRUD');
+  log.title('4. TESTE DE OPERAÇÕES CRUD');'
   
   let createdUserId = null;
   let createdAffiliateId = null;
   
   // CREATE - Usuário
-  await runTest('CREATE - Novo Usuário', async () => {
+  await runTest('CREATE - Novo Usuário', async () => {'
     const response = await fetch(`${API_BASE}/admin/users`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST','
+      headers: { 'Content-Type': 'application/json' },'
       body: JSON.stringify(testData.user),
       timeout: TIMEOUT
     });
@@ -259,7 +259,7 @@ async function testCRUDOperations() {
   
   // READ - Buscar Usuário
   if (createdUserId) {
-    await runTest('READ - Buscar Usuário Criado', async () => {
+    await runTest('READ - Buscar Usuário Criado', async () => {'
       const response = await fetch(`${API_BASE}/admin/users?id=${createdUserId}`, {
         timeout: TIMEOUT
       });
@@ -273,10 +273,10 @@ async function testCRUDOperations() {
   }
   
   // CREATE - Afiliado
-  await runTest('CREATE - Novo Afiliado', async () => {
+  await runTest('CREATE - Novo Afiliado', async () => {'
     const response = await fetch(`${API_BASE}/admin/affiliates`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST','
+      headers: { 'Content-Type': 'application/json' },'
       body: JSON.stringify(testData.affiliate),
       timeout: TIMEOUT
     });
@@ -290,10 +290,10 @@ async function testCRUDOperations() {
   });
   
   // CREATE - Operação
-  await runTest('CREATE - Nova Operação', async () => {
+  await runTest('CREATE - Nova Operação', async () => {'
     const response = await fetch(`${API_BASE}/admin/operations`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST','
+      headers: { 'Content-Type': 'application/json' },'
       body: JSON.stringify(testData.operation),
       timeout: TIMEOUT
     });
@@ -302,10 +302,10 @@ async function testCRUDOperations() {
   });
   
   // CREATE - Alerta
-  await runTest('CREATE - Novo Alerta', async () => {
+  await runTest('CREATE - Novo Alerta', async () => {'
     const response = await fetch(`${API_BASE}/admin/alerts`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST','
+      headers: { 'Content-Type': 'application/json' },'
       body: JSON.stringify(testData.alert),
       timeout: TIMEOUT
     });
@@ -315,10 +315,10 @@ async function testCRUDOperations() {
   
   // CREATE - Ajuste Financeiro
   if (createdUserId) {
-    await runTest('CREATE - Novo Ajuste Financeiro', async () => {
+    await runTest('CREATE - Novo Ajuste Financeiro', async () => {'
       const response = await fetch(`${API_BASE}/admin/adjustments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST','
+        headers: { 'Content-Type': 'application/json' },'
         body: JSON.stringify(testData.adjustment),
         timeout: TIMEOUT
       });
@@ -329,16 +329,16 @@ async function testCRUDOperations() {
   
   // UPDATE - Usuário
   if (createdUserId) {
-    await runTest('UPDATE - Atualizar Usuário', async () => {
+    await runTest('UPDATE - Atualizar Usuário', async () => {'
       const updateData = {
         id: createdUserId,
-        name: 'Updated Test User',
-        plan: 'professional'
+        name: 'Updated Test User','
+        plan: 'professional''
       };
       
       const response = await fetch(`${API_BASE}/admin/users`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PUT','
+        headers: { 'Content-Type': 'application/json' },'
         body: JSON.stringify(updateData),
         timeout: TIMEOUT
       });
@@ -349,10 +349,10 @@ async function testCRUDOperations() {
   
   // DELETE - Limpeza dos dados de teste
   if (createdUserId) {
-    await runTest('DELETE - Remover Usuário de Teste', async () => {
+    await runTest('DELETE - Remover Usuário de Teste', async () => {'
       const response = await fetch(`${API_BASE}/admin/users`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'DELETE','
+        headers: { 'Content-Type': 'application/json' },'
         body: JSON.stringify({ id: createdUserId }),
         timeout: TIMEOUT
       });
@@ -368,9 +368,9 @@ async function testCRUDOperations() {
  * 5. TESTE DE INTEGRAÇÃO DE DADOS
  */
 async function testDataIntegration() {
-  log.title('5. TESTE DE INTEGRAÇÃO DE DADOS');
+  log.title('5. TESTE DE INTEGRAÇÃO DE DADOS');'
   
-  await runTest('Dashboard Data Integration', async () => {
+  await runTest('Dashboard Data Integration', async () => {'
     const response = await fetch(`${API_BASE}/admin/dashboard-complete`, {
       timeout: TIMEOUT
     });
@@ -383,7 +383,7 @@ async function testDataIntegration() {
     return false;
   });
   
-  await runTest('Users Data Structure', async () => {
+  await runTest('Users Data Structure', async () => {'
     const response = await fetch(`${API_BASE}/admin/users?limit=1`, {
       timeout: TIMEOUT
     });
@@ -398,7 +398,7 @@ async function testDataIntegration() {
     return false;
   });
   
-  await runTest('Operations Data Structure', async () => {
+  await runTest('Operations Data Structure', async () => {'
     const response = await fetch(`${API_BASE}/admin/operations?limit=1`, {
       timeout: TIMEOUT
     });
@@ -413,7 +413,7 @@ async function testDataIntegration() {
     return false;
   });
   
-  await runTest('Real-time Data Updates', async () => {
+  await runTest('Real-time Data Updates', async () => {'
     // Teste de múltiplas chamadas para verificar consistência
     const promises = Array.from({ length: 3 }, () =>
       fetch(`${API_BASE}/admin/dashboard-complete`, { timeout: TIMEOUT })
@@ -432,9 +432,9 @@ async function testDataIntegration() {
  * 6. TESTE DE PERFORMANCE
  */
 async function testPerformance() {
-  log.title('6. TESTE DE PERFORMANCE');
+  log.title('6. TESTE DE PERFORMANCE');'
   
-  await runTest('API Response Time (<2s)', async () => {
+  await runTest('API Response Time (<2s)', async () => {'
     const startTime = Date.now();
     const response = await fetch(`${API_BASE}/admin/users`, { timeout: TIMEOUT });
     const endTime = Date.now();
@@ -444,7 +444,7 @@ async function testPerformance() {
     return response.ok && responseTime < 2000;
   });
   
-  await runTest('Concurrent Requests Handling', async () => {
+  await runTest('Concurrent Requests Handling', async () => {'
     const concurrentRequests = 5;
     const promises = Array.from({ length: concurrentRequests }, () =>
       fetch(`${API_BASE}/admin/dashboard-complete`, { timeout: TIMEOUT })
@@ -461,7 +461,7 @@ async function testPerformance() {
     return allSuccessful && totalTime < 10000;
   });
   
-  await runTest('Large Dataset Handling', async () => {
+  await runTest('Large Dataset Handling', async () => {'
     const response = await fetch(`${API_BASE}/admin/users?limit=100`, {
       timeout: TIMEOUT
     });
@@ -480,10 +480,10 @@ async function testPerformance() {
  * 7. TESTE DE SEGURANÇA BÁSICA
  */
 async function testBasicSecurity() {
-  log.title('7. TESTE DE SEGURANÇA BÁSICA');
+  log.title('7. TESTE DE SEGURANÇA BÁSICA');'
   
-  await runTest('SQL Injection Prevention', async () => {
-    const maliciousInput = "'; DROP TABLE users; --";
+  await runTest('SQL Injection Prevention', async () => {'
+    const maliciousInput = "'; DROP TABLE users; --";"
     const response = await fetch(`${API_BASE}/admin/users?search=${encodeURIComponent(maliciousInput)}`, {
       timeout: TIMEOUT
     });
@@ -492,14 +492,14 @@ async function testBasicSecurity() {
     return response.status !== 500;
   });
   
-  await runTest('XSS Prevention', async () => {
-    const xssInput = "<script>alert('xss')</script>";
+  await runTest('XSS Prevention', async () => {'
+    const xssInput = "<script>alert('xss')</script>";"
     const response = await fetch(`${API_BASE}/admin/users`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST','
+      headers: { 'Content-Type': 'application/json' },'
       body: JSON.stringify({
         name: xssInput,
-        email: 'test@test.com'
+        email: 'test@test.com''
       }),
       timeout: TIMEOUT
     });
@@ -508,7 +508,7 @@ async function testBasicSecurity() {
     return response.status === 400 || response.status === 422;
   });
   
-  await runTest('Rate Limiting Check', async () => {
+  await runTest('Rate Limiting Check', async () => {'
     // Teste básico de múltiplas requisições rápidas
     const rapidRequests = Array.from({ length: 20 }, () =>
       fetch(`${API_BASE}/admin/users`, { timeout: 5000 })
@@ -534,7 +534,7 @@ async function runTest(testName, testFunction) {
   try {
     const result = await testFunction();
     
-    if (result === 'warning') {
+    if (result === 'warning') {'
       testStats.warnings++;
       log.warning(`${testName}`);
     } else if (result) {
@@ -557,9 +557,9 @@ function generateFinalReport() {
   const endTime = Date.now();
   const duration = (endTime - testStats.startTime) / 1000;
   
-  console.log('\n' + '='.repeat(80));
-  log.title('RELATÓRIO FINAL DOS TESTES');
-  console.log('='.repeat(80));
+  console.log('\n' + '='.repeat(80));'
+  log.title('RELATÓRIO FINAL DOS TESTES');'
+  console.log('='.repeat(80));'
   
   console.log(`${colors.bold}📊 ESTATÍSTICAS:${colors.reset}`);
   console.log(`   Total de testes: ${colors.cyan}${testStats.total}${colors.reset}`);
@@ -571,15 +571,15 @@ function generateFinalReport() {
   const successRate = ((testStats.passed / testStats.total) * 100).toFixed(1);
   console.log(`   📈 Taxa de sucesso: ${colors.bold}${successRate}%${colors.reset}`);
   
-  console.log('\n' + '='.repeat(80));
+  console.log('\n' + '='.repeat(80));'
   
   if (testStats.failed === 0) {
-    log.success('🎉 TODOS OS TESTES PASSARAM! Sistema está funcionando corretamente.');
+    log.success('🎉 TODOS OS TESTES PASSARAM! Sistema está funcionando corretamente.');'
   } else {
     log.warning(`⚠️  ${testStats.failed} teste(s) falharam. Verifique os logs acima.`);
   }
   
-  console.log('='.repeat(80));
+  console.log('='.repeat(80));'
   
   // Salvar relatório em arquivo
   const report = {
@@ -587,15 +587,15 @@ function generateFinalReport() {
     duration: duration,
     stats: testStats,
     success_rate: parseFloat(successRate),
-    status: testStats.failed === 0 ? 'SUCCESS' : 'PARTIAL_FAILURE'
+    status: testStats.failed === 0 ? 'SUCCESS' : 'PARTIAL_FAILURE''
   };
   
   fs.writeFileSync(
-    path.join(__dirname, 'integration-test-report.json'),
+    path.join(__dirname, 'integration-test-report.json'),'
     JSON.stringify(report, null, 2)
   );
   
-  log.info('📄 Relatório salvo em: integration-test-report.json');
+  log.info('📄 Relatório salvo em: integration-test-report.json');'
 }
 
 // Executar testes se chamado diretamente

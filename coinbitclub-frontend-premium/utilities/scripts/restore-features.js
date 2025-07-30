@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+const fs = require('fs');'''
+const path = require('path');'''
+const { execSync } = require('child_process');'''
 
-console.log('🔄 RESTAURANDO FUNCIONALIDADES DO COINBITCLUB');
-console.log('='.repeat(60));
+console.log('🔄 RESTAURANDO FUNCIONALIDADES DO COINBITCLUB');'''
+console.log('='.repeat(60));'''
 
 const colors = {
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  cyan: '\x1b[36m',
-  blue: '\x1b[34m',
-  reset: '\x1b[0m'
+  red: '\x1b[31m','''
+  green: '\x1b[32m','''
+  yellow: '\x1b[33m','''
+  cyan: '\x1b[36m','''
+  blue: '\x1b[34m','''
+  reset: '\x1b[0m''''
 };
 
-function log(message, color = 'white') {
+function log(message, color = 'white') {'''
   console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
@@ -24,15 +24,15 @@ function log(message, color = 'white') {
 function analyzeDependencies(filePath) {
   if (!fs.existsSync(filePath)) return [];
   
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = fs.readFileSync(filePath, 'utf8');'''
   const dependencies = new Set();
   
   // Capturar imports
-  const importRegex = /import.*from ['"]([^'"]+)['"]/g;
+  const importRegex = /import.*from ['"]([^'"]+)['"]/g;"""
   let match;
   while ((match = importRegex.exec(content)) !== null) {
     const dep = match[1];
-    if (!dep.startsWith('.') && !dep.startsWith('/')) {
+    if (!dep.startsWith('.') && !dep.startsWith('/')) {'''
       dependencies.add(dep);
     }
   }
@@ -44,13 +44,13 @@ function analyzeDependencies(filePath) {
 function hasValidJSX(filePath) {
   if (!fs.existsSync(filePath)) return false;
   
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = fs.readFileSync(filePath, 'utf8');'''
   
   // Verificar problemas comuns de JSX
   const problems = [
     /return \(\s*<>\s*$/m, // Fragment vazio
-    /<[A-Z][^>]*\s+\w+="[^"]*"\s*\w+=/m, // Propriedades malformadas
-    /<\w+[^>]*\s+className\s*=\s*[^{"][^>]*>/m, // className sem aspas
+    /<[A-Z][^>]*\s+\w+="[^"]*"\s*\w+=/m, // Propriedades malformadas"""
+    /<\w+[^>]*\s+className\s*=\s*[^{"][^>]*>/m, // className sem aspas"""
   ];
   
   return !problems.some(pattern => pattern.test(content));
@@ -58,19 +58,19 @@ function hasValidJSX(filePath) {
 
 async function restoreModules() {
   try {
-    log('📋 FASE 1: Análise dos módulos disponíveis', 'cyan');
+    log('📋 FASE 1: Análise dos módulos disponíveis', 'cyan');'''
     
     const modules = {
-      admin: 'backup-files/admin.backup',
-      affiliate: 'backup-files/affiliate.backup', 
-      user: 'backup-files/user.backup',
-      api: 'backup-files/api-backup'
+      admin: 'backup-files/admin.backup','''
+      affiliate: 'backup-files/affiliate.backup', '''
+      user: 'backup-files/user.backup','''
+      api: 'backup-files/api-backup''''
     };
     
     const analysis = {};
     
     for (const [module, backupPath] of Object.entries(modules)) {
-      log(`\n🔍 Analisando ${module.toUpperCase()}...`, 'yellow');
+      log(`\n🔍 Analisando ${module.toUpperCase()}...`, 'yellow');'''
       
       const files = [];
       const dependencies = new Set();
@@ -87,7 +87,7 @@ async function restoreModules() {
           
           if (stat.isDirectory()) {
             scanDirectory(fullPath);
-          } else if (item.endsWith('.tsx') || item.endsWith('.ts')) {
+          } else if (item.endsWith('.tsx') || item.endsWith('.ts')) {'''
             files.push(fullPath);
             
             // Analisar dependências
@@ -97,10 +97,10 @@ async function restoreModules() {
             // Verificar validade JSX
             if (hasValidJSX(fullPath)) {
               validFiles++;
-              log(`✅ ${fullPath.replace(backupPath + '/', '')}`, 'green');
+              log(`✅ ${fullPath.replace(backupPath + '/', '')}`, 'green');'''
             } else {
               invalidFiles++;
-              log(`❌ ${fullPath.replace(backupPath + '/', '')} (JSX inválido)`, 'red');
+              log(`❌ ${fullPath.replace(backupPath + '/', '')} (JSX inválido)`, 'red');'''
             }
           }
         }
@@ -116,23 +116,23 @@ async function restoreModules() {
         files
       };
       
-      log(`📊 Total: ${files.length} arquivos | ✅ ${validFiles} válidos | ❌ ${invalidFiles} inválidos`, 'blue');
+      log(`📊 Total: ${files.length} arquivos | ✅ ${validFiles} válidos | ❌ ${invalidFiles} inválidos`, 'blue');'''
     }
     
-    log('\n📋 FASE 2: Dependências necessárias', 'cyan');
+    log('\n📋 FASE 2: Dependências necessárias', 'cyan');'''
     
     const allDependencies = new Set();
     Object.values(analysis).forEach(module => {
       module.dependencies.forEach(dep => allDependencies.add(dep));
     });
     
-    log('🔧 Dependências encontradas:', 'yellow');
+    log('🔧 Dependências encontradas:', 'yellow');'''
     Array.from(allDependencies).sort().forEach(dep => {
-      log(`  📦 ${dep}`, 'white');
+      log(`  📦 ${dep}`, 'white');'''
     });
     
     // Verificar quais dependências já estão instaladas
-    const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));'''
     const installed = {
       ...packageJson.dependencies || {},
       ...packageJson.devDependencies || {}
@@ -141,80 +141,80 @@ async function restoreModules() {
     const missing = Array.from(allDependencies).filter(dep => !installed[dep]);
     
     if (missing.length > 0) {
-      log('\n⚠️ DEPENDÊNCIAS FALTANDO:', 'red');
-      missing.forEach(dep => log(`  ❌ ${dep}`, 'red'));
+      log('\n⚠️ DEPENDÊNCIAS FALTANDO:', 'red');'''
+      missing.forEach(dep => log(`  ❌ ${dep}`, 'red'));'''
       
-      log('\n📦 Instalando dependências faltando...', 'cyan');
+      log('\n📦 Instalando dependências faltando...', 'cyan');'''
       try {
-        const installCommand = `npm install ${missing.join(' ')} --force`;
-        execSync(installCommand, { stdio: 'inherit' });
-        log('✅ Dependências instaladas!', 'green');
+        const installCommand = `npm install ${missing.join(' ')} --force`;'''
+        execSync(installCommand, { stdio: 'inherit' });'''
+        log('✅ Dependências instaladas!', 'green');'''
       } catch (error) {
-        log('⚠️ Erro ao instalar algumas dependências, continuando...', 'yellow');
+        log('⚠️ Erro ao instalar algumas dependências, continuando...', 'yellow');'''
       }
     } else {
-      log('✅ Todas as dependências estão instaladas!', 'green');
+      log('✅ Todas as dependências estão instaladas!', 'green');'''
     }
     
-    log('\n📋 FASE 3: Restauração gradual', 'cyan');
+    log('\n📋 FASE 3: Restauração gradual', 'cyan');'''
     
     // Começar com arquivos válidos mais simples
-    log('🚀 Iniciando restauração por prioridade...', 'yellow');
+    log('🚀 Iniciando restauração por prioridade...', 'yellow');'''
     
     // 1. APIs primeiro (backend)
     if (analysis.api.validFiles > 0) {
-      log('\n1️⃣ Restaurando APIs básicas...', 'cyan');
+      log('\n1️⃣ Restaurando APIs básicas...', 'cyan');'''
       await restoreAPIs(analysis.api);
     }
     
     // 2. User dashboard (mais simples)
     if (analysis.user.validFiles > 0) {
-      log('\n2️⃣ Restaurando área do usuário...', 'cyan');
+      log('\n2️⃣ Restaurando área do usuário...', 'cyan');'''
       await restoreUserArea(analysis.user);
     }
     
     // 3. Affiliate (moderadamente complexo)
     if (analysis.affiliate.validFiles > 0) {
-      log('\n3️⃣ Restaurando área de afiliados...', 'cyan');
+      log('\n3️⃣ Restaurando área de afiliados...', 'cyan');'''
       await restoreAffiliateArea(analysis.affiliate);
     }
     
     // 4. Admin (mais complexo)
     if (analysis.admin.validFiles > 0) {
-      log('\n4️⃣ Restaurando área administrativa...', 'cyan');
+      log('\n4️⃣ Restaurando área administrativa...', 'cyan');'''
       await restoreAdminArea(analysis.admin);
     }
     
-    log('\n🏗️ Testando build após restaurações...', 'cyan');
+    log('\n🏗️ Testando build após restaurações...', 'cyan');'''
     
     try {
-      execSync('npm run build', { stdio: 'inherit', timeout: 120000 });
+      execSync('npm run build', { stdio: 'inherit', timeout: 120000 });'''
       
-      log('\n✅ BUILD SUCCESSFUL! Todas as funcionalidades restauradas!', 'green');
+      log('\n✅ BUILD SUCCESSFUL! Todas as funcionalidades restauradas!', 'green');'''
       
-      log('\n🚀 Fazendo deploy atualizado...', 'cyan');
-      execSync('npx vercel --prod', { stdio: 'inherit' });
+      log('\n🚀 Fazendo deploy atualizado...', 'cyan');'''
+      execSync('npx vercel --prod', { stdio: 'inherit' });'''
       
-      log('\n🎉 RESTAURAÇÃO COMPLETA!', 'green');
+      log('\n🎉 RESTAURAÇÃO COMPLETA!', 'green');'''
       
     } catch (buildError) {
-      log('\n❌ Build falhou após restaurações', 'red');
-      log('🔄 Fazendo rollback para versão estável...', 'yellow');
+      log('\n❌ Build falhou após restaurações', 'red');'''
+      log('🔄 Fazendo rollback para versão estável...', 'yellow');'''
       // Implementar rollback se necessário
     }
     
   } catch (error) {
-    log(`💥 Erro durante restauração: ${error.message}`, 'red');
+    log(`💥 Erro durante restauração: ${error.message}`, 'red');'''
   }
 }
 
 async function restoreAPIs(apiAnalysis) {
   // Restaurar APIs básicas primeiro
   const essentialAPIs = [
-    'status.ts',
-    'auth/login.ts',
-    'auth/register.ts',
-    'user/profile.ts'
+    'status.ts','''
+    'auth/login.ts','''
+    'auth/register.ts','''
+    'user/profile.ts''''
   ];
   
   for (const api of essentialAPIs) {
@@ -229,14 +229,14 @@ async function restoreAPIs(apiAnalysis) {
       }
       
       fs.copyFileSync(backupPath, targetPath);
-      log(`✅ API restaurada: ${api}`, 'green');
+      log(`✅ API restaurada: ${api}`, 'green');'''
     }
   }
 }
 
 async function restoreUserArea(userAnalysis) {
   // Restaurar páginas de usuário
-  const userPages = ['dashboard.tsx', 'settings.tsx', 'plans.tsx'];
+  const userPages = ['dashboard.tsx', 'settings.tsx', 'plans.tsx'];'''
   
   for (const page of userPages) {
     const backupPath = `backup-files/user.backup/${page}`;
@@ -249,14 +249,14 @@ async function restoreUserArea(userAnalysis) {
       }
       
       fs.copyFileSync(backupPath, targetPath);
-      log(`✅ Página de usuário restaurada: ${page}`, 'green');
+      log(`✅ Página de usuário restaurada: ${page}`, 'green');'''
     }
   }
 }
 
 async function restoreAffiliateArea(affiliateAnalysis) {
   // Restaurar sistema de afiliados
-  const affiliatePages = ['index.tsx', 'dashboard.tsx', 'commissions.tsx'];
+  const affiliatePages = ['index.tsx', 'dashboard.tsx', 'commissions.tsx'];'''
   
   for (const page of affiliatePages) {
     const backupPath = `backup-files/affiliate.backup/${page}`;
@@ -269,14 +269,14 @@ async function restoreAffiliateArea(affiliateAnalysis) {
       }
       
       fs.copyFileSync(backupPath, targetPath);
-      log(`✅ Página de afiliado restaurada: ${page}`, 'green');
+      log(`✅ Página de afiliado restaurada: ${page}`, 'green');'''
     }
   }
 }
 
 async function restoreAdminArea(adminAnalysis) {
   // Restaurar área administrativa (apenas arquivos válidos)
-  const adminPages = ['dashboard-real.tsx', 'operations.tsx', 'users.tsx'];
+  const adminPages = ['dashboard-real.tsx', 'operations.tsx', 'users.tsx'];'''
   
   for (const page of adminPages) {
     const backupPath = `backup-files/admin.backup/${page}`;
@@ -289,7 +289,7 @@ async function restoreAdminArea(adminAnalysis) {
       }
       
       fs.copyFileSync(backupPath, targetPath);
-      log(`✅ Página administrativa restaurada: ${page}`, 'green');
+      log(`✅ Página administrativa restaurada: ${page}`, 'green');'''
     }
   }
 }
