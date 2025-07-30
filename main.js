@@ -187,6 +187,9 @@ async function processCoinBitClubSignal(signalData, res) {
                 );
             `);
 
+            // Preparar dados para evitar problemas de JSON
+            const rawDataSafe = JSON.stringify(signalData).replace(/\u0000/g, '');
+
             await pool.query(`
                 INSERT INTO coinbitclub_signals (
                     signal_id, symbol, signal_type, signal_strength,
@@ -217,8 +220,8 @@ async function processCoinBitClubSignal(signalData, res) {
                 signalData.cruzou_abaixo_ema9 === "1",
                 signalData.golden_cross_30 === "1",
                 signalData.death_cross_30 === "1",
-                signalData.time || new Date().toISOString(),
-                JSON.stringify(signalData)
+                signalData.time ? new Date(signalData.time).toISOString() : new Date().toISOString(),
+                rawDataSafe
             ]);
             
             console.log('✅ Dados detalhados salvos em coinbitclub_signals');
