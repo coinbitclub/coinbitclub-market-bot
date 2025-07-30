@@ -158,6 +158,7 @@ async function processCoinBitClubSignal(signalData, res) {
             false
         ]);
 
+        const signalId = result.rows[0].id;
         console.log('✅ Sinal CoinBitClub salvo com ID:', signalId);
 
         // Resposta de sucesso SEMPRE (sem tentar salvar dados detalhados por enquanto)
