@@ -1,0 +1,20 @@
+{
+  "version": "V3.0.0-PRODUCTION",
+  "timestamp": "2025-07-30T15:36:35.613Z",
+  "environment": "production",
+  "status": "DEPLOYED",
+  "features": [
+    "Sistema Automático Fear & Greed",
+    "Processamento de Sinais",
+    "Orquestração Completa",
+    "Ciclo Visual de Trading",
+    "Monitoramento 24/7",
+    "Ambiente de Produção"
+  ],
+  "gestores": {
+    "fearGreed": "ATIVO",
+    "processamentoSinais": "ATIVO",
+    "orquestradorPrincipal": "ATIVO",
+    "orquestradorCompleto": "ATIVO"
+  }
+}

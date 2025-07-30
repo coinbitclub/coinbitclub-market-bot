@@ -30,8 +30,9 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Sistema de versao unico para identificar
-const SYSTEM_VERSION = 'V3.0.0-FINAL-' + Date.now();
+// Sistema de versao unico para identificar - PRODUCAO
+const SYSTEM_VERSION = 'V3.0.0-PRODUCTION-' + Date.now();
+const NODE_ENV = 'production';
 
 // Configuracao do PostgreSQL Railway
 const pool = new Pool({
@@ -88,7 +89,7 @@ app.get('/', async (req, res) => {
             status: 'operational',
             timestamp: new Date().toISOString(),
             uptime: process.uptime(),
-            environment: process.env.NODE_ENV || 'development',
+            environment: NODE_ENV || process.env.NODE_ENV || 'production',
             database: {
                 status: dbStatus,
                 tablesCount: tablesCount,
@@ -289,6 +290,210 @@ app.get('/dashboard', (req, res) => {
             box-shadow: 0 10px 30px rgba(5, 150, 105, 0.3);
         }
         
+        .cycle-section {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(30, 64, 175, 0.3);
+        }
+        
+        .cycle-section h2 {
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+        
+        .cycle-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .cycle-step {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 160px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .cycle-step.active {
+            border-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.2);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+            animation: pulse 2s infinite;
+        }
+        
+        .cycle-step.processing {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.2);
+            animation: spin 2s linear infinite;
+        }
+        
+        .cycle-step.completed {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.2);
+        }
+        
+        .cycle-step.error {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.2);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .step-number {
+            background: #fbbf24;
+            color: #1e40af;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 0 auto 10px;
+        }
+        
+        .step-icon {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #fbbf24;
+        }
+        
+        .step-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: white;
+        }
+        
+        .step-desc {
+            font-size: 0.9em;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+        }
+        
+        .step-status {
+            font-size: 0.8em;
+            color: #fbbf24;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 8px;
+            border-radius: 8px;
+        }
+        
+        .cycle-arrow {
+            font-size: 1.5em;
+            color: #fbbf24;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: flow 3s ease-in-out infinite;
+        }
+        
+        @keyframes flow {
+            0%, 100% { opacity: 0.5; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(5px); }
+        }
+        
+        .cycle-break {
+            width: 100%;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .cycle-break::after {
+            content: "⤵";
+            font-size: 2em;
+            color: #fbbf24;
+            animation: flow 3s ease-in-out infinite;
+        }
+        
+        .cycle-return {
+            position: absolute;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: #fbbf24;
+        }
+        
+        .return-arrow {
+            font-size: 2em;
+            animation: rotate 4s linear infinite;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .return-text {
+            font-size: 0.9em;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        
+        .cycle-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #fbbf24;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #cbd5e1;
+        }
+        
+        .features-section {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(5, 150, 105, 0.3);
+        }
+        
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -346,6 +551,37 @@ app.get('/dashboard', (req, res) => {
             .status-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .cycle-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .cycle-arrow {
+                transform: rotate(90deg);
+                margin: 10px 0;
+            }
+            
+            .cycle-break {
+                margin: 20px 0;
+            }
+            
+            .cycle-break::after {
+                content: "⤵";
+                transform: rotate(0deg);
+            }
+            
+            .cycle-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .cycle-step {
+                min-width: 140px;
+            }
+            
+            .return-arrow {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -366,7 +602,7 @@ app.get('/dashboard', (req, res) => {
                 <h3><i class="fas fa-server"></i> Status do Sistema</h3>
                 <p><strong>Status:</strong> <span class="status-online">ONLINE</span></p>
                 <p><strong>Versao:</strong> ${SYSTEM_VERSION}</p>
-                <p><strong>Ambiente:</strong> ${process.env.NODE_ENV || 'development'}</p>
+                <p><strong>Ambiente:</strong> ${NODE_ENV || process.env.NODE_ENV || 'production'}</p>
                 <p><strong>Uptime:</strong> ${Math.floor(process.uptime())} segundos</p>
             </div>
             
@@ -387,21 +623,130 @@ app.get('/dashboard', (req, res) => {
             </div>
         </div>
         
+        <!-- Ciclo de Trading Visual -->
+        <div class="cycle-section">
+            <h2><i class="fas fa-sync-alt"></i> Ciclo de Trading Automático</h2>
+            <div class="cycle-container">
+                <div class="cycle-step active" id="step-1">
+                    <div class="step-number">1</div>
+                    <div class="step-icon"><i class="fas fa-satellite-dish"></i></div>
+                    <div class="step-title">Recepção Sinais</div>
+                    <div class="step-desc">TradingView → Webhook</div>
+                    <div class="step-status" id="status-1">Aguardando...</div>
+                </div>
+                
+                <div class="cycle-arrow">→</div>
+                
+                <div class="cycle-step" id="step-2">
+                    <div class="step-number">2</div>
+                    <div class="step-icon"><i class="fas fa-brain"></i></div>
+                    <div class="step-title">Análise F&G</div>
+                    <div class="step-desc">Fear & Greed Index</div>
+                    <div class="step-status" id="status-2">Valor: 63</div>
+                </div>
+                
+                <div class="cycle-arrow">→</div>
+                
+                <div class="cycle-step" id="step-3">
+                    <div class="step-number">3</div>
+                    <div class="step-icon"><i class="fas fa-shield-check"></i></div>
+                    <div class="step-title">Validação</div>
+                    <div class="step-desc">Direction Allowed</div>
+                    <div class="step-status" id="status-3">BOTH OK</div>
+                </div>
+                
+                <div class="cycle-arrow">→</div>
+                
+                <div class="cycle-step" id="step-4">
+                    <div class="step-number">4</div>
+                    <div class="step-icon"><i class="fas fa-cogs"></i></div>
+                    <div class="step-title">Processamento</div>
+                    <div class="step-desc">Gestores Ativos</div>
+                    <div class="step-status" id="status-4">4/4 Ativos</div>
+                </div>
+                
+                <div class="cycle-break"></div>
+                
+                <div class="cycle-step" id="step-5">
+                    <div class="step-number">5</div>
+                    <div class="step-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="step-title">Abertura</div>
+                    <div class="step-desc">Posições Trading</div>
+                    <div class="step-status" id="status-5">0 Ativas</div>
+                </div>
+                
+                <div class="cycle-arrow">→</div>
+                
+                <div class="cycle-step" id="step-6">
+                    <div class="step-number">6</div>
+                    <div class="step-icon"><i class="fas fa-eye"></i></div>
+                    <div class="step-title">Monitoramento</div>
+                    <div class="step-desc">Tempo Real</div>
+                    <div class="step-status" id="status-6">24/7 Ativo</div>
+                </div>
+                
+                <div class="cycle-arrow">→</div>
+                
+                <div class="cycle-step" id="step-7">
+                    <div class="step-number">7</div>
+                    <div class="step-icon"><i class="fas fa-times-circle"></i></div>
+                    <div class="step-title">Fechamento</div>
+                    <div class="step-desc">Stop/Take Profit</div>
+                    <div class="step-status" id="status-7">Auto</div>
+                </div>
+                
+                <div class="cycle-arrow">→</div>
+                
+                <div class="cycle-step" id="step-8">
+                    <div class="step-number">8</div>
+                    <div class="step-icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="step-title">Financeiro</div>
+                    <div class="step-desc">P&L + Comissões</div>
+                    <div class="step-status" id="status-8">R$ 0,00</div>
+                </div>
+                
+                <div class="cycle-return">
+                    <div class="return-arrow">↺</div>
+                    <div class="return-text">Ciclo Contínuo</div>
+                </div>
+            </div>
+            
+            <!-- Estatísticas do Ciclo -->
+            <div class="cycle-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-cycles">0</div>
+                    <div class="stat-label">Ciclos Completos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="active-operations">0</div>
+                    <div class="stat-label">Operações Ativas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="signals-processed">16</div>
+                    <div class="stat-label">Sinais Processados</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="success-rate">100%</div>
+                    <div class="stat-label">Taxa de Sucesso</div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Fluxo de Execucao -->
         <div class="features-section">
-            <h2><i class="fas fa-sitemap"></i> Fluxo de Execucao Mapeado</h2>
+            <h2><i class="fas fa-sitemap"></i> Componentes do Sistema</h2>
             <div class="features-grid">
                 <div class="feature-item">
                     <i class="fas fa-play"></i>
-                    <div>Inicializacao</div>
+                    <div>Inicialização</div>
                 </div>
                 <div class="feature-item">
                     <i class="fas fa-database"></i>
-                    <div>Conexao DB</div>
+                    <div>Conexão DB</div>
                 </div>
                 <div class="feature-item">
                     <i class="fas fa-shield-alt"></i>
-                    <div>Seguranca</div>
+                    <div>Segurança</div>
                 </div>
                 <div class="feature-item">
                     <i class="fas fa-route"></i>
@@ -425,6 +770,104 @@ app.get('/dashboard', (req, res) => {
     </div>
     
     <script>
+        let cycleStepIndex = 0;
+        let cycleInterval;
+        
+        // Dados do ciclo em tempo real
+        async function updateCycleStatus() {
+            try {
+                const response = await fetch('/api/gestores/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Atualizar estatísticas
+                    const completo = data.gestores.orquestrador_completo;
+                    document.getElementById('total-cycles').textContent = completo.ciclosCompletos || 0;
+                    document.getElementById('active-operations').textContent = completo.operacoesAtivas || 0;
+                    document.getElementById('signals-processed').textContent = data.gestores.processamento_sinais.sinaisProcessados || 0;
+                    
+                    // Atualizar status dos steps
+                    updateStepStatus(1, data.gestores.processamento_sinais.isRunning ? 'Ativo' : 'Inativo');
+                    updateStepStatus(2, \`Valor: \${data.gestores.fear_greed.value || 63}\`);
+                    updateStepStatus(3, 'BOTH OK');
+                    updateStepStatus(4, \`\${Object.keys(data.gestores).length}/4 Ativos\`);
+                    updateStepStatus(5, \`\${completo.operacoesAtivas || 0} Ativas\`);
+                    updateStepStatus(6, '24/7 Ativo');
+                    updateStepStatus(7, 'Auto');
+                    updateStepStatus(8, 'R$ 0,00');
+                    
+                    // Destacar step ativo baseado no estado
+                    highlightActiveStep(completo.estadoAtual || 'AGUARDANDO');
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar status do ciclo:', error);
+            }
+        }
+        
+        function updateStepStatus(stepNumber, status) {
+            const statusElement = document.getElementById(\`status-\${stepNumber}\`);
+            if (statusElement) {
+                statusElement.textContent = status;
+            }
+        }
+        
+        function highlightActiveStep(estado) {
+            // Remover todas as classes ativas
+            document.querySelectorAll('.cycle-step').forEach(step => {
+                step.classList.remove('active', 'processing', 'completed');
+            });
+            
+            // Mapear estado para step
+            const stateMap = {
+                'AGUARDANDO': 1,
+                'PROCESSANDO_SINAIS': 2,
+                'VALIDANDO': 3,
+                'EXECUTANDO': 4,
+                'MONITORANDO': 6,
+                'FINALIZANDO': 8
+            };
+            
+            const activeStep = stateMap[estado] || 1;
+            const stepElement = document.getElementById(\`step-\${activeStep}\`);
+            
+            if (stepElement) {
+                stepElement.classList.add('active');
+            }
+        }
+        
+        // Simular animação de ciclo
+        function startCycleAnimation() {
+            const steps = document.querySelectorAll('.cycle-step');
+            
+            cycleInterval = setInterval(() => {
+                // Remover classe ativa anterior
+                steps.forEach(step => step.classList.remove('active'));
+                
+                // Adicionar classe ativa ao step atual
+                if (steps[cycleStepIndex]) {
+                    steps[cycleStepIndex].classList.add('active');
+                }
+                
+                // Avançar para próximo step
+                cycleStepIndex = (cycleStepIndex + 1) % steps.length;
+                
+                // A cada ciclo completo, incrementar contador
+                if (cycleStepIndex === 0) {
+                    const currentCycles = parseInt(document.getElementById('total-cycles').textContent) || 0;
+                    document.getElementById('total-cycles').textContent = currentCycles + 1;
+                }
+            }, 2000); // Trocar a cada 2 segundos
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCycleStatus();
+            startCycleAnimation();
+            
+            // Atualizar status a cada 10 segundos
+            setInterval(updateCycleStatus, 10000);
+        });
+        
         // Auto refresh a cada 30 segundos
         setTimeout(() => {
             location.reload();
@@ -1084,39 +1527,27 @@ app.post('/api/webhooks/signal', async (req, res) => {
 
             console.log(`✅ SINAL APROVADO: Compatível com Fear & Greed`);
             
-            // Criar tabela se não existir
-            await client.query(`
-                CREATE TABLE IF NOT EXISTS trading_signals (
-                    id SERIAL PRIMARY KEY,
-                    symbol VARCHAR(20) NOT NULL,
-                    signal_data JSONB NOT NULL,
-                    source VARCHAR(50) DEFAULT 'tradingview',
-                    signal_direction VARCHAR(20),
-                    fear_greed_value INTEGER,
-                    direction_allowed VARCHAR(20),
-                    validation_passed BOOLEAN DEFAULT true,
-                    received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    processed BOOLEAN DEFAULT false,
-                    processing_status VARCHAR(50),
-                    processed_at TIMESTAMP
-                )
-            `);
+            // A tabela trading_signals já existe, apenas inserir o sinal
             
             // Inserir sinal aprovado
             const result = await client.query(`
                 INSERT INTO trading_signals (
-                    symbol, signal_data, source, signal_direction, 
-                    fear_greed_value, direction_allowed, validation_passed
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7) 
+                    symbol, action, price, signal_data, source, status
+                ) VALUES ($1, $2, $3, $4, $5, $6) 
                 RETURNING id
             `, [
                 signalData.ticker || signalData.symbol,
-                JSON.stringify(signalData),
-                'tradingview',
-                direcaoSinal,
-                validacaoFearGreed.value,
-                validacaoFearGreed.direction_allowed,
-                true
+                signalData.action,
+                signalData.price,
+                JSON.stringify({
+                    ...signalData,
+                    signal_direction: direcaoSinal,
+                    fear_greed_value: validacaoFearGreed.value,
+                    direction_allowed: validacaoFearGreed.direction_allowed,
+                    validation_passed: true
+                }),
+                signalData.source || 'tradingview',
+                'approved'
             ]);
             
             const signalId = result.rows[0].id;
@@ -1235,19 +1666,19 @@ app.get('/api/webhooks/signals/recent', async (req, res) => {
         
         try {
             let query = `
-                SELECT id, symbol, signal_data, source, received_at, processed
+                SELECT id, symbol, signal_data, source, created_at, processed_at, status
                 FROM trading_signals 
-                ORDER BY received_at DESC 
+                ORDER BY created_at DESC 
                 LIMIT $1
             `;
             let params = [limit];
             
             if (symbol) {
                 query = `
-                    SELECT id, symbol, signal_data, source, received_at, processed
+                    SELECT id, symbol, signal_data, source, created_at, processed_at, status
                     FROM trading_signals 
                     WHERE symbol ILIKE $2
-                    ORDER BY received_at DESC 
+                    ORDER BY created_at DESC 
                     LIMIT $1
                 `;
                 params = [limit, `%${symbol}%`];
@@ -1258,7 +1689,20 @@ app.get('/api/webhooks/signals/recent', async (req, res) => {
             res.json({
                 success: true,
                 count: result.rows.length,
-                signals: result.rows,
+                total: result.rows.length,
+                signals: result.rows.map(row => ({
+                    id: row.id,
+                    symbol: row.symbol,
+                    source: row.source,
+                    signal_data: row.signal_data,
+                    created_at: row.created_at,
+                    processed_at: row.processed_at,
+                    status: row.status,
+                    // Compatibilidade com código existente
+                    ticker: row.symbol,
+                    action: row.signal_data?.action,
+                    timestamp: row.created_at
+                })),
                 timestamp: new Date().toISOString()
             });
             

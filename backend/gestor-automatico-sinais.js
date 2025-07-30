@@ -88,12 +88,12 @@ class GestorAutomaticoSinais {
                     symbol, 
                     signal_data,
                     source,
-                    received_at,
-                    EXTRACT(EPOCH FROM (NOW() - received_at)) as segundos_pendente
+                    created_at,
+                    EXTRACT(EPOCH FROM (NOW() - created_at)) as segundos_pendente
                 FROM trading_signals 
-                WHERE processed = false 
-                AND received_at > NOW() - INTERVAL '${this.timeoutSinal/1000} seconds'
-                ORDER BY received_at ASC
+                WHERE status != 'processed' 
+                AND created_at > NOW() - INTERVAL '${this.timeoutSinal/1000} seconds'
+                ORDER BY created_at ASC
                 LIMIT 10
             `);
             
@@ -229,8 +229,7 @@ class GestorAutomaticoSinais {
         try {
             await client.query(`
                 UPDATE trading_signals 
-                SET processed = true, 
-                    processing_status = $1,
+                SET status = $1, 
                     processed_at = NOW()
                 WHERE id = $2
             `, [status, sinalId]);
@@ -256,10 +255,10 @@ class GestorAutomaticoSinais {
             
             const resultado = await client.query(`
                 UPDATE trading_signals 
-                SET processed = true, 
-                    processing_status = 'expired'
-                WHERE processed = false 
-                AND received_at < NOW() - INTERVAL '${this.timeoutSinal/1000} seconds'
+                SET status = 'expired', 
+                    processed_at = NOW()
+                WHERE status = 'approved' 
+                AND created_at < NOW() - INTERVAL '${this.timeoutSinal/1000} seconds'
             `);
             
             if (resultado.rowCount > 0) {
