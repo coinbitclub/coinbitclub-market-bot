@@ -15,7 +15,7 @@ COPY package*.json ./
 RUN npm ci --only=production --no-audit --no-fund
 
 # Copy the main server file
-COPY server-multiservice-complete.cjs ./
+COPY main.js ./
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
@@ -37,4 +37,4 @@ EXPOSE 3000
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start the application
-CMD ["node", "server-multiservice-complete.cjs"]
+CMD ["node", "main.js"]
