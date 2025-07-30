@@ -1,0 +1,40 @@
+# CONFIGURAÇÃO RAILWAY - VARIÁVEIS BYBIT
+# Adicione estas variáveis no Railway Dashboard
+
+# BYBIT TESTNET (Fallback funcional)
+BYBIT_API_TESTNET=JQVNAD0aCqNqPLvo25
+BYBIT_SECRET_TESTNET=rQ1Qle81XBKeL5NrvSIOLqpT60rbZ7wA0dYk
+BYBIT_BASE_URL_TEST=https://api-testnet.bybit.com
+BYBIT_TESTNET=true
+
+# BYBIT MAINNET (configurar após corrigir IP)
+BYBIT_API_KEY=
+BYBIT_SECRET_KEY=
+BYBIT_BASE_URL_REAL=https://api.bybit.com
+BYBIT_API_MAINNET=false
+
+# OUTRAS CONFIGURAÇÕES
+NODE_ENV=production
+PORT=3000
+
+# ===================================
+# INSTRUÇÕES PARA CONFIGURAR IP BYBIT
+# ===================================
+
+# ÉRICA DOS SANTOS (erica.andrade.santos@hotmail.com)
+# 1. Login na Bybit
+# 2. Account & Security → API Management
+# 3. Encontrar API Key: rg1HWyxEfWwo...
+# 4. Edit → IP Restriction → Add IP: 132.255.160.140
+
+# LUIZA MARIA (lmariadapinto@gmail.com)
+# 1. Login na Bybit
+# 2. Account & Security → API Management  
+# 3. Encontrar API Key: 9HZy9BiUW95i...
+# 4. Edit → IP Restriction → Add IP: 132.255.160.140
+
+# ===================================
+# VERIFICAÇÃO
+# ===================================
+# Após configurar, executar:
+# node teste-sistema-multiusuario.js

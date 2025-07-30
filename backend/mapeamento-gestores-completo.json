@@ -1,0 +1,172 @@
+{
+  "timestamp": "2025-07-30T15:04:45.468Z",
+  "analise": {
+    "gestores": {},
+    "fluxoOperacional": [
+      {
+        "etapa": 1,
+        "nome": "RECEPÇÃO DE SINAIS",
+        "componente": "WebhookTradingView",
+        "status": "✅ ATIVO",
+        "descricao": "TradingView → webhook → trading_signals table",
+        "validacao_direction": "❌ NÃO IMPLEMENTADA",
+        "acao_necessaria": "Implementar validação direction_allowed"
+      },
+      {
+        "etapa": 2,
+        "nome": "LEITURA FEAR & GREED",
+        "componente": "GestorFearGreedAutomatico",
+        "status": "✅ ATIVO",
+        "descricao": "APIs externas → fear_greed_index → direction_allowed",
+        "validacao_direction": "✅ IMPLEMENTADA",
+        "acao_necessaria": "Já funcional"
+      },
+      {
+        "etapa": 3,
+        "nome": "PROCESSAMENTO DE SINAIS",
+        "componente": "GestorAutomaticoSinais",
+        "status": "🔄 PARCIAL",
+        "descricao": "trading_signals + fear_greed → sinais validados",
+        "validacao_direction": "🔄 EM DESENVOLVIMENTO",
+        "acao_necessaria": "Integrar validação direction_allowed completa"
+      },
+      {
+        "etapa": 4,
+        "nome": "ABERTURA DE POSIÇÕES",
+        "componente": "GestorOperacoes",
+        "status": "❌ NÃO INTEGRADO",
+        "descricao": "Sinais validados → abertura nas exchanges",
+        "validacao_direction": "❌ NÃO DISPONÍVEL",
+        "acao_necessaria": "Integrar ao fluxo principal"
+      },
+      {
+        "etapa": 5,
+        "nome": "MONITORAMENTO",
+        "componente": "GestorMonitoramentoEncerramento",
+        "status": "❌ NÃO INTEGRADO",
+        "descricao": "Posições abertas → monitoramento contínuo",
+        "validacao_direction": "❌ NÃO DISPONÍVEL",
+        "acao_necessaria": "Integrar ao fluxo principal"
+      },
+      {
+        "etapa": 6,
+        "nome": "FECHAMENTO DE POSIÇÕES",
+        "componente": "GestorFechamentoOrdens",
+        "status": "❌ NÃO INTEGRADO",
+        "descricao": "Condições TP/SL/manual → fechamento automático",
+        "validacao_direction": "❌ NÃO DISPONÍVEL",
+        "acao_necessaria": "Integrar ao fluxo principal"
+      },
+      {
+        "etapa": 7,
+        "nome": "ATUALIZAÇÃO FINANCEIRA",
+        "componente": "GestorFinanceiro",
+        "status": "❌ NÃO INTEGRADO",
+        "descricao": "Operações fechadas → atualização de saldos",
+        "validacao_direction": "❌ NÃO DISPONÍVEL",
+        "acao_necessaria": "Integrar ao fluxo principal"
+      },
+      {
+        "etapa": 8,
+        "nome": "COMISSIONAMENTO",
+        "componente": "GestorComissionamento",
+        "status": "❌ NÃO INTEGRADO",
+        "descricao": "Lucros/prejuízos → cálculo e aplicação de comissões",
+        "validacao_direction": "❌ NÃO DISPONÍVEL",
+        "acao_necessaria": "Integrar ao fluxo principal"
+      }
+    ],
+    "problemas": [
+      {
+        "problema": "VALIDAÇÃO DIRECTION_ALLOWED INCOMPLETA",
+        "impacto": "🔴 CRÍTICO",
+        "detalhes": "Webhook recebe sinais mas não valida direction_allowed do Fear & Greed",
+        "solucao": "Implementar validação no webhook ou no processador de sinais"
+      },
+      {
+        "problema": "GESTORES CRIADOS MAS NÃO INTEGRADOS",
+        "impacto": "🟡 ALTO",
+        "detalhes": "Múltiplos gestores completos existem mas não estão no fluxo principal",
+        "solucao": "Integrar gestores ao OrquestradorPrincipal"
+      },
+      {
+        "problema": "FLUXO FRAGMENTADO",
+        "impacto": "🟡 ALTO",
+        "detalhes": "Etapas 4-8 do fluxo não estão implementadas no sistema principal",
+        "solucao": "Completar integração de todos os gestores"
+      },
+      {
+        "problema": "ORQUESTRADOR SIMPLIFICADO",
+        "impacao": "🟡 MÉDIO",
+        "detalhes": "OrquestradorPrincipal existe mas pode não usar todos os gestores disponíveis",
+        "solucao": "Verificar e completar integração de todos os componentes"
+      }
+    ],
+    "planoOrquestracao": [
+      {
+        "prioridade": 1,
+        "acao": "CORRIGIR VALIDAÇÃO DIRECTION_ALLOWED",
+        "componentes": [
+          "webhook_receiver",
+          "processamento_sinais"
+        ],
+        "implementacao": "Modificar endpoint webhook para validar direction_allowed antes de salvar sinal",
+        "codigo_necessario": "Consulta fear_greed_index + validação + rejeição de sinais incompatíveis"
+      },
+      {
+        "prioridade": 2,
+        "acao": "INTEGRAR GESTOR DE OPERAÇÕES",
+        "componentes": [
+          "operacoes_completo",
+          "orquestrador_principal"
+        ],
+        "implementacao": "Adicionar GestorOperacoes ao fluxo do OrquestradorPrincipal",
+        "codigo_necessario": "Import + instanciação + chamadas no ciclo de execução"
+      },
+      {
+        "prioridade": 3,
+        "acao": "INTEGRAR MONITORAMENTO",
+        "componentes": [
+          "monitoramento_encerramento",
+          "orquestrador_principal"
+        ],
+        "implementacao": "Adicionar monitoramento contínuo de posições abertas",
+        "codigo_necessario": "Monitoramento paralelo + callbacks de fechamento"
+      },
+      {
+        "prioridade": 4,
+        "acao": "INTEGRAR FECHAMENTO AUTOMÁTICO",
+        "componentes": [
+          "fechamento_ordens",
+          "orquestrador_principal"
+        ],
+        "implementacao": "Adicionar fechamento inteligente baseado em condições",
+        "codigo_necessario": "Verificação de TP/SL + execução de fechamento"
+      },
+      {
+        "prioridade": 5,
+        "acao": "INTEGRAR GESTÃO FINANCEIRA",
+        "componentes": [
+          "financeiro_completo",
+          "comissionamento"
+        ],
+        "implementacao": "Atualização automática de saldos e comissões",
+        "codigo_necessario": "Callbacks pós-fechamento + cálculos financeiros"
+      }
+    ],
+    "resumo": {
+      "gestores_totais": 11,
+      "gestores_ativos": 4,
+      "gestores_disponiveis": 7,
+      "cobertura_fluxo": "25%",
+      "proxima_etapa": "Implementar validação direction_allowed no webhook",
+      "prioridade_maxima": "Corrigir fluxo de processamento de sinais"
+    }
+  },
+  "recomendacoes": [
+    "Implementar validação direction_allowed no webhook",
+    "Integrar todos os gestores disponíveis ao OrquestradorPrincipal",
+    "Testar fluxo completo end-to-end",
+    "Implementar monitoramento de performance dos gestores"
+  ]
+}

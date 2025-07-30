@@ -35,8 +35,8 @@ const SYSTEM_VERSION = 'V3.0.0-FINAL-' + Date.now();
 
 // Configuracao do PostgreSQL Railway
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL || 'postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway',
+    ssl: { rejectUnauthorized: false }
 });
 
 // Middleware de logging
@@ -464,11 +464,1038 @@ wss.on('connection', (ws) => {
     });
 });
 
+// ============ SISTEMA AUTOMÁTICO FEAR & GREED ============
+
+class GestorFearGreedAutomatico {
+    constructor() {
+        this.intervalId = null;
+        this.isRunning = false;
+        this.ultimaAtualizacao = null;
+        this.contadorErros = 0;
+        this.maxErros = 3;
+    }
+
+    async atualizarFearGreed() {
+        console.log('🔄 [FEAR&GREED] Iniciando atualização automática...');
+        
+        try {
+            const axios = require('axios');
+            
+            // APIs para consultar Fear & Greed
+            const apis = [
+                {
+                    name: 'CoinStats',
+                    url: 'https://openapiv1.coinstats.app/insights/fear-and-greed',
+                    headers: {
+                        'X-API-KEY': 'ZFIxigBcVaCyXDL1Qp/Ork7TOL3+h07NM2f3YoSrMkI=',
+                        'Accept': 'application/json'
+                    },
+                    parser: (data) => {
+                        if (data?.now) {
+                            return {
+                                value: data.now.value,
+                                classification: data.now.value_classification,
+                                timestamp: data.now.update_time
+                            };
+                        }
+                        return null;
+                    }
+                },
+                {
+                    name: 'Alternative.me',
+                    url: 'https://api.alternative.me/fng/?limit=1',
+                    headers: {},
+                    parser: (data) => {
+                        if (data?.data?.[0]) {
+                            const item = data.data[0];
+                            return {
+                                value: parseInt(item.value),
+                                classification: item.value_classification,
+                                timestamp: item.timestamp
+                            };
+                        }
+                        return null;
+                    }
+                }
+            ];
+
+            let dadosObtidos = null;
+            let fonteUsada = null;
+
+            // Tentar cada API
+            for (const api of apis) {
+                try {
+                    console.log(`🔍 [FEAR&GREED] Tentando ${api.name}...`);
+                    
+                    const response = await axios.get(api.url, {
+                        headers: api.headers,
+                        timeout: 15000
+                    });
+
+                    dadosObtidos = api.parser(response.data);
+                    
+                    if (dadosObtidos && dadosObtidos.value) {
+                        fonteUsada = api.name.toUpperCase().replace('.', '_');
+                        console.log(`✅ [FEAR&GREED] Dados obtidos de ${api.name}: ${dadosObtidos.value}`);
+                        break;
+                    }
+                    
+                } catch (apiError) {
+                    console.log(`⚠️ [FEAR&GREED] Falha em ${api.name}: ${apiError.message}`);
+                    continue;
+                }
+            }
+
+            // Fallback se todas as APIs falharam
+            if (!dadosObtidos) {
+                console.log('⚠️ [FEAR&GREED] Todas APIs falharam, usando FALLBACK = 50');
+                dadosObtidos = {
+                    value: 50,
+                    classification: 'Neutral',
+                    timestamp: new Date().toISOString()
+                };
+                fonteUsada = 'FALLBACK';
+            }
+
+            // Salvar no banco
+            await this.salvarNoBanco(dadosObtidos, fonteUsada);
+            
+            // Reset contador de erros em caso de sucesso
+            this.contadorErros = 0;
+            this.ultimaAtualizacao = new Date();
+            
+            console.log(`✅ [FEAR&GREED] Atualização concluída: ${dadosObtidos.value} (${dadosObtidos.classification})`);
+            
+        } catch (error) {
+            this.contadorErros++;
+            console.error(`❌ [FEAR&GREED] Erro na atualização (${this.contadorErros}/${this.maxErros}):`, error.message);
+            
+            // Se muitos erros consecutivos, aumentar intervalo
+            if (this.contadorErros >= this.maxErros) {
+                console.log('⚠️ [FEAR&GREED] Muitos erros consecutivos, pulando próxima atualização...');
+                this.contadorErros = 0; // Reset para próxima tentativa
+            }
+        }
+    }
+
+    async salvarNoBanco(dados, fonte) {
+        const client = await pool.connect();
+        
+        try {
+            // Mapear classificação para português
+            const classificacaoMap = {
+                'Extreme Fear': 'Medo Extremo',
+                'Fear': 'Medo',
+                'Neutral': 'Neutro',
+                'Greed': 'Ganância',
+                'Extreme Greed': 'Ganância Extrema'
+            };
+            
+            const classificacaoPt = classificacaoMap[dados.classification] || 'Neutro';
+            
+            // Verificar valor anterior para evitar duplicatas desnecessárias
+            const ultimoRegistro = await client.query(`
+                SELECT value, created_at FROM fear_greed_index 
+                ORDER BY created_at DESC 
+                LIMIT 1
+            `);
+            
+            const valorAnterior = ultimoRegistro.rows.length > 0 ? ultimoRegistro.rows[0].value : null;
+            
+            // Se valor é igual ao anterior e foi atualizado há menos de 10 minutos, pular
+            if (valorAnterior === dados.value && ultimoRegistro.rows.length > 0) {
+                const ultimaAtualizacao = new Date(ultimoRegistro.rows[0].created_at);
+                const minutosDecorridos = (new Date() - ultimaAtualizacao) / (1000 * 60);
+                
+                if (minutosDecorridos < 10) {
+                    console.log(`📊 [FEAR&GREED] Valor inalterado (${dados.value}), pulando inserção`);
+                    return;
+                }
+            }
+            
+            const mudanca24h = valorAnterior ? dados.value - valorAnterior : 0;
+            
+            const result = await client.query(`
+                INSERT INTO fear_greed_index (
+                    timestamp_data,
+                    value, 
+                    classification,
+                    classificacao_pt,
+                    value_previous,
+                    change_24h,
+                    source
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+                RETURNING id, created_at
+            `, [
+                dados.timestamp ? new Date(dados.timestamp) : new Date(),
+                dados.value,
+                dados.classification,
+                classificacaoPt,
+                valorAnterior,
+                mudanca24h,
+                fonte
+            ]);
+            
+            console.log(`💾 [FEAR&GREED] Salvo no banco: ID ${result.rows[0].id}`);
+            
+        } finally {
+            client.release();
+        }
+    }
+
+    iniciar() {
+        if (this.isRunning) {
+            console.log('⚠️ [FEAR&GREED] Gestor já está rodando');
+            return;
+        }
+
+        console.log('🚀 [FEAR&GREED] Iniciando gestor automático (15 min)...');
+        
+        // Primeira atualização imediata
+        this.atualizarFearGreed();
+        
+        // Configurar intervalo de 15 minutos (900000ms)
+        this.intervalId = setInterval(() => {
+            this.atualizarFearGreed();
+        }, 15 * 60 * 1000);
+        
+        this.isRunning = true;
+        console.log('✅ [FEAR&GREED] Gestor automático ativo');
+    }
+
+    parar() {
+        if (!this.isRunning) {
+            console.log('⚠️ [FEAR&GREED] Gestor não está rodando');
+            return;
+        }
+
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
+        
+        this.isRunning = false;
+        console.log('🛑 [FEAR&GREED] Gestor automático parado');
+    }
+
+    getStatus() {
+        return {
+            isRunning: this.isRunning,
+            ultimaAtualizacao: this.ultimaAtualizacao,
+            contadorErros: this.contadorErros,
+            proximaAtualizacao: this.ultimaAtualizacao ? 
+                new Date(this.ultimaAtualizacao.getTime() + 15 * 60 * 1000) : null
+        };
+    }
+}
+
+// Instanciar gestores automáticos
+const gestorFearGreed = new GestorFearGreedAutomatico();
+
+// ============ SISTEMA AUTOMÁTICO DE PROCESSAMENTO DE SINAIS ============
+const GestorAutomaticoSinais = require('./gestor-automatico-sinais');
+const gestorSinais = new GestorAutomaticoSinais();
+
+// ============ ORQUESTRADOR PRINCIPAL DO FLUXO COMPLETO ============
+const OrquestradorPrincipal = require('./orquestrador-principal');
+const orquestrador = new OrquestradorPrincipal();
+
+// ============ ORQUESTRADOR PRINCIPAL COMPLETO ============
+const OrquestradorPrincipalCompleto = require('./orquestrador-principal-completo');
+const orquestradorCompleto = new OrquestradorPrincipalCompleto();
+
+// Endpoint para status dos gestores automáticos
+app.get('/api/gestores/status', async (req, res) => {
+    try {
+        const statusFearGreed = gestorFearGreed.getStatus();
+        const statusSinais = await gestorSinais.obterEstatisticas();
+        const statusOrquestrador = orquestrador.obterEstatisticas();
+        const statusCompleto = orquestradorCompleto.obterEstatisticas();
+        
+        res.json({
+            success: true,
+            gestores: {
+                fear_greed: {
+                    ...statusFearGreed,
+                    tipo: 'Fear & Greed Index',
+                    intervalo_minutos: 15
+                },
+                processamento_sinais: {
+                    ...statusSinais,
+                    tipo: 'Processamento Automático de Sinais',
+                    intervalo_segundos: statusSinais.intervaloProcessamento / 1000
+                },
+                orquestrador_principal: {
+                    ...statusOrquestrador,
+                    tipo: 'Orquestrador Principal - Fluxo Completo',
+                    intervalo_segundos: 30
+                },
+                orquestrador_completo: {
+                    ...statusCompleto,
+                    tipo: 'Orquestrador Completo - Todos os Gestores',
+                    intervalo_segundos: 30,
+                    gestores_integrados: statusCompleto.gestoresDisponveis
+                }
+            },
+            sistema: {
+                automatico: true,
+                componentes_ativos: [
+                    statusFearGreed.isRunning ? 'Fear & Greed' : null,
+                    statusSinais.isRunning ? 'Processamento Sinais' : null,
+                    statusOrquestrador.isRunning ? 'Orquestrador Principal' : null,
+                    statusCompleto.isRunning ? 'Orquestrador Completo' : null
+                ].filter(Boolean),
+                fluxo_operacional: {
+                    etapa_atual: statusCompleto.estadoAtual,
+                    operacoes_ativas: statusCompleto.operacoesAtivas,
+                    ciclos_completos: statusCompleto.ciclosCompletos,
+                    cobertura: statusCompleto.isRunning ? '100%' : '75%'
+                },
+                timestamp: new Date().toISOString()
+            }
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            error: 'Erro ao obter status dos gestores',
+            message: error.message
+        });
+    }
+});
+
+// Endpoint para controlar gestores automáticos
+app.post('/api/gestores/control', async (req, res) => {
+    const { gestor, action } = req.body;
+    
+    try {
+        if (gestor === 'fear_greed') {
+            if (action === 'start') {
+                gestorFearGreed.iniciar();
+            } else if (action === 'stop') {
+                gestorFearGreed.parar();
+            } else if (action === 'restart') {
+                gestorFearGreed.parar();
+                setTimeout(() => gestorFearGreed.iniciar(), 1000);
+            }
+            
+            res.json({
+                success: true,
+                message: `Fear & Greed ${action}`,
+                status: gestorFearGreed.getStatus()
+            });
+            
+        } else if (gestor === 'sinais') {
+            if (action === 'start') {
+                await gestorSinais.iniciar();
+            } else if (action === 'stop') {
+                await gestorSinais.parar();
+            } else if (action === 'restart') {
+                await gestorSinais.parar();
+                setTimeout(() => gestorSinais.iniciar(), 1000);
+            }
+            
+            const status = await gestorSinais.obterEstatisticas();
+            res.json({
+                success: true,
+                message: `Gestor de sinais ${action}`,
+                status: status
+            });
+            
+        } else if (gestor === 'orquestrador') {
+            if (action === 'start') {
+                await orquestrador.iniciar();
+            } else if (action === 'stop') {
+                await orquestrador.parar();
+            } else if (action === 'restart') {
+                await orquestrador.parar();
+                setTimeout(() => orquestrador.iniciar(), 1000);
+            }
+            
+            const status = orquestrador.obterEstatisticas();
+            res.json({
+                success: true,
+                message: `Orquestrador principal ${action}`,
+                status: status
+            });
+            
+        } else if (gestor === 'orquestrador_completo') {
+            if (action === 'start') {
+                await orquestradorCompleto.iniciar();
+            } else if (action === 'stop') {
+                await orquestradorCompleto.parar();
+            } else if (action === 'restart') {
+                await orquestradorCompleto.parar();
+                setTimeout(() => orquestradorCompleto.iniciar(), 1000);
+            }
+            
+            const status = orquestradorCompleto.obterEstatisticas();
+            res.json({
+                success: true,
+                message: `Orquestrador completo ${action}`,
+                status: status
+            });
+            
+        } else {
+            res.status(400).json({
+                error: 'Gestor inválido',
+                gestores_validos: ['fear_greed', 'sinais', 'orquestrador', 'orquestrador_completo']
+            });
+        }
+        
+    } catch (error) {
+        res.status(500).json({
+            error: 'Erro ao controlar gestor',
+            message: error.message
+        });
+    }
+});
+
+// Endpoint para status do gestor Fear & Greed
+app.get('/api/fear-greed/status', (req, res) => {
+    const status = gestorFearGreed.getStatus();
+    res.json({
+        success: true,
+        gestor_fear_greed: {
+            ...status,
+            intervalo_minutos: 15,
+            timestamp: new Date().toISOString()
+        }
+    });
+});
+
+// Endpoint para controlar o gestor Fear & Greed
+app.post('/api/fear-greed/control', (req, res) => {
+    const { action } = req.body;
+    
+    try {
+        if (action === 'start') {
+            gestorFearGreed.iniciar();
+            res.json({
+                success: true,
+                message: 'Gestor Fear & Greed iniciado',
+                status: gestorFearGreed.getStatus()
+            });
+        } else if (action === 'stop') {
+            gestorFearGreed.parar();
+            res.json({
+                success: true,
+                message: 'Gestor Fear & Greed parado',
+                status: gestorFearGreed.getStatus()
+            });
+        } else if (action === 'restart') {
+            gestorFearGreed.parar();
+            setTimeout(() => gestorFearGreed.iniciar(), 1000);
+            res.json({
+                success: true,
+                message: 'Gestor Fear & Greed reiniciado',
+                status: gestorFearGreed.getStatus()
+            });
+        } else {
+            res.status(400).json({
+                error: 'Ação inválida',
+                valid_actions: ['start', 'stop', 'restart']
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            error: 'Erro ao controlar gestor',
+            message: error.message
+        });
+    }
+});
+
 // ============ IMPORTAÇÃO DAS ROTAS ============
 const userRoutes = require('./api-gateway/src/routes/userRoutes');
 
 // ============ CONFIGURAÇÃO DAS ROTAS ============
 app.use('/api', userRoutes);
+
+// ============ ENDPOINTS DE WEBHOOK TRADINGVIEW ============
+
+// Webhook para receber sinais do TradingView
+app.post('/api/webhooks/signal', async (req, res) => {
+    console.log('🎯 WEBHOOK SIGNAL RECEBIDO:', new Date().toISOString());
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    
+    try {
+        // Verificar token de autenticação
+        const token = req.query.token || req.body.token || req.headers['x-webhook-token'];
+        const expectedToken = process.env.WEBHOOK_TOKEN || '210406';
+        
+        if (token !== expectedToken) {
+            console.log('❌ Token inválido:', token);
+            return res.status(401).json({
+                error: 'Token inválido',
+                received_token: token,
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        // Processar dados do sinal
+        const signalData = req.body;
+        
+        // Validar dados obrigatórios
+        if (!signalData.ticker && !signalData.symbol) {
+            return res.status(400).json({
+                error: 'Campo ticker ou symbol é obrigatório',
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        // ============================================================
+        // 🎯 VALIDAÇÃO DIRECTION_ALLOWED - IMPLEMENTAÇÃO CRÍTICA
+        // ============================================================
+        
+        const client = await pool.connect();
+        let validacaoFearGreed = null;
+        let sinalPermitido = true;
+        let motivoRejeicao = null;
+        
+        try {
+            // 1. Buscar Fear & Greed atual
+            console.log('🔍 Validando sinal contra Fear & Greed Index...');
+            
+            const fearGreedResult = await client.query(`
+                SELECT 
+                    value,
+                    classification,
+                    classificacao_pt,
+                    CASE 
+                        WHEN value < 30 THEN 'LONG_ONLY'
+                        WHEN value > 80 THEN 'SHORT_ONLY'
+                        ELSE 'BOTH'
+                    END as direction_allowed,
+                    created_at,
+                    EXTRACT(EPOCH FROM (NOW() - created_at))/3600 as hours_ago
+                FROM fear_greed_index 
+                ORDER BY created_at DESC 
+                LIMIT 1
+            `);
+            
+            if (fearGreedResult.rows.length === 0) {
+                console.log('⚠️ Fear & Greed não encontrado, permitindo sinal com cautela');
+                validacaoFearGreed = {
+                    value: 50,
+                    direction_allowed: 'BOTH',
+                    classificacao_pt: 'Neutro (Fallback)',
+                    hours_ago: 999
+                };
+            } else {
+                validacaoFearGreed = fearGreedResult.rows[0];
+            }
+
+            // 2. Determinar direção do sinal
+            let direcaoSinal = null;
+            const sinalStr = JSON.stringify(signalData).toLowerCase();
+            
+            if (sinalStr.includes('long') || sinalStr.includes('buy') || sinalStr.includes('compra')) {
+                direcaoSinal = 'LONG';
+            } else if (sinalStr.includes('short') || sinalStr.includes('sell') || sinalStr.includes('venda')) {
+                direcaoSinal = 'SHORT';
+            } else if (sinalStr.includes('close') || sinalStr.includes('fechar')) {
+                direcaoSinal = 'CLOSE';
+            } else {
+                // Tentar identificar pela action ou signal_type
+                if (signalData.action) {
+                    const action = signalData.action.toLowerCase();
+                    if (action.includes('buy') || action.includes('long')) direcaoSinal = 'LONG';
+                    if (action.includes('sell') || action.includes('short')) direcaoSinal = 'SHORT';
+                    if (action.includes('close')) direcaoSinal = 'CLOSE';
+                }
+                
+                if (!direcaoSinal && signalData.side) {
+                    const side = signalData.side.toLowerCase();
+                    if (side === 'buy' || side === 'long') direcaoSinal = 'LONG';
+                    if (side === 'sell' || side === 'short') direcaoSinal = 'SHORT';
+                }
+            }
+
+            console.log(`📊 Fear & Greed: ${validacaoFearGreed.value} (${validacaoFearGreed.classificacao_pt})`);
+            console.log(`🎯 Direction Allowed: ${validacaoFearGreed.direction_allowed}`);
+            console.log(`📈 Direção do Sinal: ${direcaoSinal || 'NÃO IDENTIFICADA'}`);
+
+            // 3. Validar compatibilidade
+            if (direcaoSinal && direcaoSinal !== 'CLOSE') {
+                if (validacaoFearGreed.direction_allowed === 'LONG_ONLY' && direcaoSinal !== 'LONG') {
+                    sinalPermitido = false;
+                    motivoRejeicao = `Fear & Greed em ${validacaoFearGreed.value} (${validacaoFearGreed.classificacao_pt}) permite apenas LONG, mas sinal é ${direcaoSinal}`;
+                } else if (validacaoFearGreed.direction_allowed === 'SHORT_ONLY' && direcaoSinal !== 'SHORT') {
+                    sinalPermitido = false;
+                    motivoRejeicao = `Fear & Greed em ${validacaoFearGreed.value} (${validacaoFearGreed.classificacao_pt}) permite apenas SHORT, mas sinal é ${direcaoSinal}`;
+                }
+            }
+
+            // 4. Verificar se dados estão muito antigos (mais de 2 horas)
+            if (validacaoFearGreed.hours_ago > 2) {
+                console.log(`⚠️ Dados Fear & Greed antigos (${validacaoFearGreed.hours_ago.toFixed(1)}h), permitindo sinal com cautela`);
+            }
+
+            // Se sinal não é permitido, rejeitar
+            if (!sinalPermitido) {
+                console.log(`❌ SINAL REJEITADO: ${motivoRejeicao}`);
+                
+                // Salvar sinal rejeitado para auditoria
+                await client.query(`
+                    CREATE TABLE IF NOT EXISTS rejected_signals (
+                        id SERIAL PRIMARY KEY,
+                        symbol VARCHAR(20) NOT NULL,
+                        signal_data JSONB NOT NULL,
+                        rejection_reason TEXT NOT NULL,
+                        fear_greed_value INTEGER,
+                        direction_allowed VARCHAR(20),
+                        signal_direction VARCHAR(20),
+                        received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                `);
+                
+                await client.query(`
+                    INSERT INTO rejected_signals (
+                        symbol, signal_data, rejection_reason, fear_greed_value, 
+                        direction_allowed, signal_direction
+                    ) VALUES ($1, $2, $3, $4, $5, $6)
+                `, [
+                    signalData.ticker || signalData.symbol,
+                    JSON.stringify(signalData),
+                    motivoRejeicao,
+                    validacaoFearGreed.value,
+                    validacaoFearGreed.direction_allowed,
+                    direcaoSinal
+                ]);
+
+                return res.status(403).json({
+                    success: false,
+                    error: 'Sinal rejeitado pela validação Fear & Greed',
+                    rejection_reason: motivoRejeicao,
+                    fear_greed_analysis: {
+                        current_value: validacaoFearGreed.value,
+                        classification: validacaoFearGreed.classificacao_pt,
+                        direction_allowed: validacaoFearGreed.direction_allowed,
+                        signal_direction: direcaoSinal,
+                        hours_ago: parseFloat(validacaoFearGreed.hours_ago).toFixed(1)
+                    },
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            // ============================================================
+            // ✅ SINAL APROVADO - SALVAR NO BANCO
+            // ============================================================
+
+            console.log(`✅ SINAL APROVADO: Compatível com Fear & Greed`);
+            
+            // Criar tabela se não existir
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS trading_signals (
+                    id SERIAL PRIMARY KEY,
+                    symbol VARCHAR(20) NOT NULL,
+                    signal_data JSONB NOT NULL,
+                    source VARCHAR(50) DEFAULT 'tradingview',
+                    signal_direction VARCHAR(20),
+                    fear_greed_value INTEGER,
+                    direction_allowed VARCHAR(20),
+                    validation_passed BOOLEAN DEFAULT true,
+                    received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    processed BOOLEAN DEFAULT false,
+                    processing_status VARCHAR(50),
+                    processed_at TIMESTAMP
+                )
+            `);
+            
+            // Inserir sinal aprovado
+            const result = await client.query(`
+                INSERT INTO trading_signals (
+                    symbol, signal_data, source, signal_direction, 
+                    fear_greed_value, direction_allowed, validation_passed
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7) 
+                RETURNING id
+            `, [
+                signalData.ticker || signalData.symbol,
+                JSON.stringify(signalData),
+                'tradingview',
+                direcaoSinal,
+                validacaoFearGreed.value,
+                validacaoFearGreed.direction_allowed,
+                true
+            ]);
+            
+            const signalId = result.rows[0].id;
+            
+            console.log(`✅ Sinal processado e salvo com sucesso. ID: ${signalId}`);
+            
+            res.status(200).json({
+                success: true,
+                message: 'Sinal recebido, validado e processado com sucesso',
+                signal_id: signalId,
+                validation_details: {
+                    signal_direction: direcaoSinal,
+                    fear_greed_value: validacaoFearGreed.value,
+                    fear_greed_classification: validacaoFearGreed.classificacao_pt,
+                    direction_allowed: validacaoFearGreed.direction_allowed,
+                    validation_passed: true,
+                    fear_greed_age_hours: parseFloat(validacaoFearGreed.hours_ago).toFixed(1)
+                },
+                timestamp: new Date().toISOString()
+            });
+            
+        } finally {
+            client.release();
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao processar sinal:', error);
+        res.status(500).json({
+            error: 'Erro interno do servidor',
+            message: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// Webhook para receber dados de dominância BTC
+app.post('/api/webhooks/dominance', async (req, res) => {
+    console.log('📈 WEBHOOK DOMINANCE RECEBIDO:', new Date().toISOString());
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    
+    try {
+        // Verificar token de autenticação
+        const token = req.query.token || req.body.token || req.headers['x-webhook-token'];
+        const expectedToken = process.env.WEBHOOK_TOKEN || '210406';
+        
+        if (token !== expectedToken) {
+            console.log('❌ Token inválido:', token);
+            return res.status(401).json({
+                error: 'Token inválido',
+                received_token: token,
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        // Processar dados de dominância
+        const dominanceData = req.body;
+        
+        // Salvar dados no banco
+        const client = await pool.connect();
+        
+        try {
+            // Criar tabela se não existir
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS dominance_data (
+                    id SERIAL PRIMARY KEY,
+                    dominance_data JSONB NOT NULL,
+                    source VARCHAR(50) DEFAULT 'tradingview',
+                    received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    processed BOOLEAN DEFAULT false
+                )
+            `);
+            
+            // Inserir dados de dominância
+            const result = await client.query(`
+                INSERT INTO dominance_data (dominance_data, source) 
+                VALUES ($1, $2) 
+                RETURNING id
+            `, [
+                JSON.stringify(dominanceData),
+                'tradingview'
+            ]);
+            
+            const dominanceId = result.rows[0].id;
+            
+            console.log('✅ Dominância processada com sucesso. ID:', dominanceId);
+            
+            res.status(200).json({
+                success: true,
+                message: 'Dados de dominância recebidos e processados com sucesso',
+                dominance_id: dominanceId,
+                timestamp: new Date().toISOString()
+            });
+            
+        } finally {
+            client.release();
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao processar dominância:', error);
+        res.status(500).json({
+            error: 'Erro interno do servidor',
+            message: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// Endpoint para consultar sinais recentes
+app.get('/api/webhooks/signals/recent', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 50;
+        const symbol = req.query.symbol;
+        
+        const client = await pool.connect();
+        
+        try {
+            let query = `
+                SELECT id, symbol, signal_data, source, received_at, processed
+                FROM trading_signals 
+                ORDER BY received_at DESC 
+                LIMIT $1
+            `;
+            let params = [limit];
+            
+            if (symbol) {
+                query = `
+                    SELECT id, symbol, signal_data, source, received_at, processed
+                    FROM trading_signals 
+                    WHERE symbol ILIKE $2
+                    ORDER BY received_at DESC 
+                    LIMIT $1
+                `;
+                params = [limit, `%${symbol}%`];
+            }
+            
+            const result = await client.query(query, params);
+            
+            res.json({
+                success: true,
+                count: result.rows.length,
+                signals: result.rows,
+                timestamp: new Date().toISOString()
+            });
+            
+        } finally {
+            client.release();
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao consultar sinais:', error);
+        res.status(500).json({
+            error: 'Erro interno do servidor',
+            message: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// ============ ENDPOINTS FEAR & GREED INDEX ============
+
+// Endpoint para consultar Fear & Greed Index atual
+app.get('/api/fear-greed/current', async (req, res) => {
+    try {
+        const client = await pool.connect();
+        
+        const result = await client.query(`
+            SELECT 
+                value,
+                classification,
+                classificacao_pt,
+                source,
+                created_at,
+                EXTRACT(EPOCH FROM (NOW() - created_at))/3600 as horas_atras,
+                CASE 
+                    WHEN value < 30 THEN 'LONG_ONLY'
+                    WHEN value > 80 THEN 'SHORT_ONLY'
+                    ELSE 'BOTH'
+                END as direction_allowed
+            FROM fear_greed_index 
+            ORDER BY created_at DESC 
+            LIMIT 1
+        `);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: 'Fear & Greed data not found',
+                message: 'No recent data available'
+            });
+        }
+        
+        const data = result.rows[0];
+        
+        // Verificar se dados estão muito antigos (mais de 2 horas)
+        const dataAntigua = data.horas_atras > 2;
+        
+        res.json({
+            success: true,
+            fear_greed: {
+                value: data.value,
+                classification: data.classification,
+                classificacao_pt: data.classificacao_pt,
+                direction_allowed: data.direction_allowed,
+                source: data.source,
+                last_update: data.created_at,
+                hours_ago: parseFloat(data.horas_atras).toFixed(2),
+                is_outdated: dataAntigua,
+                trading_recommendation: data.value < 30 ? 'LONG_ONLY (Medo extremo - boa hora para comprar)' : 
+                                       data.value > 80 ? 'SHORT_ONLY (Ganância extrema - boa hora para vender)' : 
+                                       'BOTH (Mercado equilibrado - LONG e SHORT permitidos)'
+            },
+            timestamp: new Date().toISOString()
+        });
+        
+        client.release();
+        
+    } catch (error) {
+        console.error('❌ Erro ao consultar Fear & Greed:', error);
+        res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
+// Endpoint para forçar atualização do Fear & Greed
+app.post('/api/fear-greed/update', async (req, res) => {
+    try {
+        console.log('🔄 Iniciando atualização manual do Fear & Greed...');
+        
+        // Tentar buscar de múltiplas APIs
+        const apis = [
+            {
+                name: 'CoinStats',
+                url: 'https://openapiv1.coinstats.app/insights/fear-and-greed',
+                headers: {
+                    'X-API-KEY': 'ZFIxigBcVaCyXDL1Qp/Ork7TOL3+h07NM2f3YoSrMkI=',
+                    'Accept': 'application/json'
+                }
+            },
+            {
+                name: 'Alternative.me',
+                url: 'https://api.alternative.me/fng/?limit=1',
+                headers: {}
+            }
+        ];
+        
+        let dadosObtidos = null;
+        let fonteUsada = null;
+        
+        for (const api of apis) {
+            try {
+                const axios = require('axios');
+                const response = await axios.get(api.url, {
+                    headers: api.headers,
+                    timeout: 10000
+                });
+                
+                if (api.name === 'CoinStats' && response.data?.now) {
+                    dadosObtidos = {
+                        value: response.data.now.value,
+                        classification: response.data.now.value_classification,
+                        timestamp: response.data.now.update_time
+                    };
+                    fonteUsada = 'COINSTATS';
+                    break;
+                } else if (api.name === 'Alternative.me' && response.data?.data?.[0]) {
+                    const data = response.data.data[0];
+                    dadosObtidos = {
+                        value: parseInt(data.value),
+                        classification: data.value_classification,
+                        timestamp: data.timestamp
+                    };
+                    fonteUsada = 'ALTERNATIVE_ME';
+                    break;
+                }
+            } catch (apiError) {
+                console.log(`⚠️ Falha em ${api.name}: ${apiError.message}`);
+                continue;
+            }
+        }
+        
+        // Se todas as APIs falharam, usar fallback
+        if (!dadosObtidos) {
+            dadosObtidos = {
+                value: 50,
+                classification: 'Neutral',
+                timestamp: new Date().toISOString()
+            };
+            fonteUsada = 'FALLBACK';
+        }
+        
+        // Salvar no banco
+        const client = await pool.connect();
+        
+        try {
+            // Mapear classificação para português
+            const classificacaoMap = {
+                'Extreme Fear': 'Medo Extremo',
+                'Fear': 'Medo',
+                'Neutral': 'Neutro',
+                'Greed': 'Ganância',
+                'Extreme Greed': 'Ganância Extrema'
+            };
+            
+            const classificacaoPt = classificacaoMap[dadosObtidos.classification] || 'Neutro';
+            
+            // Buscar valor anterior para calcular mudança
+            const ultimoRegistro = await client.query(`
+                SELECT value FROM fear_greed_index 
+                ORDER BY created_at DESC 
+                LIMIT 1
+            `);
+            
+            const valorAnterior = ultimoRegistro.rows.length > 0 ? ultimoRegistro.rows[0].value : null;
+            const mudanca24h = valorAnterior ? dadosObtidos.value - valorAnterior : 0;
+            
+            const result = await client.query(`
+                INSERT INTO fear_greed_index (
+                    timestamp_data,
+                    value, 
+                    classification,
+                    classificacao_pt,
+                    value_previous,
+                    change_24h,
+                    source
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+                RETURNING id, created_at
+            `, [
+                dadosObtidos.timestamp ? new Date(dadosObtidos.timestamp) : new Date(),
+                dadosObtidos.value,
+                dadosObtidos.classification,
+                classificacaoPt,
+                valorAnterior,
+                mudanca24h,
+                fonteUsada
+            ]);
+            
+            console.log(`✅ Fear & Greed atualizado! ID: ${result.rows[0].id}, Valor: ${dadosObtidos.value}`);
+            
+            // Determinar direção de trading
+            let direcao;
+            if (dadosObtidos.value < 30) {
+                direcao = 'LONG_ONLY';
+            } else if (dadosObtidos.value > 80) {
+                direcao = 'SHORT_ONLY';
+            } else {
+                direcao = 'BOTH';
+            }
+            
+            res.json({
+                success: true,
+                message: 'Fear & Greed Index atualizado com sucesso',
+                data: {
+                    id: result.rows[0].id,
+                    value: dadosObtidos.value,
+                    classification: dadosObtidos.classification,
+                    classificacao_pt: classificacaoPt,
+                    direction_allowed: direcao,
+                    source: fonteUsada,
+                    change_24h: mudanca24h,
+                    updated_at: result.rows[0].created_at
+                },
+                timestamp: new Date().toISOString()
+            });
+            
+        } finally {
+            client.release();
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao atualizar Fear & Greed:', error);
+        res.status(500).json({
+            error: 'Erro ao atualizar Fear & Greed',
+            message: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
 
 // Middleware para capturar todas as rotas nao encontradas
 app.use('*', (req, res) => {
@@ -484,7 +1511,14 @@ app.use('*', (req, res) => {
             'POST /api/auth/register',
             'GET /api/user/dashboard',
             'GET /api/user/operations',
-            'GET /api/affiliate/dashboard'
+            'GET /api/affiliate/dashboard',
+            'POST /api/webhooks/signal?token=210406',
+            'POST /api/webhooks/dominance?token=210406',
+            'GET /api/webhooks/signals/recent',
+            'GET /api/fear-greed/current',
+            'POST /api/fear-greed/update',
+            'GET /api/fear-greed/status',
+            'POST /api/fear-greed/control'
         ],
         version: SYSTEM_VERSION
     });
@@ -501,8 +1535,10 @@ app.use((error, req, res, next) => {
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
     console.log('🛑 SIGTERM recebido, fechando servidor graciosamente...');
+    gestorFearGreed.parar();
+    await gestorSinais.parar();
     server.close(() => {
         console.log('✅ Servidor fechado com sucesso');
         pool.end();
@@ -510,8 +1546,10 @@ process.on('SIGTERM', () => {
     });
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
     console.log('🛑 SIGINT recebido, fechando servidor graciosamente...');
+    gestorFearGreed.parar();
+    await gestorSinais.parar();
     server.close(() => {
         console.log('✅ Servidor fechado com sucesso');
         pool.end();
@@ -533,6 +1571,19 @@ server.listen(PORT, '0.0.0.0', () => {
 🕒 Iniciado em: ${new Date().toISOString()}
 ====================================
     `);
+    
+    // Iniciar gestores automáticos
+    setTimeout(async () => {
+        console.log('🔄 Iniciando gestores automáticos...');
+        
+        // Fear & Greed (15 minutos)
+        gestorFearGreed.iniciar();
+        
+        // Processamento de sinais (10 segundos)
+        await gestorSinais.iniciar();
+        
+        console.log('✅ Todos os gestores automáticos iniciados!');
+    }, 5000); // Aguarda 5 segundos para servidor estabilizar
 });
 
 module.exports = app;
