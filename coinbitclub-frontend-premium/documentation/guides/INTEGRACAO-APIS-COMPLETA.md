@@ -1,6 +1,6 @@
 # 🔌 CoinBitClub Market Bot - Integração Completa de APIs
 
-## � Visão Geral da Integração
+##  Visão Geral da Integração
 
 Este documento detalha a integração completa entre o frontend Next.js e o backend Express.js do CoinBitClub Market Bot, incluindo todos os endpoints, autenticação, tratamento de erros e funcionalidades em tempo real.
 
@@ -11,7 +11,7 @@ Este documento detalha a integração completa entre o frontend Next.js e o back
 🔌 API Gateway (Express.js)
 ├── 🏠 Base URL: https://coinbitclub-market-bot.up.railway.app
 ├── 📝 API Version: v1
-├── � Authentication: JWT Bearer Token
+├──  Authentication: JWT Bearer Token
 ├── 📊 Rate Limiting: 100 requests/minute per IP
 ├── 🛡️ Security: Helmet + CORS + Validation
 └── 📚 Documentation: Swagger/OpenAPI 3.0

@@ -3,6 +3,7 @@ import { NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import axios from 'axios';
 import { useAuth } from '../../src/store/authStore';
 import { AuthService } from '../../src/services/api';
 
@@ -15,7 +16,9 @@ const LoginPage: NextPage = () => {
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -26,8 +29,8 @@ const LoginPage: NextPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
+    setIsLoading(true);
+    setLocalError('');
 
     try {
       // Validações básicas
@@ -41,8 +44,8 @@ const LoginPage: NextPage = () => {
 
       console.log('🔐 Tentando login para:', formData.email);
 
-      // Fazer login
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
+      // Fazer login usando a API do próprio frontend (que roda na porta 3001)
+      const response = await axios.post('/api/auth/login', {
         email: formData.email,
         password: formData.password
       }, {
@@ -57,28 +60,70 @@ const LoginPage: NextPage = () => {
       if (response.status === 200 && data.success !== false) {
         console.log('✅ Login realizado com sucesso:', data);
         
-        // Salvar token
-        localStorage.setItem('auth_token', data.token);
-        localStorage.setItem('user_data', JSON.stringify(data.user));
+        // Salvar token e dados do usuário
+        try {
+          // Salvar no localStorage (para JavaScript client-side)
+          localStorage.setItem('auth_token', data.token);
+          localStorage.setItem('user_data', JSON.stringify(data.user));
+          
+          // Salvar nos cookies (para middleware server-side)
+          // Em desenvolvimento (localhost), não usar secure
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const cookieOptions = isLocalhost 
+            ? `path=/; max-age=${7*24*60*60}; samesite=lax`
+            : `path=/; max-age=${7*24*60*60}; secure; samesite=strict`;
+          
+          document.cookie = `auth_token=${data.token}; ${cookieOptions}`;
+          document.cookie = `user_data=${encodeURIComponent(JSON.stringify(data.user))}; ${cookieOptions}`;
+          
+          console.log('✅ Token e dados salvos no localStorage e cookies');
+          console.log('🍪 Cookies configurados para:', isLocalhost ? 'desenvolvimento' : 'produção');
+        } catch (e) {
+          console.error('❌ Erro ao salvar no localStorage/cookies:', e);
+        }
 
         // Redirecionar baseado no role
-        const userRole = data.user.role || data.user.user_type || 'user';
-        console.log('User role detected:', userRole);
+        const userRole = data.user?.role || data.user?.user_type || 'user';
+        console.log('🎯 User role detected:', userRole);
         
-        switch (userRole) {
+        // Mostrar estado de redirecionamento
+        setIsRedirecting(true);
+        
+        // Determinar URL de redirecionamento baseada no perfil
+        let redirectUrl;
+        switch (userRole.toLowerCase()) {
           case 'admin':
-            console.log('Redirecting to admin dashboard');
-            router.push('/admin/dashboard');
+            redirectUrl = '/admin/dashboard';
+            console.log(' Redirecionando para ADMIN dashboard');
             break;
           case 'affiliate':
-            console.log('Redirecting to affiliate dashboard');
-            router.push('/affiliate/dashboard');
+          case 'afiliado':
+            redirectUrl = '/affiliate/dashboard';
+            console.log('💰 Redirecionando para AFFILIATE dashboard');
+            break;
+          case 'gestor':
+          case 'manager':
+            redirectUrl = '/gestor/dashboard';
+            console.log(' Redirecionando para GESTOR dashboard');
+            break;
+          case 'operador':
+          case 'operator':
+            redirectUrl = '/operador/dashboard';
+            console.log('⚙️ Redirecionando para OPERADOR dashboard');
             break;
           case 'user':
+          case 'usuario':
           default:
-            console.log('Redirecting to user dashboard');
-            router.push('/dashboard');
+            redirectUrl = '/user/dashboard';
+            console.log(' Redirecionando para USER dashboard');
+            break;
         }
+        
+        console.log('🎯 URL de destino:', redirectUrl);
+        
+        // REDIRECIONAMENTO IMEDIATO E FORÇADO
+        console.log('🚀 EXECUTANDO REDIRECIONAMENTO IMEDIATO');
+        window.location.href = redirectUrl;
       } else {
         throw new Error(data.message || data.error || 'Erro no login');
       }
@@ -87,18 +132,18 @@ const LoginPage: NextPage = () => {
       
       // Tratar diferentes tipos de erro
       if (error.response?.status === 401) {
-        setError('Email ou senha incorretos');
+        setLocalError('Email ou senha incorretos');
       } else if (error.response?.status === 429) {
-        setError('Muitas tentativas. Tente novamente em alguns minutos.');
+        setLocalError('Muitas tentativas. Tente novamente em alguns minutos.');
       } else if (error.response?.status >= 500) {
-        setError('Erro interno do servidor. Tente novamente mais tarde.');
+        setLocalError('Erro interno do servidor. Tente novamente mais tarde.');
       } else if (error.code === 'ECONNREFUSED' || error.code === 'NETWORK_ERROR') {
-        setError('Erro de conexão. Verifique se o servidor está rodando na porta 3000.');
+        setLocalError('Erro de conexão. Verifique se o servidor está rodando na porta 3000.');
       } else {
-        setError(error.message || 'Erro inesperado. Tente novamente.');
+        setLocalError(error.message || 'Erro inesperado. Tente novamente.');
       }
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -150,7 +195,7 @@ const LoginPage: NextPage = () => {
           </p>
         </div>
 
-        {error && (
+        {localError && (
           <div style={{
             backgroundColor: '#ff4444',
             color: 'white',
@@ -160,7 +205,7 @@ const LoginPage: NextPage = () => {
             fontSize: '14px',
             textAlign: 'center'
           }}>
-            ⚠️ {error}
+            ⚠️ {localError}
           </div>
         )}
 
@@ -220,21 +265,21 @@ const LoginPage: NextPage = () => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={isLoading || isRedirecting}
             style={{
               width: '100%',
               padding: '12px',
-              backgroundColor: loading ? '#666' : '#ffa500',
+              backgroundColor: (isLoading || isRedirecting) ? '#666' : '#ffa500',
               color: 'white',
               border: 'none',
               borderRadius: '5px',
               fontSize: '16px',
               fontWeight: 'bold',
-              cursor: loading ? 'not-allowed' : 'pointer',
+              cursor: (isLoading || isRedirecting) ? 'not-allowed' : 'pointer',
               marginBottom: '15px'
             }}
           >
-            {loading ? 'Entrando...' : 'Entrar →'}
+            {isRedirecting ? '🚀 Redirecionando...' : isLoading ? 'Entrando...' : 'Entrar →'}
           </button>
 
           <button
@@ -248,11 +293,28 @@ const LoginPage: NextPage = () => {
               border: '1px solid #ffa500',
               borderRadius: '5px',
               fontSize: '14px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              marginBottom: '15px'
             }}
           >
             Usar Credenciais Demo
           </button>
+
+          <div style={{ textAlign: 'center' }}>
+            <a 
+              href="/auth/forgot-password" 
+              style={{ 
+                color: '#a0a0a0', 
+                textDecoration: 'none', 
+                fontSize: '14px',
+                transition: 'color 0.3s ease'
+              }}
+              onMouseOver={(e) => e.target.style.color = '#ffa500'}
+              onMouseOut={(e) => e.target.style.color = '#a0a0a0'}
+            >
+              Esqueci minha senha
+            </a>
+          </div>
         </form>
 
         <div style={{ 

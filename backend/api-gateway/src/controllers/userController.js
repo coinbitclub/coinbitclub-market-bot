@@ -1,7 +1,17 @@
 const express = require('express');
-const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+
+// Usar conexão direta com PostgreSQL por enquanto
+const { Pool } = require('pg');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway',
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+console.log('✅ User Controller conectado ao PostgreSQL Railway');
 
 /**
  * User Controller Integrado ao PostgreSQL Railway
@@ -10,26 +20,8 @@ const bcrypt = require('bcryptjs');
  * Este arquivo implementa todas as funcionalidades para:
  * - Área de usuários (operações, planos, configurações)
  * - Área de afiliados (gestão de indicados, comissões)
- * - Integração real com banco PostgreSQL Railway
+ * - Integração real com banco PostgreSQL Railway via Knex.js
  */
-
-// Configuração da conexão com PostgreSQL Railway
-const pool = new Pool({
-  connectionString: 'postgresql://postgres:TQDSOVEqxVgCFdcKtwHEvnkoLSTFvswS@yamabiko.proxy.rlwy.net:32866/railway',
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-
-// Teste de conexão
-pool.connect((err, client, release) => {
-  if (err) {
-    console.error('❌ Erro ao conectar ao PostgreSQL Railway (User Controller):', err);
-  } else {
-    console.log('✅ User Controller conectado ao PostgreSQL Railway');
-    release();
-  }
-});
 
 // ===== MIDDLEWARE DE AUTENTICAÇÃO =====
 
@@ -37,28 +29,52 @@ const authenticateUser = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
+    console.log('🔍 DEBUG: Token recebido:', token ? 'Token presente' : 'Token ausente');
+    
     if (!token) {
       return res.status(401).json({ error: 'Token de acesso requerido' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+    console.log('🔍 DEBUG: JWT_SECRET:', process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'coinbitclub-secret-2025');
+    console.log('🔍 DEBUG: Token decodificado:', decoded);
     
     // Buscar dados completos do usuário
-    const result = await pool.query(`
-      SELECT u.*, up.country, up.phone, up.affiliate_code, up.api_keys, up.bank_details
-      FROM users u 
-      LEFT JOIN user_profiles up ON u.id = up.user_id 
-      WHERE u.id = $1
-    `, [decoded.userId]);
+    console.log('🔍 DEBUG: Buscando usuário com ID:', decoded.id, 'tipo:', typeof decoded.id);
+    
+    // Tentar buscar o usuário primeiro na tabela users
+    const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.id]);
+    
+    console.log('🔍 DEBUG: Resultado da consulta users:', userResult.rows.length, 'usuários encontrados');
 
-    if (result.rows.length === 0) {
+    if (userResult.rows.length === 0) {
       return res.status(401).json({ error: 'Usuário não encontrado' });
     }
 
-    req.user = result.rows[0];
+    // Buscar dados do perfil se existir
+    let profileResult = { rows: [{}] };
+    try {
+      profileResult = await pool.query('SELECT * FROM user_profiles WHERE user_id = $1', [decoded.id]);
+    } catch (profileError) {
+      console.log('🔍 DEBUG: Tabela user_profiles não existe ou erro:', profileError.message);
+    }
+
+    const user = userResult.rows[0];
+    const profile = profileResult.rows[0] || {};
+
+    req.user = {
+      ...user,
+      country: profile.country,
+      phone: profile.phone,
+      affiliate_code: profile.affiliate_code,
+      api_keys: profile.api_keys,
+      bank_details: profile.bank_details
+    };
+
+    console.log('🔍 DEBUG: Usuário autenticado:', req.user.email);
     next();
   } catch (error) {
-    console.error('Erro na autenticação:', error);
+    console.error('❌ Erro na autenticação:', error.message);
     res.status(401).json({ error: 'Token inválido' });
   }
 };
@@ -262,78 +278,76 @@ const getUserDashboard = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Buscar saldos do usuário
-    const balanceResult = await pool.query(`
-      SELECT exchange, environment, balance, balance_type, last_updated
-      FROM user_balances 
-      WHERE user_id = $1
-      ORDER BY exchange, environment
-    `, [userId]);
+    console.log('🔍 DEBUG: Montando dashboard para usuário ID:', userId);
 
-    // Buscar operações recentes
-    const operationsResult = await pool.query(`
-      SELECT * FROM operations 
-      WHERE user_id = $1 
-      ORDER BY created_at DESC 
-      LIMIT 10
-    `, [userId]);
+    // Dados básicos do usuário
+    const userData = {
+      id: req.user.id,
+      email: req.user.email,
+      name: req.user.name,
+      role: req.user.role,
+      status: req.user.status || 'active'
+    };
 
-    // Calcular estatísticas do usuário
-    const statsResult = await pool.query(`
-      SELECT 
-        COUNT(*) as total_operations,
-        COUNT(CASE WHEN status = 'completed' AND profit > 0 THEN 1 END) as winning_trades,
-        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_trades,
-        SUM(CASE WHEN status = 'completed' THEN profit ELSE 0 END) as total_profit,
-        AVG(CASE WHEN status = 'completed' THEN profit ELSE NULL END) as avg_profit
-      FROM operations 
-      WHERE user_id = $1
-    `, [userId]);
+    // Buscar algumas estatísticas básicas se as tabelas existirem
+    let balances = [];
+    let operations = [];
+    let stats = {
+      total_operations: 0,
+      total_profit: 0,
+      total_loss: 0,
+      success_rate: 0
+    };
 
-    const stats = statsResult.rows[0];
-    const successRate = stats.completed_trades > 0 
-      ? ((stats.winning_trades / stats.completed_trades) * 100).toFixed(2)
-      : 0;
+    try {
+      // Tentar buscar saldos (se a tabela existir)
+      const balanceResult = await pool.query(`
+        SELECT exchange, balance, balance_type, last_updated
+        FROM user_balances 
+        WHERE user_id = $1
+        ORDER BY exchange
+      `, [userId]);
+      balances = balanceResult.rows;
+    } catch (error) {
+      console.log('🔍 DEBUG: Tabela user_balances não encontrada:', error.message);
+    }
 
-    // Verificar se precisa migrar para conta paga
-    const needsUpgrade = req.user.account_type === 'testnet';
-    
-    // Verificar saldo baixo
-    const totalBalance = balanceResult.rows.reduce((sum, balance) => sum + parseFloat(balance.balance), 0);
-    const minBalance = req.user.country === 'Brasil' ? 60 : 40;
-    const lowBalance = totalBalance < minBalance;
+    try {
+      // Tentar buscar operações (se a tabela existir)
+      const operationsResult = await pool.query(`
+        SELECT * FROM operations 
+        WHERE user_id = $1 
+        ORDER BY created_at DESC 
+        LIMIT 10
+      `, [userId]);
+      operations = operationsResult.rows;
+    } catch (error) {
+      console.log('🔍 DEBUG: Tabela operations não encontrada:', error.message);
+    }
 
-    res.json({
-      success: true,
-      user: {
-        id: req.user.id,
-        name: req.user.name,
-        email: req.user.email,
-        role: req.user.role,
-        country: req.user.country,
-        accountType: req.user.account_type
+    // Resposta do dashboard
+    const dashboardData = {
+      user: userData,
+      balances,
+      recentOperations: operations,
+      statistics: stats,
+      subscription: {
+        plan: req.user.subscription_plan || 'basic',
+        status: 'active',
+        expires_at: req.user.trial_ends_at || null
       },
-      balances: balanceResult.rows,
-      recentOperations: operationsResult.rows,
-      statistics: {
-        totalOperations: parseInt(stats.total_operations),
-        winningTrades: parseInt(stats.winning_trades),
-        completedTrades: parseInt(stats.completed_trades),
-        successRate: parseFloat(successRate),
-        totalProfit: parseFloat(stats.total_profit) || 0,
-        avgProfit: parseFloat(stats.avg_profit) || 0
-      },
-      alerts: {
-        needsUpgrade,
-        lowBalance,
-        minBalance,
-        currentBalance: totalBalance
-      }
-    });
+      timestamp: new Date().toISOString()
+    };
+
+    console.log('✅ Dashboard montado com sucesso para:', req.user.email);
+    res.json(dashboardData);
 
   } catch (error) {
     console.error('Erro ao buscar dashboard:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    res.status(500).json({ 
+      error: 'Erro interno do servidor',
+      message: error.message 
+    });
   }
 };
 

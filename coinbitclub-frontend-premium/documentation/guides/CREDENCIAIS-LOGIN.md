@@ -7,7 +7,7 @@
 - **Senha**: `password`
 - **Acesso**: Dashboard Admin
 
-### � Fale Conosco (que você estava testando)
+###  Fale Conosco (que você estava testando)
 - **Email**: `faleconosco@coinbitclub.vip`
 - **Senha**: `password`
 - **Acesso**: Dashboard Usuário

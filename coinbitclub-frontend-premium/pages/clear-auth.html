@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Limpar Autenticação - CoinBitClub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #fff;
+            text-align: center;
+        }
+        .clear-panel {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover { background: #c82333; }
+        .success { color: #28a745; }
+        .info { color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="clear-panel">
+        <h1>🧹 Limpar Autenticação</h1>
+        <p>Esta página vai limpar todos os dados de autenticação salvos.</p>
+        
+        <button onclick="clearAll()">🗑️ Limpar Tudo</button>
+        <button onclick="goToLogin()">🚪 Ir para Login</button>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function clearAll() {
+            // Limpar localStorage
+            localStorage.clear();
+            
+            // Limpar cookies
+            const cookies = document.cookie.split(";");
+            for (let cookie of cookies) {
+                const eqPos = cookie.indexOf("=");
+                const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;";
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname + ";";
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=." + window.location.hostname + ";";
+            }
+            
+            // Limpar sessionStorage
+            sessionStorage.clear();
+            
+            document.getElementById('status').innerHTML = 
+                '<div class="success">✅ Todos os dados de autenticação foram limpos!</div>';
+            
+            setTimeout(() => {
+                window.location.href = '/auth/login';
+            }, 2000);
+        }
+        
+        function goToLogin() {
+            window.location.href = '/auth/login';
+        }
+        
+        // Mostrar status atual
+        document.getElementById('status').innerHTML = `
+            <div class="info">
+                <h3>Status Atual:</h3>
+                <p>localStorage: ${Object.keys(localStorage).length} itens</p>
+                <p>Cookies: ${document.cookie.split(';').length} cookies</p>
+                <p>sessionStorage: ${Object.keys(sessionStorage).length} itens</p>
+            </div>
+        `;
+    </script>
+</body>
+</html>

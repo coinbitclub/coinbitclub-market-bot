@@ -598,7 +598,7 @@ const AffiliatePage: NextPage = () => {
               </button>
               
               <button className="hover:bg-gray-850 rounded-xs border border-gray-700 px-8 py-4 text-base font-medium text-white transition-all duration-200 hover:border-gray-600">
-                � Como Funciona o MarketBot
+                 Como Funciona o MarketBot
               </button>
             </div>
 
