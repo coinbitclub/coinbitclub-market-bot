@@ -1,0 +1,10 @@
+# Nixpacks configuration for CoinBitClub Market Bot V3
+[build]
+  cmd = 'npm ci --only=production'
+
+[start]
+  cmd = 'node main.js'
+
+[variables]
+  NODE_ENV = 'production'
+  PORT = '3000'
