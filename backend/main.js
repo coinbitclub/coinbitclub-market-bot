@@ -1192,7 +1192,18 @@ app.get('/api/gestores/status', async (req, res) => {
                     etapa_atual: statusCompleto.estadoAtual,
                     operacoes_ativas: statusCompleto.operacoesAtivas,
                     ciclos_completos: statusCompleto.ciclosCompletos,
-                    cobertura: statusCompleto.isRunning ? '100%' : '75%'
+                    cobertura: (() => {
+                        // Calcular cobertura baseado nos gestores ativos
+                        const gestoresAtivos = [
+                            statusFearGreed.isRunning ? 'Fear & Greed' : null,
+                            statusSinais.isRunning ? 'Processamento Sinais' : null,
+                            statusOrquestrador.isRunning ? 'Orquestrador Principal' : null,
+                            statusCompleto.isRunning ? 'Orquestrador Completo' : null
+                        ].filter(Boolean);
+                        
+                        const percentual = Math.round((gestoresAtivos.length / 4) * 100);
+                        return `${percentual}%`;
+                    })()
                 },
                 timestamp: new Date().toISOString()
             }
@@ -2020,13 +2031,44 @@ server.listen(PORT, '0.0.0.0', () => {
     setTimeout(async () => {
         console.log('🔄 Iniciando gestores automáticos...');
         
-        // Fear & Greed (15 minutos)
-        gestorFearGreed.iniciar();
-        
-        // Processamento de sinais (10 segundos)
-        await gestorSinais.iniciar();
-        
-        console.log('✅ Todos os gestores automáticos iniciados!');
+        try {
+            // 1. Fear & Greed (15 minutos) - Primeira prioridade
+            console.log('🧠 Iniciando Fear & Greed Automático...');
+            gestorFearGreed.iniciar();
+            
+            // 2. Processamento de sinais (10 segundos)
+            console.log('📡 Iniciando Processamento de Sinais...');
+            await gestorSinais.iniciar();
+            
+            // Aguardar 2 segundos entre inicializações
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // 3. Orquestrador Principal (30 segundos)
+            console.log('🎯 Iniciando Orquestrador Principal...');
+            await orquestrador.iniciar();
+            
+            // 4. Orquestrador Completo (30 segundos)
+            console.log('🌟 Iniciando Orquestrador Completo...');
+            await orquestradorCompleto.iniciar();
+            
+            console.log('');
+            console.log('✅ =========================================');
+            console.log('   TODOS OS GESTORES AUTOMÁTICOS ATIVOS!');
+            console.log('=========================================');
+            console.log('🧠 Fear & Greed: ATIVO (15 min)');
+            console.log('📡 Processamento Sinais: ATIVO (10 seg)');
+            console.log('🎯 Orquestrador Principal: ATIVO (30 seg)');
+            console.log('🌟 Orquestrador Completo: ATIVO (30 seg)');
+            console.log('=========================================');
+            console.log('🎯 COBERTURA DO SISTEMA: 100%');
+            console.log('💰 PRONTO PARA TRADING REAL!');
+            console.log('=========================================');
+            console.log('');
+            
+        } catch (error) {
+            console.error('❌ Erro ao iniciar gestores:', error);
+            console.log('⚠️ Sistema funcionando com cobertura parcial');
+        }
     }, 5000); // Aguarda 5 segundos para servidor estabilizar
 });
 
