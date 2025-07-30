@@ -164,6 +164,129 @@ app.post('/api/webhooks/tradingview', async (req, res) => {
     }
 });
 
+// Webhook para dominância do Bitcoin
+app.post('/api/webhooks/dominance', async (req, res) => {
+    try {
+        console.log('📈 WEBHOOK DOMINÂNCIA RECEBIDO:', JSON.stringify(req.body, null, 2));
+        console.log('📊 Headers:', JSON.stringify(req.headers, null, 2));
+
+        const dominanceData = req.body;
+
+        // Validar dados obrigatórios para dominância
+        if (!dominanceData.btc_dominance && !dominanceData.dominance_percent) {
+            return res.status(400).json({ 
+                error: 'Dados inválidos - btc_dominance ou dominance_percent são obrigatórios' 
+            });
+        }
+
+        // Criar tabela se não existir
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS dominance_data (
+                id SERIAL PRIMARY KEY,
+                btc_dominance DECIMAL(5,2),
+                eth_dominance DECIMAL(5,2),
+                total_market_cap BIGINT,
+                timestamp_data TIMESTAMP,
+                source VARCHAR(50) DEFAULT 'tradingview',
+                raw_data JSONB,
+                created_at TIMESTAMP DEFAULT NOW()
+            );
+        `);
+
+        // Salvar dados de dominância
+        const result = await pool.query(`
+            INSERT INTO dominance_data (
+                btc_dominance, 
+                eth_dominance, 
+                total_market_cap, 
+                timestamp_data, 
+                source, 
+                raw_data, 
+                created_at
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, NOW())
+            RETURNING id
+        `, [
+            dominanceData.btc_dominance || dominanceData.dominance_percent || null,
+            dominanceData.eth_dominance || null,
+            dominanceData.total_market_cap || null,
+            dominanceData.timestamp || new Date().toISOString(),
+            dominanceData.source || 'tradingview',
+            JSON.stringify(dominanceData)
+        ]);
+
+        console.log('✅ Dominância processada com ID:', result.rows[0].id);
+
+        // Também salvar na tabela de sinais para compatibilidade
+        await pool.query(`
+            INSERT INTO signals (
+                symbol, 
+                action, 
+                price, 
+                strategy, 
+                timeframe, 
+                alert_message, 
+                created_at
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, NOW())
+        `, [
+            'BTC.D',
+            'DOMINANCE_UPDATE',
+            dominanceData.btc_dominance || dominanceData.dominance_percent,
+            'dominance_tracking',
+            dominanceData.timeframe || '1h',
+            `Bitcoin dominance: ${dominanceData.btc_dominance || dominanceData.dominance_percent}%`
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Dominância processada com sucesso',
+            dominanceId: result.rows[0].id,
+            btc_dominance: dominanceData.btc_dominance || dominanceData.dominance_percent,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('❌ Erro no webhook dominância:', error);
+        return res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+});
+
+// Endpoint para consultar última dominância
+app.get('/api/dominance/latest', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT 
+                id,
+                btc_dominance,
+                eth_dominance,
+                total_market_cap,
+                timestamp_data,
+                source,
+                created_at
+            FROM dominance_data 
+            ORDER BY created_at DESC 
+            LIMIT 1
+        `);
+
+        if (result.rows.length === 0) {
+            return res.json({
+                message: 'Nenhum dado de dominância encontrado',
+                btc_dominance: null
+            });
+        }
+
+        return res.json({
+            success: true,
+            data: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('❌ Erro ao consultar dominância:', error);
+        return res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+});
+
 // Middleware de tratamento de erro
 app.use((err, req, res, next) => {
     console.error('Error:', err);
