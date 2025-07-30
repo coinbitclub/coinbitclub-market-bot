@@ -306,92 +306,47 @@ app.post('/api/webhooks/tradingview', async (req, res) => {
     }
 });
 
-// Webhook para dominância do Bitcoin
+// Webhook para dominância do Bitcoin (usando Pine Script)
 app.post('/api/webhooks/dominance', async (req, res) => {
     try {
-        console.log('📈 WEBHOOK DOMINÂNCIA RECEBIDO:', JSON.stringify(req.body, null, 2));
-        console.log('📊 Headers:', JSON.stringify(req.headers, null, 2));
+        console.log('📈 WEBHOOK DOMINÂNCIA BTC RECEBIDO:', JSON.stringify(req.body, null, 2));
 
         const dominanceData = req.body;
 
-        // Validar dados obrigatórios para dominância
-        if (!dominanceData.btc_dominance && !dominanceData.dominance_percent) {
+        // Validar dados obrigatórios do Pine Script
+        if (!dominanceData.ticker || !dominanceData.btc_dominance || !dominanceData.sinal) {
             return res.status(400).json({ 
-                error: 'Dados inválidos - btc_dominance ou dominance_percent são obrigatórios' 
+                error: 'Dados inválidos - ticker, btc_dominance e sinal são obrigatórios' 
             });
         }
 
-        // Criar tabela se não existir
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS dominance_data (
-                id SERIAL PRIMARY KEY,
-                btc_dominance DECIMAL(5,2),
-                eth_dominance DECIMAL(5,2),
-                total_market_cap BIGINT,
-                timestamp_data TIMESTAMP,
-                source VARCHAR(50) DEFAULT 'tradingview',
-                raw_data JSONB,
-                created_at TIMESTAMP DEFAULT NOW()
-            );
-        `);
-
-        // Salvar dados de dominância
+        // Usar a função PostgreSQL para processar o sinal
         const result = await pool.query(`
-            INSERT INTO dominance_data (
-                btc_dominance, 
-                eth_dominance, 
-                total_market_cap, 
-                timestamp_data, 
-                source, 
-                raw_data, 
-                created_at
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, NOW())
-            RETURNING id
+            SELECT process_btc_dominance_signal($1, $2, $3, $4, $5, $6, $7) as result;
         `, [
-            dominanceData.btc_dominance || dominanceData.dominance_percent || null,
-            dominanceData.eth_dominance || null,
-            dominanceData.total_market_cap || null,
-            dominanceData.timestamp || new Date().toISOString(),
-            dominanceData.source || 'tradingview',
+            dominanceData.ticker || 'BTC.D',
+            dominanceData.time || new Date().toISOString().replace('T', ' ').substring(0, 19),
+            parseFloat(dominanceData.btc_dominance),
+            parseFloat(dominanceData.ema_7) || null,
+            parseFloat(dominanceData.diff_pct) || null,
+            dominanceData.sinal,
             JSON.stringify(dominanceData)
         ]);
 
-        console.log('✅ Dominância processada com ID:', result.rows[0].id);
+        const processResult = result.rows[0].result;
+        
+        console.log('✅ Dominância BTC processada:', JSON.stringify(processResult));
 
-        // Também salvar na tabela de sinais para compatibilidade
-        await pool.query(`
-            INSERT INTO signals (
-                symbol, 
-                action, 
-                price, 
-                strategy, 
-                timeframe, 
-                alert_message, 
-                created_at
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, NOW())
-        `, [
-            'BTC.D',
-            'DOMINANCE_UPDATE',
-            dominanceData.btc_dominance || dominanceData.dominance_percent,
-            'dominance_tracking',
-            dominanceData.timeframe || '1h',
-            `Bitcoin dominance: ${dominanceData.btc_dominance || dominanceData.dominance_percent}%`
-        ]);
-
-        return res.status(200).json({
+        return res.json({
             success: true,
-            message: 'Dominância processada com sucesso',
-            dominanceId: result.rows[0].id,
-            btc_dominance: dominanceData.btc_dominance || dominanceData.dominance_percent,
+            message: 'Sinal de dominância BTC processado com sucesso',
+            data: processResult,
             timestamp: new Date().toISOString()
         });
 
     } catch (error) {
         console.error('❌ Erro no webhook dominância:', error);
         return res.status(500).json({ error: 'Erro interno do servidor' });
-    }
 });
 
 // Endpoint para consultar última dominância
@@ -401,12 +356,12 @@ app.get('/api/dominance/latest', async (req, res) => {
             SELECT 
                 id,
                 btc_dominance,
-                eth_dominance,
-                total_market_cap,
-                timestamp_data,
-                source,
+                ema_7,
+                diff_pct,
+                sinal,
+                timestamp_parsed as timestamp_data,
                 created_at
-            FROM dominance_data 
+            FROM btc_dominance_signals 
             ORDER BY created_at DESC 
             LIMIT 1
         `);
