@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ TESTE FINAL - LOGIN CORRIGIDO</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .status {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .success { color: #00ff88; }
+        .error { color: #ff4757; }
+        .info { color: #3742fa; }
+        #results {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 TESTE FINAL - LOGIN CORRIGIDO</h1>
+            <p>Validação Final da Correção do authStore.ts</p>
+        </div>
+
+        <div class="status">
+            <h3>📊 Status da Correção</h3>
+            <p class="success">✅ authStore.ts corrigido para usar localhost:3001</p>
+            <p class="success">✅ .env.development.local criado</p>
+            <p class="success">✅ Servidor frontend reiniciado</p>
+            <p class="info">🔄 Testando agora o login na página principal...</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Teste de Login com Credenciais Corrigidas</h3>
+            <button class="btn" onclick="testLogin('admin@coinbitclub.com', 'Admin123!')">
+                🔑 Testar Admin
+            </button>
+            <button class="btn" onclick="testLogin('user@coinbitclub.com', 'User123!')">
+                👤 Testar Usuário
+            </button>
+            <button class="btn" onclick="testLogin('affiliate@coinbitclub.com', 'Affiliate123!')">
+                🤝 Testar Afiliado
+            </button>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 Links para Teste Manual</h3>
+            <button class="btn" onclick="window.open('http://localhost:3001/auth/login-premium', '_blank')">
+                🚀 Abrir Página Principal de Login
+            </button>
+            <button class="btn" onclick="window.open('http://localhost:3001/admin/dashboard', '_blank')">
+                📊 Dashboard Admin
+            </button>
+            <button class="btn" onclick="window.open('http://localhost:3001/user/dashboard', '_blank')">
+                👤 Dashboard Usuário
+            </button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'success' ? '#00ff88' : type === 'error' ? '#ff4757' : '#74b9ff';
+            resultsDiv.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span>\n`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        async function testLogin(email, password) {
+            log(`🔄 Testando login: ${email}`, 'info');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    log(`✅ LOGIN SUCESSO para ${email}!`, 'success');
+                    log(`   Usuário: ${data.user.name}`, 'success');
+                    log(`   Perfil: ${data.user.role}`, 'success');
+                    log(`   Token: ${data.token ? 'Gerado' : 'Ausente'}`, data.token ? 'success' : 'error');
+                } else {
+                    log(`❌ LOGIN FALHOU para ${email}: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ ERRO DE CONEXÃO para ${email}: ${error.message}`, 'error');
+            }
+        }
+
+        // Teste automático ao carregar
+        window.onload = function() {
+            log('🎯 TESTE FINAL INICIADO', 'info');
+            log('📋 Verificando se a correção resolveu o "Failed to fetch"', 'info');
+            log('🔧 authStore.ts agora usa localhost:3001 durante desenvolvimento', 'success');
+            
+            setTimeout(() => {
+                log('🚀 Iniciando teste automático em 3 segundos...', 'info');
+                setTimeout(() => testLogin('admin@coinbitclub.com', 'Admin123!'), 3000);
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

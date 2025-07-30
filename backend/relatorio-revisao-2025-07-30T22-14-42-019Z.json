@@ -1,0 +1,79 @@
+{
+  "arquivos_analisados": 6,
+  "regras_verificadas": 0,
+  "conformidades": 23,
+  "divergencias": [
+    {
+      "tipo": "Trading Engine",
+      "item": "Máximo posições",
+      "problema": "Limite de 2 posições não encontrado",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "Signal Processor",
+      "item": "F&G Fallback",
+      "problema": "Fallback F&G = 50 não encontrado",
+      "criticidade": "MÉDIA"
+    },
+    {
+      "tipo": "Signal Processor",
+      "item": "Limpeza sinais",
+      "problema": "Limpeza de sinais a cada 2h não encontrada",
+      "criticidade": "MÉDIA"
+    },
+    {
+      "tipo": "AI Guardian",
+      "item": "Supervisão validacao",
+      "problema": "Supervisão de validacao não encontrada",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "AI Guardian",
+      "item": "Supervisão execucao",
+      "problema": "Supervisão de execucao não encontrada",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "AI Guardian",
+      "item": "Supervisão registro",
+      "problema": "Supervisão de registro não encontrada",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "AI Guardian",
+      "item": "Supervisão comissionamento",
+      "problema": "Supervisão de comissionamento não encontrada",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "AI Guardian",
+      "item": "OpenAI",
+      "problema": "OpenAI deve estar configurado - somos assinantes",
+      "criticidade": "MÉDIA"
+    },
+    {
+      "tipo": "Planos",
+      "item": "Test Plan",
+      "problema": "Plano não está nas regras operacionais",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "Planos",
+      "item": "PRO Plan",
+      "problema": "Plano não está nas regras operacionais",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "Planos",
+      "item": "FLEX Plan",
+      "problema": "Plano não está nas regras operacionais",
+      "criticidade": "ALTA"
+    }
+  ],
+  "detalhes": [],
+  "timestamp": "2025-07-30T22:14:42.020Z",
+  "resumo": {
+    "total_verificacoes": 23,
+    "percentual_conformidade": "100.00"
+  }
+}

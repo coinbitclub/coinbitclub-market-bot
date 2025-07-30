@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Login - CoinBitClub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .success { border-left: 4px solid #4CAF50; background-color: #f9fff9; }
+        .error { border-left: 4px solid #f44336; background-color: #fff9f9; }
+        .warning { border-left: 4px solid #ff9800; background-color: #fffbf0; }
+        button {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #1976D2; }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste de APIs - CoinBitClub</h1>
+        <p><strong>Status do Servidor:</strong> <span id="serverStatus">Verificando...</span></p>
+        
+        <div class="test-section">
+            <h2>🔐 Teste de Login</h2>
+            <p>Testando login com credenciais de administrador</p>
+            <button onclick="testLogin()">Testar Login Admin</button>
+            <button onclick="testLoginUser()">Testar Login User</button>
+            <div id="loginResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Teste de Dashboard APIs</h2>
+            <p>Testando acesso aos dashboards com token JWT</p>
+            <button onclick="testAllDashboards()">Testar Todos os Dashboards</button>
+            <div id="dashboardResult" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔑 Teste de Recuperação de Senha</h2>
+            <p>Testando sistema forgot/reset password</p>
+            <button onclick="testForgotPassword()">Testar Esqueci Senha</button>
+            <div id="forgotResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+
+        // Verificar status do servidor
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('/api/auth/login', { method: 'GET' });
+                document.getElementById('serverStatus').innerHTML = 
+                    response.status === 405 ? '✅ Online' : '⚠️ Parcial';
+            } catch (error) {
+                document.getElementById('serverStatus').innerHTML = '❌ Offline';
+            }
+        }
+
+        // Teste de login admin
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '🔄 Testando login admin...\\n';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@coinbitclub.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    resultDiv.innerHTML += `✅ Login bem-sucedido!
+Usuário: ${data.user.name}
+Role: ${data.user.role}
+Token: ${data.token ? 'Gerado' : 'Erro'}
+Status: ${response.status}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML += `❌ Erro no login:
+Status: ${response.status}
+Mensagem: ${data.message}
+Erro: ${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `❌ Erro de conexão:
+${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Teste de login user
+        async function testLoginUser() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '🔄 Testando login user...\\n';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'user@coinbitclub.com',
+                        password: 'user123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML += `✅ Login user bem-sucedido!
+Usuário: ${data.user.name}
+Role: ${data.user.role}
+Status: ${response.status}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML += `⚠️ Login falhou (esperado se usuário não existe):
+Status: ${response.status}
+Mensagem: ${data.message}`;
+                    resultDiv.className = 'result warning';
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `❌ Erro de conexão:
+${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Teste de todos os dashboards
+        async function testAllDashboards() {
+            const resultDiv = document.getElementById('dashboardResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '🔄 Testando dashboards...\\n';
+
+            if (!authToken) {
+                resultDiv.innerHTML += '❌ Token não disponível. Faça login primeiro.\\n';
+                resultDiv.className = 'result error';
+                return;
+            }
+
+            const dashboards = [
+                'admin', 'affiliate', 'gestor', 
+                'operador', 'supervisor', 'user'
+            ];
+
+            for (const dashboard of dashboards) {
+                try {
+                    const response = await fetch(`/api/${dashboard}/dashboard`, {
+                        headers: { 
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        resultDiv.innerHTML += `✅ ${dashboard.toUpperCase()}: OK (${response.status})\\n`;
+                    } else {
+                        resultDiv.innerHTML += `❌ ${dashboard.toUpperCase()}: ${response.status} - ${data.message}\\n`;
+                    }
+                } catch (error) {
+                    resultDiv.innerHTML += `❌ ${dashboard.toUpperCase()}: Erro de conexão\\n`;
+                }
+            }
+            resultDiv.className = 'result success';
+        }
+
+        // Teste de esqueci senha
+        async function testForgotPassword() {
+            const resultDiv = document.getElementById('forgotResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '🔄 Testando esqueci senha...\\n';
+
+            try {
+                const response = await fetch('/api/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@coinbitclub.com'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML += `✅ Esqueci senha funcionando!
+Status: ${response.status}
+Mensagem: ${data.message}
+Token Reset: ${data.resetToken ? 'Gerado' : 'Não fornecido'}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML += `❌ Erro:
+Status: ${response.status}
+Mensagem: ${data.message}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `❌ Erro de conexão:
+${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Verificar status na inicialização
+        checkServerStatus();
+    </script>
+</body>
+</html>

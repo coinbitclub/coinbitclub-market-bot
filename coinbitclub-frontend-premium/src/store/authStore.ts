@@ -67,12 +67,17 @@ export const useAuthStore = create<AuthState>()(
       loading: false,
       error: null,
 
-      // Login integrado com backend Railway
+      // Login integrado com backend local
       login: async (credentials) => {
         set({ loading: true, error: null });
         
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+          // Usar localhost durante desenvolvimento
+          const apiUrl = process.env.NODE_ENV === 'development' 
+            ? 'http://localhost:3001' 
+            : process.env.NEXT_PUBLIC_API_URL;
+            
+          const response = await fetch(`${apiUrl}/api/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -140,7 +145,12 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`, {
+          // Usar localhost durante desenvolvimento
+          const apiUrl = process.env.NODE_ENV === 'development' 
+            ? 'http://localhost:3001' 
+            : process.env.NEXT_PUBLIC_API_URL;
+            
+          const response = await fetch(`${apiUrl}/api/auth/refresh`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -207,15 +217,8 @@ export const useAuthStore = create<AuthState>()(
         const { user } = get();
         if (!user) return '/auth/login';
         
-        const dashboardRoutes = {
-          ADMIN: '/admin/dashboard',
-          GESTOR: '/gestor/dashboard',
-          OPERADOR: '/operador/dashboard', 
-          AFILIADO: '/affiliate/dashboard',
-          USUARIO: '/user/dashboard'
-        };
-        
-        return dashboardRoutes[user.role] || '/user/dashboard';
+        // Projeto usa dashboard-premium como dashboard principal
+        return '/dashboard-premium';
       },
     }),
     {

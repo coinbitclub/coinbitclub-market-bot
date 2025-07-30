@@ -1,0 +1,219 @@
+{
+  "arquivos": {
+    "database-manager.js": {
+      "existe": true,
+      "tamanho": 10106,
+      "modificado": "2025-07-30T20:30:06.180Z",
+      "tem_classe": true,
+      "tem_module_exports": true,
+      "funcoes_encontradas": [
+        "inicializar",
+        "verificarConexao"
+      ],
+      "funcoes_completas": false
+    },
+    "user-manager-v2.js": {
+      "existe": true,
+      "tamanho": 8817,
+      "modificado": "2025-07-30T20:32:13.635Z",
+      "tem_classe": false,
+      "tem_module_exports": true,
+      "funcoes_encontradas": [
+        "inicializar"
+      ],
+      "funcoes_completas": false
+    },
+    "trading-engine.js": {
+      "existe": true,
+      "tamanho": 20168,
+      "modificado": "2025-07-30T20:33:52.053Z",
+      "tem_classe": true,
+      "tem_module_exports": true,
+      "funcoes_encontradas": [
+        "inicializar"
+      ],
+      "funcoes_completas": false
+    },
+    "signal-processor.js": {
+      "existe": true,
+      "tamanho": 31534,
+      "modificado": "2025-07-30T20:38:52.861Z",
+      "tem_classe": true,
+      "tem_module_exports": true,
+      "funcoes_encontradas": [
+        "inicializar",
+        "processarSinal"
+      ],
+      "funcoes_completas": false
+    },
+    "ai-guardian.js": {
+      "existe": true,
+      "tamanho": 23108,
+      "modificado": "2025-07-30T20:35:43.746Z",
+      "tem_classe": true,
+      "tem_module_exports": true,
+      "funcoes_encontradas": [
+        "inicializar",
+        "analisarSinal",
+        "tomarDecisao"
+      ],
+      "funcoes_completas": true
+    },
+    "risk-manager.js": {
+      "existe": true,
+      "tamanho": 35266,
+      "modificado": "2025-07-30T20:41:28.442Z",
+      "tem_classe": true,
+      "tem_module_exports": true,
+      "funcoes_encontradas": [
+        "inicializar",
+        "avaliarRiscoOperacao",
+        "verificarRiscosGerais"
+      ],
+      "funcoes_completas": true
+    }
+  },
+  "conexoes": {
+    "railway": {
+      "conectado": true,
+      "timestamp": "2025-07-30T20:48:20.332Z",
+      "versao": "PostgreSQL 16.8 (Debian 16.8-1.pgdg120+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14) 12.2.0, 64-bit",
+      "latencia": 547
+    },
+    "tabelas": {
+      "esperadas": 6,
+      "encontradas": 5,
+      "lista": [
+        "users",
+        "trading_operations",
+        "trading_signals",
+        "user_risk_profiles",
+        "risk_alerts"
+      ],
+      "percentual": 83.33333333333334
+    }
+  },
+  "funcionalidades": {
+    "database-manager.js": {
+      "carregou": true,
+      "instanciou": true,
+      "tem_id": true,
+      "tem_nome": true,
+      "tem_status": true,
+      "metodos_disponiveis": [
+        "inicializar",
+        "verificarConexao"
+      ],
+      "metodos_completos": false
+    },
+    "user-manager-v2.js": {
+      "carregou": true,
+      "instanciou": true,
+      "tem_id": true,
+      "tem_nome": true,
+      "tem_status": true,
+      "metodos_disponiveis": [
+        "inicializar"
+      ],
+      "metodos_completos": false
+    },
+    "trading-engine.js": {
+      "carregou": true,
+      "instanciou": true,
+      "tem_id": true,
+      "tem_nome": true,
+      "tem_status": true,
+      "metodos_disponiveis": [
+        "inicializar"
+      ],
+      "metodos_completos": false
+    },
+    "signal-processor.js": {
+      "carregou": true,
+      "instanciou": true,
+      "tem_id": true,
+      "tem_nome": true,
+      "tem_status": true,
+      "metodos_disponiveis": [
+        "inicializar",
+        "processarSinal"
+      ],
+      "metodos_completos": false
+    },
+    "ai-guardian.js": {
+      "carregou": true,
+      "instanciou": true,
+      "tem_id": true,
+      "tem_nome": true,
+      "tem_status": true,
+      "metodos_disponiveis": [
+        "inicializar",
+        "analisarSinal",
+        "tomarDecisao"
+      ],
+      "metodos_completos": true
+    },
+    "risk-manager.js": {
+      "carregou": true,
+      "instanciou": true,
+      "tem_id": true,
+      "tem_nome": true,
+      "tem_status": true,
+      "metodos_disponiveis": [
+        "inicializar",
+        "avaliarRiscoOperacao",
+        "verificarRiscosGerais"
+      ],
+      "metodos_completos": true
+    }
+  },
+  "testes": {
+    "database_manager": {
+      "inicializado": true,
+      "conexao_ativa": true
+    },
+    "user_manager": {
+      "inicializado": true,
+      "status": "ativo"
+    },
+    "trading_engine": {
+      "inicializado": true,
+      "status": "ativo",
+      "tem_bybit_config": false
+    },
+    "ai_guardian": {
+      "inicializado": false,
+      "status": "erro",
+      "analise_funcionando": true,
+      "openai_habilitado": false
+    },
+    "risk_manager": {
+      "inicializado": true,
+      "status": "ativo",
+      "usuarios_monitorados": 13
+    }
+  },
+  "resumo": {
+    "timestamp": "2025-07-30T20:48:19.757Z",
+    "arquivos": {
+      "total": 6,
+      "validos": 2,
+      "percentual": 33.33333333333333
+    },
+    "componentes": {
+      "total": 6,
+      "funcionais": 2,
+      "percentual": 33.33333333333333
+    },
+    "testes": {
+      "total": 5,
+      "passaram": 4,
+      "percentual": 80
+    },
+    "conectividade": {
+      "railway": true,
+      "tabelas": 83.33333333333334
+    },
+    "score_geral": 55
+  }
+}

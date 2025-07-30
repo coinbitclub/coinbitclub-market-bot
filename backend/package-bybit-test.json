@@ -1,0 +1,30 @@
+{
+  "name": "coinbitclub-market-bot-bybit-testing",
+  "version": "1.0.0",
+  "description": "Sistema completo de trading Bybit para CoinBitClub Market Bot",
+  "main": "teste-chaves-bybit-direto.js",
+  "scripts": {
+    "test": "node teste-chaves-bybit-direto.js",
+    "test-keys": "node teste-chaves-bybit-direto.js",
+    "trading-system": "node bybit-trading-system-completo.js",
+    "fix-database": "node corrigir-tabela-api-keys.js"
+  },
+  "keywords": [
+    "bybit",
+    "trading",
+    "api",
+    "cryptocurrency",
+    "coinbitclub"
+  ],
+  "author": "CoinBitClub",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "pg": "^8.11.3",
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

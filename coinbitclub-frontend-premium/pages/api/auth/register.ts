@@ -5,12 +5,16 @@ import { query, transaction } from '../../../src/lib/database';
 import { generateTokenPair } from '../../../src/lib/jwt';
 
 interface RegisterRequest {
-  name: string;
+  name?: string;
+  fullName?: string;
   email: string;
   phone?: string;
+  whatsapp?: string;
   country?: string;
   password: string;
   referralCode?: string;
+  userType?: 'individual' | 'business';
+  phoneVerified?: boolean;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -28,10 +32,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { name, email, phone, country, password, referralCode }: RegisterRequest = req.body;
+    const { 
+      name, 
+      fullName, 
+      email, 
+      phone, 
+      whatsapp, 
+      country, 
+      password, 
+      referralCode, 
+      userType = 'individual',
+      phoneVerified = false 
+    }: RegisterRequest = req.body;
+
+    const userName = fullName || name;
+    const userPhone = phone || whatsapp;
 
     // Validações
-    if (!name || name.length < 2) {
+    if (!userName || userName.length < 2) {
       return res.status(400).json({ message: 'Nome deve ter pelo menos 2 caracteres' });
     }
 
@@ -51,8 +69,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       [normalizedEmail]
     );
 
-    if (existingUser.rows.length > 0) {
-      return res.status(400).json({ message: 'Email já está em uso' });
+    // Verificar se telefone já existe (se fornecido)
+    if (userPhone) {
+      const existingPhone = await query(
+        'SELECT id FROM users WHERE phone = $1',
+        [userPhone.replace(/\D/g, '')]
+      );
+
+      if (existingPhone.rows.length > 0) {
+        return res.status(400).json({ message: 'Telefone já está em uso' });
+      }
     }
 
     // Hash da senha
@@ -78,10 +104,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const result = await transaction(async (client) => {
       // Criar usuário
       const userResult = await client.query(
-        `INSERT INTO users (name, email, phone, country, password_hash, email_verification_token, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, NOW())
-         RETURNING id, name, email, phone, country, is_email_verified, created_at`,
-        [name, normalizedEmail, phone, country, passwordHash, emailVerificationToken]
+        `INSERT INTO users (name, email, phone, country, password_hash, email_verification_token, phone_verified, user_type, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+         RETURNING id, name, email, phone, country, is_email_verified, phone_verified, user_type, created_at`,
+        [userName, normalizedEmail, userPhone ? userPhone.replace(/\D/g, '') : null, country, passwordHash, emailVerificationToken, phoneVerified, userType]
       );
 
       const user = userResult.rows[0];

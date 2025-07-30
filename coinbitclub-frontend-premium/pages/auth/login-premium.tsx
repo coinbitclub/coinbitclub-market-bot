@@ -3,11 +3,16 @@ import { NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../src/store/authStore';
+import { useAuthStore } from '../../src/store/authStore';
 
 const LoginPremiumPage: NextPage = () => {
   const router = useRouter();
-  const { login, isAuthenticated, user, loading, error, clearError } = useAuth();
+  const login = useAuthStore((state) => state.login);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+  const loading = useAuthStore((state) => state.loading);
+  const error = useAuthStore((state) => state.error);
+  const clearError = useAuthStore((state) => state.clearError);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -19,15 +24,9 @@ const LoginPremiumPage: NextPage = () => {
   // Redirecionar se já estiver logado
   useEffect(() => {
     if (isAuthenticated && user) {
-      const redirectMap = {
-        ADMIN: '/admin/dashboard',
-        GESTOR: '/gestor/dashboard',
-        OPERADOR: '/operador/dashboard',
-        AFILIADO: '/affiliate/dashboard',
-        USUARIO: '/user/dashboard'
-      };
-      
-      const redirectPath = redirectMap[user.role as keyof typeof redirectMap] || '/user/dashboard';
+      // Projeto usa dashboard-premium como dashboard principal para todos os perfis
+      const redirectPath = '/dashboard-premium';
+      console.log('🔄 Redirecionando usuário logado:', user.role, '→', redirectPath);
       router.replace(redirectPath);
     }
   }, [isAuthenticated, user, router]);
@@ -166,9 +165,14 @@ const LoginPremiumPage: NextPage = () => {
                   <input type="checkbox" className="mr-2 rounded" />
                   Lembrar de mim
                 </label>
-                <Link href="/auth/forgot-password" className="text-sm text-yellow-400 hover:text-yellow-300 transition-colors">
-                  Esqueci a senha
-                </Link>
+                <div className="flex flex-col space-y-1">
+                  <Link href="/auth/forgot-password" className="text-sm text-yellow-400 hover:text-yellow-300 transition-colors">
+                    Esqueci a senha
+                  </Link>
+                  <Link href="/auth/recovery-sms" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                    📱 Recuperar por SMS
+                  </Link>
+                </div>
               </div>
 
               <button

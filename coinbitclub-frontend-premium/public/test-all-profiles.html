@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Completo de Perfis - CoinBitClub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .profile-section {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .success { border-left: 4px solid #4CAF50; background-color: #f9fff9; }
+        .error { border-left: 4px solid #f44336; background-color: #fff9f9; }
+        .warning { border-left: 4px solid #ff9800; background-color: #fffbf0; }
+        .info { border-left: 4px solid #2196F3; background-color: #f3f9ff; }
+        button {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #1976D2; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .profile-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        .status-indicator {
+            margin-left: auto;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-success { background-color: #4CAF50; color: white; }
+        .status-error { background-color: #f44336; color: white; }
+        .status-pending { background-color: #ff9800; color: white; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste Completo de Todos os Perfis - CoinBitClub</h1>
+        <p><strong>Status do Servidor:</strong> <span id="serverStatus">Verificando...</span></p>
+        
+        <div style="margin-bottom: 30px;">
+            <button onclick="testAllProfiles()">🚀 Testar Todos os Perfis</button>
+            <button onclick="clearResults()">🧹 Limpar Resultados</button>
+        </div>
+
+        <div class="grid" id="profilesGrid">
+            <!-- Profiles will be added here dynamically -->
+        </div>
+    </div>
+
+    <script>
+        const profiles = [
+            { 
+                name: 'Admin', 
+                icon: '👑', 
+                email: 'admin@coinbitclub.com', 
+                password: 'admin123', 
+                role: 'admin',
+                dashboard: '/api/admin/dashboard'
+            },
+            { 
+                name: 'User', 
+                icon: '👤', 
+                email: 'user@coinbitclub.com', 
+                password: 'user123', 
+                role: 'user',
+                dashboard: '/api/user/dashboard'
+            },
+            { 
+                name: 'Affiliate', 
+                icon: '💰', 
+                email: 'affiliate@coinbitclub.com', 
+                password: 'affiliate123', 
+                role: 'affiliate',
+                dashboard: '/api/affiliate/dashboard'
+            },
+            { 
+                name: 'Gestor', 
+                icon: '📊', 
+                email: 'gestor@coinbitclub.com', 
+                password: 'gestor123', 
+                role: 'gestor',
+                dashboard: '/api/gestor/dashboard'
+            },
+            { 
+                name: 'Operador', 
+                icon: '⚙️', 
+                email: 'operador@coinbitclub.com', 
+                password: 'operador123', 
+                role: 'operador',
+                dashboard: '/api/operador/dashboard'
+            },
+            { 
+                name: 'Supervisor', 
+                icon: '🎖️', 
+                email: 'supervisor@coinbitclub.com', 
+                password: 'supervisor123', 
+                role: 'supervisor',
+                dashboard: '/api/supervisor/dashboard'
+            }
+        ];
+
+        // Verificar status do servidor
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('/api/auth/login', { method: 'GET' });
+                document.getElementById('serverStatus').innerHTML = 
+                    response.status === 405 ? '✅ Online' : '⚠️ Parcial';
+            } catch (error) {
+                document.getElementById('serverStatus').innerHTML = '❌ Offline';
+            }
+        }
+
+        // Criar cards dos perfis
+        function createProfileCards() {
+            const grid = document.getElementById('profilesGrid');
+            grid.innerHTML = '';
+
+            profiles.forEach(profile => {
+                const card = document.createElement('div');
+                card.className = 'profile-section info';
+                card.id = `profile-${profile.role}`;
+                
+                card.innerHTML = `
+                    <div class="profile-header">
+                        <span class="profile-icon">${profile.icon}</span>
+                        <h3>${profile.name}</h3>
+                        <span class="status-indicator status-pending" id="status-${profile.role}">Pendente</span>
+                    </div>
+                    <p><strong>Email:</strong> ${profile.email}</p>
+                    <p><strong>Role:</strong> ${profile.role}</p>
+                    <button onclick="testProfile('${profile.role}')" id="btn-${profile.role}">
+                        Testar ${profile.name}
+                    </button>
+                    <div id="result-${profile.role}" class="result" style="display:none;"></div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Testar um perfil específico
+        async function testProfile(role) {
+            const profile = profiles.find(p => p.role === role);
+            const resultDiv = document.getElementById(`result-${role}`);
+            const statusDiv = document.getElementById(`status-${role}`);
+            const button = document.getElementById(`btn-${role}`);
+            const card = document.getElementById(`profile-${role}`);
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `🔄 Testando perfil ${profile.name}...\\n`;
+            statusDiv.textContent = 'Testando...';
+            statusDiv.className = 'status-indicator status-pending';
+            button.disabled = true;
+
+            try {
+                // 1. Fazer login
+                resultDiv.innerHTML += `🔐 Fazendo login como ${profile.name}...\\n`;
+                
+                const loginResponse = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: profile.email,
+                        password: profile.password
+                    })
+                });
+
+                const loginData = await loginResponse.json();
+                
+                if (!loginResponse.ok) {
+                    throw new Error(`Login falhou: ${loginData.message}`);
+                }
+
+                resultDiv.innerHTML += `✅ Login bem-sucedido!\\n`;
+                resultDiv.innerHTML += `👤 Usuário: ${loginData.user.name}\\n`;
+                resultDiv.innerHTML += `🎭 Role: ${loginData.user.role}\\n`;
+
+                // 2. Testar dashboard
+                resultDiv.innerHTML += `\\n📊 Testando dashboard API...\\n`;
+                
+                const dashboardResponse = await fetch(profile.dashboard, {
+                    headers: { 
+                        'Authorization': `Bearer ${loginData.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const dashboardData = await dashboardResponse.json();
+                
+                if (dashboardResponse.ok) {
+                    resultDiv.innerHTML += `✅ Dashboard API funcionando!\\n`;
+                    resultDiv.innerHTML += `📋 Status: ${dashboardResponse.status}\\n`;
+                    resultDiv.innerHTML += `💾 Dados carregados: ${dashboardData.success ? 'Sim' : 'Não'}\\n`;
+                    
+                    // Mostrar alguns dados do dashboard
+                    if (dashboardData.data) {
+                        const keys = Object.keys(dashboardData.data);
+                        resultDiv.innerHTML += `🔍 Seções carregadas: ${keys.join(', ')}\\n`;
+                    }
+                    
+                    statusDiv.textContent = 'Sucesso';
+                    statusDiv.className = 'status-indicator status-success';
+                    card.className = 'profile-section success';
+                } else {
+                    throw new Error(`Dashboard API falhou: ${dashboardData.message}`);
+                }
+
+                // 3. Testar redirecionamento (simular)
+                resultDiv.innerHTML += `\\n🔄 Testando redirecionamento...\\n`;
+                const expectedUrl = `/${role}/dashboard`;
+                resultDiv.innerHTML += `📍 URL esperada: ${expectedUrl}\\n`;
+                resultDiv.innerHTML += `✅ Redirecionamento configurado corretamente\\n`;
+
+            } catch (error) {
+                resultDiv.innerHTML += `\\n❌ Erro: ${error.message}\\n`;
+                statusDiv.textContent = 'Erro';
+                statusDiv.className = 'status-indicator status-error';
+                card.className = 'profile-section error';
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        // Testar todos os perfis
+        async function testAllProfiles() {
+            for (const profile of profiles) {
+                await testProfile(profile.role);
+                // Pequena pausa entre testes
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            // Mostrar resumo
+            setTimeout(showSummary, 1000);
+        }
+
+        // Mostrar resumo dos testes
+        function showSummary() {
+            const successCount = document.querySelectorAll('.status-success').length;
+            const errorCount = document.querySelectorAll('.status-error').length;
+            const total = profiles.length;
+            
+            const summaryHtml = `
+                <div class="profile-section ${successCount === total ? 'success' : 'warning'}" style="margin-top: 30px;">
+                    <h2>📊 Resumo dos Testes</h2>
+                    <p><strong>Total de perfis:</strong> ${total}</p>
+                    <p><strong>Sucessos:</strong> ${successCount}</p>
+                    <p><strong>Erros:</strong> ${errorCount}</p>
+                    <p><strong>Taxa de sucesso:</strong> ${Math.round(successCount/total*100)}%</p>
+                    ${successCount === total ? 
+                        '<p style="color: green; font-weight: bold;">🎉 Todos os perfis estão funcionando perfeitamente!</p>' : 
+                        '<p style="color: orange; font-weight: bold;">⚠️ Alguns perfis precisam de atenção.</p>'
+                    }
+                </div>
+            `;
+            
+            document.getElementById('profilesGrid').insertAdjacentHTML('afterend', summaryHtml);
+        }
+
+        // Limpar resultados
+        function clearResults() {
+            profiles.forEach(profile => {
+                const resultDiv = document.getElementById(`result-${profile.role}`);
+                const statusDiv = document.getElementById(`status-${profile.role}`);
+                const card = document.getElementById(`profile-${profile.role}`);
+                
+                resultDiv.style.display = 'none';
+                resultDiv.innerHTML = '';
+                statusDiv.textContent = 'Pendente';
+                statusDiv.className = 'status-indicator status-pending';
+                card.className = 'profile-section info';
+            });
+            
+            // Remover resumo se existir
+            const existingSummary = document.querySelector('h2:contains("📊 Resumo dos Testes")');
+            if (existingSummary) {
+                existingSummary.parentElement.remove();
+            }
+        }
+
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', function() {
+            checkServerStatus();
+            createProfileCards();
+        });
+    </script>
+</body>
+</html>

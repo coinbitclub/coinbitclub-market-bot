@@ -418,7 +418,7 @@ const LandingPage: NextPage = () => {
                 </Link>
                 
                 <Link 
-                  href="/cadastro" 
+                  href="/auth/register" 
                   className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-black rounded-lg font-semibold hover:from-yellow-500 hover:to-orange-600 transition-all"
                 >
                   🚀 {language === 'pt-BR' ? 'Cadastrar' : 'Sign Up'}
@@ -459,7 +459,7 @@ const LandingPage: NextPage = () => {
                 className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6"
               >
                 <Link 
-                  href="/cadastro"
+                  href="/auth/register"
                   className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-black rounded-xl font-bold text-lg hover:from-yellow-500 hover:to-orange-600 transform hover:scale-105 transition-all shadow-lg shadow-yellow-400/25"
                 >
                   {t.hero.btnTest}
@@ -717,12 +717,12 @@ const LandingPage: NextPage = () => {
                 <div className="text-center">
                   <div className="bg-gradient-to-br from-purple-600 to-pink-600 p-6 rounded-xl mb-6">
                     <div className="text-4xl font-bold text-white mb-2">1,5%</div>
-                    <div className="text-purple-200">
+                  <div className="text-purple-200">
                       {language === 'pt-BR' ? 'sobre lucro real' : 'on real profit'}
                     </div>
                   </div>
                   <Link
-                    href="/cadastro"
+                    href="/auth/register"
                     className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-bold hover:from-purple-600 hover:to-pink-600 transition-all"
                   >
                     <FiArrowRight className="w-5 h-5 mr-2" />

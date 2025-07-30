@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Completo de Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Teste Completo de Login e Redirecionamento</h1>
+    
+    <div>
+        <button onclick="testLoginAPI()">1. Testar API de Login</button>
+        <button onclick="testLoginFlow()">2. Testar Fluxo Completo</button>
+        <button onclick="clearStorage()">3. Limpar Storage</button>
+    </div>
+    
+    <div id="log"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const div = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            div.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+            console.log(`[${type}] ${message}`);
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            log('✅ Storage e cookies limpos', 'success');
+        }
+
+        async function testLoginAPI() {
+            log('🔍 Testando API de login diretamente...', 'info');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'faleconosco@coinbitclub.vip',
+                        password: '123456'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ API de login funcionando!', 'success');
+                    log(`👤 Usuário: ${data.user.name} (${data.user.role})`, 'success');
+                    log(`🔑 Token recebido: ${data.token ? 'SIM' : 'NÃO'}`, 'success');
+                    return data;
+                } else {
+                    log(`❌ Erro na API: ${data.message}`, 'error');
+                    return null;
+                }
+                
+            } catch (error) {
+                log(`❌ Erro de rede: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        async function testLoginFlow() {
+            log('🔄 Testando fluxo completo de login...', 'info');
+            
+            // 1. Limpar storage primeiro
+            clearStorage();
+            
+            // 2. Testar API
+            const loginResult = await testLoginAPI();
+            if (!loginResult) {
+                log('❌ Falha na API, interrompendo teste', 'error');
+                return;
+            }
+            
+            // 3. Simular salvamento (como o frontend faz)
+            try {
+                localStorage.setItem('auth_token', loginResult.token);
+                localStorage.setItem('user_data', JSON.stringify(loginResult.user));
+                
+                const isLocalhost = window.location.hostname === 'localhost';
+                const cookieOptions = isLocalhost 
+                    ? 'path=/; max-age=604800; samesite=lax'
+                    : 'path=/; max-age=604800; secure; samesite=strict';
+                
+                document.cookie = `auth_token=${loginResult.token}; ${cookieOptions}`;
+                document.cookie = `user_data=${encodeURIComponent(JSON.stringify(loginResult.user))}; ${cookieOptions}`;
+                
+                log('✅ Dados salvos no localStorage e cookies', 'success');
+                
+                // 4. Verificar storage
+                const savedToken = localStorage.getItem('auth_token');
+                const savedUser = localStorage.getItem('user_data');
+                log(`📦 Token salvo: ${savedToken ? 'SIM' : 'NÃO'}`, savedToken ? 'success' : 'error');
+                log(`📦 User salvo: ${savedUser ? 'SIM' : 'NÃO'}`, savedUser ? 'success' : 'error');
+                
+                // 5. Determinar redirecionamento
+                const user = JSON.parse(savedUser);
+                let redirectUrl;
+                
+                switch (user.role.toLowerCase()) {
+                    case 'admin':
+                        redirectUrl = '/admin/dashboard';
+                        break;
+                    case 'affiliate':
+                        redirectUrl = '/affiliate/dashboard';
+                        break;
+                    case 'user':
+                    default:
+                        redirectUrl = '/dashboard';
+                        break;
+                }
+                
+                log(`🚀 Deveria redirecionar para: ${redirectUrl}`, 'info');
+                
+                // 6. Testar se a página de destino existe
+                try {
+                    const testResponse = await fetch(redirectUrl);
+                    if (testResponse.ok) {
+                        log(`✅ Página de destino ${redirectUrl} está acessível`, 'success');
+                        
+                        // 7. Fazer redirecionamento real
+                        log(`🔄 Redirecionando para ${redirectUrl}...`, 'info');
+                        setTimeout(() => {
+                            window.location.href = redirectUrl;
+                        }, 2000);
+                        
+                    } else {
+                        log(`❌ Página de destino ${redirectUrl} não encontrada (${testResponse.status})`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ Erro ao testar página de destino: ${error.message}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Erro ao salvar dados: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

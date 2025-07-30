@@ -111,6 +111,10 @@ const LoginPage: NextPage = () => {
             redirectUrl = '/operador/dashboard';
             console.log('⚙️ Redirecionando para OPERADOR dashboard');
             break;
+          case 'supervisor':
+            redirectUrl = '/supervisor/dashboard';
+            console.log('🎖️ Redirecionando para SUPERVISOR dashboard');
+            break;
           case 'user':
           case 'usuario':
           default:

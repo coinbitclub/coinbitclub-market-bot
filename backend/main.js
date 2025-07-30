@@ -2842,6 +2842,52 @@ server.listen(PORT, '0.0.0.0', () => {
     
     // Iniciar gestores automáticos
     setTimeout(async () => {
+        // Aplicar correções do schema no startup
+        try {
+            console.log('🔧 Verificando e corrigindo schema do banco...');
+            
+            // Usar a mesma configuração do cliente do banco
+            const { Client } = require('pg');
+            const schemaClient = new Client({
+                connectionString: 'postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway',
+                ssl: { rejectUnauthorized: false }
+            });
+            
+            await schemaClient.connect();
+            
+            // Adicionar colunas faltantes na tabela trading_signals
+            const schemaQueries = [
+                `ALTER TABLE trading_signals ADD COLUMN IF NOT EXISTS received_at TIMESTAMP DEFAULT NOW()`,
+                `ALTER TABLE trading_signals ADD COLUMN IF NOT EXISTS processed BOOLEAN DEFAULT false`,
+                `ALTER TABLE trading_signals ADD COLUMN IF NOT EXISTS processed_at TIMESTAMP`,
+                `ALTER TABLE trading_signals ADD COLUMN IF NOT EXISTS user_id INTEGER`,
+                `ALTER TABLE trading_signals ADD COLUMN IF NOT EXISTS fear_greed_value INTEGER`,
+                `ALTER TABLE trading_signals ADD COLUMN IF NOT EXISTS direction_allowed VARCHAR(10)`,
+                `ALTER TABLE trading_signals ADD COLUMN IF NOT EXISTS signal_direction VARCHAR(10)`,
+                `ALTER TABLE trading_signals ADD COLUMN IF NOT EXISTS validation_passed BOOLEAN DEFAULT false`,
+                `ALTER TABLE trading_signals ADD COLUMN IF NOT EXISTS rejection_reason TEXT`,
+                `ALTER TABLE trading_signals ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`
+            ];
+            
+            for (const query of schemaQueries) {
+                try {
+                    await schemaClient.query(query);
+                } catch (err) {
+                    if (!err.message.includes('already exists')) {
+                        console.log('⚠️ Schema:', err.message);
+                    }
+                }
+            }
+            
+            // Atualizar dados existentes
+            await schemaClient.query(`UPDATE trading_signals SET received_at = created_at WHERE received_at IS NULL`);
+            
+            await schemaClient.end();
+            console.log('✅ Schema verificado e corrigido!');
+        } catch (error) {
+            console.log('⚠️ Erro na correção do schema:', error.message);
+        }
+
         console.log('🔄 Iniciando gestores automáticos...');
         
         try {

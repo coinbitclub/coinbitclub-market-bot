@@ -1,0 +1,109 @@
+{
+  "arquivos_analisados": 6,
+  "regras_verificadas": 0,
+  "conformidades": 18,
+  "divergencias": [
+    {
+      "tipo": "Estrutura BD",
+      "item": "Tabela bloqueio_ticker",
+      "problema": "Tabela não encontrada",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "Estrutura BD",
+      "item": "Coluna users.prepaid_balance",
+      "problema": "Coluna não encontrada",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "Estrutura BD",
+      "item": "Coluna users.credit_bonus",
+      "problema": "Coluna não encontrada",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "Estrutura BD",
+      "item": "Coluna users.stripe_subscription_status",
+      "problema": "Coluna não encontrada",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "Estrutura BD",
+      "item": "Coluna users.modo_testnet",
+      "problema": "Coluna não encontrada",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "Trading Engine",
+      "item": "Máximo posições",
+      "problema": "Limite de 2 posições não encontrado",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "Trading Engine",
+      "item": "TP/SL",
+      "problema": "Cálculo de TP/SL não implementado corretamente",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "Signal Processor",
+      "item": "F&G Fallback",
+      "problema": "Fallback F&G = 50 não encontrado",
+      "criticidade": "MÉDIA"
+    },
+    {
+      "tipo": "Signal Processor",
+      "item": "Limpeza sinais",
+      "problema": "Limpeza de sinais a cada 2h não encontrada",
+      "criticidade": "MÉDIA"
+    },
+    {
+      "tipo": "AI Guardian",
+      "item": "Supervisão validacao",
+      "problema": "Supervisão de validacao não encontrada",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "AI Guardian",
+      "item": "Supervisão execucao",
+      "problema": "Supervisão de execucao não encontrada",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "AI Guardian",
+      "item": "Supervisão registro",
+      "problema": "Supervisão de registro não encontrada",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "AI Guardian",
+      "item": "Supervisão comissionamento",
+      "problema": "Supervisão de comissionamento não encontrada",
+      "criticidade": "ALTA"
+    },
+    {
+      "tipo": "AI Guardian",
+      "item": "OpenAI",
+      "problema": "OpenAI deve estar configurado - somos assinantes",
+      "criticidade": "MÉDIA"
+    },
+    {
+      "tipo": "Planos",
+      "item": "Verificação",
+      "problema": "Erro ao acessar tabela plans: column \"monthly_price\" does not exist",
+      "criticidade": "CRÍTICA"
+    },
+    {
+      "tipo": "Regras Operacionais",
+      "item": "Bloqueio Ticker",
+      "problema": "Tabela bloqueio_ticker não encontrada",
+      "criticidade": "ALTA"
+    }
+  ],
+  "detalhes": [],
+  "timestamp": "2025-07-30T22:02:46.590Z",
+  "resumo": {
+    "total_verificacoes": 23,
+    "percentual_conformidade": "78.26"
+  }
+}

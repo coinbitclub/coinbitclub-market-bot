@@ -58,14 +58,14 @@ const ResetPasswordPage: NextPage = () => {
     }
 
     try {
-      const response = await fetch('/api/auth/reset-password-real', {
+      const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           token,
-          newPassword: formData.newPassword,
+          password: formData.newPassword,
         }),
       });
 

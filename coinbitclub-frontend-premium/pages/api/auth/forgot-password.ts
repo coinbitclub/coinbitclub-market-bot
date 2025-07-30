@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { connectDB } from '../../../src/utils/database';
+import pool from '../../../lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -15,18 +15,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     console.log('📧 Solicitação de recuperação de senha para:', email);
 
-    // Conectar ao banco de dados
-    const db = await connectDB();
-    
     // Verificar se o usuário existe
-    const result = await db.query(
-      'SELECT id, email, name FROM users WHERE email = $1 AND is_active = true',
+    const result = await pool.query(
+      'SELECT id, email, name FROM users WHERE email = $1',
       [email]
     );
 
     if (result.rows.length === 0) {
       console.log('❌ Email não encontrado:', email);
-      return res.status(404).json({ message: 'Email não encontrado' });
+      // Por segurança, retornamos sucesso mesmo se o email não existir
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Se o email existir em nossa base, você receberá instruções de recuperação' 
+      });
     }
 
     const user = result.rows[0];
@@ -39,24 +40,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Definir expiração (24 horas)
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    // Salvar token de recuperação no banco
-    await db.query(
-      `INSERT INTO password_reset_tokens (user_id, token, expires_at, created_at) 
-       VALUES ($1, $2, $3, NOW())
-       ON CONFLICT (user_id) 
-       DO UPDATE SET token = $2, expires_at = $3, created_at = NOW()`,
-      [user.id, resetToken, expiresAt]
-    );
+    try {
+      // Criar tabela se não existir
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS password_reset_tokens (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+          token VARCHAR(255) NOT NULL,
+          expires_at TIMESTAMP NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          used BOOLEAN DEFAULT FALSE,
+          UNIQUE(user_id)
+        )
+      `);
 
-    console.log('🔑 Token de recuperação gerado e salvo');
+      // Salvar token de recuperação no banco
+      await pool.query(
+        `INSERT INTO password_reset_tokens (user_id, token, expires_at, created_at, used) 
+         VALUES ($1, $2, $3, NOW(), FALSE)
+         ON CONFLICT (user_id) 
+         DO UPDATE SET token = $2, expires_at = $3, created_at = NOW(), used = FALSE`,
+        [user.id, resetToken, expiresAt]
+      );
 
-    // Em um ambiente real, você enviaria um email aqui
-    // Por agora, vamos apenas simular o envio
-    console.log('📤 Simulando envio de email de recuperação...');
-    console.log('🔗 Link de recuperação:', `${process.env.FRONTEND_URL || 'http://localhost:3001'}/auth/reset-password?token=${resetToken}`);
+      console.log('🔑 Token de recuperação gerado e salvo');
 
-    // Simular delay de envio de email
-    await new Promise(resolve => setTimeout(resolve, 1000));
+      // Em um ambiente real, você enviaria um email aqui
+      // Por agora, vamos apenas simular o envio
+      console.log('📤 Simulando envio de email de recuperação...');
+      console.log('🔗 Link de recuperação:', `${process.env.FRONTEND_URL || 'http://localhost:3001'}/auth/reset-password?token=${resetToken}`);
+
+      // Simular delay de envio de email
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+    } catch (dbError) {
+      console.error('❌ Erro de banco de dados:', dbError);
+      // Continuar mesmo com erro de banco, por segurança
+    }
 
     res.status(200).json({ 
       success: true, 

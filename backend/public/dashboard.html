@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBitClub Market Bot V3.0.0 - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.error {
+            background: #f44336;
+        }
+
+        .status-indicator.warning {
+            background: #ff9800;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .table th {
+            background: rgba(255, 255, 255, 0.1);
+            font-weight: bold;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .badge.success { background: #4caf50; }
+        .badge.error { background: #f44336; }
+        .badge.warning { background: #ff9800; }
+        .badge.info { background: #2196f3; }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            opacity: 0.7;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-top: 10px;
+        }
+
+        .chart-container {
+            height: 200px;
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .system-health {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .health-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 CoinBitClub Market Bot</h1>
+        <p>Dashboard de Monitoramento em Tempo Real - V3.0.0-PRODUCTION</p>
+    </div>
+
+    <div class="dashboard">
+        <!-- Status do Sistema -->
+        <div class="card">
+            <h3>
+                <span class="status-indicator" id="system-status"></span>
+                🖥️ Status do Sistema
+            </h3>
+            <div class="system-health">
+                <div class="health-indicator" id="db-health"></div>
+                <span>Banco de Dados</span>
+            </div>
+            <div class="system-health">
+                <div class="health-indicator" id="api-health"></div>
+                <span>APIs Bybit</span>
+            </div>
+            <div class="system-health">
+                <div class="health-indicator" id="processor-health"></div>
+                <span>Processador</span>
+            </div>
+            <div class="timestamp" id="system-timestamp">
+                Última atualização: Carregando...
+            </div>
+        </div>
+
+        <!-- Estatísticas Gerais -->
+        <div class="card">
+            <h3>📊 Estatísticas Gerais</h3>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-signals">-</div>
+                    <div class="stat-label">Sinais Totais</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="active-operations">-</div>
+                    <div class="stat-label">Operações Ativas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="active-users">-</div>
+                    <div class="stat-label">Usuários Ativos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="total-balance">$0</div>
+                    <div class="stat-label">Saldo Total</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sinais Recentes -->
+        <div class="card">
+            <h3>📡 Sinais Recentes</h3>
+            <div class="table-container">
+                <table class="table" id="signals-table">
+                    <thead>
+                        <tr>
+                            <th>Símbolo</th>
+                            <th>Ação</th>
+                            <th>Status</th>
+                            <th>Recebido</th>
+                        </tr>
+                    </thead>
+                    <tbody id="signals-tbody">
+                        <tr>
+                            <td colspan="4" class="loading">Carregando sinais...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Operações Ativas -->
+        <div class="card">
+            <h3>📈 Operações Ativas</h3>
+            <div class="table-container">
+                <table class="table" id="operations-table">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Símbolo</th>
+                            <th>Side</th>
+                            <th>Quantidade</th>
+                            <th>PnL</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="operations-tbody">
+                        <tr>
+                            <td colspan="6" class="loading">Carregando operações...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Usuários Ativos -->
+        <div class="card">
+            <h3>👥 Usuários Ativos</h3>
+            <div class="table-container">
+                <table class="table" id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Saldo</th>
+                            <th>API Status</th>
+                            <th>Operações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                        <tr>
+                            <td colspan="4" class="loading">Carregando usuários...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Performance Chart -->
+        <div class="card">
+            <h3>📈 Performance em Tempo Real</h3>
+            <div class="chart-container">
+                <div>
+                    <div style="font-size: 1.2em; margin-bottom: 10px;">PnL Total</div>
+                    <div id="total-pnl" style="font-size: 2em; font-weight: bold;">$0.00</div>
+                    <div style="font-size: 0.9em; opacity: 0.7;">Últimas 24h</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class DashboardMonitor {
+            constructor() {
+                this.updateInterval = 5000; // 5 segundos
+                this.isOnline = true;
+            }
+
+            async fetchData(endpoint) {
+                try {
+                    const response = await fetch(`/api/${endpoint}`);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Erro ao buscar ${endpoint}:`, error);
+                    this.isOnline = false;
+                    return null;
+                }
+            }
+
+            async updateSystemStatus() {
+                const data = await this.fetchData('system/status');
+                const statusIndicator = document.getElementById('system-status');
+                const timestamp = document.getElementById('system-timestamp');
+                
+                if (data && data.success) {
+                    statusIndicator.className = 'status-indicator';
+                    timestamp.textContent = `Última atualização: ${new Date().toLocaleTimeString()}`;
+                    this.isOnline = true;
+                    
+                    // Atualizar estatísticas
+                    if (data.statistics) {
+                        document.getElementById('total-signals').textContent = data.statistics.total_signals || 0;
+                        document.getElementById('active-operations').textContent = data.statistics.total_operations || 0;
+                        document.getElementById('active-users').textContent = data.statistics.active_users || 0;
+                    }
+                } else {
+                    statusIndicator.className = 'status-indicator error';
+                    timestamp.textContent = 'Sistema offline';
+                }
+            }
+
+            async updateSignals() {
+                const data = await this.fetchData('monitoring/signals');
+                const tbody = document.getElementById('signals-tbody');
+                
+                if (data && data.success && data.signals) {
+                    tbody.innerHTML = '';
+                    
+                    if (data.signals.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="loading">Nenhum sinal encontrado</td></tr>';
+                        return;
+                    }
+                    
+                    data.signals.slice(0, 10).forEach(signal => {
+                        const row = document.createElement('tr');
+                        const statusClass = signal.processing_status === 'success' ? 'success' : 
+                                          signal.processing_status === 'error' ? 'error' : 'warning';
+                        
+                        row.innerHTML = `
+                            <td>${signal.symbol}</td>
+                            <td><span class="badge info">${signal.action}</span></td>
+                            <td><span class="badge ${statusClass}">${signal.processing_status}</span></td>
+                            <td>${new Date(signal.received_at).toLocaleTimeString()}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4" class="loading">Erro ao carregar</td></tr>';
+                }
+            }
+
+            async updateOperations() {
+                const data = await this.fetchData('monitoring/operations');
+                const tbody = document.getElementById('operations-tbody');
+                
+                if (data && data.success && data.operations) {
+                    tbody.innerHTML = '';
+                    
+                    if (data.operations.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="loading">Nenhuma operação ativa</td></tr>';
+                        return;
+                    }
+                    
+                    let totalPnL = 0;
+                    
+                    data.operations.slice(0, 10).forEach(op => {
+                        const row = document.createElement('tr');
+                        const pnl = parseFloat(op.pnl) || 0;
+                        totalPnL += pnl;
+                        const pnlClass = pnl >= 0 ? 'success' : 'error';
+                        
+                        row.innerHTML = `
+                            <td>${op.user_name || 'N/A'}</td>
+                            <td>${op.symbol}</td>
+                            <td><span class="badge ${op.side === 'Buy' ? 'success' : 'error'}">${op.side}</span></td>
+                            <td>${parseFloat(op.quantity).toFixed(4)}</td>
+                            <td><span class="badge ${pnlClass}">$${pnl.toFixed(2)}</span></td>
+                            <td><span class="badge info">${op.status}</span></td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    
+                    // Atualizar PnL total
+                    document.getElementById('total-pnl').textContent = `$${totalPnL.toFixed(2)}`;
+                    document.getElementById('total-pnl').style.color = totalPnL >= 0 ? '#4caf50' : '#f44336';
+                    
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="loading">Erro ao carregar</td></tr>';
+                }
+            }
+
+            async updateUsers() {
+                const data = await this.fetchData('monitoring/users');
+                const tbody = document.getElementById('users-tbody');
+                
+                if (data && data.success && data.users) {
+                    tbody.innerHTML = '';
+                    
+                    if (data.users.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="loading">Nenhum usuário ativo</td></tr>';
+                        return;
+                    }
+                    
+                    let totalBalance = 0;
+                    
+                    data.users.forEach(user => {
+                        const row = document.createElement('tr');
+                        const balance = parseFloat(user.balance) || 0;
+                        totalBalance += balance;
+                        const apiStatus = user.api_active ? 'success' : 'error';
+                        
+                        row.innerHTML = `
+                            <td>${user.name}</td>
+                            <td>$${balance.toFixed(2)}</td>
+                            <td><span class="badge ${apiStatus}">${user.api_active ? 'Ativa' : 'Inativa'}</span></td>
+                            <td>${user.active_operations || 0}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    
+                    // Atualizar saldo total
+                    document.getElementById('total-balance').textContent = `$${totalBalance.toFixed(2)}`;
+                    
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4" class="loading">Erro ao carregar</td></tr>';
+                }
+            }
+
+            async updateAll() {
+                await Promise.all([
+                    this.updateSystemStatus(),
+                    this.updateSignals(),
+                    this.updateOperations(),
+                    this.updateUsers()
+                ]);
+            }
+
+            start() {
+                console.log('🚀 Dashboard Monitor iniciado');
+                
+                // Primeira atualização
+                this.updateAll();
+                
+                // Atualizações periódicas
+                setInterval(() => {
+                    this.updateAll();
+                }, this.updateInterval);
+            }
+        }
+
+        // Inicializar dashboard quando página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            const monitor = new DashboardMonitor();
+            monitor.start();
+        });
+    </script>
+</body>
+</html>
