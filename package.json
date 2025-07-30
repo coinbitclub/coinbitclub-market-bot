@@ -2,10 +2,10 @@
   "name": "coinbitclub-market-bot",
   "version": "3.0.1",
   "description": "CoinBitClub Market Bot V3 - Emergency Clean Build",
-  "main": "main.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node main.js",
-    "dev": "node main.js",
+    "start": "node server.js",
+    "dev": "node server.js",
     "test": "echo \"Test passed - Clean build\""
   },
   "engines": {
