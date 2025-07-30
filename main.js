@@ -64,6 +64,106 @@ app.get('/api/test-db', async (req, res) => {
     }
 });
 
+// Webhook para receber sinais do TradingView
+app.post('/api/webhooks/signal', async (req, res) => {
+    try {
+        console.log('🔥 TradingView webhook recebido:', JSON.stringify(req.body, null, 2));
+        console.log('📊 Headers:', JSON.stringify(req.headers, null, 2));
+
+        // Verificar autenticação (opcional)
+        const authToken = req.headers['authorization'];
+        const expectedToken = process.env.TRADINGVIEW_WEBHOOK_SECRET;
+        
+        if (expectedToken && authToken && authToken !== `Bearer ${expectedToken}`) {
+            console.log('Token inválido:', authToken, 'esperado:', `Bearer ${expectedToken}`);
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const signalData = req.body;
+
+        // Validar dados obrigatórios
+        if (!signalData.symbol || !signalData.action) {
+            return res.status(400).json({ error: 'Dados inválidos - symbol e action são obrigatórios' });
+        }
+
+        // Salvar o sinal no banco
+        const result = await pool.query(`
+            INSERT INTO signals (symbol, action, price, quantity, strategy, timeframe, alert_message, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+            RETURNING id
+        `, [
+            signalData.symbol,
+            signalData.action,
+            signalData.price || null,
+            signalData.quantity || null,
+            signalData.strategy || null,
+            signalData.timeframe || null,
+            signalData.alert_message || JSON.stringify(signalData)
+        ]);
+
+        console.log('✅ Sinal salvo com ID:', result.rows[0].id);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Sinal processado com sucesso',
+            signalId: result.rows[0].id,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('❌ Erro no webhook TradingView:', error);
+        return res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+});
+
+// Webhook alternativo TradingView (compatibilidade)
+app.post('/api/webhooks/tradingview', async (req, res) => {
+    try {
+        console.log('🔥 TradingView webhook tradingview recebido:', JSON.stringify(req.body, null, 2));
+        
+        const signalData = req.body;
+
+        // Validar dados obrigatórios
+        if (!signalData.symbol || !signalData.action) {
+            return res.status(400).json({ error: 'Dados inválidos - symbol e action são obrigatórios' });
+        }
+
+        // Salvar o webhook raw
+        await pool.query(`
+            INSERT INTO raw_webhook (source, payload, received_at)
+            VALUES ($1, $2, NOW())
+        `, ['tradingview', JSON.stringify(signalData)]);
+
+        // Processar o sinal
+        const result = await pool.query(`
+            INSERT INTO signals (symbol, action, price, quantity, strategy, timeframe, alert_message, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+            RETURNING id
+        `, [
+            signalData.symbol,
+            signalData.action,
+            signalData.price || null,
+            signalData.quantity || null,
+            signalData.strategy || null,
+            signalData.timeframe || null,
+            signalData.alert_message || JSON.stringify(signalData)
+        ]);
+
+        console.log('✅ Sinal TradingView processado com ID:', result.rows[0].id);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Sinal TradingView processado',
+            signalId: result.rows[0].id,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('❌ Erro no webhook TradingView:', error);
+        return res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+});
+
 // Middleware de tratamento de erro
 app.use((err, req, res, next) => {
     console.error('Error:', err);
