@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NextPage } from 'next';
-import { UserLayout } from '../../src/components/layout/UserLayout';
+import { UserLayout } from '../../src/components/Layout/UserLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '../../src/components/ui/Card';
 import { Button } from '../../src/components/ui/Button';
 import { Badge } from '../../src/components/ui/Badge';
