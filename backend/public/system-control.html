@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBitClub - Controle do Sistema</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .system-status {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .status-indicator {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            border: 3px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .status-indicator.online {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.5);
+        }
+
+        .status-indicator.offline {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            box-shadow: 0 0 30px rgba(244, 67, 54, 0.5);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-start:hover {
+            background: linear-gradient(135deg, #45a049, #4caf50);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.6);
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .btn-stop:hover {
+            background: linear-gradient(135deg, #d32f2f, #f44336);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.6);
+        }
+
+        .btn-config {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn-config:hover {
+            background: linear-gradient(135deg, #1976d2, #2196f3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .system-info {
+            margin-top: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .badge.success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+
+        .badge.error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        .badge.warning {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ff9800;
+            border: 1px solid #ff9800;
+        }
+
+        .logs {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px 0;
+        }
+
+        .log-entry.success {
+            color: #4caf50;
+        }
+
+        .log-entry.error {
+            color: #f44336;
+        }
+
+        .log-entry.info {
+            color: #2196f3;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-left: 10px;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .alert.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4caf50;
+            color: #4caf50;
+        }
+
+        .alert.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            color: #f44336;
+        }
+
+        .alert.info {
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid #2196f3;
+            color: #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎛️ CoinBitClub Market Bot</h1>
+            <p>Painel de Controle do Sistema - V3.0.0 PRODUCTION</p>
+        </div>
+
+        <div class="control-panel">
+            <!-- Status do Sistema -->
+            <div class="card">
+                <h3>📊 Status do Sistema</h3>
+                <div class="system-status">
+                    <div class="status-indicator offline" id="status-indicator">
+                        🔴
+                    </div>
+                    <h4 id="system-status-text">SISTEMA OFFLINE</h4>
+                    <p id="system-uptime">Tempo de atividade: --</p>
+                </div>
+
+                <div class="system-info">
+                    <div class="info-row">
+                        <span>🔧 Microserviços:</span>
+                        <span class="badge error" id="microservices-status">INATIVO</span>
+                    </div>
+                    <div class="info-row">
+                        <span>👨‍💼 Gestores:</span>
+                        <span class="badge error" id="managers-status">INATIVO</span>
+                    </div>
+                    <div class="info-row">
+                        <span>👮‍♂️ Supervisores:</span>
+                        <span class="badge error" id="supervisors-status">INATIVO</span>
+                    </div>
+                    <div class="info-row">
+                        <span>⚡ Trading:</span>
+                        <span class="badge error" id="trading-status">PAUSADO</span>
+                    </div>
+                    <div class="info-row">
+                        <span>🤖 IA Guardian:</span>
+                        <span class="badge error" id="ai-status">INATIVO</span>
+                    </div>
+                    <div class="info-row">
+                        <span>📊 Operações Ativas:</span>
+                        <span id="active-operations">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles Principais -->
+            <div class="card">
+                <h3>🎛️ Controles Principais</h3>
+                
+                <div id="alert-container"></div>
+
+                <div class="control-buttons">
+                    <button class="btn btn-start" id="btn-start" onclick="startSystem()">
+                        🟢 Ligar Sistema
+                    </button>
+                    
+                    <button class="btn btn-stop" id="btn-stop" onclick="stopSystem()" disabled>
+                        🔴 Desligar Sistema
+                    </button>
+                    
+                    <button class="btn btn-config" onclick="refreshStatus()">
+                        🔄 Atualizar Status
+                    </button>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h4>🎯 Orquestração Total</h4>
+                    <p style="opacity: 0.8; margin-top: 10px;">
+                        O sistema ativa SIMULTANEAMENTE todos os componentes:
+                        microserviços, gestores, supervisores e automação completa.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Logs do Sistema -->
+            <div class="card" style="grid-column: span 2;">
+                <h3>📋 Logs do Sistema</h3>
+                <div class="logs" id="system-logs">
+                    <div class="log-entry info">
+                        Sistema de controle inicializado
+                        <span class="timestamp">[Aguardando comandos...]</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SystemControl {
+            constructor() {
+                this.systemActive = false;
+                this.updateInterval = null;
+                this.init();
+            }
+
+            init() {
+                this.log('Sistema de controle carregado', 'info');
+                this.refreshStatus();
+                
+                // Atualizar status a cada 10 segundos
+                this.updateInterval = setInterval(() => {
+                    this.refreshStatus();
+                }, 10000);
+            }
+
+            async makeRequest(endpoint, method = 'GET', body = null) {
+                try {
+                    const options = {
+                        method,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    };
+
+                    if (body) {
+                        options.body = JSON.stringify(body);
+                    }
+
+                    const response = await fetch(endpoint, options);
+                    return await response.json();
+                } catch (error) {
+                    this.log(`Erro na requisição: ${error.message}`, 'error');
+                    return { success: false, error: error.message };
+                }
+            }
+
+            async refreshStatus() {
+                const response = await this.makeRequest('/api/system/status');
+                
+                if (response.success) {
+                    this.updateStatusDisplay(response.data);
+                } else {
+                    this.log('Erro ao obter status do sistema', 'error');
+                }
+            }
+
+            updateStatusDisplay(status) {
+                const indicator = document.getElementById('status-indicator');
+                const statusText = document.getElementById('system-status-text');
+                const uptime = document.getElementById('system-uptime');
+
+                if (status.isActive) {
+                    this.systemActive = true;
+                    indicator.className = 'status-indicator online';
+                    indicator.textContent = '🟢';
+                    statusText.textContent = 'SISTEMA ONLINE';
+                    uptime.textContent = `Tempo de atividade: ${Math.floor(status.uptime / 60)} minutos`;
+                    
+                    document.getElementById('btn-start').disabled = true;
+                    document.getElementById('btn-stop').disabled = false;
+                } else {
+                    this.systemActive = false;
+                    indicator.className = 'status-indicator offline';
+                    indicator.textContent = '🔴';
+                    statusText.textContent = 'SISTEMA OFFLINE';
+                    uptime.textContent = 'Tempo de atividade: --';
+                    
+                    document.getElementById('btn-start').disabled = false;
+                    document.getElementById('btn-stop').disabled = true;
+                }
+
+                // Atualizar badges de componentes
+                this.updateBadge('microservices-status', status.microservicesActive);
+                this.updateBadge('managers-status', status.managersActive);
+                this.updateBadge('supervisors-status', status.supervisorsActive);
+                this.updateBadge('trading-status', status.tradingEnabled);
+                this.updateBadge('ai-status', status.aiGuardianActive);
+                
+                document.getElementById('active-operations').textContent = status.activeOperations || 0;
+            }
+
+            updateBadge(elementId, isActive) {
+                const element = document.getElementById(elementId);
+                if (isActive) {
+                    element.className = 'badge success';
+                    element.textContent = 'ATIVO';
+                } else {
+                    element.className = 'badge error';
+                    element.textContent = 'INATIVO';
+                }
+            }
+
+            async startSystem() {
+                this.log('Iniciando sistema completo...', 'info');
+                this.showAlert('Iniciando orquestração completa do sistema...', 'info');
+                
+                const btnStart = document.getElementById('btn-start');
+                const originalText = btnStart.innerHTML;
+                btnStart.innerHTML = '<span class="loading"></span> Iniciando...';
+                btnStart.disabled = true;
+
+                const response = await this.makeRequest('/api/system/start', 'POST');
+
+                if (response.success) {
+                    this.log('✅ Sistema iniciado com sucesso!', 'success');
+                    this.showAlert('🟢 Sistema iniciado com sucesso! Todos os componentes estão ativos.', 'success');
+                    this.refreshStatus();
+                } else {
+                    this.log(`❌ Erro ao iniciar sistema: ${response.error}`, 'error');
+                    this.showAlert(`❌ Erro ao iniciar sistema: ${response.error}`, 'error');
+                    btnStart.innerHTML = originalText;
+                    btnStart.disabled = false;
+                }
+            }
+
+            async stopSystem() {
+                if (!confirm('Tem certeza que deseja desligar o sistema? Todas as operações serão finalizadas com segurança.')) {
+                    return;
+                }
+
+                this.log('Desligando sistema com segurança...', 'info');
+                this.showAlert('Desligando sistema com segurança...', 'info');
+                
+                const btnStop = document.getElementById('btn-stop');
+                const originalText = btnStop.innerHTML;
+                btnStop.innerHTML = '<span class="loading"></span> Desligando...';
+                btnStop.disabled = true;
+
+                const response = await this.makeRequest('/api/system/stop', 'POST');
+
+                if (response.success) {
+                    this.log('🔴 Sistema desligado com segurança', 'success');
+                    this.showAlert('🔴 Sistema desligado com segurança. Todas as operações foram finalizadas.', 'success');
+                    this.refreshStatus();
+                } else {
+                    this.log(`❌ Erro ao desligar sistema: ${response.error}`, 'error');
+                    this.showAlert(`❌ Erro ao desligar sistema: ${response.error}`, 'error');
+                    btnStop.innerHTML = originalText;
+                    btnStop.disabled = false;
+                }
+            }
+
+            log(message, type = 'info') {
+                const logs = document.getElementById('system-logs');
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                
+                const timestamp = new Date().toLocaleTimeString();
+                entry.innerHTML = `${message} <span class="timestamp">[${timestamp}]</span>`;
+                
+                logs.appendChild(entry);
+                logs.scrollTop = logs.scrollHeight;
+
+                // Manter apenas os últimos 50 logs
+                while (logs.children.length > 50) {
+                    logs.removeChild(logs.firstChild);
+                }
+            }
+
+            showAlert(message, type = 'info') {
+                const container = document.getElementById('alert-container');
+                const alert = document.createElement('div');
+                alert.className = `alert ${type}`;
+                alert.textContent = message;
+                
+                container.innerHTML = '';
+                container.appendChild(alert);
+                
+                setTimeout(() => {
+                    alert.remove();
+                }, 5000);
+            }
+        }
+
+        // Instanciar controlador
+        const systemControl = new SystemControl();
+
+        // Funções globais para os botões
+        function startSystem() {
+            systemControl.startSystem();
+        }
+
+        function stopSystem() {
+            systemControl.stopSystem();
+        }
+
+        function refreshStatus() {
+            systemControl.refreshStatus();
+        }
+
+        // Cleanup ao fechar a página
+        window.addEventListener('beforeunload', () => {
+            if (systemControl.updateInterval) {
+                clearInterval(systemControl.updateInterval);
+            }
+        });
+    </script>
+</body>
+</html>

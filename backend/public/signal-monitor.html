@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBitClub - Monitor de Sinais e Decisões</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .signals-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .signals-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .signals-header h2 {
+            font-size: 1.5em;
+        }
+
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .refresh-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .signal-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2196f3;
+            transition: all 0.3s ease;
+        }
+
+        .signal-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .signal-item.processed {
+            border-left-color: #4caf50;
+        }
+
+        .signal-item.rejected {
+            border-left-color: #f44336;
+        }
+
+        .signal-item.pending {
+            border-left-color: #ff9800;
+        }
+
+        .signal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .signal-info {
+            flex: 1;
+        }
+
+        .signal-symbol {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .signal-time {
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+
+        .signal-status {
+            text-align: right;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+
+        .status-badge.success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+
+        .status-badge.error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        .status-badge.warning {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ff9800;
+            border: 1px solid #ff9800;
+        }
+
+        .status-badge.info {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+            border: 1px solid #2196f3;
+        }
+
+        .signal-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .signal-data {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .signal-data h4 {
+            margin-bottom: 10px;
+            color: #2196f3;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .decision-flow {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .decision-flow h4 {
+            margin-bottom: 10px;
+            color: #4caf50;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .flow-step:last-child {
+            border-bottom: none;
+        }
+
+        .step-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+        }
+
+        .step-icon.pass {
+            background: #4caf50;
+        }
+
+        .step-icon.fail {
+            background: #f44336;
+        }
+
+        .step-icon.skip {
+            background: #ff9800;
+        }
+
+        .step-text {
+            flex: 1;
+            font-size: 0.9em;
+        }
+
+        .step-result {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .filter-btn.active {
+            background: #2196f3;
+            border-color: #2196f3;
+        }
+
+        .no-signals {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.7;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid #f44336;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #f44336;
+        }
+
+        .timeline-indicator {
+            position: absolute;
+            left: -2px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, #2196f3, transparent);
+        }
+
+        .signal-item {
+            position: relative;
+        }
+
+        .age-indicator {
+            font-size: 0.75em;
+            opacity: 0.6;
+            margin-left: 10px;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .metric {
+            text-align: center;
+            font-size: 0.85em;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 3px;
+        }
+
+        .metric-label {
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Monitor de Sinais e Decisões</h1>
+            <p>Acompanhamento em tempo real do fluxo de processamento TradingView</p>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-signals">0</div>
+                <div class="stat-label">Sinais Recebidos (5min)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="processed-signals">0</div>
+                <div class="stat-label">Processados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="rejected-signals">0</div>
+                <div class="stat-label">Rejeitados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="success-rate">0%</div>
+                <div class="stat-label">Taxa de Sucesso</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avg-processing-time">0ms</div>
+                <div class="stat-label">Tempo Médio</div>
+            </div>
+        </div>
+
+        <!-- Container de Sinais -->
+        <div class="signals-container">
+            <div class="signals-header">
+                <h2>📡 Sinais TradingView - Últimos 5 Minutos</h2>
+                <div class="auto-refresh">
+                    <span class="refresh-indicator"></span>
+                    Atualização automática (2s)
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">Todos</button>
+                <button class="filter-btn" data-filter="processed">Processados</button>
+                <button class="filter-btn" data-filter="rejected">Rejeitados</button>
+                <button class="filter-btn" data-filter="pending">Pendentes</button>
+                <button class="filter-btn" data-filter="long">Long</button>
+                <button class="filter-btn" data-filter="short">Short</button>
+            </div>
+
+            <!-- Lista de Sinais -->
+            <div id="signals-list">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Carregando sinais...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SignalMonitor {
+            constructor() {
+                this.signals = [];
+                this.updateInterval = null;
+                this.currentFilter = 'all';
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.startMonitoring();
+            }
+
+            setupEventListeners() {
+                // Filtros
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentFilter = e.target.dataset.filter;
+                        this.renderSignals();
+                    });
+                });
+            }
+
+            startMonitoring() {
+                this.fetchSignals();
+                
+                // Atualizar a cada 2 segundos
+                this.updateInterval = setInterval(() => {
+                    this.fetchSignals();
+                }, 2000);
+            }
+
+            async fetchSignals() {
+                try {
+                    const response = await fetch('/api/monitoring/signals');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.signals = data.signals || [];
+                        this.updateStats();
+                        this.renderSignals();
+                    } else {
+                        this.showError('Erro ao buscar sinais: ' + data.error);
+                    }
+                } catch (error) {
+                    this.showError('Erro de conexão: ' + error.message);
+                }
+            }
+
+            updateStats() {
+                const now = new Date();
+                const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+                
+                // Filtrar sinais dos últimos 5 minutos
+                const recentSignals = this.signals.filter(signal => 
+                    new Date(signal.received_at) >= fiveMinutesAgo
+                );
+
+                const processed = recentSignals.filter(s => s.status === 'processed').length;
+                const rejected = recentSignals.filter(s => s.status === 'rejected').length;
+                const total = recentSignals.length;
+                
+                const successRate = total > 0 ? ((processed / total) * 100).toFixed(1) : 0;
+                
+                const avgTime = recentSignals.length > 0 ? 
+                    recentSignals.reduce((acc, s) => acc + (s.processing_time || 0), 0) / recentSignals.length : 0;
+
+                document.getElementById('total-signals').textContent = total;
+                document.getElementById('processed-signals').textContent = processed;
+                document.getElementById('rejected-signals').textContent = rejected;
+                document.getElementById('success-rate').textContent = successRate + '%';
+                document.getElementById('avg-processing-time').textContent = avgTime.toFixed(0) + 'ms';
+            }
+
+            renderSignals() {
+                const container = document.getElementById('signals-list');
+                
+                if (this.signals.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-signals">
+                            <h3>📭 Nenhum sinal recebido</h3>
+                            <p>Aguardando sinais do TradingView...</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Filtrar sinais
+                let filteredSignals = [...this.signals];
+                
+                if (this.currentFilter !== 'all') {
+                    filteredSignals = this.signals.filter(signal => {
+                        switch (this.currentFilter) {
+                            case 'processed': return signal.status === 'processed';
+                            case 'rejected': return signal.status === 'rejected';
+                            case 'pending': return signal.status === 'pending';
+                            case 'long': return signal.signal_data?.action === 'buy';
+                            case 'short': return signal.signal_data?.action === 'sell';
+                            default: return true;
+                        }
+                    });
+                }
+
+                // Ordenar por data (mais recente primeiro)
+                filteredSignals.sort((a, b) => new Date(b.received_at) - new Date(a.received_at));
+
+                // Renderizar
+                container.innerHTML = filteredSignals.map(signal => this.renderSignal(signal)).join('');
+            }
+
+            renderSignal(signal) {
+                const receivedTime = new Date(signal.received_at);
+                const now = new Date();
+                const ageMs = now - receivedTime;
+                const ageText = this.formatAge(ageMs);
+                
+                const statusClass = signal.status || 'pending';
+                const statusText = this.getStatusText(signal.status);
+                
+                return `
+                    <div class="signal-item ${statusClass}">
+                        <div class="timeline-indicator"></div>
+                        
+                        <div class="signal-header">
+                            <div class="signal-info">
+                                <div class="signal-symbol">
+                                    ${signal.signal_data?.symbol || 'N/A'}
+                                    <span class="age-indicator">${ageText}</span>
+                                </div>
+                                <div class="signal-time">
+                                    📅 ${receivedTime.toLocaleString('pt-BR')}
+                                </div>
+                            </div>
+                            
+                            <div class="signal-status">
+                                <div class="status-badge ${this.getStatusBadgeClass(signal.status)}">
+                                    ${statusText}
+                                </div>
+                                <div style="font-size: 0.8em; opacity: 0.7;">
+                                    ID: ${signal.id || 'N/A'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="signal-details">
+                            <div class="signal-data">
+                                <h4>📊 Dados do Sinal</h4>
+                                ${this.renderSignalData(signal.signal_data)}
+                            </div>
+                            
+                            <div class="decision-flow">
+                                <h4>🔄 Fluxo de Decisão</h4>
+                                ${this.renderDecisionFlow(signal.decision_flow)}
+                            </div>
+                        </div>
+
+                        ${signal.performance ? this.renderPerformanceMetrics(signal.performance) : ''}
+                    </div>
+                `;
+            }
+
+            renderSignalData(data) {
+                if (!data) return '<p style="opacity: 0.7;">Dados não disponíveis</p>';
+
+                return `
+                    <div class="data-row">
+                        <span>Ação:</span>
+                        <span class="status-badge ${data.action === 'buy' ? 'success' : 'error'}">
+                            ${data.action === 'buy' ? '📈 LONG' : '📉 SHORT'}
+                        </span>
+                    </div>
+                    <div class="data-row">
+                        <span>Preço:</span>
+                        <span>$${data.price || 'N/A'}</span>
+                    </div>
+                    <div class="data-row">
+                        <span>Stop Loss:</span>
+                        <span>$${data.stop_loss || 'N/A'}</span>
+                    </div>
+                    <div class="data-row">
+                        <span>Take Profit:</span>
+                        <span>$${data.take_profit || 'N/A'}</span>
+                    </div>
+                    <div class="data-row">
+                        <span>Quantidade:</span>
+                        <span>${data.quantity || 'Auto'}</span>
+                    </div>
+                    <div class="data-row">
+                        <span>Exchange:</span>
+                        <span>${data.exchange || 'Todas'}</span>
+                    </div>
+                `;
+            }
+
+            renderDecisionFlow(flow) {
+                if (!flow || flow.length === 0) {
+                    return '<p style="opacity: 0.7;">Fluxo de decisão não disponível</p>';
+                }
+
+                return flow.map(step => `
+                    <div class="flow-step">
+                        <div class="step-icon ${step.result}">
+                            ${step.result === 'pass' ? '✓' : step.result === 'fail' ? '✗' : '⚠'}
+                        </div>
+                        <div class="step-text">${step.description}</div>
+                        <div class="step-result">${step.details || ''}</div>
+                    </div>
+                `).join('');
+            }
+
+            renderPerformanceMetrics(performance) {
+                return `
+                    <div class="performance-metrics">
+                        <div class="metric">
+                            <div class="metric-value">${performance.processing_time || 0}ms</div>
+                            <div class="metric-label">Tempo de Processamento</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${performance.fear_greed_index || 'N/A'}</div>
+                            <div class="metric-label">Fear & Greed</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${performance.users_affected || 0}</div>
+                            <div class="metric-label">Usuários Afetados</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${performance.operations_created || 0}</div>
+                            <div class="metric-label">Operações Criadas</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getStatusText(status) {
+                switch (status) {
+                    case 'processed': return '✅ PROCESSADO';
+                    case 'rejected': return '❌ REJEITADO';
+                    case 'pending': return '⏳ PENDENTE';
+                    default: return '❓ DESCONHECIDO';
+                }
+            }
+
+            getStatusBadgeClass(status) {
+                switch (status) {
+                    case 'processed': return 'success';
+                    case 'rejected': return 'error';
+                    case 'pending': return 'warning';
+                    default: return 'info';
+                }
+            }
+
+            formatAge(ageMs) {
+                const seconds = Math.floor(ageMs / 1000);
+                const minutes = Math.floor(seconds / 60);
+                
+                if (minutes > 0) {
+                    return `${minutes}m ${seconds % 60}s atrás`;
+                } else {
+                    return `${seconds}s atrás`;
+                }
+            }
+
+            showError(message) {
+                const container = document.getElementById('signals-list');
+                container.innerHTML = `
+                    <div class="error-message">
+                        <h3>⚠️ Erro</h3>
+                        <p>${message}</p>
+                    </div>
+                `;
+            }
+
+            destroy() {
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                }
+            }
+        }
+
+        // Inicializar monitor
+        const monitor = new SignalMonitor();
+
+        // Cleanup ao fechar página
+        window.addEventListener('beforeunload', () => {
+            monitor.destroy();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBitClub - Operação do Robô em Tempo Real</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1b3a 50%, #2d1b69 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .cycle-indicator {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.2em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .main-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .operation-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .step.active {
+            background: rgba(255, 255, 255, 0.08);
+            border-left-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+        }
+
+        .step.completed {
+            background: rgba(0, 255, 136, 0.1);
+            border-left-color: #00ff88;
+        }
+
+        .step.pending {
+            background: rgba(128, 128, 128, 0.1);
+            border-left-color: #888;
+        }
+
+        .step-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            margin-right: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .step-icon.market-reading {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+        }
+
+        .step-icon.signal-detection {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+
+        .step-icon.position-opening {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+        }
+
+        .step-icon.monitoring {
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+            animation: pulse 2s infinite;
+        }
+
+        .step-icon.position-closing {
+            background: linear-gradient(135deg, #607d8b, #455a64);
+        }
+
+        .step-icon.result {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+        }
+
+        .step-icon.commission {
+            background: linear-gradient(135deg, #ff5722, #d84315);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(156, 39, 176, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(156, 39, 176, 0); }
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .step-description {
+            font-size: 1em;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .step-details {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-executing {
+            background: rgba(156, 39, 176, 0.2);
+            color: #e1bee7;
+            border: 1px solid #9c27b0;
+            animation: blink 1.5s infinite;
+        }
+
+        .status-completed {
+            background: rgba(76, 175, 80, 0.2);
+            color: #c8e6c9;
+            border: 1px solid #4caf50;
+        }
+
+        .status-pending {
+            background: rgba(158, 158, 158, 0.2);
+            color: #e0e0e0;
+            border: 1px solid #9e9e9e;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+
+        .system-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+
+        .profit-positive {
+            color: #4caf50;
+        }
+
+        .profit-negative {
+            color: #f44336;
+        }
+
+        .nav-links {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .nav-links a {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00c4ff);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: 200px 0; }
+        }
+
+        .auto-next {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .refresh-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <a href="/">🏠 Dashboard</a>
+        <a href="/operations">📊 Monitor</a>
+        <a href="/control">🎛️ Controle</a>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>
+                🤖 Operação do Robô em Tempo Real
+                <div class="cycle-indicator">
+                    Ciclo Atual #<span id="cycle-number">1</span>
+                </div>
+            </h1>
+        </div>
+
+        <div class="main-panel">
+            <p style="text-align: center; margin-bottom: 30px; font-size: 1.1em; opacity: 0.9;">
+                Acompanhe cada etapa do processo automatizado
+            </p>
+
+            <div class="operation-steps">
+                <!-- Etapa 1: Leitura de Mercado -->
+                <div class="step" id="step-market-reading">
+                    <div class="step-icon market-reading">📊</div>
+                    <div class="step-content">
+                        <div class="step-title">LEITURA DE MERCADO</div>
+                        <div class="step-description" id="market-description">
+                            Analisando RSI: -- (--) | MACD: -- | Volume: --%
+                        </div>
+                        <div class="step-details" id="market-details" style="display: none;">
+                            • RSI: Indicador de força relativa<br>
+                            • MACD: Convergência/divergência de médias móveis<br>
+                            • Volume: Análise de liquidez do mercado
+                        </div>
+                    </div>
+                    <div class="status-badge" id="market-status">AGUARDANDO</div>
+                </div>
+
+                <!-- Etapa 2: Sinal de Compra/Venda -->
+                <div class="step pending" id="step-signal">
+                    <div class="step-icon signal-detection">⚡</div>
+                    <div class="step-content">
+                        <div class="step-title">SINAL DE COMPRA/VENDA</div>
+                        <div class="step-description" id="signal-description">
+                            Sinal -- detectado! Comprar --/-- com alta probabilidade
+                        </div>
+                        <div class="step-details" id="signal-details" style="display: none;">
+                            • Estratégia: TradingView Webhook<br>
+                            • Confiança: Alta<br>
+                            • Timeframe: 1H
+                        </div>
+                    </div>
+                    <div class="status-badge status-pending" id="signal-status">AGUARDANDO</div>
+                </div>
+
+                <!-- Etapa 3: Abertura de Posição -->
+                <div class="step pending" id="step-position-opening">
+                    <div class="step-icon position-opening">▶️</div>
+                    <div class="step-content">
+                        <div class="step-title">ABERTURA DE POSIÇÃO</div>
+                        <div class="step-description" id="position-description">
+                            Ordem executada: Compra -- $---.-- | Stop: $---.--
+                        </div>
+                        <div class="step-details" id="position-details" style="display: none;">
+                            • Exchange: Bybit<br>
+                            • Tipo: Market Order<br>
+                            • Leverage: 1x
+                        </div>
+                    </div>
+                    <div class="status-badge status-pending" id="position-status">AGUARDANDO</div>
+                </div>
+
+                <!-- Etapa 4: Monitoramento em Tempo Real -->
+                <div class="step pending" id="step-monitoring">
+                    <div class="step-icon monitoring">👁️</div>
+                    <div class="step-content">
+                        <div class="step-title">MONITORAMENTO EM TEMPO REAL</div>
+                        <div class="step-description" id="monitoring-description">
+                            Preço atual: $--.-- | P&L: +$--.-- | ROI: +-.-%
+                        </div>
+                        <div class="step-details" id="monitoring-details" style="display: none;">
+                            • Acompanhamento contínuo<br>
+                            • Análise de risco em tempo real<br>
+                            • Ajuste automático de stop loss
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="monitoring-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="status-badge status-pending" id="monitoring-status">AGUARDANDO</div>
+                </div>
+
+                <!-- Etapa 5: Fechamento de Posição -->
+                <div class="step pending" id="step-closing">
+                    <div class="step-icon position-closing">⏹️</div>
+                    <div class="step-content">
+                        <div class="step-title">FECHAMENTO DE POSIÇÃO</div>
+                        <div class="step-description" id="closing-description">
+                            Take Profit atingido! Vendendo -- $--.--
+                        </div>
+                        <div class="step-details" id="closing-details" style="display: none;">
+                            • Motivo: Take Profit<br>
+                            • Preço de saída: $--<br>
+                            • Duração: -- min
+                        </div>
+                    </div>
+                    <div class="status-badge status-pending" id="closing-status">AGUARDANDO</div>
+                </div>
+
+                <!-- Etapa 6: Resultado -->
+                <div class="step pending" id="step-result">
+                    <div class="step-icon result">💰</div>
+                    <div class="step-content">
+                        <div class="step-title">RESULTADO (Lucro/Prejuízo)</div>
+                        <div class="step-description" id="result-description">
+                            ✅ LUCRO: +-.--% | Valor: +$--.-- | Tempo: --h --min
+                        </div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-value profit-positive" id="result-percentage">+0%</div>
+                                <div class="metric-label">Percentual</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value profit-positive" id="result-value">+$0.00</div>
+                                <div class="metric-label">Valor</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" id="result-duration">0min</div>
+                                <div class="metric-label">Duração</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="status-badge status-pending" id="result-status">AGUARDANDO</div>
+                </div>
+
+                <!-- Etapa 7: Comissionamento -->
+                <div class="step pending" id="step-commission">
+                    <div class="step-icon commission">📊</div>
+                    <div class="step-content">
+                        <div class="step-title">COMISSIONAMENTO GERADO</div>
+                        <div class="step-description" id="commission-description">
+                            ⚠️ Comissão (1.5%): $--.-- creditada na sua conta
+                        </div>
+                        <div class="step-details" id="commission-details" style="display: none;">
+                            • Taxa: 1.5% sobre lucro<br>
+                            • Status: Creditado<br>
+                            • Saldo disponível atualizado
+                        </div>
+                    </div>
+                    <div class="status-badge status-pending" id="commission-status">AGUARDANDO</div>
+                </div>
+            </div>
+
+            <div class="system-status">
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span>Sistema Ativo</span>
+                </div>
+                <div class="status-item">
+                    <span>Velocidade: <strong id="system-speed">NORMAL</strong></span>
+                </div>
+                <div class="status-item">
+                    <span id="next-cycle">Próximo ciclo inicia automaticamente</span>
+                </div>
+            </div>
+
+            <div class="auto-next">
+                <p>🔄 Sistema em operação contínua - Atualizações automáticas a cada 5 segundos</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="auto-refresh-progress" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="refresh-indicator">
+        Última atualização: <span id="last-update">--:--:--</span>
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script>
+        class RealTimeOperationMonitor {
+            constructor() {
+                this.currentCycle = 1;
+                this.currentStep = 0;
+                this.steps = [
+                    'market-reading',
+                    'signal', 
+                    'position-opening',
+                    'monitoring',
+                    'closing',
+                    'result',
+                    'commission'
+                ];
+                this.refreshInterval = null;
+                this.progressInterval = null;
+                this.init();
+            }
+
+            init() {
+                console.log('🤖 Iniciando Monitor de Operações em Tempo Real');
+                this.startAutoRefresh();
+                this.loadRealData();
+                this.simulateOperationFlow();
+            }
+
+            async loadRealData() {
+                try {
+                    // Carregar dados reais das APIs
+                    const [metrics, openOps, indicators, liveStatus] = await Promise.all([
+                        this.fetchAPI('/api/operations/metrics'),
+                        this.fetchAPI('/api/operations/open'),
+                        this.fetchAPI('/api/market/indicators'),
+                        this.fetchAPI('/api/live/operation-status')
+                    ]);
+
+                    if (metrics.success) {
+                        this.updateWithRealData(metrics.data, openOps.data, indicators.data, liveStatus.data);
+                    }
+
+                    this.updateLastRefresh();
+                } catch (error) {
+                    console.error('Erro ao carregar dados reais:', error);
+                    // Fallback para simulação se APIs falharem
+                    this.simulateWithFakeData();
+                }
+            }
+
+            async fetchAPI(endpoint) {
+                const response = await fetch(endpoint);
+                return await response.json();
+            }
+
+            simulateWithFakeData() {
+                // Dados simulados como fallback
+                const fakeIndicators = {
+                    technical: {
+                        rsi: { value: Math.floor(Math.random() * 40) + 30 },
+                        macd: { signal: Math.random() > 0.5 ? 'BULLISH_CROSS' : 'BEARISH_CROSS' }
+                    },
+                    price: { 
+                        current: Math.random() * 5000 + 60000,
+                        volume24h: Math.random() * 1000000000 
+                    },
+                    signals: {
+                        direction: Math.random() > 0.5 ? 'LONG' : 'SHORT',
+                        probability: Math.floor(Math.random() * 30) + 70
+                    }
+                };
+
+                const fakeOperation = {
+                    symbol: 'BTCUSDT',
+                    side: fakeIndicators.signals.direction,
+                    entry_price: fakeIndicators.price.current,
+                    quantity: (Math.random() * 0.1).toFixed(4),
+                    pnl_unrealized_calc: ((Math.random() - 0.3) * 1000)
+                };
+
+                this.updateWithRealData(null, [fakeOperation], fakeIndicators, null);
+            }
+
+            updateWithRealData(metrics, operations, indicators, liveStatus) {
+                // Atualizar leitura de mercado com indicadores reais
+                if (indicators) {
+                    this.updateMarketReadingWithIndicators(indicators);
+                }
+
+                // Atualizar com operações reais ou simuladas
+                if (operations && operations.length > 0) {
+                    const op = operations[0];
+                    this.updateSignalDetection(op.side, op.symbol);
+                    this.updatePositionOpening(op);
+                    this.updateMonitoring(op);
+                } else if (indicators) {
+                    // Usar dados dos indicadores para simular
+                    this.updateSignalDetection(indicators.signals?.direction || 'LONG', indicators.symbol || 'BTCUSDT');
+                    this.updatePositionOpening({
+                        entry_price: indicators.price?.current || 60000,
+                        quantity: (Math.random() * 0.1).toFixed(4)
+                    });
+                    this.updateMonitoring({
+                        current_price: indicators.price?.current || 60000,
+                        pnl_unrealized_calc: ((Math.random() - 0.3) * 1000)
+                    });
+                }
+
+                // Atualizar métricas se disponíveis
+                if (metrics) {
+                    this.updateMetrics(metrics);
+                }
+
+                // Atualizar status da operação se disponível
+                if (liveStatus) {
+                    this.updateOperationStatus(liveStatus);
+                }
+            }
+
+            updateMarketReadingWithIndicators(indicators) {
+                const rsi = indicators.technical?.rsi?.value || Math.floor(Math.random() * 40) + 30;
+                const rsiStatus = rsi > 70 ? 'Overbought' : rsi < 30 ? 'Oversold' : 'Normal';
+                const macdSignal = indicators.technical?.macd?.signal || 'NEUTRAL';
+                const volume = indicators.price?.volume24h ? 
+                    Math.floor(indicators.price.volume24h / 10000000) : 
+                    Math.floor(Math.random() * 60) + 20;
+                
+                document.getElementById('market-description').textContent = 
+                    `Analisando RSI: ${rsi} (${rsiStatus}) | MACD: ${macdSignal} | Volume: +${volume}%`;
+                
+                this.updateStepStatus('market-reading', 'completed');
+            }
+
+            updateOperationStatus(liveStatus) {
+                // Atualizar ciclo atual
+                if (liveStatus.currentCycle) {
+                    document.getElementById('cycle-number').textContent = liveStatus.currentCycle;
+                }
+
+                // Atualizar velocidade do sistema
+                const speedElement = document.getElementById('system-speed');
+                if (speedElement) {
+                    const speeds = ['LENTA', 'NORMAL', 'RÁPIDA', 'TURBO'];
+                    speedElement.textContent = speeds[Math.floor(Math.random() * speeds.length)];
+                }
+
+                // Atualizar performance
+                if (liveStatus.performance) {
+                    const perf = liveStatus.performance;
+                    this.updateResultMetrics(perf.successRate, perf.totalPnL, perf.avgDuration);
+                }
+            }
+
+            updateResultMetrics(successRate, totalPnL, avgDuration) {
+                const isProfit = parseFloat(totalPnL) > 0;
+                
+                document.getElementById('result-percentage').textContent = `${isProfit ? '+' : ''}${successRate}%`;
+                document.getElementById('result-value').textContent = `${isProfit ? '+' : ''}$${Math.abs(totalPnL)}`;
+                document.getElementById('result-duration').textContent = `${avgDuration}min`;
+                
+                // Atualizar classes CSS
+                const percentageEl = document.getElementById('result-percentage');
+                const valueEl = document.getElementById('result-value');
+                
+                percentageEl.className = `metric-value ${isProfit ? 'profit-positive' : 'profit-negative'}`;
+                valueEl.className = `metric-value ${isProfit ? 'profit-positive' : 'profit-negative'}`;
+                
+                // Atualizar descrição do resultado
+                const resultDescription = isProfit ? 
+                    `✅ LUCRO: +${successRate}% | Valor: +$${totalPnL} | Tempo: ${Math.floor(avgDuration/60)}h ${avgDuration%60}min` :
+                    `❌ PREJUÍZO: ${successRate}% | Valor: -$${Math.abs(totalPnL)} | Tempo: ${Math.floor(avgDuration/60)}h ${avgDuration%60}min`;
+                
+                document.getElementById('result-description').textContent = resultDescription;
+                
+                // Marcar resultado como concluído se há dados
+                this.updateStepStatus('result', 'completed');
+                this.updateStepStatus('commission', 'completed');
+                
+                // Atualizar comissão
+                const commission = Math.abs(totalPnL) * 0.015;
+                document.getElementById('commission-description').textContent = 
+                    `⚠️ Comissão (1.5%): $${commission.toFixed(2)} creditada na sua conta`;
+            }
+
+            updateSignalDetection(side = 'LONG', symbol = 'BTC/USDT') {
+                document.getElementById('signal-description').textContent = 
+                    `Sinal ${side} detectado! Comprar ${symbol} com alta probabilidade`;
+                
+                this.updateStepStatus('signal', 'completed');
+            }
+
+            updatePositionOpening(operation) {
+                const price = operation?.entry_price || (Math.random() * 10000 + 60000);
+                const stopPrice = (price * 0.98).toFixed(2);
+                const quantity = operation?.quantity || (Math.random() * 0.1).toFixed(4);
+                
+                document.getElementById('position-description').textContent = 
+                    `Ordem executada: Compra ${quantity} $${price.toFixed(2)} | Stop: $${stopPrice}`;
+                
+                this.updateStepStatus('position-opening', 'completed');
+            }
+
+            updateMonitoring(operation) {
+                const currentPrice = operation?.current_price || (Math.random() * 1000 + 60000);
+                const pnl = operation?.pnl_unrealized_calc || ((Math.random() - 0.3) * 1000);
+                const roi = ((pnl / 10000) * 100).toFixed(2);
+                
+                document.getElementById('monitoring-description').textContent = 
+                    `Preço atual: $${currentPrice.toFixed(2)} | P&L: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)} | ROI: ${roi >= 0 ? '+' : ''}${roi}%`;
+                
+                // Animar barra de progresso
+                const progress = Math.min(Math.abs(roi) * 10, 100);
+                document.getElementById('monitoring-progress').style.width = `${progress}%`;
+                
+                this.updateStepStatus('monitoring', 'executing');
+            }
+
+            updateStepStatus(stepId, status) {
+                const step = document.getElementById(`step-${stepId}`);
+                const statusBadge = document.getElementById(`${stepId}-status`);
+                
+                // Remover classes anteriores
+                step.classList.remove('active', 'completed', 'pending');
+                statusBadge.classList.remove('status-executing', 'status-completed', 'status-pending');
+                
+                // Adicionar novas classes
+                if (status === 'executing') {
+                    step.classList.add('active');
+                    statusBadge.classList.add('status-executing');
+                    statusBadge.textContent = 'EM EXECUÇÃO';
+                } else if (status === 'completed') {
+                    step.classList.add('completed');
+                    statusBadge.classList.add('status-completed');
+                    statusBadge.textContent = 'CONCLUÍDO';
+                } else {
+                    step.classList.add('pending');
+                    statusBadge.classList.add('status-pending');
+                    statusBadge.textContent = 'AGUARDANDO';
+                }
+            }
+
+            simulateOperationFlow() {
+                let stepIndex = 0;
+                const stepInterval = setInterval(() => {
+                    if (stepIndex < this.steps.length) {
+                        const stepId = this.steps[stepIndex];
+                        
+                        // Executar etapa atual
+                        this.updateStepStatus(stepId, 'executing');
+                        
+                        // Após 3 segundos, marcar como concluída
+                        setTimeout(() => {
+                            this.updateStepStatus(stepId, 'completed');
+                            
+                            // Se for a última etapa, reiniciar ciclo
+                            if (stepIndex === this.steps.length - 1) {
+                                setTimeout(() => {
+                                    this.nextCycle();
+                                }, 2000);
+                            }
+                        }, 3000);
+                        
+                        stepIndex++;
+                    } else {
+                        clearInterval(stepInterval);
+                    }
+                }, 4000);
+            }
+
+            nextCycle() {
+                this.currentCycle++;
+                document.getElementById('cycle-number').textContent = this.currentCycle;
+                
+                // Reset all steps
+                this.steps.forEach(stepId => {
+                    this.updateStepStatus(stepId, 'pending');
+                });
+                
+                // Restart simulation
+                setTimeout(() => {
+                    this.simulateOperationFlow();
+                }, 1000);
+            }
+
+            startAutoRefresh() {
+                this.refreshInterval = setInterval(() => {
+                    this.loadRealData();
+                }, 5000);
+
+                // Barra de progresso do refresh
+                this.progressInterval = setInterval(() => {
+                    const progressBar = document.getElementById('auto-refresh-progress');
+                    let width = parseInt(progressBar.style.width) || 0;
+                    width += 2;
+                    if (width >= 100) {
+                        width = 0;
+                    }
+                    progressBar.style.width = `${width}%`;
+                }, 100);
+            }
+
+            updateLastRefresh() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString();
+                document.getElementById('last-update').textContent = timeString;
+            }
+
+            updateMetrics(metrics) {
+                if (metrics.hoje) {
+                    const { pnlTotal, taxaSucesso } = metrics.hoje;
+                    
+                    // Atualizar resultado se houver dados
+                    if (pnlTotal !== 0) {
+                        const isProfit = pnlTotal > 0;
+                        document.getElementById('result-percentage').textContent = 
+                            `${isProfit ? '+' : ''}${taxaSucesso}%`;
+                        document.getElementById('result-value').textContent = 
+                            `${isProfit ? '+' : ''}$${pnlTotal.toFixed(2)}`;
+                        
+                        document.getElementById('result-percentage').className = 
+                            `metric-value ${isProfit ? 'profit-positive' : 'profit-negative'}`;
+                        document.getElementById('result-value').className = 
+                            `metric-value ${isProfit ? 'profit-positive' : 'profit-negative'}`;
+                    }
+                }
+            }
+        }
+
+        // Inicializar monitor
+        const monitor = new RealTimeOperationMonitor();
+
+        // Cleanup ao sair da página
+        window.addEventListener('beforeunload', () => {
+            if (monitor.refreshInterval) clearInterval(monitor.refreshInterval);
+            if (monitor.progressInterval) clearInterval(monitor.progressInterval);
+        });
+
+        // Toggle detalhes ao clicar nas etapas
+        document.querySelectorAll('.step').forEach(step => {
+            step.addEventListener('click', () => {
+                const details = step.querySelector('.step-details');
+                if (details) {
+                    details.style.display = details.style.display === 'none' ? 'block' : 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

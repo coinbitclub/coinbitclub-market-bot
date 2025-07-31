@@ -37,28 +37,13 @@ class SystemController {
     async initOperationsMonitor() {
         if (!this.operationsMonitorInitialized) {
             try {
-                // Tentar usar o monitor real primeiro
                 const OperationsMonitor = require('./operations-monitor');
                 this.operationsMonitor = new OperationsMonitor();
-                
-                // Testar se consegue se conectar (aguardar um pouco)
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
                 this.operationsMonitorInitialized = true;
-                console.log('✅ Monitor de operações REAL inicializado com sucesso');
+                console.log('✅ Monitor de operações inicializado com sucesso');
             } catch (error) {
-                console.warn('⚠️ Monitor real falhou, usando SIMULADOR:', error.message);
-                
-                // Fallback para simulador
-                try {
-                    const OperationsSimulator = require('./operations-simulator');
-                    this.operationsMonitor = new OperationsSimulator();
-                    this.operationsMonitorInitialized = true;
-                    console.log('🎮 Simulador de operações inicializado com sucesso');
-                } catch (simError) {
-                    console.error('❌ Erro ao inicializar simulador:', simError.message);
-                    this.operationsMonitor = null;
-                }
+                console.error('⚠️ Erro ao inicializar monitor de operações:', error.message);
+                this.operationsMonitor = null;
             }
         }
         return this.operationsMonitor;
@@ -261,8 +246,8 @@ class SystemController {
                 });
             }
             
-            // Capturar e processar sinal
-            const analysis = await this.signalAnalyzer.captureSignal(signal, req);
+            // Analisar sinal
+            const analysis = await this.signalAnalyzer.analyzeSignal(signal);
             
             // Atualizar heartbeat
             this.systemState.lastHeartbeat = new Date();

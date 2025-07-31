@@ -1,53 +1,111 @@
+#!/usr/bin/env node
+
+/**
+ * 🧹 LIMPADOR COMPLETO DE DADOS DE TESTE - COINBITCLUB MARKET BOT V3.0.0
+ * 
+ * Remove TODOS os dados de teste mantendo apenas dados de produção essenciais
+ * CUIDADO: Esta operação é IRREVERSÍVEL!
+ */
+
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  connectionString: 'postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway',
-  ssl: {
-    rejectUnauthorized: false
-  }
+    connectionString: 'postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@yamabiko.proxy.rlwy.net:42095/railway',
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
-async function limparDadosTeste() {
-  try {
-    console.log('🗑️ INICIANDO LIMPEZA DE DADOS DE TESTE...');
-    console.log('=' .repeat(50));
-    
-    // 1. Verificar operações atuais
-    console.log('📊 VERIFICANDO OPERAÇÕES ATUAIS:');
-    const operacoesAtuais = await pool.query(`
-      SELECT id, symbol, side, user_name, created_at 
-      FROM user_operations 
-      ORDER BY id
-    `);
-    
-    console.log(`   Total de operações: ${operacoesAtuais.rows.length}`);
-    operacoesAtuais.rows.forEach(op => {
-      console.log(`   Op ${op.id}: ${op.symbol} ${op.side} - ${op.user_name} (${op.created_at})`);
-    });
-    
-    // 2. Remover TODAS as operações (são todas de teste)
-    console.log('\n🗑️ REMOVENDO TODAS AS OPERAÇÕES DE TESTE:');
-    const deleteOps = await pool.query('DELETE FROM user_operations');
-    console.log(`   ✅ ${deleteOps.rowCount} operações removidas`);
-    
-    // 3. Verificar sinais recentes
-    console.log('\n📡 VERIFICANDO SINAIS RECENTES:');
-    const sinaisRecentes = await pool.query(`
-      SELECT id, symbol, action, created_at, processing_status
-      FROM trading_signals 
-      WHERE created_at > NOW() - INTERVAL '2 hours'
-      ORDER BY created_at DESC
-      LIMIT 10
-    `);
-    
-    console.log(`   Sinais das últimas 2 horas: ${sinaisRecentes.rows.length}`);
-    sinaisRecentes.rows.forEach(signal => {
-      console.log(`   Sinal ${signal.id}: ${signal.symbol} ${signal.action} - ${signal.processing_status} (${signal.created_at})`);
-    });
-    
-    // 4. Remover sinais muito antigos (manter apenas últimas 2 horas)
-    console.log('\n🧹 LIMPANDO SINAIS ANTIGOS:');
-    const deleteSignals = await pool.query(`
+class LimpadorCompleto {
+    constructor() {
+        this.resultados = {
+            inicio: new Date(),
+            tabelas_processadas: [],
+            registros_removidos: {},
+            total_removidos: 0,
+            erros: [],
+            preservados: {}
+        };
+    }
+
+    async executarLimpezaCompleta() {
+        console.log('🧹 LIMPEZA COMPLETA DE DADOS DE TESTE');
+        console.log('=====================================');
+        console.log('⚠️ REMOVENDO TODOS OS DADOS DE TESTE DO BANCO!');
+        console.log('🎯 Preservando apenas configurações essenciais\n');
+
+        try {
+            // FASE 1: Operações e trading
+            await this.limparOperacoes();
+            await this.limparSinais();
+            await this.limparProcessamento();
+            
+            // FASE 2: Análises e IA
+            await this.limparAnalises();
+            await this.limparIA();
+            
+            // FASE 3: Logs e monitoramento
+            await this.limparLogs();
+            await this.limparMonitoramento();
+            
+            // FASE 4: Dados financeiros de teste
+            await this.limparFinanceiro();
+            
+            // FASE 5: Dados de mercado antigos
+            await this.limparMercado();
+            
+            // FASE 6: Otimização
+            await this.otimizarBanco();
+            
+            await this.verificarPreservados();
+            await this.gerarRelatorio();
+            
+        } catch (error) {
+            console.error('❌ ERRO CRÍTICO:', error.message);
+            this.resultados.erros.push(`CRÍTICO: ${error.message}`);
+        } finally {
+            await pool.end();
+        }
+    }
+
+    async limparOperacoes() {
+        console.log('� LIMPANDO OPERAÇÕES DE TESTE');
+        console.log('===============================');
+
+        // 1. TODAS as operações (são dados de teste)
+        await this.executarLimpeza(
+            'operations',
+            'DELETE FROM operations',
+            'TODAS as operações (dados de teste)'
+        );
+
+        // 2. Order executions
+        await this.executarLimpeza(
+            'order_executions',
+            'DELETE FROM order_executions',
+            'Todas as execuções de ordem'
+        );
+
+        // 3. Operação monitoramento
+        await this.executarLimpeza(
+            'operacao_monitoramento',
+            'DELETE FROM operacao_monitoramento',
+            'Todo o monitoramento de operações'
+        );
+
+        // 4. Signal user processing
+        await this.executarLimpeza(
+            'signal_user_processing',
+            'DELETE FROM signal_user_processing',
+            'Todo o processamento de sinais por usuário'
+        );
+
+        // 5. Bloqueios de ticker
+        await this.executarLimpeza(
+            'bloqueio_ticker',
+            'DELETE FROM bloqueio_ticker',
+            'Todos os bloqueios de ticker'
+        );
       DELETE FROM trading_signals 
       WHERE created_at < NOW() - INTERVAL '2 hours'
     `);

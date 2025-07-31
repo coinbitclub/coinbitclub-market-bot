@@ -379,13 +379,16 @@ class UserManager {
         if (dados.total_pnl > 0) score += 20;
         else if (dados.total_pnl < 0) score -= 20;
 
-        // Fator Win Rate
+        // Fator Win Rate - CRITÉRIO RIGOROSO (>80% EXCELENTE)
         const winRate = dados.total_trades > 0 
             ? (dados.profitable_trades / dados.total_trades) * 100 
             : 0;
         
-        if (winRate > 60) score += 15;
-        else if (winRate < 40) score -= 15;
+        // NOVA CLASSIFICAÇÃO RIGOROSA:
+        if (winRate > 80) score += 25;        // EXCELENTE (>80%)
+        else if (winRate > 60) score += 15;   // BOM (60-80%)
+        else if (winRate > 40) score += 5;    // REGULAR (40-60%)
+        else if (winRate < 40) score -= 20;   // RUIM (<40%)
 
         // Fator atividade
         if (dados.total_trades > 100) score += 10;

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBitClub - Monitor de Operações</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .metric-label {
+            font-size: 1.1em;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .success-rate {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .success-rate.excelente {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 2px solid #4caf50;
+        }
+
+        .success-rate.bom {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+            border: 2px solid #2196f3;
+        }
+
+        .success-rate.regular {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ff9800;
+            border: 2px solid #ff9800;
+        }
+
+        .success-rate.ruim {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 2px solid #f44336;
+        }
+
+        .operations-section {
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 25px;
+            border-radius: 10px 10px 0 0;
+            font-size: 1.3em;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .operations-table {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0 0 10px 10px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.1);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-open {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+            border: 1px solid #2196f3;
+        }
+
+        .status-closed {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+
+        .pnl-positive {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .pnl-negative {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .pnl-neutral {
+            color: #9e9e9e;
+        }
+
+        .side-buy {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .side-sell {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 auto;
+            display: block;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .last-update {
+            text-align: center;
+            opacity: 0.7;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.7;
+            font-style: italic;
+        }
+
+        .performance-indicator {
+            font-size: 3em;
+            margin-right: 15px;
+        }
+
+        .metric-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-links {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .alert.warning {
+            background: rgba(255, 152, 0, 0.2);
+            border: 1px solid #ff9800;
+            color: #ff9800;
+        }
+
+        .alert.info {
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid #2196f3;
+            color: #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Monitor de Operações</h1>
+            <p>Acompanhamento em Tempo Real - Taxa de Sucesso Rigorosa (>80% Excelente)</p>
+        </div>
+
+        <div class="nav-links">
+            <a href="/">🏠 Dashboard</a>
+            <a href="/control">🎛️ Controle</a>
+            <a href="/operations">📊 Operações</a>
+            <a href="/admin">👨‍💼 Admin</a>
+        </div>
+
+        <button class="refresh-btn" onclick="refreshData()">
+            🔄 Atualizar Dados
+        </button>
+
+        <!-- Métricas Principais -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-content">
+                    <span class="performance-indicator" id="success-emoji">📊</span>
+                    <div>
+                        <div class="metric-label">Taxa de Sucesso Hoje</div>
+                        <div class="metric-value" id="success-rate-today">0%</div>
+                        <div class="success-rate" id="success-classification-today">AGUARDANDO</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-content">
+                    <span class="performance-indicator">🔓</span>
+                    <div>
+                        <div class="metric-label">Operações Abertas</div>
+                        <div class="metric-value" id="operations-open">0</div>
+                        <div style="opacity: 0.7;">Em andamento</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-content">
+                    <span class="performance-indicator">🔒</span>
+                    <div>
+                        <div class="metric-label">Operações Fechadas Hoje</div>
+                        <div class="metric-value" id="operations-closed-today">0</div>
+                        <div style="opacity: 0.7;">
+                            <span id="profitable-today">0</span> lucrativas / 
+                            <span id="loss-today">0</span> prejuízo
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-content">
+                    <span class="performance-indicator">💰</span>
+                    <div>
+                        <div class="metric-label">PnL Total Hoje</div>
+                        <div class="metric-value" id="pnl-today">$0.00</div>
+                        <div style="opacity: 0.7;">Resultado financeiro</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-content">
+                    <span class="performance-indicator">📈</span>
+                    <div>
+                        <div class="metric-label">Taxa Histórica</div>
+                        <div class="metric-value" id="success-rate-historic">0%</div>
+                        <div class="success-rate" id="success-classification-historic">AGUARDANDO</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-content">
+                    <span class="performance-indicator">🎯</span>
+                    <div>
+                        <div class="metric-label">Total Operações</div>
+                        <div class="metric-value" id="total-operations">0</div>
+                        <div style="opacity: 0.7;">Desde o início</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerta para Taxa de Sucesso -->
+        <div id="success-alert" class="alert info" style="display: none;">
+            🎯 Meta: Taxa de sucesso >80% para classificação EXCELENTE
+        </div>
+
+        <!-- Operações Abertas -->
+        <div class="operations-section">
+            <div class="section-header">
+                🔓 Operações Abertas (<span id="open-count">0</span>)
+            </div>
+            <div class="operations-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Par</th>
+                            <th>Lado</th>
+                            <th>Quantidade</th>
+                            <th>Preço Entrada</th>
+                            <th>PnL Não Realizado</th>
+                            <th>Tempo Aberto</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="open-operations-table">
+                        <tr>
+                            <td colspan="8" class="no-data">Carregando operações abertas...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Histórico de Operações -->
+        <div class="operations-section">
+            <div class="section-header">
+                🔒 Histórico de Operações (Últimas 20)
+            </div>
+            <div class="operations-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Par</th>
+                            <th>Lado</th>
+                            <th>Quantidade</th>
+                            <th>PnL Realizado</th>
+                            <th>Duração</th>
+                            <th>Fechado em</th>
+                            <th>Resultado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-operations-table">
+                        <tr>
+                            <td colspan="8" class="no-data">Carregando histórico...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="last-update">
+            Última atualização: <span id="last-update">--</span>
+        </div>
+    </div>
+
+    <script>
+        class OperationsMonitor {
+            constructor() {
+                this.updateInterval = null;
+                this.init();
+            }
+
+            init() {
+                this.refreshData();
+                
+                // Atualizar a cada 15 segundos
+                this.updateInterval = setInterval(() => {
+                    this.refreshData();
+                }, 15000);
+            }
+
+            async makeRequest(endpoint) {
+                try {
+                    const response = await fetch(endpoint);
+                    return await response.json();
+                } catch (error) {
+                    console.error('Erro na requisição:', error);
+                    return { success: false, error: error.message };
+                }
+            }
+
+            async refreshData() {
+                await Promise.all([
+                    this.loadMetrics(),
+                    this.loadOpenOperations(),
+                    this.loadOperationHistory()
+                ]);
+
+                document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+            }
+
+            async loadMetrics() {
+                const response = await this.makeRequest('/api/operations/metrics');
+                
+                if (response.success) {
+                    this.updateMetrics(response.data);
+                }
+            }
+
+            updateMetrics(data) {
+                const hoje = data.hoje;
+                const historico = data.historico;
+
+                // Taxa de sucesso hoje
+                document.getElementById('success-rate-today').textContent = `${hoje.taxaSucesso}%`;
+                this.updateSuccessClassification('success-classification-today', hoje.classificacao);
+                this.updateSuccessEmoji(hoje.taxaSucesso);
+
+                // Operações
+                document.getElementById('operations-open').textContent = hoje.operacoesAbertas;
+                document.getElementById('operations-closed-today').textContent = hoje.operacoesFechadas;
+                document.getElementById('profitable-today').textContent = hoje.operacoesLucrativas;
+                document.getElementById('loss-today').textContent = hoje.operacoesPrejuizo;
+
+                // PnL
+                const pnlElement = document.getElementById('pnl-today');
+                pnlElement.textContent = `$${hoje.pnlTotal.toFixed(2)}`;
+                pnlElement.className = hoje.pnlTotal >= 0 ? 'pnl-positive' : 'pnl-negative';
+
+                // Histórico
+                document.getElementById('success-rate-historic').textContent = `${historico.taxaSucesso}%`;
+                this.updateSuccessClassification('success-classification-historic', historico.classificacao);
+                document.getElementById('total-operations').textContent = historico.totalOperacoes;
+
+                // Mostrar alerta se necessário
+                this.showSuccessAlert(hoje.taxaSucesso);
+            }
+
+            updateSuccessClassification(elementId, classificacao) {
+                const element = document.getElementById(elementId);
+                element.textContent = classificacao.nivel;
+                element.className = `success-rate ${classificacao.nivel.toLowerCase()}`;
+            }
+
+            updateSuccessEmoji(taxa) {
+                const emojiElement = document.getElementById('success-emoji');
+                if (taxa >= 80) emojiElement.textContent = '🟢';
+                else if (taxa >= 60) emojiElement.textContent = '🔵';
+                else if (taxa >= 40) emojiElement.textContent = '🟡';
+                else emojiElement.textContent = '🔴';
+            }
+
+            showSuccessAlert(taxa) {
+                const alertElement = document.getElementById('success-alert');
+                if (taxa < 80) {
+                    alertElement.style.display = 'block';
+                    alertElement.innerHTML = `🎯 Meta não atingida: ${taxa}% (Meta: >80% para EXCELENTE)`;
+                } else {
+                    alertElement.style.display = 'none';
+                }
+            }
+
+            async loadOpenOperations() {
+                const response = await this.makeRequest('/api/operations/open');
+                
+                if (response.success) {
+                    this.updateOpenOperationsTable(response.data);
+                    document.getElementById('open-count').textContent = response.data.length;
+                }
+            }
+
+            updateOpenOperationsTable(operations) {
+                const tbody = document.getElementById('open-operations-table');
+                tbody.innerHTML = '';
+
+                if (operations.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="no-data">Nenhuma operação aberta no momento</td></tr>';
+                    return;
+                }
+
+                operations.forEach(op => {
+                    const row = document.createElement('tr');
+                    const pnlUnrealized = parseFloat(op.pnl_unrealized_calc) || 0;
+                    const minutesOpen = Math.floor(parseFloat(op.minutes_open) || 0);
+                    
+                    row.innerHTML = `
+                        <td>${op.user_name || 'N/A'}</td>
+                        <td>${op.symbol}</td>
+                        <td><span class="side-${op.side.toLowerCase()}">${op.side}</span></td>
+                        <td>${parseFloat(op.quantity).toFixed(4)}</td>
+                        <td>$${parseFloat(op.entry_price).toFixed(4)}</td>
+                        <td class="${pnlUnrealized >= 0 ? 'pnl-positive' : 'pnl-negative'}">
+                            $${pnlUnrealized.toFixed(2)}
+                        </td>
+                        <td>${minutesOpen}min</td>
+                        <td><span class="status-badge status-open">ABERTA</span></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            async loadOperationHistory() {
+                const response = await this.makeRequest('/api/operations/history');
+                
+                if (response.success) {
+                    this.updateHistoryTable(response.data);
+                }
+            }
+
+            updateHistoryTable(operations) {
+                const tbody = document.getElementById('history-operations-table');
+                tbody.innerHTML = '';
+
+                if (operations.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="no-data">Nenhuma operação no histórico</td></tr>';
+                    return;
+                }
+
+                operations.forEach(op => {
+                    const row = document.createElement('tr');
+                    const pnlRealized = parseFloat(op.pnl_realized) || 0;
+                    const duration = Math.floor(parseFloat(op.duration_minutes) || 0);
+                    const closedAt = new Date(op.closed_at).toLocaleString();
+                    
+                    row.innerHTML = `
+                        <td>${op.user_name || 'N/A'}</td>
+                        <td>${op.symbol}</td>
+                        <td><span class="side-${op.side.toLowerCase()}">${op.side}</span></td>
+                        <td>${parseFloat(op.quantity).toFixed(4)}</td>
+                        <td class="${pnlRealized >= 0 ? 'pnl-positive' : 'pnl-negative'}">
+                            $${pnlRealized.toFixed(2)}
+                        </td>
+                        <td>${duration}min</td>
+                        <td>${closedAt}</td>
+                        <td>
+                            <span class="status-badge ${pnlRealized >= 0 ? 'status-closed' : 'status-open'}">
+                                ${pnlRealized >= 0 ? 'LUCRO' : 'PREJUÍZO'}
+                            </span>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        // Função global para botão
+        function refreshData() {
+            monitor.refreshData();
+        }
+
+        // Inicializar monitor
+        const monitor = new OperationsMonitor();
+
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (monitor.updateInterval) {
+                clearInterval(monitor.updateInterval);
+            }
+        });
+    </script>
+</body>
+</html>
