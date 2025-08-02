@@ -1,6 +1,5 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import useSWR from 'swr';
 import { 
   FiTrendingUp, FiTrendingDown, FiActivity, FiBarChart2, 
   FiFilter, FiSearch, FiRefreshCw, FiDownload, FiEye, FiClock 
@@ -45,12 +44,9 @@ export default function OperationsManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
 
-  const { data: operationsData, error, mutate } = useSWR('/api/admin/operations', {
-    refreshInterval: 30000 // Refresh every 30 seconds
-  });
-
-  const operations = operationsData?.operations || [];
-  const stats: OperationsStats = operationsData?.stats || {
+  // TODO: Replace with actual backend API call
+  const operations = [];
+  const stats: OperationsStats = {
     total_operations: 0,
     active_operations: 0,
     total_profit: 0,
@@ -153,7 +149,7 @@ export default function OperationsManagement() {
                     Exportar
                   </button>
                   <button
-                    onClick={() => mutate()}
+                    onClick={() => window.location.reload()}
                     className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                   >
                     <FiRefreshCw className="h-4 w-4" />
@@ -267,7 +263,7 @@ export default function OperationsManagement() {
                       type="text"
                       placeholder="Buscar por símbolo ou usuário..."
                       value={searchTerm}
-                      onChange={(e) = /> setSearchTerm(e.target.value)}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -468,34 +464,23 @@ export default function OperationsManagement() {
               </tr>
             </thead>
             <tbody>
+              {/* TODO: Replace with real data from backend API */}
               <tr className="border-b border-gray-700 hover:bg-gray-900">
-                <td className="px-4 py-2">@joao</td>
-                <td className="px-4 py-2">BTC/USDT</td>
-                <td className="px-4 py-2">Compra</td>
-                <td className="px-4 py-2 text-green-400">Concluído</td>
-                <td className="px-4 py-2">21/07/2025</td>
-                <td className="px-4 py-2 text-green-400">+R$ 1.200</td>
-              </tr>
-              <tr className="border-b border-gray-700 hover:bg-gray-900">
-                <td className="px-4 py-2">@maria</td>
-                <td className="px-4 py-2">ETH/USDT</td>
-                <td className="px-4 py-2">Venda</td>
-                <td className="px-4 py-2 text-yellow-400">Pendente</td>
-                <td className="px-4 py-2">21/07/2025</td>
-                <td className="px-4 py-2 text-gray-300">-</td>
-              </tr>
-              <tr className="hover:bg-gray-900">
-                <td className="px-4 py-2">@lucas</td>
-                <td className="px-4 py-2">ADA/USDT</td>
-                <td className="px-4 py-2">Compra</td>
-                <td className="px-4 py-2 text-red-400">Cancelado</td>
-                <td className="px-4 py-2">20/07/2025</td>
-                <td className="px-4 py-2 text-red-400">-R$ 500</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-    </AdminLayout>
+      </div>
+    </div>
   );
 }
+
+
+

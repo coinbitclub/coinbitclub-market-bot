@@ -105,166 +105,33 @@ export default function AccountingManagementNew() {
   const [filterCurrency, setFilterCurrency] = useState('all');
   const [dateRange, setDateRange] = useState('30');
 
-  // Mock data para demonstração
+  // Fetch real data from backend - NO MORE MOCK DATA
   useEffect(() => {
     setLoading(true);
-    // Simular dados contábeis
-    const mockRecords: AccountingRecord[] = [
-      {
-        id: '1',
-        date: '2024-07-25T10:30:00Z',
-        category: 'revenue',
-        subcategory: 'Trading Profits',
-        description: 'Lucro em operação BTCUSDT LONG',
-        amount: 2580.45,
-        currency: 'USD',
-        account_type: 'trading',
-        reference_id: 'OP_BTC_001',
-        user_id: 'user_001',
-        user_name: 'João Silva',
-        metadata: {
-          operation_id: 'OP_BTC_001',
-          exchange_rate: 1.0,
-          notes: 'Operação bem-sucedida com 5.8% de lucro'
-        }
-      },
-      {
-        id: '2',
-        date: '2024-07-25T09:45:00Z',
-        category: 'revenue',
-        subcategory: 'Commission Revenue',
-        description: 'Comissão de afiliado - Carlos Lima',
-        amount: 125.00,
-        currency: 'USD',
-        account_type: 'commission',
-        reference_id: 'COMM_2024_07_003',
-        user_id: 'user_003',
-        user_name: 'Carlos Lima',
-        metadata: {
-          affiliate_id: 'AFF_CARLOS_001',
-          notes: '5 novos usuários registrados'
-        }
-      },
-      {
-        id: '3',
-        date: '2024-07-25T08:20:00Z',
-        category: 'expense',
-        subcategory: 'Exchange Fees',
-        description: 'Taxa de negociação Binance',
-        amount: -45.75,
-        currency: 'USD',
-        account_type: 'fee',
-        reference_id: 'FEE_BINANCE_001',
-        metadata: {
-          exchange_rate: 1.0,
-          notes: 'Taxa 0.1% sobre volume'
-        }
-      },
-      {
-        id: '4',
-        date: '2024-07-25T07:30:00Z',
-        category: 'asset',
-        subcategory: 'Customer Deposits',
-        description: 'Depósito via transferência bancária',
-        amount: 2000.00,
-        currency: 'USD',
-        account_type: 'deposit',
-        reference_id: 'DEP_2024_07_006',
-        user_id: 'user_006',
-        user_name: 'Patricia Ferreira',
-        transaction_hash: '0xabcdef1234567890...',
-        metadata: {
-          exchange_rate: 1.0,
-          notes: 'Transferência internacional aprovada'
-        }
-      },
-      {
-        id: '5',
-        date: '2024-07-24T16:45:00Z',
-        category: 'liability',
-        subcategory: 'Customer Withdrawals',
-        description: 'Saque solicitado por usuário',
-        amount: -500.00,
-        currency: 'USD',
-        account_type: 'withdrawal',
-        reference_id: 'WTH_2024_07_005',
-        user_id: 'user_005',
-        user_name: 'Roberto Silva',
-        transaction_hash: '0x1234567890abcdef...',
-        metadata: {
-          exchange_rate: 1.0,
-          notes: 'Saque processado automaticamente'
-        }
-      },
-      {
-        id: '6',
-        date: '2024-07-24T14:15:00Z',
-        category: 'expense',
-        subcategory: 'Operational Costs',
-        description: 'Licença de software de análise',
-        amount: -299.00,
-        currency: 'USD',
-        account_type: 'expense',
-        reference_id: 'EXP_SOFTWARE_001',
-        metadata: {
-          notes: 'TradingView Pro License - mensal'
-        }
-      },
-      {
-        id: '7',
-        date: '2024-07-24T12:00:00Z',
-        category: 'revenue',
-        subcategory: 'Bonus Clawback',
-        description: 'Recuperação de bônus não utilizado',
-        amount: 150.00,
-        currency: 'USD',
-        account_type: 'bonus',
-        reference_id: 'CLB_2024_07_001',
-        user_id: 'user_007',
-        user_name: 'Ana Costa',
-        metadata: {
-          notes: 'Bônus expirado recuperado automaticamente'
-        }
-      },
-      {
-        id: '8',
-        date: '2024-07-23T18:30:00Z',
-        category: 'expense',
-        subcategory: 'Tax Provisions',
-        description: 'Provisão para impostos sobre lucros',
-        amount: -387.07,
-        currency: 'USD',
-        account_type: 'tax',
-        reference_id: 'TAX_PROV_001',
-        metadata: {
-          tax_rate: 0.15,
-          notes: '15% sobre lucros do trimestre'
-        }
-      }
-    ];
-
-    setRecords(mockRecords);
+    // TODO: Implementar integração real com backend
+    // Temporariamente definindo dados vazios para identificar
+    const realRecords: AccountingRecord[] = [];
     
-    // Calcular resumo financeiro
-    const revenue = mockRecords.filter(r => r.category === 'revenue').reduce((sum, r) => sum + r.amount, 0);
-    const expenses = mockRecords.filter(r => r.category === 'expense').reduce((sum, r) => sum + Math.abs(r.amount), 0);
-    const netProfit = revenue - expenses;
-    const profitMargin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
+    setRecords(realRecords);
+    setLoading(false);
     
-    const newSummary: FinancialSummary = {
+    // Cálculos baseados em dados reais (vazios até integração)
+    const revenue = 0;
+    const expenses = 0;
+    const profit = revenue - expenses;
+    
+    setFinancialSummary({
       total_revenue: revenue,
       total_expenses: expenses,
-      net_profit: netProfit,
-      profit_margin: profitMargin,
-      trading_volume: mockRecords.filter(r => r.account_type === 'trading').reduce((sum, r) => sum + Math.abs(r.amount), 0),
-      commission_earned: mockRecords.filter(r => r.account_type === 'commission').reduce((sum, r) => sum + r.amount, 0),
-      fees_paid: mockRecords.filter(r => r.account_type === 'fee').reduce((sum, r) => sum + Math.abs(r.amount), 0),
-      active_users: new Set(mockRecords.map(r => r.user_id).filter(Boolean)).size,
-      monthly_growth: 12.5
-    };
-    
-    setSummary(newSummary);
-    setLoading(false);
+      net_profit: profit,
+      profit_margin: revenue > 0 ? (profit / revenue) * 100 : 0,
+      trading_volume: 0,
+      commission_earned: 0,
+      fees_paid: 0,
+      active_users: 0,
+      pending_withdrawals: 0,
+      completed_transactions: realRecords.length
+    });
   }, []);
 
   const filteredRecords = records.filter(record => {

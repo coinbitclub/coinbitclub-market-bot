@@ -1,13 +1,12 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import useSWR from 'swr';
 import { 
   FiUsers, FiPlus, FiEdit, FiTrash2, FiSearch, FiDollarSign,
   FiEye, FiKey, FiUserPlus, FiUserMinus, FiRefreshCw, FiDownload,
   FiBriefcase, FiPercent, FiFileText, FiShare2, FiCopy, FiTrendingUp
 } from 'react-icons/fi';
 import Head from 'next/head';
-import Sidebar from '../../src/components/Sidebar';
+import Sidebar from '../../components/Sidebar';
 
 interface Affiliate {
   id: string;
@@ -68,7 +67,7 @@ export default function AffiliatesManagement() {
   const [showStatementModal, setShowStatementModal] = useState(false);
   const [modalType, setModalType] = useState<'create' | 'edit' | 'view'>('view');
 
-  const { data: affiliatesData, mutate } = useSWR('/api/admin/affiliates');
+  // TODO: Replace with actual backend API call
 
   useEffect(() => {
     fetchAffiliates();
@@ -81,52 +80,10 @@ export default function AffiliatesManagement() {
   const fetchAffiliates = async () => {
     try {
       setLoading(true);
-      // Mock data - replace with API call
-      const mockAffiliates: Affiliate[] = [
-        {
-          id: 'aff_001',
-          name: 'Marcos Afiliado',
-          email: 'marcos@email.com',
-          phone: '+55 11 99999-1111',
-          cpf: '111.222.333-44',
-          type: 'vip',
-          status: 'active',
-          registrationDate: '2024-01-10',
-          lastLogin: '2024-01-20 14:30:00',
-          referralCode: 'MARCOS2024',
-          referralLink: 'https://coinbitclub.com/r/MARCOS2024',
-          commissionRate: 1.5,
-          totalCommissions: 15000.00,
-          paidCommissions: 12000.00,
-          pendingCommissions: 3000.00,
-          linkedUsers: 25,
-          activeUsers: 20,
-          totalRevenue: 300000.00,
-          conversionRate: 18.5
-        },
-        {
-          id: 'aff_002',
-          name: 'Ana Silva',
-          email: 'ana@email.com',
-          phone: '+55 11 88888-2222',
-          cpf: '555.666.777-88',
-          type: 'common',
-          status: 'active',
-          registrationDate: '2024-01-15',
-          lastLogin: '2024-01-20 09:45:00',
-          referralCode: 'ANA2024',
-          referralLink: 'https://coinbitclub.com/r/ANA2024',
-          commissionRate: 1.5,
-          totalCommissions: 4500.00,
-          paidCommissions: 3500.00,
-          pendingCommissions: 1000.00,
-          linkedUsers: 12,
-          activeUsers: 8,
-          totalRevenue: 120000.00,
-          conversionRate: 12.8
-        }
-      ];
-      setAffiliates(mockAffiliates);
+      // TODO: Implement real API call to backend
+      const affiliates: Affiliate[] = []; // NO MORE MOCK DATA - Backend integration required
+      
+      setAffiliates(affiliates);
     } catch (error) {
       console.error('Erro ao buscar afiliados:', error);
     } finally {
@@ -367,7 +324,7 @@ export default function AffiliatesManagement() {
                       <input
                         type="text"
                         value={searchTerm}
-                        onChange={(e) = /> setSearchTerm(e.target.value)}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
                         placeholder="Buscar por nome, email ou código..."
                       />
@@ -548,7 +505,7 @@ export default function AffiliatesManagement() {
                       name="name"
                       required
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -557,7 +514,7 @@ export default function AffiliatesManagement() {
                       name="email"
                       required
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Telefone</label>
@@ -565,7 +522,7 @@ export default function AffiliatesManagement() {
                       type="text"
                       name="phone"
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">CPF</label>
@@ -573,7 +530,7 @@ export default function AffiliatesManagement() {
                       type="text"
                       name="cpf"
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700">Tipo de Afiliado</label>
@@ -638,7 +595,7 @@ export default function AffiliatesManagement() {
                           value={selectedAffiliate.name}
                           disabled={modalType === 'view'}
                           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        / />
+ />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -647,7 +604,7 @@ export default function AffiliatesManagement() {
                           value={selectedAffiliate.email}
                           disabled={modalType === 'view'}
                           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        / />
+ />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Código de Referência</label>
@@ -657,7 +614,7 @@ export default function AffiliatesManagement() {
                             value={selectedAffiliate.referralCode}
                             disabled
                             className="mt-1 block w-full border-gray-300 rounded-l-md shadow-sm bg-gray-50 sm:text-sm"
-                          / />
+ />
                           <button
                             onClick={() => copyReferralLink(selectedAffiliate.referralLink)}
                             className="mt-1 px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100"
@@ -674,7 +631,7 @@ export default function AffiliatesManagement() {
                             value={selectedAffiliate.referralLink}
                             disabled
                             className="mt-1 block w-full border-gray-300 rounded-l-md shadow-sm bg-gray-50 sm:text-sm"
-                          / />
+ />
                           <button
                             onClick={() => copyReferralLink(selectedAffiliate.referralLink)}
                             className="mt-1 px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100"
@@ -869,7 +826,7 @@ export default function AffiliatesManagement() {
                   step="0.01"
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="0.00"
-                / />
+ />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Motivo</label>
@@ -900,3 +857,6 @@ export default function AffiliatesManagement() {
     </div>
   );
 }
+
+
+

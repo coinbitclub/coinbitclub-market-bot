@@ -1,13 +1,12 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import useSWR from 'swr';
 import { 
   FiUsers, FiPlus, FiEdit, FiTrash2, FiSearch, FiFilter, FiDollarSign,
   FiEye, FiKey, FiUserPlus, FiUserMinus, FiRefreshCw, FiDownload,
-  FiBriefcase, FiCreditCard, FiBank, FiPercent, FiFileText, FiShield
+  FiBriefcase, FiCreditCard, FiPercent, FiFileText, FiShield, FiX
 } from 'react-icons/fi';
 import Head from 'next/head';
-import Sidebar from '../../src/components/Sidebar';
+import Sidebar from '../../components/Sidebar';
 
 interface User {
   id: string;
@@ -78,7 +77,7 @@ export default function UsersManagement() {
   const [showAffiliateModal, setShowAffiliateModal] = useState(false);
   const [modalType, setModalType] = useState<'create' | 'edit' | 'view'>('view');
 
-  const { data: usersData, mutate } = useSWR('/api/admin/users');
+  // TODO: Replace with actual backend API call
 
   useEffect(() => {
     fetchUsers();
@@ -91,69 +90,13 @@ export default function UsersManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      // API call implementation here
-      const mockUsers: User[] = [
-        {
-          id: '1',
-          name: 'João Silva',
-          email: 'joao@email.com',
-          phone: '+55 11 99999-9999',
-          cpf: '123.456.789-01',
-          plan: 'premium',
-          status: 'active',
-          registrationDate: '2024-01-15',
-          lastLogin: '2024-01-20 10:30:00',
-          balance: 15000.00,
-          prepaidBalance: 5000.00,
-          exchangeBalance: 12500.75,
-          historicalResult: 2850.50,
-          revenue: 450.25,
-          affiliateId: 'aff_001',
-          affiliateName: 'Marcos Afiliado',
-          bankData: {
-            bank: 'Banco do Brasil',
-            agency: '1234-5',
-            account: '987654-3',
-            accountType: 'Corrente'
-          },
-          pixKey: 'joao@email.com',
-          totalDeposits: 18000.00,
-          totalWithdrawals: 3000.00,
-          tradingPermission: true,
-          riskLevel: 'medium'
-        },
-        {
-          id: '2',
-          name: 'Maria Santos',
-          email: 'maria@email.com',
-          phone: '+55 11 88888-8888',
-          cpf: '987.654.321-09',
-          plan: 'vip',
-          status: 'active',
-          registrationDate: '2024-01-10',
-          lastLogin: '2024-01-20 09:15:00',
-          balance: 25000.00,
-          prepaidBalance: 8000.00,
-          exchangeBalance: 22750.30,
-          historicalResult: 5720.80,
-          revenue: 890.15,
-          bankData: {
-            bank: 'Itaú',
-            agency: '5678-9',
-            account: '123456-7',
-            accountType: 'Poupança'
-          },
-          pixKey: '+5511888888888',
-          totalDeposits: 30000.00,
-          totalWithdrawals: 5000.00,
-          tradingPermission: true,
-          riskLevel: 'low'
-        }
-      ];
-      setUsers(mockUsers);
+      // TODO: Implement real API call to backend
+      const users: User[] = []; // NO MORE MOCK DATA - Backend integration required
+      
+      setUsers(users);
+      setLoading(false);
     } catch (error) {
-      console.error('Erro ao buscar usuários:', error);
-    } finally {
+      console.error('Error fetching users:', error);
       setLoading(false);
     }
   };
@@ -366,7 +309,7 @@ export default function UsersManagement() {
                       <input
                         type="text"
                         value={searchTerm}
-                        onChange={(e) = /> setSearchTerm(e.target.value)}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
                         placeholder="Buscar por nome, email ou CPF..."
                       />
@@ -526,7 +469,7 @@ export default function UsersManagement() {
                       value={selectedUser.name}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -535,7 +478,7 @@ export default function UsersManagement() {
                       value={selectedUser.email}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">CPF</label>
@@ -544,7 +487,7 @@ export default function UsersManagement() {
                       value={selectedUser.cpf}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Telefone</label>
@@ -553,7 +496,7 @@ export default function UsersManagement() {
                       value={selectedUser.phone}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Chave PIX</label>
@@ -562,7 +505,7 @@ export default function UsersManagement() {
                       value={selectedUser.pixKey}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                 </div>
 
@@ -576,7 +519,7 @@ export default function UsersManagement() {
                       value={selectedUser.balance}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Saldo Pré-pago</label>
@@ -585,7 +528,7 @@ export default function UsersManagement() {
                       value={selectedUser.prepaidBalance}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Saldo na Exchange</label>
@@ -594,7 +537,7 @@ export default function UsersManagement() {
                       value={selectedUser.exchangeBalance}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Resultado Histórico (USD)</label>
@@ -603,7 +546,7 @@ export default function UsersManagement() {
                       value={selectedUser.historicalResult}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Receita</label>
@@ -612,7 +555,7 @@ export default function UsersManagement() {
                       value={selectedUser.revenue}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                 </div>
 
@@ -626,7 +569,7 @@ export default function UsersManagement() {
                       value={selectedUser.bankData.bank}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Agência</label>
@@ -635,7 +578,7 @@ export default function UsersManagement() {
                       value={selectedUser.bankData.agency}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Conta</label>
@@ -644,7 +587,7 @@ export default function UsersManagement() {
                       value={selectedUser.bankData.account}
                       disabled={modalType === 'view'}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    / />
+ />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Tipo de Conta</label>
@@ -737,7 +680,7 @@ export default function UsersManagement() {
                   type="number"
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="0.00"
-                / />
+ />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Motivo</label>
@@ -801,3 +744,6 @@ export default function UsersManagement() {
     </div>
   );
 }
+
+
+

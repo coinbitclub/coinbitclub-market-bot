@@ -20,3 +20,5 @@ export default function Modal({ open, onClose, children }: Props) {
     </div>
   )
 }
+
+

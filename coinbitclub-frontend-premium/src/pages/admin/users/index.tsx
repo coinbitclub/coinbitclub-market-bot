@@ -151,7 +151,7 @@ export default function UsersPage() {
             type="text"
             placeholder="Buscar por nome ou email..."
             value={searchTerm}
-            onChange={(e) = /> setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -268,3 +268,6 @@ export default function UsersPage() {
     </AdminLayout>
   );
 }
+
+
+

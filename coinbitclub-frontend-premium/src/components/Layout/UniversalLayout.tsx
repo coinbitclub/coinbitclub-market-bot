@@ -40,3 +40,5 @@ const UniversalLayout: React.FC<UniversalLayoutProps> = ({ children, title }) =>
 };
 
 export default UniversalLayout;
+
+

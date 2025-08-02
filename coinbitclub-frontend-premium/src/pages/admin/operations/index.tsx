@@ -195,14 +195,14 @@ export default function OperationsPage() {
               type="text"
               placeholder="Filtrar por símbolo"
               value={filters.symbol}
-              onChange={(e) = /> setFilters({ ...filters, symbol: e.target.value, page: 1 })}
+              onChange={(e) => setFilters({ ...filters, symbol: e.target.value, page: 1 })}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <input
               type="text"
               placeholder="ID do usuário"
               value={filters.user_id}
-              onChange={(e) = /> setFilters({ ...filters, user_id: e.target.value, page: 1 })}
+              onChange={(e) => setFilters({ ...filters, user_id: e.target.value, page: 1 })}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <select
@@ -320,3 +320,6 @@ export default function OperationsPage() {
     </AdminLayout>
   );
 }
+
+
+

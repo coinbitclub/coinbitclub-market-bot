@@ -1,22 +1,14 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-// Mock data para demonstração
-const mockData = [
-  { time: '00:00', value: 100, pnl: 0 },
-  { time: '04:00', value: 102.3, pnl: 2.3 },
-  { time: '08:00', value: 98.7, pnl: -1.3 },
-  { time: '12:00', value: 105.6, pnl: 5.6 },
-  { time: '16:00', value: 109.2, pnl: 9.2 },
-  { time: '20:00', value: 107.8, pnl: 7.8 },
-  { time: '24:00', value: 112.4, pnl: 12.4 },
-]
+// NO MORE MOCK DATA - Real data required from backend
+const chartData = []; // Empty array - backend integration required
 
 export default function Chart() {
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={mockData}>
+        <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#1e40af33" />
           <XAxis 
             dataKey="time" 
@@ -54,3 +46,5 @@ export default function Chart() {
     </div>
   )
 }
+
+

@@ -35,13 +35,10 @@ const nextConfig = {
   },
 
   // Ignorar páginas problemáticas no build
-  pageExtensions: ['tsx', 'ts', 'jsx', 'js'].map(ext => {
-    return `*.!(broken|problem|corrupted|disabled|temp-backup).${ext}`;
-  }).flat(),
+  pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
 
   // Configurações de otimização
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ['react-icons', 'framer-motion']
   },
 

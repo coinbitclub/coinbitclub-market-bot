@@ -189,3 +189,5 @@ export const CompactRobotStatus: React.FC<CompactRobotStatusProps> = ({
 };
 
 export default CompactRobotStatus;
+
+

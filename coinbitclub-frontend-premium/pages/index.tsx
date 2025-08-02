@@ -411,7 +411,7 @@ const LandingPage: NextPage = () => {
                 </div>
 
                 <Link 
-                  href="/auth/login-premium" 
+                  href="/auth/login-integrated" 
                   className="px-4 py-2 border border-blue-500 text-blue-400 rounded-lg hover:bg-blue-500/10 transition-colors"
                 >
                   🔑 LOGIN

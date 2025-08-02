@@ -26,19 +26,13 @@ export default function AdminFinancial() {
               </tr>
             </thead>
             <tbody>
+              {/* TODO: Replace with real financial data from backend API */}
               <tr className="border-b border-gray-700 hover:bg-gray-900">
-                <td className="px-4 py-2">21/07/2025</td>
-                <td className="px-4 py-2">Receita de vendas</td>
-                <td className="px-4 py-2 text-green-400">Entrada</td>
-                <td className="px-4 py-2 text-green-400">R$ 2.000</td>
-                <td className="px-4 py-2">R$ 10.000</td>
-              </tr>
-              <tr className="hover:bg-gray-900">
-                <td className="px-4 py-2">20/07/2025</td>
-                <td className="px-4 py-2">Pagamento afiliado</td>
-                <td className="px-4 py-2 text-red-400">Saída</td>
-                <td className="px-4 py-2 text-red-400">R$ 500</td>
-                <td className="px-4 py-2">R$ 8.000</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
               </tr>
             </tbody>
           </table>
@@ -47,3 +41,6 @@ export default function AdminFinancial() {
     </AdminLayout>
   );
 }
+
+
+

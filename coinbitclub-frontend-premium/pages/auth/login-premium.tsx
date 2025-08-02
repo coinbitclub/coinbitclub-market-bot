@@ -1,52 +1,79 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useAuthStore } from '../../src/store/authStore';
+import { useAuth } from '../../src/contexts/AuthContextIntegrated';
+import SmsVerification from '../../src/components/SmsVerification';
+import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 
 const LoginPremiumPage: NextPage = () => {
   const router = useRouter();
-  const login = useAuthStore((state) => state.login);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const user = useAuthStore((state) => state.user);
-  const loading = useAuthStore((state) => state.loading);
-  const error = useAuthStore((state) => state.error);
-  const clearError = useAuthStore((state) => state.clearError);
+  const { login, sendSMSVerification, verifySMSCode, loading, smsStep, tempPhone } = useAuth();
   
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
+    rememberMe: false
   });
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  // Redirecionar se já estiver logado
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      // Projeto usa dashboard-premium como dashboard principal para todos os perfis
-      const redirectPath = '/dashboard-premium';
-      console.log('🔄 Redirecionando usuário logado:', user.role, '→', redirectPath);
-      router.replace(redirectPath);
-    }
-  }, [isAuthenticated, user, router]);
-
-  // Limpar erros quando componente montar
-  useEffect(() => {
-    clearError();
-  }, [clearError]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [field]: value
     }));
-    
-    // Limpar erro quando usuário começar a digitar
-    if (error) {
-      clearError();
+    setError(''); // Limpar erro ao digitar
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    try {
+      const result = await login(formData.email, formData.password);
+      
+      if (result.requiresSMS) {
+        setSuccess(result.message || 'Código SMS enviado!');
+      } else {
+        setSuccess('Login realizado com sucesso!');
+        // Redirecionamento é feito automaticamente pelo AuthContext
+      }
+    } catch (error: any) {
+      setError(error.message || 'Erro no login');
     }
+  };
+
+  const handleSMSSuccess = async (code: string) => {
+    if (!tempPhone) throw new Error('Telefone não encontrado');
+    
+    await verifySMSCode(tempPhone, code);
+  };
+
+  const handleSMSResend = async () => {
+    if (!tempPhone) throw new Error('Telefone não encontrado');
+    
+    const result = await sendSMSVerification(tempPhone);
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+  };
+
+  // Se estiver na etapa de SMS, mostrar componente de verificação
+  if (smsStep === 'pending' && tempPhone) {
+    return (
+      <SmsVerification
+        phone={tempPhone}
+        onSuccess={handleSMSSuccess}
+        onResend={handleSMSResend}
+        loading={loading}
+        title="Verificação SMS"
+        subtitle="Digite o código enviado para concluir seu login"
+      />
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

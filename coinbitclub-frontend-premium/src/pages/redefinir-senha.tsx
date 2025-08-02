@@ -220,7 +220,7 @@ export default function RedefinirSenha() {
                           id="novaSenha"
                           type={mostrarSenha ? 'text' : 'password'}'
                           value={novaSenha}
-                          onChange={(e) = /> setNovaSenha(e.target.value)}
+                          onChange={(e) => setNovaSenha(e.target.value)}
                           className="premium-input w-full pr-10"
                           placeholder="Digite sua nova senha"
                           required
@@ -246,7 +246,7 @@ export default function RedefinirSenha() {
                           id="confirmarSenha"
                           type={mostrarConfirmacao ? 'text' : 'password'}'
                           value={confirmarSenha}
-                          onChange={(e) = /> setConfirmarSenha(e.target.value)}
+                          onChange={(e) => setConfirmarSenha(e.target.value)}
                           className="premium-input w-full pr-10"
                           placeholder="Digite novamente sua nova senha"
                           required
@@ -355,3 +355,6 @@ export default function RedefinirSenha() {
     </>
   );
 }
+
+
+

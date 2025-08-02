@@ -30,19 +30,19 @@ const AdminDashboard: NextPage = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.replace('/auth/login-premium');
+      router.replace('/auth/login-integrated');
       return;
     }
     
     if (user && user.role !== 'admin' && user.role !== 'ADMIN') {
-      router.replace('/auth/login-premium');
+      router.replace('/auth/login-integrated');
       return;
     }
   }, [isAuthenticated, user, router]);
 
   const handleLogout = () => {
     logout();
-    router.replace('/auth/login-premium');
+    router.replace('/auth/login-integrated');
   };
 
   if (!user) {

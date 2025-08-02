@@ -121,7 +121,7 @@ export default function EsqueciSenha() {
                       id="email"
                       type="email"
                       value={email}
-                      onChange={(e) = /> setEmail(e.target.value)}
+                      onChange={(e) => setEmail(e.target.value)}
                       className="premium-input w-full"
                       placeholder="seu@email.com"
                       required
@@ -178,3 +178,6 @@ export default function EsqueciSenha() {
     </>
   );
 }
+
+
+

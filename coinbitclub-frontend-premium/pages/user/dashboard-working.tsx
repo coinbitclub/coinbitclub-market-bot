@@ -30,14 +30,14 @@ const UserDashboard: NextPage = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.replace('/auth/login-premium');
+      router.replace('/auth/login-integrated');
       return;
     }
   }, [isAuthenticated, router]);
 
   const handleLogout = () => {
     logout();
-    router.replace('/auth/login-premium');
+    router.replace('/auth/login-integrated');
   };
 
   if (!user) {

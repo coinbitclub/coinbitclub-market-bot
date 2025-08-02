@@ -17,6 +17,7 @@ export function middleware(request: NextRequest) {
     '/auth/login',
     '/auth/register',
     '/auth/forgot-password',
+    '/auth/forgot-password-integrated',
     '/auth/reset-password',
     '/api/auth/login',
     '/api/auth/register',
@@ -80,7 +81,7 @@ export function middleware(request: NextRequest) {
       console.log('👑 Admin tem acesso total');
       
       // Se admin está tentando acessar /auth/login e já está logado, redirecionar para dashboard
-      if (pathname === '/auth/login' || pathname === '/auth/login-premium') {
+      if (pathname === '/auth/login' || pathname === '/auth/login-integrated') {
         console.log('🔄 Admin já logado tentando acessar login, redirecionando para dashboard');
         return NextResponse.redirect(new URL('/dashboard-premium', request.url));
       }
@@ -97,7 +98,7 @@ export function middleware(request: NextRequest) {
       console.log('🏢 Gestor - acesso:', hasAccess);
       
       // Se gestor está tentando acessar /auth/login e já está logado, redirecionar para dashboard
-      if (pathname === '/auth/login' || pathname === '/auth/login-premium') {
+      if (pathname === '/auth/login' || pathname === '/auth/login-integrated') {
         console.log('🔄 Gestor já logado tentando acessar login, redirecionando para dashboard');
         return NextResponse.redirect(new URL('/dashboard-premium', request.url));
       }
@@ -110,7 +111,7 @@ export function middleware(request: NextRequest) {
       console.log('⚙️ Operador - acesso:', hasAccess);
       
       // Se operador está tentando acessar /auth/login e já está logado, redirecionar para dashboard
-      if (pathname === '/auth/login' || pathname === '/auth/login-premium') {
+      if (pathname === '/auth/login' || pathname === '/auth/login-integrated') {
         console.log('🔄 Operador já logado tentando acessar login, redirecionando para dashboard');
         return NextResponse.redirect(new URL('/dashboard-premium', request.url));
       }
@@ -123,7 +124,7 @@ export function middleware(request: NextRequest) {
       console.log('💰 Afiliado - acesso:', hasAccess);
       
       // Se afiliado está tentando acessar /auth/login e já está logado, redirecionar para dashboard
-      if (pathname === '/auth/login' || pathname === '/auth/login-premium') {
+      if (pathname === '/auth/login' || pathname === '/auth/login-integrated') {
         console.log('🔄 Afiliado já logado tentando acessar login, redirecionando para dashboard');
         return NextResponse.redirect(new URL('/dashboard-premium', request.url));
       }
@@ -135,7 +136,7 @@ export function middleware(request: NextRequest) {
       console.log('👤 Usuário - acesso:', hasAccess);
       
       // Se usuário está tentando acessar /auth/login e já está logado, redirecionar para dashboard
-      if (pathname === '/auth/login' || pathname === '/auth/login-premium') {
+      if (pathname === '/auth/login' || pathname === '/auth/login-integrated') {
         console.log('🔄 Usuário já logado tentando acessar login, redirecionando para dashboard');
         return NextResponse.redirect(new URL('/dashboard-premium', request.url));
       }

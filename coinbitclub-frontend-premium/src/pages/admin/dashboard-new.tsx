@@ -93,120 +93,49 @@ interface RecentActivity {
 export default function AdminDashboard() {
   const [currentTime, setCurrentTime] = useState<string>('');
 
-  // Mock data for development and demonstration
-  const mockDashboardData = {
+  // TODO: Fetch real data from backend - NO MORE MOCK DATA
+  const dashboardData = {
     returns: {
-      day: { return: 2.5, accuracy: 78.5 },
-      historical: { return: 145.8, accuracy: 82.3, period: '90 dias' }
+      day: { return: 0, accuracy: 0 },
+      historical: { return: 0, accuracy: 0, period: '-' }
     },
     pendingRefunds: [],
     pendingSettlements: [],
-    totalUsers: 1247,
-    activeOperations: 15,
-    totalVolume: 2847392.50
+    totalUsers: 0,
+    activeOperations: 0,
+    totalVolume: 0
   };
 
-  const mockMarketReading = {
-    direction: 'LONG' as const,
-    confidence: 85,
-    ai_justification: 'Análise técnica indica rompimento de resistência em BTC com volume crescente. Indicadores RSI e MACD confluem para movimento de alta.',
-    day_tracking: 'Bitcoin mantém força acima de $65,000. Altcoins seguem movimento. Volume institucional crescente.',
+  const marketReading = {
+    direction: '-' as const,
+    confidence: 0,
+    ai_justification: '-',
+    day_tracking: '-',
     created_at: new Date().toISOString()
   };
 
-  const mockOperations: Operation[] = [
-    {
-      id: '1',
-      symbol: 'BTC/USDT',
-      entry_price: 64500,
-      current_price: 66200,
-      exchange: 'Binance',
-      is_testnet: false,
-      side: 'LONG',
-      opened_at: new Date().toISOString(),
-      return_percentage: 2.63
-    },
-    {
-      id: '2',
-      symbol: 'ETH/USDT',
-      entry_price: 3200,
-      current_price: 3150,
-      exchange: 'Binance',
-      is_testnet: false,
-      side: 'LONG',
-      opened_at: new Date().toISOString(),
-      return_percentage: -1.56
-    }
-  ];
-
-  const mockActivities: RecentActivity[] = [
-    {
-      id: '1',
-      type: 'REGISTRATION',
-      description: 'Novo usuário registrado no sistema',
-      timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-      user: 'sistema'
-    },
-    {
-      id: '2',
-      type: 'OPERATION',
-      description: 'Operação LONG executada em BTC/USDT',
-      timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-      user: 'trading-bot'
-    },
-    {
-      id: '3',
-      type: 'SIGNAL',
-      description: 'Sinal TradingView processado com sucesso',
-      timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-      user: 'webhook'
-    }
-  ];
-
-  const mockSignals: Signal[] = [
-    {
-      id: '1',
-      source: 'TRADINGVIEW',
-      symbol: 'BTC/USDT',
-      type: 'BUY',
-      price: 66200,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: '2',
-      source: 'COINTARS',
-      symbol: 'ETH/USDT',
-      type: 'ANALYSIS',
-      price: 3150,
-      created_at: new Date().toISOString(),
-      indicator: 'RSI Oversold',
-      data: { rsi: 28, macd: 'bullish_divergence' }
-    }
-  ];
-
-  const mockSystemStatus = {
-    api: 'online' as const,
-    database: 'online' as const,
-    payments: 'online' as const,
-    email: 'online' as const
+  const operations: Operation[] = [];
+  const activities: RecentActivity[] = [];
+  const signals: Signal[] = [];
+  const systemStatus = {
+    api: '-' as const,
+    database: '-' as const,
+    payments: '-' as const,
+    email: '-' as const
   };
 
-  // Fetch data from backend (currently using mock data)
-  const { data: dashboardData, error: dashboardError } = useSWR('/api/admin/dashboard', fetchAdminMetrics);
-  const { data: marketReading, error: marketError } = useSWR('/api/admin/market-reading', fetchAdminMetrics);
-  const { data: systemStatus, error: statusError } = useSWR('/api/admin/system-status', fetchAdminMetrics);
-  const { data: operations, error: operationsError } = useSWR('/api/admin/operations', fetchAdminMetrics);
-  const { data: signals, error: signalsError } = useSWR('/api/admin/signals', fetchAdminMetrics);
-  const { data: recentActivities, error: activitiesError } = useSWR('/api/admin/activities', fetchRecentActivities);
-  const { data: alerts, error: alertsError } = useSWR('/api/admin/alerts', fetchSystemAlerts);
+  // TODO: Fetch real data from backend - NO MOCK FALLBACKS
+  // const { data: dashboardData, error: dashboardError } = useSWR('/api/admin/dashboard', fetchAdminMetrics);
+  // const { data: marketReading, error: marketError } = useSWR('/api/admin/market-reading', fetchAdminMetrics);
+  // const { data: systemStatus, error: statusError } = useSWR('/api/admin/system-status', fetchAdminMetrics);
 
-  // Use mock data if API data is not available
-  const currentDashboard = dashboardData?.data || mockDashboardData;
-  const currentMarketReading = marketReading?.data || mockMarketReading;
-  const currentOperations = operations?.data || mockOperations;
-  const currentActivities = recentActivities?.data || mockActivities;
-  const currentSignals = signals?.data || mockSignals;
-  const currentSystemStatus = systemStatus?.data || mockSystemStatus;
+  // Use empty data until backend integration is complete
+  const currentDashboard = dashboardData;
+  const currentMarketReading = marketReading;
+  const currentOperations = operations;
+  const currentActivities = activities;
+  const currentSignals = signals;
+  const currentSystemStatus = systemStatus;
   
   useEffect(() => {
     const updateTime = () => {
@@ -217,17 +146,18 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  if (dashboardError || marketError || statusError) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <FiAlertTriangle className="mx-auto h-12 w-12 text-red-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Erro ao carregar dados</h3>
-          <p className="mt-1 text-sm text-gray-500">Tente recarregar a página</p>
-        </div>
-      </div>
-    );
-  }
+  // TODO: Handle errors when backend integration is implemented
+  // if (dashboardError || marketError || statusError) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  //       <div className="text-center">
+  //         <FiAlertTriangle className="mx-auto h-12 w-12 text-red-400" />
+  //         <h3 className="mt-2 text-sm font-medium text-gray-900">Erro ao carregar dados</h3>
+  //         <p className="mt-1 text-sm text-gray-500">Tente recarregar a página</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   const getMarketDirectionColor = (direction: string) => {
     switch (direction) {
@@ -703,3 +633,6 @@ export default function AdminDashboard() {
         </AdminLayout>
       );
     }
+
+
+

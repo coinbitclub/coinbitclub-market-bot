@@ -26,19 +26,13 @@ export default function AdminFinancialSettlements() {
               </tr>
             </thead>
             <tbody>
+              {/* TODO: Replace with real settlement data from backend API */}
               <tr className="border-b border-gray-700 hover:bg-gray-900">
-                <td className="px-4 py-2">@joao</td>
-                <td className="px-4 py-2">Reembolso</td>
-                <td className="px-4 py-2 text-amber-400">R$ 500</td>
-                <td className="px-4 py-2 text-green-400">Pago</td>
-                <td className="px-4 py-2">21/07/2025</td>
-              </tr>
-              <tr className="hover:bg-gray-900">
-                <td className="px-4 py-2">@lucas</td>
-                <td className="px-4 py-2">Pagamento</td>
-                <td className="px-4 py-2 text-amber-400">R$ 1.200</td>
-                <td className="px-4 py-2 text-yellow-400">Pendente</td>
-                <td className="px-4 py-2">20/07/2025</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
+                <td className="px-4 py-2 text-gray-500">-</td>
               </tr>
             </tbody>
           </table>
@@ -47,3 +41,6 @@ export default function AdminFinancialSettlements() {
     </AdminLayout>
   );
 }
+
+
+

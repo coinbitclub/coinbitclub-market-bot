@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
 const pool = new Pool({
-  connectionString: 'postgresql://postgres:FDjupFGvAzzwbuZMRyVxlJBXsQtphlHv@maglev.proxy.rlwy.net:42095/railway',
+  connectionString: 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
   ssl: { rejectUnauthorized: false }
 });
 
@@ -12,7 +12,7 @@ async function createTestUser() {
     
     // Verificar se usuário já existe
     const existingUser = await pool.query(
-      'SELECT id, email, name FROM users WHERE email = $1',
+      'SELECT id, email, full_name FROM users WHERE email = $1',
       ['faleconosco@coinbitclub.vip']
     );
 
@@ -21,23 +21,27 @@ async function createTestUser() {
       return;
     }
 
-    console.log('👤 Criando usuário de teste...');
+    console.log('👤 Criando usuário admin...');
     
     // Hash da senha
     const hashedPassword = await bcrypt.hash('123456', 12);
     
-    // Criar usuário
+    // Criar usuário admin
     const result = await pool.query(`
-      INSERT INTO users (name, email, password_hash, role, status, phone) 
-      VALUES ($1, $2, $3, $4, $5, $6) 
-      RETURNING id, name, email, role
+      INSERT INTO users (username, full_name, email, password_hash, role, status, phone, country, email_verified, phone_verified) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+      RETURNING id, username, full_name, email, role
     `, [
-      'Fale Conosco',
+      'admin-coinbitclub',
+      'Fale Conosco Admin',
       'faleconosco@coinbitclub.vip',
       hashedPassword,
       'admin',
       'active',
-      '+5511999999999'
+      '+5521987386645',
+      'Brasil',
+      true,
+      true
     ]);
 
     console.log('✅ Usuário criado com sucesso:', result.rows[0]);

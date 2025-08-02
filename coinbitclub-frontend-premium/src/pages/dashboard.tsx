@@ -107,64 +107,26 @@ function Dashboard() {
     return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
   };
 
-  // Dados de fallback para demonstração (caso a API não esteja disponível)
-  const fallbackMetrics: DashboardMetrics = {
-    totalProfit: 8796.42,
-    profitChange: 12.8,
-    activePositions: 12,
-    winRate: 75,
-    totalBalance: 42458.90,
-    balanceChange: 5.2,
-    trades24h: 24,
-    tradeSuccess: 18
+  // NO MORE MOCK DATA - Backend integration required
+  const dashboardMetrics: DashboardMetrics = {
+    totalProfit: 0,
+    profitChange: 0,
+    activePositions: 0,
+    winRate: 0,
+    totalBalance: 0,
+    balanceChange: 0,
+    trades24h: 0,
+    tradeSuccess: 0
   };
 
-  const fallbackBalances: Balance[] = [
-    { currency: 'BTC', amount: 0.234, usdValue: 14512.67, change24h: 3.2 },
-    { currency: 'ETH', amount: 8.45, usdValue: 16953.12, change24h: 1.8 },
-    { currency: 'USDT', amount: 10993.11, usdValue: 10993.11, change24h: 0 }
-  ];
+  const balances: Balance[] = [];
 
-  const fallbackPositions: Position[] = [
-    { 
-      id: '1', 
-      pair: 'BTC/USDT', 
-      type: 'LONG', 
-      amount: 0.05, 
-      entryPrice: 57891.23, 
-      currentPrice: 58432.11, 
-      pnl: 27.04, 
-      pnlPercentage: 0.93, 
-      openedAt: '2023-06-12T14:32:45Z' 
-    },
-    { 
-      id: '2', 
-      pair: 'ETH/USDT', 
-      type: 'LONG', 
-      amount: 1.2, 
-      entryPrice: 2021.34, 
-      currentPrice: 2067.88, 
-      pnl: 55.85, 
-      pnlPercentage: 2.3, 
-      openedAt: '2023-06-11T10:15:22Z' 
-    },
-    { 
-      id: '3', 
-      pair: 'SOL/USDT', 
-      type: 'SHORT', 
-      amount: 15, 
-      entryPrice: 52.32, 
-      currentPrice: 51.14, 
-      pnl: 17.7, 
-      pnlPercentage: 2.25, 
-      openedAt: '2023-06-10T21:44:12Z' 
-    }
-  ];
+  const positions: Position[] = [];
 
-  // Usar dados de fallback se necessário
-  const displayMetrics = metrics || fallbackMetrics;
-  const displayBalances = balances.length > 0 ? balances : fallbackBalances;
-  const displayPositions = positions.length > 0 ? positions : fallbackPositions;
+  // Use real data from backend - no fallbacks
+  const displayMetrics = dashboardMetrics;
+  const displayBalances = balances;
+  const displayPositions = positions;
 
   return (
     <Layout title="Dashboard | CoinBitClub MarketBot">
@@ -304,3 +266,6 @@ function Dashboard() {
 }
 
 export default withAuth(Dashboard);
+
+
+

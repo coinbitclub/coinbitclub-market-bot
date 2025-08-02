@@ -1,7 +1,7 @@
 import type { AppProps } from 'next/app';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { AuthProvider } from '../src/providers/AuthProvider';
+import { AuthProvider } from '../src/contexts/AuthContextIntegrated';
 import { GlobalPremiumStyles } from '../src/styles/GlobalPremiumStyles';
 import '../styles/globals.css';
 
@@ -12,9 +12,10 @@ const publicPages = [
   '/cadastro',
   '/politicas',
   '/auth/login',
-  '/auth/login-premium',
+  '/auth/login-integrated',
   '/auth/register',
   '/auth/forgot-password',
+  '/auth/forgot-password-integrated',
   '/auth/reset-password',
   '/privacy',
   '/terms',

@@ -20,3 +20,5 @@ test('fetch metrics', async () => {
   await result.current.mutate()
   expect(result.current.data.accuracy).toBe(80)
 })
+
+

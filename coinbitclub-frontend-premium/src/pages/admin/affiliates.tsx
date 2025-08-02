@@ -369,7 +369,7 @@ export default function AffiliatesManagement() {
                         type="text"
                         placeholder="Buscar por nome, email ou código..."
                         value={searchTerm}
-                        onChange={(e) = /> setSearchTerm(e.target.value)}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
@@ -605,7 +605,7 @@ export default function AffiliatesManagement() {
             <input
               type="number"
               value={editingAffiliate.commission_rate || 0}
-              onChange={(e) = /> setEditingAffiliate({
+              onChange={(e) => setEditingAffiliate({
                 ...editingAffiliate,
                 commission_rate: parseFloat(e.target.value)
               })}
@@ -728,3 +728,6 @@ export default function AffiliatesManagement() {
     </div>
   );
 }
+
+
+

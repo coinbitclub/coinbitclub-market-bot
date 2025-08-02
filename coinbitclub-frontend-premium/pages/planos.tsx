@@ -14,14 +14,16 @@ import {
   FiTrendingUp,
   FiUsers,
   FiClock,
-  FiTarget
+  FiTarget,
+  FiLoader
 } from 'react-icons/fi';
-
 interface Plan {
   id: string;
   name: string;
   subtitle: string;
   region: string;
+  price?: string;
+  originalPrice?: string;
   commission: string;
   trial: string;
   badge?: string;
@@ -35,36 +37,44 @@ interface Plan {
 }
 
 const PlanosPage: NextPage = () => {
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  const handlePlanSelection = async (planId: string) => {
+    // Redirecionar diretamente para a página de pagamento
+    window.location.href = `/payment?plan=${planId}`;
+  };
+
   const plans: Plan[] = [
     {
       id: 'brasil-flex',
       name: 'BRASIL FLEX',
-      subtitle: 'Para iniciantes',
+      subtitle: 'Pré-pago - Ideal para testes',
       region: 'Brasil',
-      commission: '1,5%',
-      trial: '7 dias grátis',
+      price: 'Sem mensalidade',
+      commission: '20% de comissão sobre lucros',
+      trial: 'Todas as funcionalidades incluídas',
       features: [
         {
           category: 'Trading Automatizado',
           items: [
-            { name: 'Bot MARKETBOT básico', included: true },
+            { name: 'Bot MARKETBOT completo', included: true },
             { name: 'Sinais de entrada e saída', included: true },
             { name: 'Stop Loss automático', included: true },
             { name: 'Take Profit inteligente', included: true },
             { name: 'Trading 24/7', included: true },
-            { name: 'Múltiplas exchanges', included: false },
-            { name: 'Trading multi-pares', included: false }
+            { name: 'Múltiplas exchanges', included: true },
+            { name: 'Trading multi-pares', included: true }
           ]
         },
         {
           category: 'Análise e Monitoramento',
           items: [
-            { name: 'Dashboard básico', included: true },
-            { name: 'Relatórios diários', included: true },
+            { name: 'Dashboard premium', included: true },
+            { name: 'Relatórios em tempo real', included: true },
             { name: 'Análise técnica básica', included: true },
-            { name: 'Análise técnica avançada', included: false },
-            { name: 'Backtesting', included: false },
-            { name: 'Análise de sentimento', included: false }
+            { name: 'Análise técnica avançada', included: true },
+            { name: 'Backtesting', included: true },
+            { name: 'Análise de sentimento', included: true }
           ]
         },
         {
@@ -72,23 +82,25 @@ const PlanosPage: NextPage = () => {
           items: [
             { name: 'Suporte por email', included: true },
             { name: 'Central de ajuda', included: true },
-            { name: 'Materiais educativos', included: true },
-            { name: 'Suporte prioritário', included: false },
-            { name: 'Consultoria especializada', included: false }
+            { name: 'Materiais educativos avançados', included: true },
+            { name: 'Suporte prioritário', included: true },
+            { name: 'Consultoria especializada', included: true }
           ]
         }
       ],
-      cta: 'Começar Teste Grátis',
-      ctaLink: '/cadastro?plan=brasil-flex'
+      cta: 'Começar Grátis',
+      ctaLink: 'brasil-flex'
     },
     {
       id: 'brasil-pro',
       name: 'BRASIL PRO',
-      subtitle: 'Mais popular',
+      subtitle: 'Recomendado para R$ 5.000+',
       region: 'Brasil',
-      commission: '1,5%',
-      trial: '7 dias grátis',
-      badge: 'MAIS VENDIDO',
+      price: 'R$ 297',
+      originalPrice: 'R$ 497',
+      commission: 'R$ 297/mês + 10% de comissão sobre lucros',
+      trial: 'Mesmas funcionalidades, comissão menor',
+      badge: 'MELHOR CUSTO-BENEFÍCIO',
       popular: true,
       features: [
         {
@@ -123,40 +135,49 @@ const PlanosPage: NextPage = () => {
             { name: 'Suporte prioritário', included: true, highlight: true },
             { name: 'Consultoria especializada', included: true, highlight: true }
           ]
+        },
+        {
+          category: 'Vantagem Financeira',
+          items: [
+            { name: '50% menos comissão que o FLEX', included: true, highlight: true },
+            { name: 'Ideal para capital > R$ 5.000', included: true, highlight: true },
+            { name: 'ROI otimizado', included: true, highlight: true }
+          ]
         }
       ],
-      cta: 'Começar Teste Grátis',
-      ctaLink: '/cadastro?plan=brasil-pro'
+      cta: 'Assine Já',
+      ctaLink: 'brasil-pro'
     },
     {
       id: 'global-flex',
       name: 'GLOBAL FLEX',
-      subtitle: 'Internacional',
+      subtitle: 'Prepaid - Ideal for testing',
       region: 'Global',
-      commission: '1,5%',
-      trial: '7 days free',
+      price: 'No monthly fee',
+      commission: '20% commission on profits',
+      trial: 'All features included',
       features: [
         {
           category: 'Automated Trading',
           items: [
-            { name: 'Basic MARKETBOT', included: true },
+            { name: 'Complete MARKETBOT', included: true },
             { name: 'Entry and exit signals', included: true },
             { name: 'Automatic Stop Loss', included: true },
             { name: 'Smart Take Profit', included: true },
             { name: '24/7 Trading', included: true },
-            { name: 'Multiple exchanges', included: false },
-            { name: 'Multi-pair trading', included: false }
+            { name: 'Multiple exchanges', included: true },
+            { name: 'Multi-pair trading', included: true }
           ]
         },
         {
           category: 'Analysis & Monitoring',
           items: [
-            { name: 'Basic dashboard', included: true },
-            { name: 'Daily reports', included: true },
+            { name: 'Premium dashboard', included: true },
+            { name: 'Real-time reports', included: true },
             { name: 'Basic technical analysis', included: true },
-            { name: 'Advanced technical analysis', included: false },
-            { name: 'Backtesting', included: false },
-            { name: 'Sentiment analysis', included: false }
+            { name: 'Advanced technical analysis', included: true },
+            { name: 'Backtesting', included: true },
+            { name: 'Sentiment analysis', included: true }
           ]
         },
         {
@@ -164,23 +185,25 @@ const PlanosPage: NextPage = () => {
           items: [
             { name: 'Email support', included: true },
             { name: 'Help center', included: true },
-            { name: 'Educational materials', included: true },
-            { name: 'Priority support', included: false },
-            { name: 'Personal consulting', included: false }
+            { name: 'Advanced educational materials', included: true },
+            { name: 'Priority support', included: true },
+            { name: 'Personal consulting', included: true }
           ]
         }
       ],
-      cta: 'Start Free Trial',
-      ctaLink: '/cadastro?plan=global-flex'
+      cta: 'Start Free',
+      ctaLink: 'global-flex'
     },
     {
       id: 'global-pro',
       name: 'GLOBAL PRO',
-      subtitle: 'Professional',
+      subtitle: 'Recommended for USD 5,000+',
       region: 'Global',
-      commission: '1,5%',
-      trial: '7 days free',
-      badge: 'RECOMMENDED',
+      price: 'USD 60',
+      originalPrice: 'USD 100',
+      commission: 'USD 60/month + 10% commission on profits',
+      trial: 'Same features, lower commission',
+      badge: 'BEST VALUE',
       features: [
         {
           category: 'Automated Trading',
@@ -214,10 +237,18 @@ const PlanosPage: NextPage = () => {
             { name: 'Priority support', included: true, highlight: true },
             { name: 'Personal consulting', included: true, highlight: true }
           ]
+        },
+        {
+          category: 'Financial Advantage',
+          items: [
+            { name: '50% less commission than FLEX', included: true, highlight: true },
+            { name: 'Ideal for capital > USD 5,000', included: true, highlight: true },
+            { name: 'Optimized ROI', included: true, highlight: true }
+          ]
         }
       ],
-      cta: 'Start Free Trial',
-      ctaLink: '/cadastro?plan=global-pro'
+      cta: 'Subscribe Now',
+      ctaLink: 'global-pro'
     }
   ];
 
@@ -262,13 +293,28 @@ const PlanosPage: NextPage = () => {
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
                 Escolha seu <span className="text-yellow-400">Plano</span>
               </h1>
-              <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-                Teste grátis por 7 dias qualquer plano. Cancele quando quiser.
-                <br />
-                <span className="text-yellow-400 font-semibold">
-                  Você só paga uma comissão sobre o lucro real que geramos para você.
+              <p className="text-xl text-gray-300 mb-4 max-w-3xl mx-auto">
+                <span className="text-yellow-400 font-semibold block mb-2">
+                  Ambos os planos têm as MESMAS funcionalidades completas!
                 </span>
+                A diferença está apenas na estrutura de comissão:
               </p>
+              <div className="bg-black/30 border border-yellow-400/30 rounded-lg p-6 mb-8 max-w-4xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                  <div className="border-r border-yellow-400/20 pr-6">
+                    <h3 className="text-yellow-400 font-bold text-lg mb-3">🔸 FLEX (Pré-pago)</h3>
+                    <p className="text-gray-300 text-sm mb-2">• Sem mensalidade</p>
+                    <p className="text-gray-300 text-sm mb-2">• 20% de comissão sobre lucros</p>
+                    <p className="text-blue-400 text-sm italic">Ideal para testes e investimentos menores</p>
+                  </div>
+                  <div className="pl-6">
+                    <h3 className="text-yellow-400 font-bold text-lg mb-3">🔸 PRO (Assinatura)</h3>
+                    <p className="text-gray-300 text-sm mb-2">• Taxa mensal fixa</p>
+                    <p className="text-gray-300 text-sm mb-2">• Apenas 10% de comissão sobre lucros</p>
+                    <p className="text-green-400 text-sm italic font-semibold">Mais rentável para capital &gt; R$ 5k / USD 5k</p>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           </div>
 
@@ -308,34 +354,65 @@ const PlanosPage: NextPage = () => {
                   <p className="text-gray-400 text-sm mb-4">{plan.subtitle}</p>
                   
                   <div className="mb-4">
+                    {/* Pricing Display */}
+                    {plan.price && (
+                      <div className="text-center mb-4">
+                        <div className="text-sm text-gray-400 uppercase tracking-wider mb-2">
+                          {plan.price === 'Grátis' || plan.price === 'Free' ? 'Sem Mensalidade' : 'Valor Mensal'}
+                        </div>
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          {plan.originalPrice && (
+                            <span className="text-lg text-gray-500 line-through">
+                              {plan.originalPrice}
+                            </span>
+                          )}
+                          <span className="text-4xl font-bold text-yellow-400">
+                            {plan.price}
+                          </span>
+                          {plan.price !== 'Grátis' && plan.price !== 'Free' && (
+                            <span className="text-gray-400">/mês</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Commission Info */}
                     <div className="text-center mb-2">
                       <span className="text-sm text-gray-400 uppercase tracking-wider">
-                        Comissão sobre lucros
+                        Estrutura de Pagamento
                       </span>
                     </div>
-                    <div className="text-4xl font-bold text-center mb-2">
-                      <span className={plan.commission === '1,5%' ? 'text-green-400' : 'text-yellow-400'}>
+                    <div className="text-center mb-2">
+                      <span className="text-lg font-semibold text-green-400">
                         {plan.commission}
                       </span>
                     </div>
                     <p className="text-center text-sm text-gray-400 mb-2">
-                      Você só paga se lucrar
+                      {plan.price === 'Grátis' || plan.price === 'Free' ? 'Você só paga se lucrar' : 'Mensalidade + comissão sobre lucros'}
                     </p>
                     <p className="text-green-400 text-sm font-semibold text-center">
                       {plan.trial}
                     </p>
                   </div>
 
-                  <Link 
-                    href={plan.ctaLink}
-                    className={`block w-full py-3 px-4 rounded-lg font-bold transition-all text-center ${
+                  <button 
+                    onClick={() => handlePlanSelection(plan.id)}
+                    disabled={loadingPlan === plan.id}
+                    className={`block w-full py-3 px-4 rounded-lg font-bold transition-all text-center relative ${
                       plan.popular
                         ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black hover:from-yellow-500 hover:to-orange-600'
                         : 'bg-gray-800 text-white hover:bg-gray-700 border border-gray-600'
-                    }`}
+                    } ${loadingPlan === plan.id ? 'opacity-75 cursor-not-allowed' : ''}`}
                   >
-                    {plan.cta}
-                  </Link>
+                    {loadingPlan === plan.id ? (
+                      <div className="flex items-center justify-center">
+                        <FiLoader className="w-4 h-4 mr-2 animate-spin" />
+                        Processando...
+                      </div>
+                    ) : (
+                      plan.cta
+                    )}
+                  </button>
                 </div>
 
                 {/* Features */}

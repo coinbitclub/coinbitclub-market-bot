@@ -156,7 +156,7 @@ export default function SystemSettings() {
         <input
           type={isPassword && !showPasswords[key] ? 'password' : type}
           value={settings[key as keyof SystemSettings] || ''}
-          onChange={(e) = /> updateSetting(key, type === 'number' ? parseFloat(e.target.value) : e.target.value)}
+          onChange={(e) => updateSetting(key, type === 'number' ? parseFloat(e.target.value) : e.target.value)}
           placeholder={placeholder}
           className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 pr-10"
         />
@@ -484,3 +484,6 @@ export default function SystemSettings() {
     </div>
   );
 }
+
+
+

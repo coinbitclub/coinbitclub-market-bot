@@ -22,7 +22,7 @@ export default function Home() {
         router.replace(redirectPath);
       } else {
         // Redirecionar para login premium
-        router.replace('/auth/login-premium');
+        router.replace('/auth/login-integrated');
       }
     }
   }, [isAuthenticated, user, loading, router]);

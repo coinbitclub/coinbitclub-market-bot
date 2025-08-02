@@ -15,48 +15,17 @@ import Button from '../../components/Button';
 import Card from '../../components/Card';
 import Sidebar from '../../components/Sidebar';
 
-// Dados de exemplo
-const mockAffiliateStats = {
-  totalReferrals: 42,
-  activeReferrals: 28,
-  totalCommissions: 1542.75,
-  monthlyCommissions: 425.32,
-  conversionRate: 65,
-  tier: 'Diamante',
+// NO MORE MOCK DATA - Backend integration required
+const affiliateStats = {
+  totalReferrals: 0,
+  activeReferrals: 0,
+  totalCommissions: 0,
+  monthlyCommissions: 0,
+  conversionRate: 0,
+  tier: '-',
 };
 
-const mockReferrals = [
-  {
-    id: '1',
-    username: 'trader123',
-    email: 'trader123@example.com',
-    joinDate: '2023-10-15',
-    status: 'ACTIVE',
-    totalDeposits: 1200,
-    commissionGenerated: 120,
-    lastActivity: '2023-11-28',
-  },
-  {
-    id: '2',
-    username: 'crypto_lover',
-    email: 'crypto@example.com',
-    joinDate: '2023-09-22',
-    status: 'ACTIVE',
-    totalDeposits: 750,
-    commissionGenerated: 75,
-    lastActivity: '2023-11-25',
-  },
-  {
-    id: '3',
-    username: 'btc_holder',
-    email: 'btc@example.com',
-    joinDate: '2023-11-05',
-    status: 'INACTIVE',
-    totalDeposits: 300,
-    commissionGenerated: 30,
-    lastActivity: '2023-11-10',
-  },
-];
+const referrals = []; // Empty array - backend API required
 
 export default function AffiliatePage() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -94,7 +63,7 @@ export default function AffiliatePage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-blue-400">Total de Referidos</p>
-                  <p className="text-2xl font-bold text-amber-400 glow-gold">{mockAffiliateStats.totalReferrals}</p>
+                  <p className="text-2xl font-bold text-amber-400 glow-gold">{affiliateStats.totalReferrals}</p>
                 </div>
               </div>
             </Card>
@@ -106,7 +75,7 @@ export default function AffiliatePage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-blue-400">Comissões Totais</p>
-                  <p className="text-2xl font-bold text-pink-400 glow-pink">${mockAffiliateStats.totalCommissions.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-pink-400 glow-pink">${affiliateStats.totalCommissions.toFixed(2)}</p>
                 </div>
               </div>
             </Card>
@@ -118,7 +87,7 @@ export default function AffiliatePage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-amber-400">Taxa de Conversão</p>
-                  <p className="text-2xl font-bold text-blue-400 glow-blue">{mockAffiliateStats.conversionRate}%</p>
+                  <p className="text-2xl font-bold text-blue-400 glow-blue">{affiliateStats.conversionRate}%</p>
                 </div>
               </div>
             </Card>
@@ -130,7 +99,7 @@ export default function AffiliatePage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-pink-400">Seu Nível</p>
-                  <p className="text-2xl font-bold text-amber-400 glow-gold">{mockAffiliateStats.tier}</p>
+                  <p className="text-2xl font-bold text-amber-400 glow-gold">{affiliateStats.tier}</p>
                 </div>
               </div>
             </Card>
@@ -147,8 +116,7 @@ export default function AffiliatePage() {
                       type="text"
                       value={referralLink}
                       readOnly
-                      className="flex-1 bg-transparent text-blue-400 focus:outline-none"
-                    / />
+                      className="flex-1 bg-transparent text-blue-400 focus:outline-none" />
                     <button
                       onClick={copyToClipboard}
                       className="ml-2 rounded-md p-2 text-amber-400 hover:text-amber-300 focus:outline-none"
@@ -240,7 +208,7 @@ export default function AffiliatePage() {
                     </tr>
                   </thead>
                   <tbody className="bg-black divide-y divide-pink-900">
-                    {mockReferrals.map((referral) => (
+                    {referrals.map((referral) => (
                       <tr key={referral.id} className="hover:bg-black/40 transition-colors">
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="flex items-center">
@@ -313,3 +281,6 @@ export default function AffiliatePage() {
     </>
   );
 }
+
+
+

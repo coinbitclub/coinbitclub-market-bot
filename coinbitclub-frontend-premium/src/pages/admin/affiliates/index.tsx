@@ -218,7 +218,7 @@ export default function AffiliatesPage() {
             type="text"
             placeholder="Buscar por nome, email ou código..."
             value={searchTerm}
-            onChange={(e) = /> setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -360,7 +360,7 @@ export default function AffiliatesPage() {
                       type="number"
                       step="0.01"
                       value={paymentData.amount}
-                      onChange={(e) = /> setPaymentData({
+                      onChange={(e) => setPaymentData({
                         ...paymentData,
                         amount: parseFloat(e.target.value)
                       })}
@@ -391,7 +391,7 @@ export default function AffiliatesPage() {
                       type="text"
                       placeholder="Ex: 2024-01"
                       value={paymentData.reference_period}
-                      onChange={(e) = /> setPaymentData({
+                      onChange={(e) => setPaymentData({
                         ...paymentData,
                         reference_period: e.target.value
                       })}
@@ -424,3 +424,6 @@ export default function AffiliatesPage() {
     </AdminLayout>
   );
 }
+
+
+

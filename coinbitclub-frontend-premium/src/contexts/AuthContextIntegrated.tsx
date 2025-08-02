@@ -414,3 +414,5 @@ export const withAuth = <P extends object>(
 };
 
 console.log('🔐 Auth Context integrado carregado com sucesso');
+
+

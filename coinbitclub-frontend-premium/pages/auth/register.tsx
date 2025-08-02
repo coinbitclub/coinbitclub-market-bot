@@ -13,7 +13,8 @@ import {
   FiCheck,
   FiArrowLeft,
   FiShield,
-  FiLoader
+  FiLoader,
+  FiGlobe
 } from 'react-icons/fi';
 
 interface FormData {
@@ -22,6 +23,7 @@ interface FormData {
   whatsapp: string;
   password: string;
   confirmPassword: string;
+  country: string;
   userType: 'individual' | 'business';
   verificationCode: string;
 }
@@ -35,6 +37,7 @@ const RegisterPage: NextPage = () => {
     whatsapp: '',
     password: '',
     confirmPassword: '',
+    country: 'Brasil',
     userType: 'individual',
     verificationCode: ''
   });
@@ -42,6 +45,8 @@ const RegisterPage: NextPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [sentToPhone, setSentToPhone] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, '');
@@ -57,7 +62,7 @@ const RegisterPage: NextPage = () => {
     setError('');
 
     // Validações básicas
-    if (!formData.fullName || !formData.email || !formData.whatsapp || !formData.password) {
+    if (!formData.fullName || !formData.email || !formData.whatsapp || !formData.password || !formData.country) {
       setError('Por favor, preencha todos os campos obrigatórios.');
       setLoading(false);
       return;
@@ -141,6 +146,7 @@ const RegisterPage: NextPage = () => {
           email: formData.email,
           whatsapp: formData.whatsapp,
           password: formData.password,
+          country: formData.country,
           userType: formData.userType,
           phoneVerified: true
         }),
@@ -234,6 +240,46 @@ const RegisterPage: NextPage = () => {
                       required
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    País
+                  </label>
+                  <div className="relative">
+                    <FiGlobe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <select
+                      value={formData.country}
+                      onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                      className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition-all duration-200 appearance-none"
+                      required
+                    >
+                      <option value="Brasil" className="bg-gray-800">🇧🇷 Brasil</option>
+                      <option value="Portugal" className="bg-gray-800">🇵🇹 Portugal</option>
+                      <option value="Argentina" className="bg-gray-800">🇦🇷 Argentina</option>
+                      <option value="Chile" className="bg-gray-800">🇨🇱 Chile</option>
+                      <option value="Uruguai" className="bg-gray-800">🇺🇾 Uruguai</option>
+                      <option value="Paraguay" className="bg-gray-800">🇵🇾 Paraguay</option>
+                      <option value="Bolivia" className="bg-gray-800">🇧🇴 Bolivia</option>
+                      <option value="Peru" className="bg-gray-800">🇵🇪 Peru</option>
+                      <option value="Colombia" className="bg-gray-800">🇨🇴 Colombia</option>
+                      <option value="Venezuela" className="bg-gray-800">🇻🇪 Venezuela</option>
+                      <option value="Ecuador" className="bg-gray-800">🇪🇨 Ecuador</option>
+                      <option value="Mexico" className="bg-gray-800">🇲🇽 México</option>
+                      <option value="Estados Unidos" className="bg-gray-800">🇺🇸 Estados Unidos</option>
+                      <option value="Canada" className="bg-gray-800">🇨🇦 Canadá</option>
+                      <option value="Espanha" className="bg-gray-800">🇪🇸 Espanha</option>
+                      <option value="Outro" className="bg-gray-800">🌍 Outro</option>
+                    </select>
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    🌍 Selecione seu país de residência
+                  </p>
                 </div>
 
                 <div>

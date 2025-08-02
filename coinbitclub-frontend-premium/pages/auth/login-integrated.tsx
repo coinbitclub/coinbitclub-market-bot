@@ -179,7 +179,7 @@ const LoginPage: NextPage = () => {
                   </label>
                 </div>
 
-                <Link href="/auth/forgot-password" className="text-sm text-yellow-400 hover:text-yellow-300 transition-colors">
+                <Link href="/auth/forgot-password-integrated" className="text-sm text-yellow-400 hover:text-yellow-300 transition-colors">
                   Esqueci a senha
                 </Link>
               </div>

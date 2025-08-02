@@ -6,3 +6,5 @@ export default function Toast({ message }: { message: string }) {
     </div>
   )
 }
+
+

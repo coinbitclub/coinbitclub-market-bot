@@ -228,7 +228,7 @@ export default function AlertsManagement() {
                     type="text"
                     placeholder="Buscar alertas..."
                     value={searchTerm}
-                    onChange={(e) = /> setSearchTerm(e.target.value)}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -264,7 +264,7 @@ export default function AlertsManagement() {
                   <input
                     type="checkbox"
                     checked={showResolved}
-                    onChange={(e) = /> setShowResolved(e.target.checked)}
+                    onChange={(e) => setShowResolved(e.target.checked)}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <span className="text-sm text-gray-700">Mostrar resolvidos</span>
@@ -369,3 +369,6 @@ export default function AlertsManagement() {
     </div>
   );
 }
+
+
+

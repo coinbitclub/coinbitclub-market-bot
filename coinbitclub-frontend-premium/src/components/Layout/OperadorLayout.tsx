@@ -150,3 +150,5 @@ const OperadorLayout: React.FC<OperadorLayoutProps> = ({ children, title = 'Dash
 };
 
 export default OperadorLayout;
+
+
