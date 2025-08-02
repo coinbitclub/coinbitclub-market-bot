@@ -3,7 +3,7 @@
   cmd = 'npm ci --only=production'
 
 [start]
-  cmd = 'node server.js'
+  cmd = 'node main.js'
 
 [variables]
   NODE_ENV = 'production'
