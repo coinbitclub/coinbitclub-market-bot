@@ -266,7 +266,7 @@ app.use((error, req, res, next) => {
 });
 
 // ============ SERVER STARTUP ============
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 async function startServer() {
     try {
@@ -274,10 +274,12 @@ async function startServer() {
         console.log(`🌐 PORT from environment: ${process.env.PORT || 'undefined'}`);
         console.log(`🌐 Using PORT: ${PORT}`);
         
-        // Initialize database (non-blocking)
-        initDatabase().catch(err => {
-            console.log('⚠️ Database init failed, continuing without DB');
-        });
+        // Initialize database (non-blocking) - don't crash on failure
+        setTimeout(() => {
+            initDatabase().catch(err => {
+                console.log('⚠️ Database init failed, continuing without DB:', err.message);
+            });
+        }, 2000); // Delay database connection
 
         const server = app.listen(PORT, '0.0.0.0', () => {
             console.log('='.repeat(60));
