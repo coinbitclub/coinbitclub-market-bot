@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NextPage } from 'next';
-import { UserLayout } from '../../src/components/Layout/UserLayout';
+import UserLayout from '../../src/components/Layout/UserLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '../../src/components/ui/Card';
 import { Button } from '../../src/components/ui/Button';
 import { Badge } from '../../src/components/ui/Badge';
@@ -348,7 +348,7 @@ const UserDashboard: NextPage = () => {
                 {dashboardData.active_operations.map((operation) => (
                   <div key={operation.id} className="flex items-center justify-between p-4 bg-slate-800 rounded-lg">
                     <div className="flex items-center gap-4">
-                      <Badge variant={operation.type === 'BUY' ? 'default' : 'secondary'}>
+                      <Badge variant={operation.type === 'BUY' ? 'default' : 'warning'}>
                         {operation.type}
                       </Badge>
                       <div>
@@ -397,7 +397,7 @@ const UserDashboard: NextPage = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Button 
-                variant="outline" 
+                variant="primary" 
                 className="border-indigo-600 text-indigo-400 hover:bg-indigo-600 hover:text-white"
               >
                 <DollarSign className="w-4 h-4 mr-2" />
@@ -405,7 +405,7 @@ const UserDashboard: NextPage = () => {
               </Button>
               
               <Button 
-                variant="outline" 
+                variant="secondary" 
                 className="border-green-600 text-green-400 hover:bg-green-600 hover:text-white"
               >
                 <Activity className="w-4 h-4 mr-2" />
@@ -413,7 +413,7 @@ const UserDashboard: NextPage = () => {
               </Button>
               
               <Button 
-                variant="outline" 
+                variant="danger" 
                 className="border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white"
               >
                 <BarChart3 className="w-4 h-4 mr-2" />

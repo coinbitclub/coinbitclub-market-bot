@@ -120,7 +120,7 @@ export default function AccountingManagementNew() {
     const expenses = 0;
     const profit = revenue - expenses;
     
-    setFinancialSummary({
+    setSummary({
       total_revenue: revenue,
       total_expenses: expenses,
       net_profit: profit,
@@ -129,8 +129,7 @@ export default function AccountingManagementNew() {
       commission_earned: 0,
       fees_paid: 0,
       active_users: 0,
-      pending_withdrawals: 0,
-      completed_transactions: realRecords.length
+      monthly_growth: 0
     });
   }, []);
 

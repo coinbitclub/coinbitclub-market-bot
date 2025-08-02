@@ -6,10 +6,10 @@ import {
   FiTrendingUp, 
   FiActivity, 
   FiMonitor, 
-  FiBarChart3,
+  FiBarChart2 as FiBarChart3,
   FiPlay,
   FiPause,
-  FiStop,
+  FiSquare as FiStop,
   FiArrowUp,
   FiArrowDown,
   FiAlertCircle

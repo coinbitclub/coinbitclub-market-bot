@@ -1,8 +1,7 @@
 {
   "version": 2,
-  "name": "coinbitclub-frontend-premium",
   "framework": "nextjs",
-  "installCommand": "npm install --force",
+  "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "env": {
