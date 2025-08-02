@@ -1,4 +1,4 @@
-oimport { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 interface ValidateCouponRequest {
   code: string;

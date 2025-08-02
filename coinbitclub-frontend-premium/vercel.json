@@ -1,8 +1,51 @@
 {
   "version": 2,
-  "name": "coinbitclub-marketbot",
+  "name": "coinbitclub-frontend-premium",
   "framework": "nextjs",
   "installCommand": "npm install --force",
-  "buildCommand": "npm run build || echo 'Build failed but deploying anyway'",
-  "outputDirectory": ".next"
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://coinbitclub-market-bot-production.up.railway.app",
+    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51234567890",
+    "NEXT_PUBLIC_ENV": "production"
+  },
+  "functions": {
+    "pages/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "regions": ["iad1"],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/index",
+      "permanent": false
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
 }

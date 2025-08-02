@@ -81,8 +81,9 @@ const RegisterPage: NextPage = () => {
     }
 
     try {
-      // Primeiro, enviar código SMS
-      const response = await fetch('/api/auth/verify-phone', {
+      // Primeiro, enviar código SMS para o backend Railway
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://coinbitclub-market-bot.up.railway.app';
+      const response = await fetch(`${apiUrl}/api/auth/verify-phone`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,8 +116,9 @@ const RegisterPage: NextPage = () => {
     setError('');
 
     try {
-      // Confirmar código SMS
-      const phoneResponse = await fetch('/api/auth/confirm-phone', {
+      // Confirmar código SMS no backend Railway
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://coinbitclub-market-bot.up.railway.app';
+      const phoneResponse = await fetch(`${apiUrl}/api/auth/confirm-phone`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,8 +137,8 @@ const RegisterPage: NextPage = () => {
         return;
       }
 
-      // Criar usuário
-      const registerResponse = await fetch('/api/auth/register', {
+      // Criar usuário no backend Railway
+      const registerResponse = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
