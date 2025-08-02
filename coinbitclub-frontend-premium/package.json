@@ -1,7 +1,23 @@
 {
-  "name": "coinbitclub-marketbot",
-  "version": "1.0.0",
+  "name": "coinbitclub-frontend-premium",
+  "version": "2.1.0",
+  "description": "CoinBitClub Frontend Premium - Plataforma avançada de trading de criptomoedas",
   "private": true,
+  "author": "CoinBitClub Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/coinbitclub/coinbitclub-market-bot.git"
+  },
+  "homepage": "https://coinbitclub-frontend-premium.vercel.app",
+  "keywords": [
+    "cryptocurrency", 
+    "trading", 
+    "bitcoin", 
+    "nextjs", 
+    "typescript", 
+    "fintech"
+  ],
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
