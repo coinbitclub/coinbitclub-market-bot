@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste WebSocket CoinBitClub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .connected { background: #27ae60; }
+        .disconnected { background: #e74c3c; }
+        .connecting { background: #f39c12; }
+        .log {
+            background: #34495e;
+            padding: 10px;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: scroll;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔌 Teste de Conexão WebSocket</h1>
+    
+    <div id="status" class="status disconnected">
+        ❌ Desconectado
+    </div>
+    
+    <div>
+        <button onclick="connect()">🔌 Conectar</button>
+        <button onclick="disconnect()">🔌 Desconectar</button>
+        <button onclick="clearLog()">🗑️ Limpar Log</button>
+        <button onclick="sendPing()">📡 Enviar Ping</button>
+    </div>
+    
+    <h3>📝 Log de Conexão:</h3>
+    <div id="log" class="log"></div>
+    
+    <script>
+        let ws = null;
+        let reconnectInterval = null;
+        const logElement = document.getElementById('log');
+        const statusElement = document.getElementById('status');
+        
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.innerHTML += `[${timestamp}] ${message}<br>`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(status, className) {
+            statusElement.textContent = status;
+            statusElement.className = `status ${className}`;
+        }
+        
+        function connect() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                addLog('⚠️ Já está conectado!');
+                return;
+            }
+            
+            addLog('🔄 Tentando conectar ao WebSocket...');
+            updateStatus('🔄 Conectando...', 'connecting');
+            
+            try {
+                ws = new WebSocket('ws://localhost:3015');
+                
+                ws.onopen = function() {
+                    addLog('✅ CONECTADO com sucesso!');
+                    updateStatus('✅ Conectado', 'connected');
+                    
+                    if (reconnectInterval) {
+                        clearInterval(reconnectInterval);
+                        reconnectInterval = null;
+                        addLog('🔄 Reconexão automática desabilitada');
+                    }
+                };
+                
+                ws.onmessage = function(event) {
+                    try {
+                        const message = JSON.parse(event.data);
+                        addLog(`📨 Mensagem recebida: ${message.type}`);
+                        addLog(`📊 Dados: ${JSON.stringify(message, null, 2)}`);
+                    } catch (error) {
+                        addLog(`📨 Mensagem recebida (RAW): ${event.data}`);
+                    }
+                };
+                
+                ws.onclose = function(event) {
+                    addLog(`🔌 Conexão fechada (código: ${event.code})`);
+                    addLog(`📝 Motivo: ${event.reason || 'Não especificado'}`);
+                    updateStatus('❌ Desconectado', 'disconnected');
+                    
+                    // Auto-reconexão
+                    if (!reconnectInterval) {
+                        addLog('🔄 Iniciando reconexão automática...');
+                        reconnectInterval = setInterval(() => {
+                            addLog('🔄 Tentativa de reconexão...');
+                            connect();
+                        }, 5000);
+                    }
+                };
+                
+                ws.onerror = function(error) {
+                    addLog(`❌ Erro na conexão: ${error.message || 'Erro desconhecido'}`);
+                    updateStatus('❌ Erro', 'disconnected');
+                };
+                
+            } catch (error) {
+                addLog(`❌ Erro ao criar WebSocket: ${error.message}`);
+                updateStatus('❌ Erro', 'disconnected');
+            }
+        }
+        
+        function disconnect() {
+            if (reconnectInterval) {
+                clearInterval(reconnectInterval);
+                reconnectInterval = null;
+                addLog('🔄 Reconexão automática desabilitada');
+            }
+            
+            if (ws) {
+                ws.close();
+                addLog('🔌 Desconectando...');
+            } else {
+                addLog('⚠️ Não há conexão ativa');
+            }
+        }
+        
+        function clearLog() {
+            logElement.innerHTML = '';
+            addLog('🗑️ Log limpo');
+        }
+        
+        function sendPing() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const pingMessage = {
+                    type: 'ping',
+                    timestamp: new Date().toISOString(),
+                    message: 'Teste de ping'
+                };
+                ws.send(JSON.stringify(pingMessage));
+                addLog('📡 Ping enviado');
+            } else {
+                addLog('❌ Não conectado - não é possível enviar ping');
+            }
+        }
+        
+        // Auto-conectar ao carregar a página
+        window.onload = function() {
+            addLog('🚀 Página carregada - iniciando conexão automática...');
+            connect();
+        };
+        
+        // Debug do browser
+        addLog('🌐 Navegador: ' + navigator.userAgent);
+        addLog('🔧 WebSocket disponível: ' + (typeof WebSocket !== 'undefined' ? 'SIM' : 'NÃO'));
+    </script>
+</body>
+</html>

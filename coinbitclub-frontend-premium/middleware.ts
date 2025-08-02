@@ -25,12 +25,7 @@ export function middleware(request: NextRequest) {
     '/api/health',
     '/api/status',
     '/_next',
-    '/favicon.ico',
-    '/debug-middleware.html',
-    '/debug-login.html',
-    '/teste-dashboards.html',
-    '/teste-redirect.html',
-    '/clear-auth.html'
+    '/favicon.ico'
   ];
 
   // Verificar se é rota pública
@@ -42,7 +37,14 @@ export function middleware(request: NextRequest) {
     return pathname === route || pathname.startsWith(route);
   });
   
-  if (isPublicRoute) {
+  // CRÍTICO: Rotas admin/user/affiliate NUNCA são públicas
+  const isProtectedRoute = pathname.startsWith('/admin') || 
+                          pathname.startsWith('/user') || 
+                          pathname.startsWith('/affiliate') ||
+                          pathname.startsWith('/gestor') ||
+                          pathname.startsWith('/operador');
+  
+  if (isPublicRoute && !isProtectedRoute) {
     console.log('✅ Rota pública permitida:', pathname);
     return NextResponse.next();
   }
