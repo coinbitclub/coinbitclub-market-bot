@@ -1,483 +1,347 @@
+// ============================================================================
+// 🚀 COINBITCLUB MARKET BOT V3 - ULTRA ROBUST VERSION
+// ============================================================================
 const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const compression = require('compression');
 const { Pool } = require('pg');
 
-// Configuração da aplicação
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Configuração do banco de dados
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
-
-// Middlewares de segurança
-app.use(helmet({
-    contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false
-}));
-
-app.use(compression());
-app.use(cors({
-    origin: process.env.CORS_ORIGIN || '*',
-    credentials: true
-}));
-
+// ============ BASIC MIDDLEWARE (NO EXTERNAL DEPS) ============
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check
+// Basic CORS
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
+// Basic logging
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
+    next();
+});
+
+// ============ DATABASE CONFIGURATION ============
+let dbPool = null;
+let dbConnected = false;
+
+const connectionOptions = [
+    // PRIORIDADE ÚNICA: Somente a variável oficial do Railway
+    process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL
+].filter(Boolean);
+
+async function initDatabase() {
+    console.log('🔄 Iniciando conexão com banco de dados...');
+    console.log(`🌍 NODE_ENV: ${process.env.NODE_ENV || 'undefined'}`);
+    
+    // Verificação crítica: só usar DATABASE_URL do Railway
+    const databaseUrl = process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL;
+    
+    if (!databaseUrl) {
+        console.log('❌ CRÍTICO: DATABASE_URL não encontrada nas variáveis do Railway!');
+        console.log('� Configure DATABASE_URL no Railway Dashboard');
+        return;
+    }
+    
+    console.log(`📋 DATABASE_URL encontrada: ${databaseUrl.substring(0, 50)}...`);
+    
+    try {
+        console.log('� Conectando ao banco com variável oficial do Railway...');
+        
+        const pool = new Pool({
+            connectionString: databaseUrl,
+            ssl: {
+                rejectUnauthorized: false
+            },
+            max: 3,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 10000
+        });
+
+        const client = await pool.connect();
+        const result = await client.query('SELECT NOW(), version(), current_database()');
+        
+        // Test signals table specifically
+        const signalsTest = await client.query(`
+            SELECT COUNT(*) as count 
+            FROM information_schema.tables 
+            WHERE table_name = 'signals'
+        `);
+        
+        client.release();
+
+        dbPool = pool;
+        dbConnected = true;
+        
+        console.log(`✅ BANCO CONECTADO COM SUCESSO!`);
+        console.log(`   📊 PostgreSQL: ${result.rows[0].version.split(' ')[1]}`);
+        console.log(`   🗄️  Database: ${result.rows[0].current_database}`);
+        console.log(`   🕒 Server Time: ${result.rows[0].now}`);
+        console.log(`   📋 Signals Table: ${signalsTest.rows[0].count > 0 ? '✅ EXISTS' : '❌ MISSING'}`);
+        console.log(`   🎯 Railway DATABASE_URL funcionando perfeitamente!`);
+        return;
+
+    } catch (error) {
+        console.log(`❌ FALHA na conexão: ${error.message}`);
+        console.log(`   🔍 Error Code: ${error.code || 'unknown'}`);
+        console.log('⚠️  Funcionando SEM banco de dados (modo degradado)');
+    }
+}
+
+// ============ DATABASE UTILITIES ============
+async function safeDbQuery(query, params = []) {
+    if (!dbConnected || !dbPool) {
+        return null;
+    }
+    
+    try {
+        return await dbPool.query(query, params);
+    } catch (error) {
+        console.log(`⚠️ DB Error: ${error.message}`);
+        return null;
+    }
+}
+
+async function saveSignal(data) {
+    const result = await safeDbQuery(`
+        INSERT INTO signals (ticker, action, price, timestamp, raw_data) 
+        VALUES ($1, $2, $3, NOW(), $4) 
+        RETURNING id`,
+        [data.ticker, data.action, data.price, JSON.stringify(data.raw)]
+    );
+    return result?.rows[0]?.id || null;
+}
+
+// ============ ENDPOINTS ============
+
+// Simple ping endpoint for testing
+app.get('/ping', (req, res) => {
+    res.status(200).send('pong');
+});
+
+// Ultra-simple health check
 app.get('/health', (req, res) => {
-    res.json({
-        status: 'OK',
+    res.status(200).json({
+        status: 'healthy',
         timestamp: new Date().toISOString(),
-        version: '3.0.0-fixed',
-        environment: process.env.NODE_ENV || 'development'
+        uptime: Math.round(process.uptime()),
+        database: dbConnected ? 'connected' : 'disconnected',
+        version: '3.1.0-robust'
     });
 });
 
-// Root route
-app.get('/', (req, res) => {
+// Status endpoint
+app.get('/api/status', async (req, res) => {
+    let signalCount = 0;
+    if (dbConnected) {
+        const result = await safeDbQuery('SELECT COUNT(*) as total FROM signals');
+        signalCount = result?.rows[0]?.total || 0;
+    }
+
     res.json({
-        message: 'CoinBitClub Market Bot V3 - API Active',
-        status: 'running',
-        timestamp: new Date().toISOString()
+        status: 'online',
+        timestamp: new Date().toISOString(),
+        uptime: Math.round(process.uptime()),
+        memory_mb: Math.round(process.memoryUsage().rss / 1024 / 1024),
+        database: {
+            connected: dbConnected,
+            signals_count: signalCount
+        },
+        environment: process.env.NODE_ENV || 'development',
+        node_version: process.version
     });
 });
 
-// API de teste do banco
-app.get('/api/test-db', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT NOW() as timestamp');
-        res.json({
-            status: 'connected',
-            database_time: result.rows[0].timestamp
-        });
-    } catch (error) {
-        res.status(500).json({
-            status: 'error',
-            message: error.message
-        });
-    }
-});
-
-// Webhook para receber sinais do TradingView
+// Main webhook endpoint
 app.post('/api/webhooks/signal', async (req, res) => {
+    const startTime = Date.now();
+    
     try {
-        console.log('🔥 TradingView webhook recebido:', JSON.stringify(req.body, null, 2));
-        console.log('📊 Headers:', JSON.stringify(req.headers, null, 2));
-
-        // Verificar autenticação (opcional)
-        const authToken = req.headers['authorization'];
-        const expectedToken = process.env.TRADINGVIEW_WEBHOOK_SECRET;
+        console.log('🎯 WEBHOOK RECEBIDO:', JSON.stringify(req.body));
         
-        if (expectedToken && authToken && authToken !== `Bearer ${expectedToken}`) {
-            console.log('Token inválido:', authToken, 'esperado:', `Bearer ${expectedToken}`);
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-
-        const signalData = req.body;
-
-        // DETECÇÃO AUTOMÁTICA: CoinBitClub vs Sinal Simples
-        console.log('🔍 Detectando tipo de sinal...');
-        console.log('📥 Dados recebidos:', JSON.stringify(signalData, null, 2));
-        
-        // Verificar se é CoinBitClub baseado em campos característicos
-        const hasCoinBitClubFields = signalData.diff_btc_ema7 !== undefined || 
-                                   signalData.ema9_30 !== undefined ||
-                                   signalData.rsi_4h !== undefined ||
-                                   (signalData.ticker && signalData.signal && !signalData.action);
-
-        if (hasCoinBitClubFields) {
-            console.log('🎯 SINAL COINBITCLUB DETECTADO');
-            return await processCoinBitClubSignal(signalData, res);
-        } else {
-            console.log('📊 SINAL SIMPLES DETECTADO');
-            return await processSimpleSignal(signalData, res);
-        }
-
-    } catch (error) {
-        console.error('❌ Erro no webhook TradingView:', error);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
-    }
-});
-
-// Função para processar sinais do CoinBitClub
-async function processCoinBitClubSignal(signalData, res) {
-    try {
-        console.log('🎯 PROCESSANDO SINAL COINBITCLUB');
-        
-        // Validar campos obrigatórios do CoinBitClub
-        if (!signalData.ticker && !signalData.symbol) {
-            return res.status(400).json({ 
-                error: 'CoinBitClub: ticker/symbol obrigatório' 
-            });
-        }
-
-        if (!signalData.signal) {
-            return res.status(400).json({ 
-                error: 'CoinBitClub: campo signal obrigatório' 
-            });
-        }
-
-        // Mapear tipos de sinal CoinBitClub para ações
-        const signalAction = getCoinBitClubAction(signalData.signal);
-        const signalStrength = getCoinBitClubStrength(signalData.signal);
-
-        // Extrair símbolo
-        const symbol = signalData.ticker || signalData.symbol;
-
-        console.log(`   📊 Símbolo: ${symbol}`);
-        console.log(`   🎯 Sinal: ${signalData.signal}`);
-        console.log(`   📈 Ação: ${signalAction}`);
-        console.log(`   💪 Força: ${signalStrength}`);
-        console.log(`   📊 Diff BTC/EMA7: ${signalData.diff_btc_ema7}%`);
-        console.log(`   💰 Preço: ${signalData.close}`);
-
-        // Salvar na tabela signals (estrutura compatível)
-        const alertMessage = `${signalData.signal || 'SINAL'}: ${symbol}${signalData.diff_btc_ema7 ? ` (diff: ${signalData.diff_btc_ema7}%)` : ''}`;
-        
-        const result = await pool.query(`
-            INSERT INTO signals (
-                symbol, action, price, quantity, strategy, timeframe, 
-                alert_message, processed, created_at
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
-            RETURNING id
-        `, [
-            symbol,
-            signalAction,
-            parseFloat(signalData.close) || null,
-            null, // quantity não usado no CoinBitClub
-            'coinbitclub_v2',
-            '30m',
-            alertMessage,
-            false
-        ]);
-
-        const signalId = result.rows[0].id;
-        console.log('✅ Sinal CoinBitClub salvo com ID:', signalId);
-
-        // Resposta de sucesso SEMPRE (sem tentar salvar dados detalhados por enquanto)
-        return res.status(200).json({
-            success: true,
-            message: 'Sinal CoinBitClub processado com sucesso',
-            signalId: signalId,
-            signal_type: signalData.signal,
-            action: signalAction,
-            strength: signalStrength,
-            symbol: symbol,
-            diff_btc_ema7: signalData.diff_btc_ema7,
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (error) {
-        console.error('❌ Erro ao processar sinal CoinBitClub:', error);
-        console.error('Stack trace:', error.stack);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
-    }
-}
-
-// Função para processar sinais simples (compatibilidade)
-async function processSimpleSignal(signalData, res) {
-    try {
-        // Validar dados obrigatórios para sinais simples
-        if (!signalData.symbol || !signalData.action) {
-            return res.status(400).json({ 
-                error: 'Dados inválidos - symbol e action são obrigatórios' 
-            });
-        }
-
-        console.log('📊 PROCESSANDO SINAL SIMPLES:');
-        console.log(`   📊 Símbolo: ${signalData.symbol}`);
-        console.log(`   📈 Ação: ${signalData.action}`);
-        console.log(`   💰 Preço: ${signalData.price || 'N/A'}`);
-
-        // Salvar o sinal no banco
-        const result = await pool.query(`
-            INSERT INTO signals (symbol, action, price, quantity, strategy, timeframe, alert_message, created_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-            RETURNING id
-        `, [
-            signalData.symbol,
-            signalData.action,
-            signalData.price || null,
-            signalData.quantity || null,
-            signalData.strategy || 'simple_signal',
-            signalData.timeframe || null,
-            signalData.alert_message || JSON.stringify(signalData)
-        ]);
-
-        console.log('✅ Sinal simples salvo com ID:', result.rows[0].id);
-
-        return res.status(200).json({
-            success: true,
-            message: 'Sinal processado com sucesso',
-            signalId: result.rows[0].id,
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (error) {
-        console.error('❌ Erro ao processar sinal simples:', error);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
-    }
-}
-
-// Função para mapear sinais CoinBitClub para ações
-function getCoinBitClubAction(signal) {
-    switch(signal) {
-        case 'SINAL LONG':
-        case 'SINAL LONG FORTE':
-        case 'CONFIRMAÇÃO LONG':
-            return 'BUY';
-            
-        case 'SINAL SHORT':
-        case 'SINAL SHORT FORTE':
-        case 'CONFIRMAÇÃO SHORT':
-            return 'SELL';
-            
-        case 'FECHE LONG':
-            return 'CLOSE_LONG';
-            
-        case 'FECHE SHORT':
-            return 'CLOSE_SHORT';
-            
-        default:
-            return 'UNKNOWN';
-    }
-}
-
-// Função para determinar força do sinal
-function getCoinBitClubStrength(signal) {
-    if (signal.includes('FORTE')) return 'STRONG';
-    if (signal.includes('CONFIRMAÇÃO')) return 'CONFIRMATION';
-    if (signal.includes('FECHE')) return 'EXIT';
-    return 'MEDIUM';
-}
-
-// Webhook alternativo TradingView (compatibilidade)
-app.post('/api/webhooks/tradingview', async (req, res) => {
-    try {
-        console.log('🔥 TradingView webhook tradingview recebido:', JSON.stringify(req.body, null, 2));
-        
-        const signalData = req.body;
-
-        // Validar dados obrigatórios
-        if (!signalData.symbol || !signalData.action) {
-            return res.status(400).json({ error: 'Dados inválidos - symbol e action são obrigatórios' });
-        }
-
-        // Salvar o webhook raw
-        await pool.query(`
-            INSERT INTO raw_webhook (source, payload, received_at)
-            VALUES ($1, $2, NOW())
-        `, ['tradingview', JSON.stringify(signalData)]);
-
-        // Processar o sinal
-        const result = await pool.query(`
-            INSERT INTO signals (symbol, action, price, quantity, strategy, timeframe, alert_message, created_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-            RETURNING id
-        `, [
-            signalData.symbol,
-            signalData.action,
-            signalData.price || null,
-            signalData.quantity || null,
-            signalData.strategy || null,
-            signalData.timeframe || null,
-            signalData.alert_message || JSON.stringify(signalData)
-        ]);
-
-        console.log('✅ Sinal TradingView processado com ID:', result.rows[0].id);
-
-        return res.status(200).json({
-            success: true,
-            message: 'Sinal TradingView processado',
-            signalId: result.rows[0].id,
-            timestamp: new Date().toISOString()
-        });
-
-    } catch (error) {
-        console.error('❌ Erro no webhook TradingView:', error);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
-    }
-});
-
-// Webhook para dominância do Bitcoin (versão simplificada)
-app.post('/api/webhooks/dominance', async (req, res) => {
-    try {
-        console.log('📈 WEBHOOK DOMINÂNCIA BTC RECEBIDO:', JSON.stringify(req.body, null, 2));
-
-        const dominanceData = req.body;
-
-        // Validar dados obrigatórios do Pine Script
-        if (!dominanceData.btc_dominance || !dominanceData.sinal) {
-            return res.status(400).json({ 
-                error: 'Dados inválidos - btc_dominance e sinal são obrigatórios' 
-            });
-        }
-
-        // Processar timestamp
-        let timestamp = new Date();
-        if (dominanceData.time) {
-            try {
-                // Pine Script envia formato: "2025-01-30 17:30:00"
-                const timeStr = dominanceData.time.replace(' ', 'T') + 'Z';
-                timestamp = new Date(timeStr);
-                if (isNaN(timestamp.getTime())) {
-                    timestamp = new Date();
-                }
-            } catch (e) {
-                timestamp = new Date();
-            }
-        }
-
-        // 1. Inserir na tabela específica de dominância
-        const dominanceInsert = await pool.query(`
-            INSERT INTO btc_dominance_signals 
-            (ticker, btc_dominance, ema_7, diff_pct, signal, raw_data, timestamp)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-            RETURNING id;
-        `, [
-            dominanceData.ticker || 'BTC.D',
-            parseFloat(dominanceData.btc_dominance),
-            dominanceData.ema_7 ? parseFloat(dominanceData.ema_7) : null,
-            dominanceData.diff_pct ? parseFloat(dominanceData.diff_pct) : null,
-            dominanceData.sinal,
-            JSON.stringify(dominanceData),
-            timestamp
-        ]);
-
-        const dominanceId = dominanceInsert.rows[0].id;
-
-        // 2. Inserir na tabela principal de sinais
-        const signalInsert = await pool.query(`
-            INSERT INTO signals 
-            (ticker, signal, source, metadata, created_at)
-            VALUES ($1, $2, $3, $4, $5)
-            RETURNING id;
-        `, [
-            dominanceData.ticker || 'BTC.D',
-            dominanceData.sinal,
-            'dominance_webhook',
-            JSON.stringify({
-                dominance_id: dominanceId,
-                btc_dominance: dominanceData.btc_dominance,
-                ema_7: dominanceData.ema_7,
-                diff_pct: dominanceData.diff_pct,
-                webhook_type: 'btc_dominance',
-                timestamp: timestamp.toISOString()
-            }),
-            timestamp
-        ]);
-
-        const signalId = signalInsert.rows[0].id;
-
-        const result = {
-            success: true,
-            dominance_signal_id: dominanceId,
-            signal_id: signalId,
-            ticker: dominanceData.ticker || 'BTC.D',
-            btc_dominance: parseFloat(dominanceData.btc_dominance),
-            signal: dominanceData.sinal,
-            timestamp: timestamp.toISOString()
+        const signalData = {
+            ticker: req.body.ticker || req.body.symbol || 'UNKNOWN',
+            action: req.body.action || req.body.signal || 'UNKNOWN',
+            price: parseFloat(req.body.price || req.body.close || 0),
+            raw: req.body
         };
 
-        console.log('✅ Dominância BTC processada:', result);
+        const savedId = await saveSignal(signalData);
 
-        return res.json({
+        res.status(200).json({
             success: true,
-            message: 'Sinal de dominância BTC processado com sucesso',
-            data: result,
+            message: 'Signal received successfully',
+            timestamp: new Date().toISOString(),
+            processing_time_ms: Date.now() - startTime,
+            data: signalData,
+            saved_id: savedId,
+            database_status: dbConnected ? 'saved' : 'not_saved'
+        });
+        
+        console.log(`✅ Response sent in ${Date.now() - startTime}ms`);
+        
+    } catch (error) {
+        console.error('💥 Webhook error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error',
+            message: error.message,
             timestamp: new Date().toISOString()
         });
-
-    } catch (error) {
-        console.error('❌ Erro no webhook dominância:', error);
-        return res.status(500).json({ 
-            error: 'Erro interno do servidor',
-            details: error.message
-        });
     }
 });
 
-// Endpoint para consultar última dominância
-app.get('/api/dominance/latest', async (req, res) => {
-    try {
-        const result = await pool.query(`
-            SELECT 
-                id,
-                btc_dominance,
-                ema_7,
-                diff_pct,
-                sinal,
-                timestamp_parsed as timestamp_data,
-                created_at
-            FROM btc_dominance_signals 
-            ORDER BY created_at DESC 
-            LIMIT 1
-        `);
+// CoinBitClub webhook
+app.post('/webhook/coinbitclub', async (req, res) => {
+    const startTime = Date.now();
+    
+    const signalData = {
+        ticker: req.body.ticker || 'UNKNOWN',
+        action: req.body.signal || 'UNKNOWN',
+        price: parseFloat(req.body.close || req.body.price || 0),
+        raw: req.body
+    };
 
-        if (result.rows.length === 0) {
-            return res.json({
-                message: 'Nenhum dado de dominância encontrado',
-                btc_dominance: null
-            });
-        }
+    const savedId = await saveSignal(signalData);
 
-        return res.json({
-            success: true,
-            data: result.rows[0]
-        });
-
-    } catch (error) {
-        console.error('❌ Erro ao consultar dominância:', error);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
-    }
-});
-
-// Middleware de tratamento de erro
-app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    res.status(500).json({
-        error: 'Internal Server Error',
-        message: err.message
+    res.status(200).json({
+        success: true,
+        message: 'CoinBitClub signal received',
+        timestamp: new Date().toISOString(),
+        processing_time_ms: Date.now() - startTime,
+        data: signalData,
+        saved_id: savedId
     });
 });
 
-// Middleware 404
+// Get signals
+app.get('/api/signals', async (req, res) => {
+    if (!dbConnected) {
+        return res.status(503).json({
+            error: 'Database not available'
+        });
+    }
+
+    const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+    const result = await safeDbQuery(`
+        SELECT id, ticker, action, price, timestamp, created_at
+        FROM signals 
+        ORDER BY created_at DESC 
+        LIMIT $1
+    `, [limit]);
+
+    if (!result) {
+        return res.status(500).json({ error: 'Query failed' });
+    }
+
+    res.json({
+        success: true,
+        signals: result.rows,
+        count: result.rows.length
+    });
+});
+
+// Catch all
 app.use('*', (req, res) => {
     res.status(404).json({
-        error: 'Not Found',
-        path: req.originalUrl
+        error: 'Endpoint not found',
+        path: req.originalUrl,
+        method: req.method
     });
 });
 
-// Iniciar servidor
-app.listen(PORT, '0.0.0.0', () => {
-    console.log('🚀 CoinBitClub Server V3 Started');
-    console.log('================================');
-    console.log('Port:', PORT);
-    console.log('Environment:', process.env.NODE_ENV || 'development');
-    console.log('Health Check: /health');
-    console.log('Database Test: /api/test-db');
-    console.log('================================');
+// Error handler
+app.use((error, req, res, next) => {
+    console.error('❌ Error:', error.message);
+    res.status(500).json({
+        error: 'Internal server error',
+        message: error.message
+    });
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-    console.log('SIGTERM received, shutting down gracefully');
-    pool.end(() => {
+// ============ SERVER STARTUP ============
+const PORT = process.env.PORT || 3000;
+
+async function startServer() {
+    try {
+        console.log('🚀 Starting CoinBitClub Market Bot V3...');
+        console.log(`🌐 PORT from environment: ${process.env.PORT || 'undefined'}`);
+        console.log(`🌐 Using PORT: ${PORT}`);
+        
+        // Initialize database (non-blocking)
+        initDatabase().catch(err => {
+            console.log('⚠️ Database init failed, continuing without DB');
+        });
+
+        const server = app.listen(PORT, '0.0.0.0', () => {
+            console.log('='.repeat(60));
+            console.log(`🚀 CoinBitClub Market Bot V3 - ROBUST`);
+            console.log(`🌐 Port: ${PORT}`);
+            console.log(`🌐 Listening on: 0.0.0.0:${PORT}`);
+            console.log(`⏰ Started: ${new Date().toISOString()}`);
+            console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+            console.log('='.repeat(60));
+            console.log('📡 Available endpoints:');
+            console.log('   - GET  /health');
+            console.log('   - GET  /api/status');
+            console.log('   - POST /api/webhooks/signal');
+            console.log('   - POST /webhook/coinbitclub');
+            console.log('   - GET  /api/signals');
+            console.log('='.repeat(60));
+            console.log('✅ READY TO RECEIVE WEBHOOKS!');
+            console.log('🔥 Server successfully bound to port and accepting connections');
+        });
+
+        // Add error handling for server
+        server.on('error', (err) => {
+            console.error('💥 Server error:', err);
+            if (err.code === 'EADDRINUSE') {
+                console.error(`❌ Port ${PORT} is already in use`);
+            }
+            process.exit(1);
+        });
+
+        // Graceful shutdown
+        process.on('SIGINT', () => shutdown(server));
+        process.on('SIGTERM', () => shutdown(server));
+
+        return server;
+
+    } catch (error) {
+        console.error('💥 Failed to start server:', error);
+        process.exit(1);
+    }
+}
+
+function shutdown(server) {
+    console.log('\n🛑 Shutting down gracefully...');
+    server.close(() => {
+        if (dbPool) {
+            dbPool.end();
+        }
+        console.log('✅ Server closed');
         process.exit(0);
     });
+}
+
+// Error handling
+process.on('uncaughtException', (error) => {
+    console.error('💥 Uncaught Exception:', error);
+    process.exit(1);
 });
 
-process.on('SIGINT', () => {
-    console.log('SIGINT received, shutting down gracefully');
-    pool.end(() => {
-        process.exit(0);
-    });
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('💥 Unhandled Rejection:', reason);
+    process.exit(1);
 });
+
+// Start the server
+startServer();
+
+module.exports = app;
