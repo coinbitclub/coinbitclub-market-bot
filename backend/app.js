@@ -25,6 +25,15 @@ class CoinBitClubServer {
         this.app = express();
         this.port = process.env.PORT || 3000;
         
+        // HEALTH CHECK DEVE SER O PRIMEIRO - ANTES DE QUALQUER MIDDLEWARE
+        this.app.get('/health', (req, res) => {
+            res.status(200).json({ 
+                status: 'healthy',
+                timestamp: new Date().toISOString(),
+                uptime: Math.floor(process.uptime())
+            });
+        });
+        
         // Configurar banco de dados
         this.pool = new Pool({
             connectionString: process.env.DATABASE_URL || 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
@@ -63,8 +72,14 @@ class CoinBitClubServer {
             });
         }
 
+        this.setupHealthCheck();
+        this.setupMiddleware();
         this.setupRoutes();
         this.setupErrorHandling();
+    }
+
+    setupHealthCheck() {
+        // Health check removido - já definido no constructor
     }
 
     setupMiddleware() {
@@ -88,8 +103,8 @@ class CoinBitClubServer {
     }
 
     setupRoutes() {
-        // Health check endpoint - DEVE SER O PRIMEIRO
-        this.app.get('/health', async (req, res) => {
+        // Status detalhado com verificação de banco
+        this.app.get('/status', async (req, res) => {
             try {
                 const client = await this.pool.connect();
                 await client.query('SELECT 1');
@@ -102,7 +117,7 @@ class CoinBitClubServer {
                     environment: process.env.NODE_ENV || 'production',
                     database: 'connected',
                     trading: process.env.ENABLE_REAL_TRADING === 'true' ? 'REAL' : 'SIMULATION',
-                    version: '3.0.0'
+                    version: '5.0.0'
                 });
             } catch (error) {
                 res.status(503).json({
@@ -133,8 +148,8 @@ class CoinBitClubServer {
             });
         });
 
-        // Rota de status do sistema
-        this.app.get('/status', async (req, res) => {
+        // Rota de status detalhado do sistema
+        this.app.get('/system-status', async (req, res) => {
             try {
                 const client = await this.pool.connect();
                 
@@ -715,7 +730,7 @@ class CoinBitClubServer {
             console.log('');
 
             // Iniciar servidor
-            this.app.listen(this.port, () => {
+            this.app.listen(this.port, '0.0.0.0', () => {
                 console.log('🎯 SISTEMA TOTALMENTE ATIVO!');
                 console.log('');
                 console.log('🌐 Servidor rodando em:');
@@ -723,6 +738,7 @@ class CoinBitClubServer {
                 console.log(`   • Produção: ${process.env.BACKEND_URL || 'https://coinbitclub-backend.railway.app'}`);
                 console.log('');
                 console.log('📡 Endpoints disponíveis:');
+                console.log(`   • Health: http://localhost:${this.port}/health`);
                 console.log(`   • Status: http://localhost:${this.port}/status`);
                 console.log(`   • Dashboard: http://localhost:${this.port}/dashboard`);
                 console.log(`   • Webhook: http://localhost:${this.port}/webhook`);
