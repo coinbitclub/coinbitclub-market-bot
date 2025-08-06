@@ -30,7 +30,9 @@ class CoinBitClubServer {
             res.status(200).json({ 
                 status: 'healthy',
                 timestamp: new Date().toISOString(),
-                uptime: Math.floor(process.uptime())
+                uptime: Math.floor(process.uptime()),
+                version: '5.1.0',
+                environment: process.env.NODE_ENV || 'production'
             });
         });
         
