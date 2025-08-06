@@ -270,22 +270,29 @@ class CoinBitClubServer {
         });
 
         // Rota para calcular comissões
-        this.app.post('/calculate-commission', (req, res) => {
+        this.app.post('/calculate-commission', async (req, res) => {
             try {
-                const { profit, plan, affiliateType } = req.body;
+                const { profit, plan, affiliateType, country, currency } = req.body;
                 
                 if (!profit || profit <= 0) {
                     return res.json({
                         message: 'Comissão calculada apenas sobre LUCRO',
-                        commission: 0,
+                        commission: {
+                            totalCommission: 0,
+                            companyCommission: 0,
+                            affiliateCommission: 0,
+                            netProfit: profit || 0
+                        },
                         profit: profit || 0
                     });
                 }
 
-                const commission = this.commissionSystem.calculateCommission({
+                const commission = await this.commissionSystem.calculateCommission({
                     profit: parseFloat(profit),
                     plan: plan || 'MONTHLY',
-                    affiliateType: affiliateType || 'none'
+                    affiliateType: affiliateType || 'none',
+                    country: country || 'BR',
+                    currency: currency || 'USD'
                 });
 
                 res.json({
@@ -302,26 +309,40 @@ class CoinBitClubServer {
         });
 
         // Rota para informações dos planos de comissionamento
-        this.app.get('/commission-plans', (req, res) => {
+        this.app.get('/commission-plans', async (req, res) => {
             const plansInfo = this.commissionSystem.getPlansInfo();
             
             res.json({
                 ...plansInfo,
                 examples: [
                     {
-                        scenario: 'Lucro R$ 1.000 - Plano Mensal - Afiliado Normal',
-                        calculation: this.commissionSystem.calculateCommission({
-                            profit: 1000,
+                        scenario: 'Lucro $100 USD - Plano Mensal BR - Afiliado Normal',
+                        calculation: await this.commissionSystem.calculateCommission({
+                            profit: 100,
                             plan: 'MONTHLY',
-                            affiliateType: 'normal'
+                            affiliateType: 'normal',
+                            country: 'BR',
+                            currency: 'USD'
                         })
                     },
                     {
-                        scenario: 'Lucro R$ 1.000 - Plano Pré-pago - Afiliado VIP',
-                        calculation: this.commissionSystem.calculateCommission({
-                            profit: 1000,
+                        scenario: 'Lucro $100 USD - Plano Pré-pago BR - Afiliado VIP',
+                        calculation: await this.commissionSystem.calculateCommission({
+                            profit: 100,
                             plan: 'PREPAID',
-                            affiliateType: 'vip'
+                            affiliateType: 'vip',
+                            country: 'BR',
+                            currency: 'USD'
+                        })
+                    },
+                    {
+                        scenario: 'Lucro $100 USD - Plano Mensal Exterior - Afiliado Normal',
+                        calculation: await this.commissionSystem.calculateCommission({
+                            profit: 100,
+                            plan: 'MONTHLY',
+                            affiliateType: 'normal',
+                            country: 'US',
+                            currency: 'USD'
                         })
                     }
                 ],
@@ -619,16 +640,19 @@ class CoinBitClubServer {
                         <div class="card">
                             <h3>💰 Sistema Financeiro</h3>
                             <p><strong>Comissão:</strong> <span class="info">Apenas sobre LUCRO</span></p>
+                            <p><strong>Operações:</strong> USD (com conversão BRL para planos BR)</p>
                             <p><strong>Planos:</strong> Mensal 10% | Pré-pago 20%</p>
                             <p><strong>Afiliados:</strong></p>
-                            <p>• Normal: 1.5% (da comissão empresa)</p>
-                            <p>• VIP: 5% (da comissão empresa)</p>
-                            <p><small><strong>Ex:</strong> Mensal = 8.5% empresa + 1.5% afiliado</small></p>
+                            <p>• Normal: 15% da comissão total</p>
+                            <p>• VIP: 25% da comissão total</p>
+                            <p><small><strong>Ex BR:</strong> $100 → R$ ${(100 * 5.5).toFixed(0)} (câmbio 5.50)</small></p>
+                            <p><small><strong>Mensal BR:</strong> R$ ${(550 * 0.085).toFixed(0)} empresa + R$ ${(550 * 0.015).toFixed(0)} afiliado</small></p>
                             <br>
                             <p><strong>Tipos de Saldo:</strong></p>
                             <p>🟢 <strong>Real (Stripe):</strong> Pode sacar</p>
                             <p>🟡 <strong>Administrativo:</strong> Cupons, 30 dias</p>
                             <p>🔴 <strong>Comissão:</strong> Não saca, converte +10%</p>
+                            <p><strong>💱 Câmbio:</strong> Atualizado automaticamente</p>
                         </div>
 
                         <div class="card">

@@ -18,24 +18,74 @@ class CommissionSystem {
         };
         
         this.minimumCommission = 1.0; // Mínimo R$ 1,00
+        
+        // Cache para taxa de câmbio (válida por 1 hora)
+        this.exchangeRateCache = {
+            rate: 5.5, // Taxa padrão USD/BRL se API falhar
+            timestamp: 0,
+            ttl: 3600000 // 1 hora em milliseconds
+        };
     }
 
-    calculateCommission(data) {
+    async getExchangeRate() {
+        const now = Date.now();
+        
+        // Verificar se o cache ainda é válido
+        if (now - this.exchangeRateCache.timestamp < this.exchangeRateCache.ttl) {
+            return this.exchangeRateCache.rate;
+        }
+
+        try {
+            // Tentar buscar taxa atual do USD/BRL
+            const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+            const data = await response.json();
+            
+            if (data && data.rates && data.rates.BRL) {
+                this.exchangeRateCache.rate = data.rates.BRL;
+                this.exchangeRateCache.timestamp = now;
+                console.log(`💱 Taxa de câmbio atualizada: USD/BRL ${data.rates.BRL.toFixed(4)}`);
+                return data.rates.BRL;
+            }
+        } catch (error) {
+            console.warn('⚠️ Erro ao buscar taxa de câmbio, usando cache:', error.message);
+        }
+
+        // Se falhar, usar taxa do cache ou padrão
+        return this.exchangeRateCache.rate;
+    }
+
+    async calculateCommission(data) {
         const {
             profit = 0,
             plan = 'MONTHLY_BRAZIL',
             affiliateType = 'none',
-            country = 'BR'
+            country = 'BR',
+            currency = 'USD', // Operações são sempre em USD
+            profitCurrency = 'USD' // Especificar moeda do lucro
         } = data;
 
         if (profit <= 0) {
             return {
+                totalCommission: 0,
                 companyCommission: 0,
                 affiliateCommission: 0,
                 netProfit: profit,
                 rate: 0,
+                currency: {
+                    operation: currency,
+                    commission: country === 'BR' ? 'BRL' : 'USD'
+                },
                 details: 'Sem lucro para calcular comissão'
             };
+        }
+
+        // Buscar taxa de câmbio se necessário
+        let exchangeRate = 1;
+        let profitInBRL = profit;
+        
+        if (country === 'BR' && currency === 'USD') {
+            exchangeRate = await this.getExchangeRate();
+            profitInBRL = profit * exchangeRate;
         }
 
         // Determinar taxa de comissão da empresa baseada no plano e país
@@ -47,7 +97,10 @@ class CommissionSystem {
         }
 
         const companyRate = this.commissionRates[planKey] || this.commissionRates.MONTHLY_BRAZIL;
-        const totalCommission = Math.max(profit * (companyRate / 100), this.minimumCommission);
+        
+        // Calcular comissão baseada na moeda do plano
+        const profitForCommission = country === 'BR' ? profitInBRL : profit;
+        const totalCommission = Math.max(profitForCommission * (companyRate / 100), this.minimumCommission);
 
         // Calcular comissão do afiliado (porcentagem da comissão total)
         let affiliateCommission = 0;
@@ -59,26 +112,38 @@ class CommissionSystem {
             companyCommission = totalCommission - affiliateCommission;
         }
 
-        const netProfit = profit - totalCommission;
+        // Net profit sempre na moeda original da operação
+        const netProfitUSD = profit - (country === 'BR' ? totalCommission / exchangeRate : totalCommission);
+        const netProfitBRL = country === 'BR' ? profitInBRL - totalCommission : netProfitUSD * exchangeRate;
 
         return {
             totalCommission: Math.round(totalCommission * 100) / 100,
             companyCommission: Math.round(companyCommission * 100) / 100,
             affiliateCommission: Math.round(affiliateCommission * 100) / 100,
-            netProfit: Math.round(netProfit * 100) / 100,
+            netProfit: Math.round(netProfitUSD * 100) / 100,
+            currency: {
+                operation: currency,
+                commission: country === 'BR' ? 'BRL' : 'USD',
+                exchangeRate: country === 'BR' ? exchangeRate : null
+            },
+            breakdown: {
+                profitUSD: `$${profit.toFixed(2)}`,
+                profitBRL: country === 'BR' ? `R$ ${profitInBRL.toFixed(2)}` : null,
+                totalCommission: country === 'BR' ? `R$ ${totalCommission.toFixed(2)}` : `$${totalCommission.toFixed(2)}`,
+                companyShare: country === 'BR' ? `R$ ${companyCommission.toFixed(2)}` : `$${companyCommission.toFixed(2)}`,
+                affiliateShare: country === 'BR' ? `R$ ${affiliateCommission.toFixed(2)}` : `$${affiliateCommission.toFixed(2)}`,
+                netProfitUSD: `$${netProfitUSD.toFixed(2)}`,
+                netProfitBRL: country === 'BR' ? `R$ ${netProfitBRL.toFixed(2)}` : null,
+                exchangeRate: country === 'BR' ? `1 USD = R$ ${exchangeRate.toFixed(4)}` : null
+            },
             rates: {
                 total: companyRate + '%',
                 company: Math.round((companyCommission / totalCommission * 100) * 100) / 100 + '%',
                 affiliate: affiliateType !== 'none' ? this.affiliateShares[affiliateType] + '%' : '0%'
             },
-            breakdown: {
-                profit: `R$ ${profit.toFixed(2)}`,
-                totalCommission: `R$ ${totalCommission.toFixed(2)}`,
-                companyShare: `R$ ${companyCommission.toFixed(2)}`,
-                affiliateShare: `R$ ${affiliateCommission.toFixed(2)}`,
-                netProfit: `R$ ${netProfit.toFixed(2)}`
-            },
-            details: `Comissão total de ${companyRate}% sobre lucro de R$ ${profit.toFixed(2)}`,
+            details: country === 'BR' ? 
+                `Comissão de ${companyRate}% sobre lucro de $${profit.toFixed(2)} (R$ ${profitInBRL.toFixed(2)} na cotação ${exchangeRate.toFixed(4)})` :
+                `Comissão de ${companyRate}% sobre lucro de $${profit.toFixed(2)}`,
             plan: planKey,
             affiliateType: affiliateType
         };
