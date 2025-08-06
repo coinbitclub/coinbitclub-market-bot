@@ -1,0 +1,400 @@
+{
+  "project": "CoinBitClub Premium",
+  "version": "2.0.0",
+  "test_date": "2025-07-26T01:35:16.467Z",
+  "summary": {
+    "overallScore": 80,
+    "totalScore": 40,
+    "totalPossible": 50,
+    "status": "FUNCTIONAL_WITH_IMPROVEMENTS",
+    "recommendations": [
+      "Implementar funcionalidades faltantes",
+      "Melhorar integração de dados"
+    ],
+    "categories": [
+      {
+        "name": "Estrutura do Projeto",
+        "score": "100.0",
+        "details": {
+          "score": 12,
+          "total": 12,
+          "details": [
+            {
+              "file": "package.json",
+              "status": "present",
+              "required": true
+            },
+            {
+              "file": "next.config.js",
+              "status": "present",
+              "required": true
+            },
+            {
+              "file": "tsconfig.json",
+              "status": "present",
+              "required": true
+            },
+            {
+              "file": "tailwind.config.js",
+              "status": "present",
+              "required": true
+            },
+            {
+              "file": "jest.config.js",
+              "status": "present",
+              "required": false
+            },
+            {
+              "file": "playwright.config.ts",
+              "status": "present",
+              "required": false
+            },
+            {
+              "folder": "pages",
+              "status": "present",
+              "required": true
+            },
+            {
+              "folder": "pages/admin",
+              "status": "present",
+              "required": true
+            },
+            {
+              "folder": "pages/api",
+              "status": "present",
+              "required": true
+            },
+            {
+              "folder": "pages/api/admin",
+              "status": "present",
+              "required": true
+            },
+            {
+              "folder": "public",
+              "status": "present",
+              "required": true
+            },
+            {
+              "folder": "styles",
+              "status": "present",
+              "required": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "Funcionalidades",
+        "score": "100.0",
+        "details": {
+          "score": 8,
+          "total": 8,
+          "modules": [
+            {
+              "name": "Dashboard Executivo",
+              "status": "implemented",
+              "file": "pages/admin/dashboard-executive.tsx",
+              "description": "Painel principal com métricas e monitoramento",
+              "size": "0.03"
+            },
+            {
+              "name": "Gestão de Usuários",
+              "status": "implemented",
+              "file": "pages/admin/users-new.tsx",
+              "description": "CRUD completo de usuários com filtros avançados",
+              "size": "0.02"
+            },
+            {
+              "name": "Gestão de Afiliados",
+              "status": "implemented",
+              "file": "pages/admin/affiliates-new.tsx",
+              "description": "Sistema de afiliados com comissões e tiers",
+              "size": "0.03"
+            },
+            {
+              "name": "Gestão de Operações",
+              "status": "implemented",
+              "file": "pages/admin/operations-new.tsx",
+              "description": "Monitoramento de operações de trading",
+              "size": "0.03"
+            },
+            {
+              "name": "Sistema de Alertas",
+              "status": "implemented",
+              "file": "pages/admin/alerts-new.tsx",
+              "description": "Gestão de alertas e notificações",
+              "size": "0.03"
+            },
+            {
+              "name": "Ajustes Financeiros",
+              "status": "implemented",
+              "file": "pages/admin/adjustments-new.tsx",
+              "description": "Controle de ajustes e aprovações financeiras",
+              "size": "0.03"
+            },
+            {
+              "name": "Contabilidade",
+              "status": "implemented",
+              "file": "pages/admin/accounting-new.tsx",
+              "description": "Relatórios financeiros e P&L",
+              "size": "0.03"
+            },
+            {
+              "name": "Configurações",
+              "status": "implemented",
+              "file": "pages/admin/settings-new.tsx",
+              "description": "Configurações gerais do sistema",
+              "size": "0.03"
+            }
+          ]
+        }
+      },
+      {
+        "name": "APIs",
+        "score": "100.0",
+        "details": {
+          "score": 8,
+          "total": 8,
+          "endpoints": [
+            {
+              "name": "Users API",
+              "status": "implemented",
+              "file": "pages/api/admin/users.ts",
+              "methods": [
+                "GET"
+              ],
+              "expected": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+              ]
+            },
+            {
+              "name": "Affiliates API",
+              "status": "implemented",
+              "file": "pages/api/admin/affiliates.ts",
+              "methods": [
+                "GET",
+                "POST",
+                "PUT"
+              ],
+              "expected": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+              ]
+            },
+            {
+              "name": "Operations API",
+              "status": "implemented",
+              "file": "pages/api/admin/operations.ts",
+              "methods": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+              ],
+              "expected": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+              ]
+            },
+            {
+              "name": "Alerts API",
+              "status": "implemented",
+              "file": "pages/api/admin/alerts.ts",
+              "methods": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+              ],
+              "expected": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+              ]
+            },
+            {
+              "name": "Adjustments API",
+              "status": "implemented",
+              "file": "pages/api/admin/adjustments.ts",
+              "methods": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+              ],
+              "expected": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+              ]
+            },
+            {
+              "name": "Accounting API",
+              "status": "implemented",
+              "file": "pages/api/admin/accounting.ts",
+              "methods": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+              ],
+              "expected": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+              ]
+            },
+            {
+              "name": "Settings API",
+              "status": "implemented",
+              "file": "pages/api/admin/settings.ts",
+              "methods": [
+                "GET",
+                "POST",
+                "PUT"
+              ],
+              "expected": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+              ]
+            },
+            {
+              "name": "Dashboard API",
+              "status": "implemented",
+              "file": "pages/api/admin/dashboard-complete.ts",
+              "methods": [
+                "GET"
+              ],
+              "expected": [
+                "GET"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "Páginas Admin",
+        "score": "100.0",
+        "details": {
+          "score": 4,
+          "total": 4,
+          "components": [
+            {
+              "file": "dashboard-executive.tsx",
+              "status": "complete",
+              "features": [
+                "API Integration",
+                "Real Data",
+                "TypeScript",
+                "Responsive"
+              ],
+              "score": 4
+            },
+            {
+              "file": "users-new.tsx",
+              "status": "complete",
+              "features": [
+                "API Integration",
+                "Real Data",
+                "TypeScript",
+                "Responsive"
+              ],
+              "score": 4
+            },
+            {
+              "file": "affiliates-new.tsx",
+              "status": "complete",
+              "features": [
+                "API Integration",
+                "Real Data",
+                "TypeScript",
+                "Responsive"
+              ],
+              "score": 4
+            },
+            {
+              "file": "operations-new.tsx",
+              "status": "complete",
+              "features": [
+                "API Integration",
+                "Real Data",
+                "TypeScript",
+                "Responsive"
+              ],
+              "score": 4
+            }
+          ]
+        }
+      },
+      {
+        "name": "Integração",
+        "score": "50.0",
+        "details": {
+          "score": 5,
+          "total": 10,
+          "aspects": [
+            {
+              "aspect": "Database Config",
+              "status": "present"
+            },
+            {
+              "aspect": "API Structure",
+              "status": "implemented"
+            },
+            {
+              "aspect": "Real-time Updates",
+              "status": "implemented"
+            },
+            {
+              "aspect": "Error Handling",
+              "status": "implemented"
+            },
+            {
+              "aspect": "Production Config",
+              "status": "ready"
+            }
+          ]
+        }
+      },
+      {
+        "name": "Segurança",
+        "score": "37.5",
+        "details": {
+          "score": 3,
+          "total": 8,
+          "measures": [
+            {
+              "measure": "Environment Variables",
+              "status": "configured"
+            },
+            {
+              "measure": "Input Validation",
+              "status": "implemented"
+            },
+            {
+              "measure": "Authentication",
+              "status": "implemented"
+            },
+            {
+              "measure": "SSL Configuration",
+              "status": "default"
+            }
+          ]
+        }
+      }
+    ],
+    "timestamp": "2025-07-26T01:35:16.597Z"
+  },
+  "generated_by": "CoinBitClub Testing Suite"
+}

@@ -1,0 +1,29 @@
+# VARIÁVEIS OBRIGATÓRIAS PARA CONFIGURAR NO VERCEL
+# Execute cada comando no terminal:
+
+# 1. API Backend
+vercel env add NEXT_PUBLIC_API_URL production
+# Valor: https://coinbitclub-market-bot.up.railway.app
+
+# 2. Database
+vercel env add DATABASE_URL production  
+# Valor: Sua URL do PostgreSQL
+
+# 3. JWT Secrets
+vercel env add JWT_SECRET production
+# Valor: Seu JWT secret
+
+vercel env add JWT_REFRESH_SECRET production
+# Valor: Seu refresh secret
+
+# 4. Stripe
+vercel env add STRIPE_SECRET_KEY production
+# Valor: Sua chave secreta Stripe
+
+# 5. Environment
+vercel env add NODE_ENV production
+# Valor: production
+
+# 6. Site URLs
+vercel env add NEXT_PUBLIC_SITE_URL production
+# Valor: https://coinbitclub-market-nqv1yc8xm-coinbitclubs-projects.vercel.app

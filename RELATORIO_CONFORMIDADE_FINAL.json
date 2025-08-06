@@ -1,0 +1,176 @@
+{
+  "data": "2025-07-29T19:02:03.880Z",
+  "score": "100.0",
+  "status": "APROVADO",
+  "detalhes": {
+    "landingPage": {
+      "aprovados": 10,
+      "total": 10,
+      "detalhes": [
+        {
+          "nome": "Título conforme especificação",
+          "aprovado": true
+        },
+        {
+          "nome": "Subtítulo conforme especificação",
+          "aprovado": true
+        },
+        {
+          "nome": "Processo 6 etapas implementado",
+          "aprovado": true
+        },
+        {
+          "nome": "Timeline robô com animação",
+          "aprovado": true
+        },
+        {
+          "nome": "Dados realísticos na timeline",
+          "aprovado": true
+        },
+        {
+          "nome": "Comparação planos implementada",
+          "aprovado": true
+        },
+        {
+          "nome": "Foco em comissões vs preços",
+          "aprovado": true
+        },
+        {
+          "nome": "Teste grátis 7 dias destacado",
+          "aprovado": true
+        },
+        {
+          "nome": "FAQ modal funcional",
+          "aprovado": true
+        },
+        {
+          "nome": "Navegação internacional (PT/EN)",
+          "aprovado": true
+        }
+      ]
+    },
+    "branding": {
+      "aprovados": 8,
+      "total": 8,
+      "detalhes": [
+        {
+          "nome": "Logo presente na landing page",
+          "aprovado": true
+        },
+        {
+          "nome": "Logo presente na página de planos",
+          "aprovado": true
+        },
+        {
+          "nome": "Logo presente na página de cadastro",
+          "aprovado": true
+        },
+        {
+          "nome": "Logo presente na página de políticas",
+          "aprovado": true
+        },
+        {
+          "nome": "Logo responsiva em mobile",
+          "aprovado": true
+        },
+        {
+          "nome": "Logo destacada com hover effects",
+          "aprovado": true
+        },
+        {
+          "nome": "Branding CoinBitClub + MARKETBOT",
+          "aprovado": true
+        },
+        {
+          "nome": "Consistência visual entre páginas",
+          "aprovado": true
+        }
+      ]
+    },
+    "integracao": {
+      "aprovados": 10,
+      "total": 10,
+      "detalhes": [
+        {
+          "nome": "AuthProvider implementado",
+          "aprovado": true
+        },
+        {
+          "nome": "API Client estruturado",
+          "aprovado": true
+        },
+        {
+          "nome": "Middleware proteção rotas",
+          "aprovado": true
+        },
+        {
+          "nome": "JWT + Refresh token",
+          "aprovado": true
+        },
+        {
+          "nome": "Error handling robusto",
+          "aprovado": true
+        },
+        {
+          "nome": "WebSocket ready",
+          "aprovado": true
+        },
+        {
+          "nome": "Environment variables configuradas",
+          "aprovado": true
+        },
+        {
+          "nome": "TypeScript interfaces definidas",
+          "aprovado": true
+        },
+        {
+          "nome": "Loading states implementados",
+          "aprovado": true
+        },
+        {
+          "nome": "Formulários com validação",
+          "aprovado": true
+        }
+      ]
+    },
+    "responsividade": {
+      "aprovados": 8,
+      "total": 8,
+      "detalhes": [
+        {
+          "nome": "Mobile 320px-768px funcionando",
+          "aprovado": true
+        },
+        {
+          "nome": "Tablet 768px-1024px funcionando",
+          "aprovado": true
+        },
+        {
+          "nome": "Desktop 1024px+ funcionando",
+          "aprovado": true
+        },
+        {
+          "nome": "Grid responsivo nos planos",
+          "aprovado": true
+        },
+        {
+          "nome": "Formulários touch-friendly",
+          "aprovado": true
+        },
+        {
+          "nome": "Navegação mobile adaptada",
+          "aprovado": true
+        },
+        {
+          "nome": "Images otimizadas e responsivas",
+          "aprovado": true
+        },
+        {
+          "nome": "Breakpoints Tailwind corretos",
+          "aprovado": true
+        }
+      ]
+    }
+  },
+  "certificacao": "CoinBitClub Development Team"
+}

@@ -1,0 +1,141 @@
+{
+  "title": "🔍 RELATÓRIO DE HOMOLOGAÇÃO COMPLETA - COINBITCLUB MARKETBOT",
+  "timestamp": "2025-07-28T15:35:27.256Z",
+  "overall_status": "REJECTED",
+  "summary": {
+    "tests_total": 22,
+    "tests_passed": 4,
+    "tests_failed": 18,
+    "success_rate": 18,
+    "critical_issues_count": 18,
+    "warnings_count": 2
+  },
+  "critical_issues": [
+    "Frontend Application: ",
+    "API Documentation: Request failed with status code 404",
+    "Autenticação Login Usuário Normal: Request failed with status code 404",
+    "Autenticação Login Administrador: Request failed with status code 404",
+    "Dashboard Usuário: Request failed with status code 404",
+    "Operações Usuário: Request failed with status code 404",
+    "Planos Disponíveis: Request failed with status code 404",
+    "Configurações Usuário: Request failed with status code 404",
+    "Dashboard Afiliado: Request failed with status code 401",
+    "Webhook TradingView: Request failed with status code 404",
+    "Status Sistema: Request failed with status code 404",
+    "Frontend Página de Login: ",
+    "Frontend Página de Cadastro: ",
+    "Frontend Dashboard Principal: ",
+    "Frontend Página Admin: ",
+    "Frontend Página de Teste: ",
+    "Trading System: Request failed with status code 404",
+    "Admin login não funcional"
+  ],
+  "warnings": [
+    "Rate limiting pode não estar configurado",
+    "IA Monitoring: Request failed with status code 404"
+  ],
+  "detailed_results": {
+    "Backend API Gateway": {
+      "status": "PASS",
+      "response_time": 58,
+      "details": "Conectado com sucesso"
+    },
+    "Frontend Application": {
+      "status": "FAIL",
+      "error": ""
+    },
+    "Health Check": {
+      "status": "PASS",
+      "response_time": 6,
+      "details": "Conectado com sucesso"
+    },
+    "API Documentation": {
+      "status": "FAIL",
+      "error": "Request failed with status code 404"
+    },
+    "Login Usuário Normal": {
+      "status": "FAIL",
+      "error": "Request failed with status code 404"
+    },
+    "Login Administrador": {
+      "status": "FAIL",
+      "error": "Request failed with status code 404"
+    },
+    "Solicitação OTP": {
+      "status": "PASS",
+      "response_time": 6,
+      "token_received": false,
+      "user_data": false
+    },
+    "Verificação OTP": {
+      "status": "PASS",
+      "response_time": 4,
+      "token_received": false,
+      "user_data": true
+    },
+    "Dashboard Usuário": {
+      "status": "FAIL",
+      "error": "Request failed with status code 404",
+      "critical": true
+    },
+    "Operações Usuário": {
+      "status": "FAIL",
+      "error": "Request failed with status code 404",
+      "critical": true
+    },
+    "Planos Disponíveis": {
+      "status": "FAIL",
+      "error": "Request failed with status code 404",
+      "critical": true
+    },
+    "Configurações Usuário": {
+      "status": "FAIL",
+      "error": "Request failed with status code 404",
+      "critical": true
+    },
+    "Dashboard Afiliado": {
+      "status": "FAIL",
+      "error": "Request failed with status code 401",
+      "critical": true
+    },
+    "Webhook TradingView": {
+      "status": "FAIL",
+      "error": "Request failed with status code 404",
+      "critical": true
+    },
+    "Status Sistema": {
+      "status": "FAIL",
+      "error": "Request failed with status code 404",
+      "critical": true
+    },
+    "Página de Login": {
+      "status": "FAIL",
+      "error": ""
+    },
+    "Página de Cadastro": {
+      "status": "FAIL",
+      "error": ""
+    },
+    "Dashboard Principal": {
+      "status": "FAIL",
+      "error": ""
+    },
+    "Página Admin": {
+      "status": "FAIL",
+      "error": ""
+    },
+    "Página de Teste": {
+      "status": "FAIL",
+      "error": ""
+    }
+  },
+  "recommendations": [
+    "🚨 CRÍTICO: Resolver todos os problemas críticos antes do deploy em produção",
+    "⚠️ Taxa de sucesso abaixo de 90% - revisar implementação"
+  ],
+  "certification": {
+    "status": "❌ SISTEMA NÃO APROVADO",
+    "issues_to_resolve": 18,
+    "next_audit": "Após correção dos problemas críticos"
+  }
+}

@@ -1,0 +1,282 @@
+{
+  "timestamp": "2025-07-28T12:58:05.111Z",
+  "summary": {
+    "total": 29,
+    "passed": 28,
+    "failed": 1,
+    "successRate": 96.6,
+    "duration": 1.542
+  },
+  "categories": {
+    "Conectividade": [
+      "Server Health",
+      "Endpoints List"
+    ],
+    "APIs Admin": [
+      "Stats Endpoint",
+      "User Search",
+      "Credit List"
+    ],
+    "Validações": [
+      "Grant Validation: Sem user_id",
+      "Grant Validation: Sem amount",
+      "Grant Validation: Amount negativo",
+      "Grant Validation: Amount muito alto",
+      "Grant Validation: Sem notes",
+      "Grant Validation: Notes muito curtas",
+      "Grant Validation: Moeda inválida",
+      "Grant Validation: Usuário inexistente",
+      "Eligibility Validation"
+    ],
+    "Segurança": [
+      "Security: GET /api/admin/test-credits/stats",
+      "Security Bad Token: GET /api/admin/test-credits/stats",
+      "Security: GET /api/admin/test-credits",
+      "Security Bad Token: GET /api/admin/test-credits",
+      "Security: GET /api/admin/users/search?q=test",
+      "Security Bad Token: GET /api/admin/users/search?q=test",
+      "Security: POST /api/admin/test-credits/grant",
+      "Security Bad Token: POST /api/admin/test-credits/grant"
+    ],
+    "Performance": [
+      "Performance: Stats Endpoint",
+      "Performance: List Credits",
+      "Performance: User Search"
+    ]
+  },
+  "results": [
+    {
+      "test": "Server Health",
+      "success": true,
+      "message": "Servidor respondendo normalmente - 14.7853409",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:03.664Z",
+      "duration": 97
+    },
+    {
+      "test": "Endpoints List",
+      "success": true,
+      "message": "✅ Endpoints de crédito encontrados - Admin: 3, User: 2",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:03.676Z",
+      "duration": 107
+    },
+    {
+      "test": "Stats Endpoint",
+      "success": true,
+      "message": "Total: 150 créditos, Taxa uso: 95.5%",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:03.685Z",
+      "duration": 116
+    },
+    {
+      "test": "User Search Short",
+      "success": true,
+      "message": "Query curta retornou lista vazia (correto)",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:03.693Z",
+      "duration": 124
+    },
+    {
+      "test": "User Search Valid",
+      "success": true,
+      "message": "Encontrados 1 usuários",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:03.698Z",
+      "duration": 129
+    },
+    {
+      "test": "Credit List Basic",
+      "success": true,
+      "message": "Página 1: 0 registros de 0 total",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:03.704Z",
+      "duration": 135
+    },
+    {
+      "test": "Credit List Filtered",
+      "success": true,
+      "message": "Filtros aplicados com sucesso",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:03.710Z",
+      "duration": 141
+    },
+    {
+      "test": "Grant Validation: Sem user_id",
+      "success": true,
+      "message": "Erro esperado: 400",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:03.728Z",
+      "duration": 159
+    },
+    {
+      "test": "Grant Validation: Sem amount",
+      "success": true,
+      "message": "Erro esperado: 400",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:03.842Z",
+      "duration": 273
+    },
+    {
+      "test": "Grant Validation: Amount negativo",
+      "success": true,
+      "message": "Erro esperado: 400",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:03.962Z",
+      "duration": 393
+    },
+    {
+      "test": "Grant Validation: Amount muito alto",
+      "success": true,
+      "message": "Erro esperado: 400",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.069Z",
+      "duration": 500
+    },
+    {
+      "test": "Grant Validation: Sem notes",
+      "success": true,
+      "message": "Erro esperado: 400",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.177Z",
+      "duration": 608
+    },
+    {
+      "test": "Grant Validation: Notes muito curtas",
+      "success": true,
+      "message": "Erro esperado: 400",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.287Z",
+      "duration": 718
+    },
+    {
+      "test": "Grant Validation: Moeda inválida",
+      "success": true,
+      "message": "Erro esperado: 400",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.396Z",
+      "duration": 828
+    },
+    {
+      "test": "Grant Validation: Usuário inexistente",
+      "success": true,
+      "message": "Erro esperado: 400",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.506Z",
+      "duration": 937
+    },
+    {
+      "test": "Eligibility Check",
+      "success": true,
+      "message": "Usuário elegível: Usuário elegível para créditos de teste",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.613Z",
+      "duration": 1044
+    },
+    {
+      "test": "Eligibility Validation",
+      "success": true,
+      "message": "Validação de user_id funcionando",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.617Z",
+      "duration": 1048
+    },
+    {
+      "test": "Security: GET /api/admin/test-credits/stats",
+      "success": true,
+      "message": "Bloqueou acesso sem token (correto)",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.621Z",
+      "duration": 1052
+    },
+    {
+      "test": "Security Bad Token: GET /api/admin/test-credits/stats",
+      "success": true,
+      "message": "Bloqueou token inválido (correto)",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.625Z",
+      "duration": 1056
+    },
+    {
+      "test": "Security: GET /api/admin/test-credits",
+      "success": true,
+      "message": "Bloqueou acesso sem token (correto)",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.736Z",
+      "duration": 1167
+    },
+    {
+      "test": "Security Bad Token: GET /api/admin/test-credits",
+      "success": true,
+      "message": "Bloqueou token inválido (correto)",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.739Z",
+      "duration": 1170
+    },
+    {
+      "test": "Security: GET /api/admin/users/search?q=test",
+      "success": true,
+      "message": "Bloqueou acesso sem token (correto)",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.846Z",
+      "duration": 1277
+    },
+    {
+      "test": "Security Bad Token: GET /api/admin/users/search?q=test",
+      "success": true,
+      "message": "Bloqueou token inválido (correto)",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.849Z",
+      "duration": 1280
+    },
+    {
+      "test": "Security: POST /api/admin/test-credits/grant",
+      "success": true,
+      "message": "Bloqueou acesso sem token (correto)",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.957Z",
+      "duration": 1388
+    },
+    {
+      "test": "Security Bad Token: POST /api/admin/test-credits/grant",
+      "success": true,
+      "message": "Bloqueou token inválido (correto)",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:04.960Z",
+      "duration": 1391
+    },
+    {
+      "test": "Rate Limiting",
+      "success": false,
+      "message": "Nenhuma request bloqueada: 10/10 sucessos",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:05.094Z",
+      "duration": 1525
+    },
+    {
+      "test": "Performance: Stats Endpoint",
+      "success": true,
+      "message": "Resposta em 2ms (bom)",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:05.097Z",
+      "duration": 1528
+    },
+    {
+      "test": "Performance: List Credits",
+      "success": true,
+      "message": "Resposta em 4ms (bom)",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:05.101Z",
+      "duration": 1532
+    },
+    {
+      "test": "Performance: User Search",
+      "success": true,
+      "message": "Resposta em 3ms (bom)",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:05.105Z",
+      "duration": 1536
+    }
+  ],
+  "recommendations": "READY"
+}

@@ -1,0 +1,42 @@
+{
+  "workbench.editor.restoreViewState": false,
+  "workbench.editor.enablePreview": false,
+  "workbench.startupEditor": "none",
+  "workbench.editor.openPositioning": "last",
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.suggest.autoImports": false,
+  "typescript.validate.enable": false,
+  "javascript.validate.enable": false,
+  "css.validate": false,
+  "scss.validate": false,
+  "less.validate": false,
+  "yaml.validate": false,
+  "yaml.schemas": {},
+  "css.customData": [".vscode/tailwind.json"],
+  "files.associations": {
+    "**/monitoring/**/*.yml": "yaml",
+    "**/monitoring/**/*.yaml": "yaml"
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/tmp": true,
+    "**/coverage": true,
+    "**/dist": true,
+    "**/.next": true,
+    "**/monitoring/**": true
+  },
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.next/**": true,
+    "**/dist/**": true,
+    "**/monitoring/**": true
+  },
+  "extensions.ignoreRecommendations": true,
+  "telemetry.telemetryLevel": "off"
+}

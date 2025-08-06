@@ -1,0 +1,182 @@
+import { setupServer } from 'msw/node';
+import { http, HttpResponse } from 'msw';
+
+const handlers = [
+  // Auth endpoints
+  rest.post('/auth/login', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        user: {
+          id: 1,
+          email: 'test@example.com',
+          name: 'Test User',
+          role: 'user',
+          plan_id: 1,
+          status: 'active',
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-01-01T00:00:00Z',
+        },
+        tokens: {
+          accessToken: 'mock-access-token',
+          refreshToken: 'mock-refresh-token',
+        },
+      })
+    );
+  }),
+
+  rest.post('/auth/refresh', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        accessToken: 'new-mock-access-token',
+        refreshToken: 'new-mock-refresh-token',
+      })
+    );
+  }),
+
+  // Dashboard endpoints
+  rest.get('/dashboard/metrics', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        accuracy_percentage: 92.8,
+        daily_return_pct: 2.3,
+        lifetime_return_pct: 187.5,
+        total_trades: 1250,
+        winning_trades: 1160,
+        losing_trades: 90,
+        total_pnl_usd: 12500.75,
+        avg_trade_duration: 3600,
+      })
+    );
+  }),
+
+  rest.get('/dashboard/balances', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json([
+        {
+          id: 1,
+          user_id: 1,
+          exchange: 'bybit',
+          environment: 'testnet',
+          asset: 'USDT',
+          total_balance: 10000,
+          available_balance: 8500,
+          locked_balance: 1500,
+          usd_value: 10000,
+          last_updated: '2024-01-01T00:00:00Z',
+        },
+      ])
+    );
+  }),
+
+  // Orders endpoints
+  rest.get('/orders', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json([
+        {
+          id: 1,
+          user_id: 1,
+          exchange: 'bybit',
+          environment: 'testnet',
+          order_id: 'test-order-1',
+          symbol: 'BTCUSDT',
+          side: 'buy',
+          type: 'market',
+          quantity: 0.001,
+          price: 50000,
+          filled_quantity: 0.001,
+          filled_price: 50000,
+          status: 'filled',
+          take_profit: 52000,
+          stop_loss: 48000,
+          pnl_usd: 50.25,
+          pnl_percentage: 2.5,
+          entry_reason: 'AI Signal - Bullish breakout',
+          exit_reason: 'Take profit reached',
+          opened_at: '2024-01-01T00:00:00Z',
+          closed_at: '2024-01-01T01:00:00Z',
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-01-01T01:00:00Z',
+        },
+      ])
+    );
+  }),
+
+  // Plans endpoints
+  rest.get('/plans', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json([
+        {
+          id: 1,
+          name: 'Starter',
+          description: 'Para iniciantes',
+          price: 99,
+          features: ['Trading automatizado', 'Suporte básico'],
+          max_balance: 10000,
+          commission_rate: 0.1,
+          active: true,
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-01-01T00:00:00Z',
+        },
+      ])
+    );
+  }),
+
+  // Credentials endpoints
+  rest.get('/credentials', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json([
+        {
+          id: 1,
+          user_id: 1,
+          exchange: 'bybit',
+          api_key: 'test-api-key',
+          api_secret: '***hidden***',
+          environment: 'testnet',
+          status: 'active',
+          last_validation: '2024-01-01T00:00:00Z',
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-01-01T00:00:00Z',
+        },
+      ])
+    );
+  }),
+
+  rest.post('/credentials', (req, res, ctx) => {
+    return res(
+      ctx.status(201),
+      ctx.json({
+        id: 2,
+        user_id: 1,
+        exchange: 'bybit',
+        api_key: 'new-test-api-key',
+        api_secret: '***hidden***',
+        environment: 'testnet',
+        status: 'active',
+        last_validation: '2024-01-01T00:00:00Z',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      })
+    );
+  }),
+
+  // Error handling
+  rest.get('/error-test', (req, res, ctx) => {
+    return res(
+      ctx.status(500),
+      ctx.json({
+        message: 'Internal server error',
+        code: 'INTERNAL_ERROR',
+        status: 500,
+      })
+    );
+  }),
+];
+
+export const server = setupServer(...handlers);

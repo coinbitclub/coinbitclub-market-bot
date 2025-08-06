@@ -1,0 +1,56 @@
+# CoinBitClub Market Bot - Railway Optimized Dockerfile
+FROM node:18-alpine
+
+# Install system dependencies
+RUN apk add --no-cache dumb-init
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json files
+COPY package*.json ./
+COPY backend/package*.json ./backend/
+COPY backend/api-gateway/package*.json ./backend/api-gateway/
+COPY coinbitclub-frontend-premium/package*.json ./coinbitclub-frontend-premium/
+
+# Install root dependencies
+RUN npm ci --only=production
+
+# Copy backend source code
+COPY backend/ ./backend/
+
+# Copy frontend source code  
+COPY coinbitclub-frontend-premium/ ./coinbitclub-frontend-premium/
+
+# Copy additional files
+COPY email-service.js ./
+COPY test-user-api-server.cjs ./
+
+# Set working directory to backend
+WORKDIR /app/backend/api-gateway
+
+# Install backend dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Set working directory to frontend
+WORKDIR /app/coinbitclub-frontend-premium
+
+# Install frontend dependencies and build
+RUN npm ci && npm run build
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /app
+
+# Switch to non-root user
+USER nodejs
+
+# Expose ports
+EXPOSE 3000 9997
+
+# Set working directory back to app root
+WORKDIR /app
+
+# Start command
+CMD ["dumb-init", "node", "test-user-api-server.cjs"]

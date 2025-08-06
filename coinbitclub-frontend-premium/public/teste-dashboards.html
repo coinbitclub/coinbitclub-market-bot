@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Dashboards - CoinBitClub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 40px;
+            border-radius: 10px;
+            border: 1px solid #444;
+        }
+        h1 {
+            text-align: center;
+            color: #ffa500;
+            margin-bottom: 30px;
+        }
+        .dashboard-list {
+            display: grid;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        .dashboard-item {
+            background: #333;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #555;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dashboard-info {
+            flex: 1;
+        }
+        .dashboard-role {
+            font-weight: bold;
+            color: #ffa500;
+            font-size: 18px;
+        }
+        .dashboard-url {
+            color: #aaa;
+            font-family: monospace;
+            margin-top: 5px;
+        }
+        .test-button {
+            background: #ffa500;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .test-button:hover {
+            background: #ff8c00;
+        }
+        .status {
+            margin-left: 15px;
+            font-weight: bold;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+        .test-login {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+        .test-login:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Teste de Dashboards - CoinBitClub</h1>
+        
+        <button class="test-login" onclick="testLogin()">
+            🔐 Fazer Login e Testar Redirecionamento Automático
+        </button>
+        
+        <h3>📋 Dashboards Disponíveis:</h3>
+        <div class="dashboard-list">
+            <div class="dashboard-item">
+                <div class="dashboard-info">
+                    <div class="dashboard-role">👔 ADMIN</div>
+                    <div class="dashboard-url">/admin/dashboard</div>
+                </div>
+                <button class="test-button" onclick="testDashboard('/admin/dashboard', 'admin')">
+                    🧪 Testar
+                </button>
+                <span id="status-admin" class="status"></span>
+            </div>
+            
+            <div class="dashboard-item">
+                <div class="dashboard-info">
+                    <div class="dashboard-role">👤 USER</div>
+                    <div class="dashboard-url">/user/dashboard</div>
+                </div>
+                <button class="test-button" onclick="testDashboard('/user/dashboard', 'user')">
+                    🧪 Testar
+                </button>
+                <span id="status-user" class="status"></span>
+            </div>
+            
+            <div class="dashboard-item">
+                <div class="dashboard-info">
+                    <div class="dashboard-role">💰 AFFILIATE</div>
+                    <div class="dashboard-url">/affiliate/dashboard</div>
+                </div>
+                <button class="test-button" onclick="testDashboard('/affiliate/dashboard', 'affiliate')">
+                    🧪 Testar
+                </button>
+                <span id="status-affiliate" class="status"></span>
+            </div>
+            
+            <div class="dashboard-item">
+                <div class="dashboard-info">
+                    <div class="dashboard-role">👔 GESTOR</div>
+                    <div class="dashboard-url">/gestor/dashboard</div>
+                </div>
+                <button class="test-button" onclick="testDashboard('/gestor/dashboard', 'gestor')">
+                    🧪 Testar
+                </button>
+                <span id="status-gestor" class="status"></span>
+            </div>
+            
+            <div class="dashboard-item">
+                <div class="dashboard-info">
+                    <div class="dashboard-role">⚙️ OPERADOR</div>
+                    <div class="dashboard-url">/operador/dashboard</div>
+                </div>
+                <button class="test-button" onclick="testDashboard('/operador/dashboard', 'operador')">
+                    🧪 Testar
+                </button>
+                <span id="status-operador" class="status"></span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: #333; border-radius: 8px;">
+            <h4>📝 Instruções:</h4>
+            <ul>
+                <li>Clique em "🔐 Fazer Login" para testar o redirecionamento automático</li>
+                <li>Ou clique em "🧪 Testar" para verificar se cada dashboard existe</li>
+                <li>Verde = Dashboard funcionando</li>
+                <li>Vermelho = Dashboard com erro</li>
+                <li>Laranja = Dashboard não encontrado</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function testDashboard(url, role) {
+            const statusElement = document.getElementById(`status-${role}`);
+            statusElement.textContent = '⏳ Testando...';
+            statusElement.className = 'status warning';
+            
+            try {
+                const response = await fetch(url);
+                console.log(`Dashboard ${role}:`, response.status);
+                
+                if (response.status === 200) {
+                    statusElement.textContent = '✅ OK';
+                    statusElement.className = 'status success';
+                } else if (response.status === 404) {
+                    statusElement.textContent = '❌ Não encontrado';
+                    statusElement.className = 'status error';
+                } else {
+                    statusElement.textContent = `⚠️ Status: ${response.status}`;
+                    statusElement.className = 'status warning';
+                }
+            } catch (error) {
+                console.error(`Erro ao testar ${role}:`, error);
+                statusElement.textContent = '❌ Erro';
+                statusElement.className = 'status error';
+            }
+        }
+
+        async function testLogin() {
+            console.log('🔐 Iniciando teste de login...');
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'faleconosco@coinbitclub.vip',
+                        password: 'password'
+                    })
+                });
+
+                const data = await response.json();
+                console.log('Login response:', data);
+
+                if (response.status === 200) {
+                    console.log('✅ Login sucesso!');
+                    
+                    // Salvar dados
+                    localStorage.setItem('auth_token', data.token);
+                    localStorage.setItem('user_data', JSON.stringify(data.user));
+                    
+                    const role = data.user.role || data.user.userType;
+                    console.log('Role:', role);
+                    
+                    let redirectUrl = '/admin/dashboard'; // Default para admin
+                    if (role === 'admin') {
+                        redirectUrl = '/admin/dashboard';
+                    }
+                    
+                    console.log('🚀 Redirecionando para:', redirectUrl);
+                    
+                    // Redirecionamento direto
+                    window.location.href = redirectUrl;
+                    
+                } else {
+                    console.error('❌ Erro no login:', data.message);
+                    alert('Erro no login: ' + data.message);
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro na requisição:', error);
+                alert('Erro na requisição: ' + error.message);
+            }
+        }
+
+        // Testar todos os dashboards ao carregar
+        window.addEventListener('load', () => {
+            console.log('🧪 Testando todos os dashboards...');
+            testDashboard('/admin/dashboard', 'admin');
+            testDashboard('/user/dashboard', 'user');
+            testDashboard('/affiliate/dashboard', 'affiliate');
+            testDashboard('/gestor/dashboard', 'gestor');
+            testDashboard('/operador/dashboard', 'operador');
+        });
+    </script>
+</body>
+</html>

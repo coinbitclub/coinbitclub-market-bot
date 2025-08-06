@@ -1,0 +1,19 @@
+{
+  "name": "coinbitclub-market-bot",
+  "version": "3.0.0",
+  "description": "CoinBitClub Market Bot V3",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "init-db": "node auto-init.js",
+    "dev": "NODE_ENV=development node main.js",
+    "prod": "NODE_ENV=production node main.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.16.3"
+  }
+}

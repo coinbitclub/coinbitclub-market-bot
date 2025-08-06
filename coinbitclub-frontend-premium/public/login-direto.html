@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Direto - CoinBitClub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 40px;
+            border-radius: 10px;
+            border: 1px solid #444;
+        }
+        h1 {
+            text-align: center;
+            color: #ffa500;
+            margin-bottom: 30px;
+        }
+        input, button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #333;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #ffa500;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover:not(:disabled) {
+            background: #ff8c00;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .success { background: #4CAF50; }
+        .error { background: #f44336; }
+        .warning { background: #ff9800; }
+        .info { background: #2196F3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Login CoinBitClub</h1>
+        
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Email" value="faleconosco@coinbitclub.vip" required>
+            <input type="password" id="password" placeholder="Senha" value="password" required>
+            <button type="submit" id="loginBtn">🚀 Fazer Login</button>
+        </form>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            loginBtn.textContent = '⏳ Entrando...';
+            loginBtn.disabled = true;
+            
+            showStatus('🔄 Fazendo login...', 'info');
+            
+            try {
+                console.log('📤 Enviando requisição de login...');
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                console.log('📥 Resposta recebida:', response.status);
+                const data = await response.json();
+                console.log('📋 Dados:', data);
+                
+                if (response.status === 200 && data.success !== false) {
+                    showStatus('✅ Login realizado com sucesso!', 'success');
+                    
+                    // Salvar no localStorage
+                    try {
+                        localStorage.setItem('auth_token', data.token);
+                        localStorage.setItem('user_data', JSON.stringify(data.user));
+                        console.log('💾 Dados salvos no localStorage');
+                    } catch (e) {
+                        console.error('❌ Erro ao salvar localStorage:', e);
+                    }
+                    
+                    // Determinar redirecionamento
+                    const role = data.user?.role || data.user?.userType || 'user';
+                    console.log('👔 Role detectado:', role);
+                    
+                    let redirectUrl;
+                    switch (role.toLowerCase()) {
+                        case 'admin':
+                            redirectUrl = '/admin/dashboard';
+                            break;
+                        case 'affiliate':
+                        case 'afiliado':
+                            redirectUrl = '/affiliate/dashboard';
+                            break;
+                        case 'gestor':
+                        case 'manager':
+                            redirectUrl = '/gestor/dashboard';
+                            break;
+                        case 'operador':
+                        case 'operator':
+                            redirectUrl = '/operador/dashboard';
+                            break;
+                        case 'user':
+                        case 'usuario':
+                        default:
+                            redirectUrl = '/user/dashboard';
+                            break;
+                    }
+                    
+                    console.log('🎯 URL de destino:', redirectUrl);
+                    showStatus(`🚀 Redirecionando para ${redirectUrl}...`, 'warning');
+                    
+                    // REDIRECIONAMENTO GARANTIDO
+                    console.log('🔄 Iniciando redirecionamento...');
+                    
+                    // Método mais direto e garantido
+                    setTimeout(() => {
+                        console.log('🚀 EXECUTANDO: window.location.href');
+                        window.location.href = redirectUrl;
+                    }, 1000);
+                    
+                    // Método alternativo caso o primeiro falhe
+                    setTimeout(() => {
+                        console.log('🔄 EXECUTANDO: window.location.replace (fallback)');
+                        window.location.replace(redirectUrl);
+                    }, 3000);
+                    
+                } else {
+                    const errorMsg = data.message || data.error || 'Erro no login';
+                    showStatus(`❌ ${errorMsg}`, 'error');
+                    console.error('❌ Erro de login:', errorMsg);
+                }
+                
+            } catch (error) {
+                const errorMsg = `Erro na requisição: ${error.message}`;
+                showStatus(`❌ ${errorMsg}`, 'error');
+                console.error('❌ Erro na requisição:', error);
+            } finally {
+                loginBtn.textContent = '🚀 Fazer Login';
+                loginBtn.disabled = false;
+            }
+        });
+
+        // Log inicial
+        console.log('🔐 Página de login direto carregada');
+        showStatus('✅ Pronto para fazer login', 'success');
+    </script>
+</body>
+</html>

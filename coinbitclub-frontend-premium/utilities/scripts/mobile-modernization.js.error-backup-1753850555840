@@ -1,0 +1,338 @@
+#!/usr/bin/env node
+
+/**
+ * Script de Modernização Mobile CoinBitClub
+ * 
+ * Este script aplica sistematicamente os padrões de responsividade mobile
+ * para todas as páginas do sistema usando nossa biblioteca MobileComponents
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+// Configurações
+const PAGES_DIR = path.join(__dirname, 'pages');
+const MOBILE_COMPONENTS_IMPORT = `import { 
+  MobileNav, 
+  MobileCard, 
+  MobileButton, 
+  MobileInput, 
+  MobileAlert, 
+  MobileTabs, 
+  ResponsiveGrid, 
+  MobileModal 
+} from '../components/mobile/MobileComponents';`;
+
+// Padrões de modernização
+const MOBILE_PATTERNS = {
+  // Substituição de sidebar por MobileNav
+  sidebar: {
+    search: /className=".*sidebar.*"/gi,
+    replace: 'className="hidden lg:block"'
+  },
+  
+  // Substituição de grid por ResponsiveGrid
+  grid: {
+    search: /className="grid grid-cols-(\d+)([^"]*)">/gi,
+    replace: '<ResponsiveGrid cols={$1}>'
+  },
+  
+  // Substituição de cards por MobileCard
+  card: {
+    search: /className="(.*)?bg-(black|white|gray).*rounded.*p-(\d+)([^"]*)">/gi,
+    replace: '<MobileCard className="$1">'
+  },
+  
+  // Substituição de botões por MobileButton
+  button: {
+    search: /<button([^>]*?)className="([^"]*?)">/gi,
+    replace: '<MobileButton$1className="$2">'
+  },
+  
+  // Substituição de inputs por MobileInput
+  input: {
+    search: /<input([^>]*?)className="([^"]*?)">/gi,
+    replace: '<MobileInput$1className="$2">'
+  }
+};
+
+// Estado da modernização
+const modernizationStats = {
+  totalFiles: 0,
+  processedFiles: 0,
+  modernizedFiles: 0,
+  errors: 0,
+  patterns: {
+    sidebar: 0,
+    grid: 0,
+    card: 0,
+    button: 0,
+    input: 0
+  }
+};
+
+/**
+ * Verifica se o arquivo já possui os imports mobile
+ */
+function hasMobileImports(content) {
+  return content.includes('MobileComponents') || 
+         content.includes('MobileNav') || 
+         content.includes('MobileCard');
+}
+
+/**
+ * Adiciona os imports mobile no início do arquivo
+ */
+function addMobileImports(content) {
+  // Encontra a linha após os últimos imports React/Next
+  const importLines = content.split('\n');
+  let lastImportIndex = -1;
+  
+  for (let i = 0; i < importLines.length; i++) {
+    if (importLines[i].trim().startsWith('import ') && 
+        !importLines[i].includes('from \'./') && 
+        !importLines[i].includes('from \'../')) {
+      lastImportIndex = i;
+    }
+  }
+  
+  // Insere o import mobile após os últimos imports padrão
+  if (lastImportIndex >= 0) {
+    importLines.splice(lastImportIndex + 1, 0, MOBILE_COMPONENTS_IMPORT);
+    return importLines.join('\n');
+  }
+  
+  // Se não encontrou imports, adiciona no início
+  return MOBILE_COMPONENTS_IMPORT + '\n' + content;
+}
+
+/**
+ * Aplica padrões de modernização mobile
+ */
+function applyMobilePatterns(content) {
+  let modernizedContent = content;
+  let appliedPatterns = 0;
+  
+  // Aplica cada padrão de modernização
+  Object.entries(MOBILE_PATTERNS).forEach(([patternName, pattern]) => {
+    const matches = modernizedContent.match(pattern.search);
+    if (matches) {
+      modernizedContent = modernizedContent.replace(pattern.search, pattern.replace);
+      const matchCount = matches.length;
+      modernizationStats.patterns[patternName] += matchCount;
+      appliedPatterns += matchCount;
+      
+      console.log(`  ✓ Aplicado padrão ${patternName}: ${matchCount} ocorrências`);
+    }
+  });
+  
+  return { content: modernizedContent, appliedPatterns };
+}
+
+/**
+ * Adiciona responsividade mobile específica para diferentes tipos de página
+ */
+function addMobileResponsiveness(content, filePath) {
+  const fileName = path.basename(filePath, '.tsx');
+  let responsiveContent = content;
+  
+  // Dashboard pages - adiciona MobileNav e reorganiza layout
+  if (fileName.includes('dashboard')) {
+    responsiveContent = responsiveContent.replace(
+      /<div className="min-h-screen bg-black flex">/,
+      `<div className="min-h-screen bg-black flex">
+        {/* Mobile Navigation */}
+        <MobileNav
+          isOpen={mobileMenuOpen || false}
+          onToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
+          title="${fileName.replace('-', ' ').toUpperCase()}"
+        >
+          {/* Navigation items aqui */}
+        </MobileNav>`
+    );
+  }
+  
+  // Form pages - substitui formulários por versões mobile
+  if (fileName.includes('form') || fileName.includes('edit') || fileName.includes('create')) {
+    responsiveContent = responsiveContent.replace(
+      /<form([^>]*?)>/gi,
+      '<form$1><div className="lg:hidden"><MobileCard>'
+    );
+  }
+  
+  // Table pages - adiciona versão mobile com cards
+  if (content.includes('<table') || content.includes('table-')) {
+    responsiveContent = responsiveContent.replace(
+      /<div className="overflow-x-auto">/g,
+      `<div className="overflow-x-auto">
+        {/* Mobile Version - Cards */}
+        <div className="lg:hidden space-y-4">
+          {/* Cards mobile aqui */}
+        </div>
+        
+        {/* Desktop Version - Table */}
+        <div className="hidden lg:block">`
+    );
+  }
+  
+  return responsiveContent;
+}
+
+/**
+ * Processa um único arquivo
+ */
+async function processFile(filePath) {
+  try {
+    modernizationStats.totalFiles++;
+    
+    console.log(`\n📱 Processando: ${path.relative(process.cwd(), filePath)}`);
+    
+    // Lê o conteúdo do arquivo
+    const content = fs.readFileSync(filePath, 'utf8');
+    
+    // Verifica se é um arquivo React/TypeScript válido
+    if (!content.includes('export default') || !content.includes('React')) {
+      console.log('  ⏭️  Pulando - não é um componente React');
+      return;
+    }
+    
+    modernizationStats.processedFiles++;
+    
+    let modernizedContent = content;
+    let hasChanges = false;
+    
+    // Adiciona imports mobile se necessário
+    if (!hasMobileImports(content)) {
+      modernizedContent = addMobileImports(modernizedContent);
+      hasChanges = true;
+      console.log('  ✓ Adicionado imports mobile');
+    }
+    
+    // Aplica padrões de modernização
+    const { content: patternContent, appliedPatterns } = applyMobilePatterns(modernizedContent);
+    if (appliedPatterns > 0) {
+      modernizedContent = patternContent;
+      hasChanges = true;
+    }
+    
+    // Adiciona responsividade específica
+    const responsiveContent = addMobileResponsiveness(modernizedContent, filePath);
+    if (responsiveContent !== modernizedContent) {
+      modernizedContent = responsiveContent;
+      hasChanges = true;
+      console.log('  ✓ Adicionado responsividade mobile específica');
+    }
+    
+    // Salva o arquivo se houve mudanças
+    if (hasChanges) {
+      fs.writeFileSync(filePath, modernizedContent, 'utf8');
+      modernizationStats.modernizedFiles++;
+      console.log('  ✅ Arquivo modernizado com sucesso');
+    } else {
+      console.log('  ℹ️  Arquivo já está modernizado');
+    }
+    
+  } catch (error) {
+    modernizationStats.errors++;
+    console.error(`  ❌ Erro ao processar arquivo: ${error.message}`);
+  }
+}
+
+/**
+ * Processa recursivamente todos os arquivos em um diretório
+ */
+async function processDirectory(dirPath) {
+  const items = fs.readdirSync(dirPath);
+  
+  for (const item of items) {
+    const itemPath = path.join(dirPath, item);
+    const stat = fs.statSync(itemPath);
+    
+    if (stat.isDirectory()) {
+      // Pula diretórios de build e node_modules
+      if (['node_modules', '.next', 'dist', 'build'].includes(item)) {
+        continue;
+      }
+      
+      console.log(`\n📁 Entrando no diretório: ${path.relative(process.cwd(), itemPath)}`);
+      await processDirectory(itemPath);
+      
+    } else if (item.endsWith('.tsx') || item.endsWith('.ts')) {
+      // Pula arquivos de configuração e types
+      if (item.includes('.d.ts') || item.includes('config') || item.includes('types')) {
+        continue;
+      }
+      
+      await processFile(itemPath);
+    }
+  }
+}
+
+/**
+ * Função principal
+ */
+async function main() {
+  console.log('🚀 Iniciando Modernização Mobile CoinBitClub\n');
+  console.log('='.repeat(60));
+  
+  const startTime = Date.now();
+  
+  try {
+    // Verifica se o diretório existe
+    if (!fs.existsSync(PAGES_DIR)) {
+      throw new Error(`Diretório não encontrado: ${PAGES_DIR}`);
+    }
+    
+    // Processa todos os arquivos
+    await processDirectory(PAGES_DIR);
+    
+    // Processa também componentes customizados
+    const componentsDir = path.join(__dirname, 'components');
+    if (fs.existsSync(componentsDir)) {
+      console.log('\n📦 Processando componentes customizados...');
+      await processDirectory(componentsDir);
+    }
+    
+    const endTime = Date.now();
+    const duration = ((endTime - startTime) / 1000).toFixed(2);
+    
+    // Relatório final
+    console.log('\n' + '='.repeat(60));
+    console.log('📊 RELATÓRIO DE MODERNIZAÇÃO MOBILE');
+    console.log('='.repeat(60));
+    console.log(`⏱️  Tempo total: ${duration}s`);
+    console.log(`📁 Arquivos encontrados: ${modernizationStats.totalFiles}`);
+    console.log(`⚙️  Arquivos processados: ${modernizationStats.processedFiles}`);
+    console.log(`✅ Arquivos modernizados: ${modernizationStats.modernizedFiles}`);
+    console.log(`❌ Erros encontrados: ${modernizationStats.errors}`);
+    
+    console.log('\n📱 PADRÕES APLICADOS:');
+    Object.entries(modernizationStats.patterns).forEach(([pattern, count]) => {
+      if (count > 0) {
+        console.log(`  ${pattern}: ${count} ocorrências`);
+      }
+    });
+    
+    if (modernizationStats.modernizedFiles > 0) {
+      console.log('\n🎉 MODERNIZAÇÃO CONCLUÍDA COM SUCESSO!');
+      console.log('✨ Todas as páginas agora possuem responsividade mobile');
+    } else {
+      console.log('\nℹ️  Todas as páginas já estavam modernizadas');
+    }
+    
+  } catch (error) {
+    console.error('\n❌ ERRO FATAL:', error.message);
+    process.exit(1);
+  }
+}
+
+// Executa o script
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  processFile,
+  processDirectory,
+  modernizationStats
+};

@@ -1,0 +1,299 @@
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import Head from 'next/head';
+
+export default function AdminDashboardSimple() {
+  const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Verificar autenticacao
+    const userData = localStorage.getItem('user_data');
+    const authToken = localStorage.getItem('auth_token');
+
+    console.log('🔍 Verificando autenticacao...');
+    console.log('Token:', !!authToken);
+    console.log('UserData:', !!userData);
+
+    if (!userData || !authToken) {
+      console.log('❌ Nao autenticado');
+      router.push('/login-simple');
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(userData);
+      console.log('👤 Usuario:', parsedUser);
+      
+      setUser(parsedUser);
+      
+      // Verificar se eh admin
+      if (parsedUser.role?.toLowerCase() !== 'admin') {
+        console.log('🚫 Nao eh admin, redirecionando...');
+        router.push('/user/dashboard');
+        return;
+      }
+      
+      console.log('✅ Admin autenticado com sucesso');
+      setLoading(false);
+      
+    } catch (error) {
+      console.error('❌ Erro ao parsear dados:', error);
+      router.push('/login-simple');
+    }
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = 'user_data=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    router.push('/login-simple');
+  };
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#0a0a0a',
+        color: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'Arial, sans-serif'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <h2>🔄 Carregando Dashboard Admin...</h2>
+          <p>Verificando permissoes...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Head>
+        <title>Admin Dashboard - CoinBitClub</title>
+      </Head>
+      
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
+        color: '#fff',
+        fontFamily: 'Arial, sans-serif'
+      }}>
+        {/* Header */}
+        <header style={{
+          background: '#1a1a1a',
+          padding: '20px',
+          borderBottom: '2px solid #00ff88',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div>
+            <h1 style={{ 
+              margin: 0, 
+              color: '#00ff88', 
+              fontSize: '24px'
+            }}>
+              🎛️ Dashboard Administrativo
+            </h1>
+            <p style={{ 
+              margin: '5px 0 0 0', 
+              color: '#888' 
+            }}>
+              CoinBitClub Market Bot V3.0.0
+            </p>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ margin: 0, color: '#00ff88' }}>
+                {user?.nome || user?.email}
+              </p>
+              <p style={{ margin: 0, color: '#888', fontSize: '12px' }}>
+                Role: {user?.role}
+              </p>
+            </div>
+            
+            <button
+              onClick={handleLogout}
+              style={{
+                background: '#dc3545',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              🚪 Sair
+            </button>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main style={{ padding: '30px' }}>
+          {/* Success Message */}
+          <div style={{
+            background: '#1a4d3a',
+            border: '2px solid #00ff88',
+            padding: '20px',
+            borderRadius: '10px',
+            marginBottom: '30px',
+            textAlign: 'center'
+          }}>
+            <h2 style={{ color: '#00ff88', margin: '0 0 10px 0' }}>
+              🟢 LOGIN E REDIRECIONAMENTO FUNCIONANDO!
+            </h2>
+            <p style={{ margin: 0, color: '#fff' }}>
+              Parabens! O sistema de autenticacao esta funcionando perfeitamente.
+              Voce foi autenticado como <strong>{user?.role}</strong> e redirecionado 
+              corretamente para o dashboard administrativo.
+            </p>
+          </div>
+
+          {/* Stats Cards */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '20px',
+            marginBottom: '30px'
+          }}>
+            <div style={{
+              background: '#1a1a1a',
+              padding: '20px',
+              borderRadius: '10px',
+              border: '1px solid #00ff88',
+              textAlign: 'center'
+            }}>
+              <h3 style={{ color: '#00ff88', margin: '0 0 10px 0' }}>
+                ✅ Autenticacao
+              </h3>
+              <p style={{ margin: 0 }}>Sistema funcionando</p>
+            </div>
+
+            <div style={{
+              background: '#1a1a1a',
+              padding: '20px',
+              borderRadius: '10px',
+              border: '1px solid #007bff',
+              textAlign: 'center'
+            }}>
+              <h3 style={{ color: '#007bff', margin: '0 0 10px 0' }}>
+                🔄 Middleware
+              </h3>
+              <p style={{ margin: 0 }}>Redirecionamento OK</p>
+            </div>
+
+            <div style={{
+              background: '#1a1a1a',
+              padding: '20px',
+              borderRadius: '10px',
+              border: '1px solid #ffc107',
+              textAlign: 'center'
+            }}>
+              <h3 style={{ color: '#ffc107', margin: '0 0 10px 0' }}>
+                🔐 Role-Based
+              </h3>
+              <p style={{ margin: 0 }}>Controle de acesso ativo</p>
+            </div>
+          </div>
+
+          {/* Admin Features */}
+          <div style={{
+            background: '#1a1a1a',
+            padding: '30px',
+            borderRadius: '10px',
+            border: '1px solid #333'
+          }}>
+            <h2 style={{ color: '#00ff88', marginBottom: '20px' }}>
+              🎯 Funcionalidades Administrativas
+            </h2>
+            
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '15px'
+            }}>
+              <button style={{
+                background: '#007bff',
+                color: 'white',
+                border: 'none',
+                padding: '15px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}>
+                👥 Gerenciar Usuarios
+              </button>
+              
+              <button style={{
+                background: '#28a745',
+                color: 'white',
+                border: 'none',
+                padding: '15px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}>
+                📊 Relatorios
+              </button>
+              
+              <button style={{
+                background: '#ffc107',
+                color: '#000',
+                border: 'none',
+                padding: '15px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}>
+                ⚙️ Configuracoes
+              </button>
+              
+              <button style={{
+                background: '#17a2b8',
+                color: 'white',
+                border: 'none',
+                padding: '15px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}>
+                🤖 Bots de Trading
+              </button>
+            </div>
+          </div>
+
+          {/* Debug Info */}
+          <div style={{
+            background: '#1a1a1a',
+            padding: '20px',
+            borderRadius: '10px',
+            border: '1px solid #333',
+            marginTop: '20px'
+          }}>
+            <h3 style={{ color: '#17a2b8' }}>🔍 Informacoes de Debug</h3>
+            <pre style={{
+              background: '#2a2a2a',
+              padding: '15px',
+              borderRadius: '5px',
+              overflow: 'auto',
+              fontSize: '12px'
+            }}>
+              {JSON.stringify({
+                url: typeof window !== 'undefined' ? window.location.href : '',
+                user: user,
+                timestamp: new Date().toISOString(),
+                status: 'AUTENTICACAO_FUNCIONANDO'
+              }, null, 2)}
+            </pre>
+          </div>
+        </main>
+      </div>
+    </>
+  );
+}

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBitClub - Admin Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo h1 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .logo p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .quick-access {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .quick-access h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .quick-access p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .status {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🎯 CoinBitClub</h1>
+            <p>Painel de Administração</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email do Administrador</label>
+                <input type="email" id="email" name="email" value="admin.dashboard@coinbitclub.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" name="password" value="admin123" required>
+            </div>
+            
+            <button type="submit" class="btn">Entrar no Dashboard</button>
+        </form>
+        
+        <div class="quick-access">
+            <h3>🚀 Acesso Rápido - Ambiente Teste</h3>
+            <p><strong>Email:</strong> admin.dashboard@coinbitclub.com</p>
+            <p><strong>Senha:</strong> admin123</p>
+            <p><strong>Status:</strong> Sistema 100% Funcional</p>
+        </div>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const statusDiv = document.getElementById('status');
+            
+            // Mostrar loading
+            statusDiv.className = 'status loading';
+            statusDiv.textContent = '🔄 Autenticando...';
+            
+            try {
+                const response = await fetch('/api/auth/login-real', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.user && data.user.userType === 'admin') {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = '✅ Login bem-sucedido! Redirecionando...';
+                    
+                    // Salvar token (opcional)
+                    if (data.token) {
+                        localStorage.setItem('admin_token', data.token);
+                    }
+                    
+                    // Redirecionar para o dashboard
+                    setTimeout(() => {
+                        window.location.href = '/admin/dashboard-real';
+                    }, 1000);
+                    
+                } else if (response.ok && data.user && data.user.userType !== 'admin') {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ Acesso negado: Apenas administradores podem acessar este painel.';
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ ' + (data.message || 'Credenciais inválidas');
+                }
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ Erro de conexão: ' + error.message;
+            }
+        });
+        
+        // Verificar status do servidor ao carregar
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('/api/auth/login-real', {
+                    method: 'OPTIONS'
+                });
+                
+                if (response.ok) {
+                    document.querySelector('.quick-access p:last-child').innerHTML = 
+                        '<strong>Status:</strong> <span style="color: #28a745;">🟢 Sistema Online</span>';
+                }
+            } catch (error) {
+                document.querySelector('.quick-access p:last-child').innerHTML = 
+                    '<strong>Status:</strong> <span style="color: #dc3545;">🔴 Sistema Offline</span>';
+            }
+        }
+        
+        checkServerStatus();
+    </script>
+</body>
+</html>

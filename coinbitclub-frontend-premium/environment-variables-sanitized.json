@@ -1,0 +1,50 @@
+{
+  "production": {
+    "frontend": {
+      "platform": "Vercel",
+      "url": "https://coinbitclub-market-bot.vercel.app",
+      "variables": {
+        "NEXT_PUBLIC_API_URL": "https://coinbitclub-market-bot.up.railway.app",
+        "NEXT_PUBLIC_FRONTEND_URL": "https://coinbitclub-market-bot.vercel.app",
+        "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "[CONFIGURADO_NO_DASHBOARD]",
+        "NODE_ENV": "production"
+      }
+    },
+    "backend": {
+      "platform": "Railway",
+      "url": "https://coinbitclub-market-bot.up.railway.app",
+      "variables": {
+        "NODE_ENV": "production",
+        "PORT": "8080",
+        "FRONTEND_URL": "https://coinbitclub-market-bot.vercel.app",
+        "DATABASE_URL": "[CONFIGURADO_NO_DASHBOARD]",
+        "JWT_SECRET": "[CONFIGURADO_NO_DASHBOARD]",
+        "JWT_REFRESH_SECRET": "[CONFIGURADO_NO_DASHBOARD]",
+        "STRIPE_SECRET_KEY": "[CONFIGURADO_NO_DASHBOARD]",
+        "STRIPE_WEBHOOK_SECRET": "[CONFIGURADO_NO_DASHBOARD]",
+        "OPENAI_API_KEY": "[CONFIGURADO_NO_DASHBOARD]",
+        "COINSTATS_API_KEY": "[CONFIGURADO_NO_DASHBOARD]",
+        "TWILIO_ACCOUNT_SID": "[CONFIGURADO_NO_DASHBOARD]",
+        "TWILIO_AUTH_TOKEN": "[CONFIGURADO_NO_DASHBOARD]",
+        "TWILIO_PHONE_NUMBER": "[CONFIGURADO_NO_DASHBOARD]",
+        "TWILIO_VERIFY_SERVICE_SID": "[CONFIGURADO_NO_DASHBOARD]",
+        "TWILIO_TEST_MODE": "false",
+        "SYSTEM_API_KEY": "[CONFIGURADO_NO_DASHBOARD]",
+        "ENCRYPTION_KEY": "[CONFIGURADO_NO_DASHBOARD]",
+        "ALLOWED_ORIGINS": "https://coinbitclub-market-bot.vercel.app,https://coinbitclub-market-bot.up.railway.app"
+      }
+    }
+  },
+  "development": {
+    "variables": {
+      "NEXT_PUBLIC_API_URL": "http://localhost:8080",
+      "NEXT_PUBLIC_FRONTEND_URL": "http://localhost:3000",
+      "NODE_ENV": "development"
+    }
+  },
+  "security": {
+    "note": "Todas as chaves sensíveis foram removidas deste arquivo público",
+    "location": "Configuradas manualmente nos dashboards das plataformas",
+    "gitignore": "Arquivos com chaves reais estão no .gitignore"
+  }
+}

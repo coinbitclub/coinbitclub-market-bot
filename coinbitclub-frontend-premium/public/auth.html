@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CoinbitClub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .auth-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+        .logo-area {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .tagline {
+            font-size: 16px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        .auth-card {
+            background-color: #1e293b;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid #334155;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .tab-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+        .tab-button {
+            flex: 1;
+            padding: 10px 15px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .tab-button.active {
+            background-color: #10b981;
+            color: white;
+        }
+        .form-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 24px;
+            color: #ffffff;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: #293548;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #f8fafc;
+            font-size: 16px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+        .form-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+        }
+        .form-checkbox {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            accent-color: #10b981;
+        }
+        .checkbox-label {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        .forgot-link {
+            font-size: 14px;
+            color: #10b981;
+            text-decoration: none;
+        }
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+        .submit-button {
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .submit-button:hover {
+            background-color: #0d9668;
+        }
+        .or-divider {
+            position: relative;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .or-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background-color: #334155;
+        }
+        .or-text {
+            position: relative;
+            display: inline-block;
+            padding: 0 10px;
+            background-color: #1e293b;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        .social-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .social-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #293548;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #cbd5e1;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .social-button:hover {
+            background-color: #334155;
+        }
+        .social-icon {
+            margin-right: 8px;
+        }
+        .bottom-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        .bottom-link {
+            color: #10b981;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .bottom-link:hover {
+            text-decoration: underline;
+        }
+        .auth-nav {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .auth-nav a {
+            color: #94a3b8;
+            margin: 0 10px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .auth-nav a:hover {
+            color: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo-area">
+            <div class="logo">CoinbitClub</div>
+            <div class="tagline">Trading automatizado com IA</div>
+        </div>
+        
+        <div class="auth-card">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="switchTab('login')">Login</button>
+                <button class="tab-button" onclick="switchTab('register')">Cadastro</button>
+            </div>
+            
+            <h2 class="form-title" id="form-title">Faça login na sua conta</h2>
+            
+            <form id="auth-form">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" id="email" class="form-input" placeholder="seu@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">Senha</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                </div>
+                
+                <div class="form-flex" id="login-options">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="remember" class="form-checkbox">
+                        <label for="remember" class="checkbox-label">Lembrar de mim</label>
+                    </div>
+                    <a href="#" class="forgot-link">Esqueceu a senha?</a>
+                </div>
+                
+                <button type="button" class="submit-button" id="submit-button">Entrar</button>
+            </form>
+            
+            <div class="or-divider">
+                <span class="or-text">Ou continue com</span>
+            </div>
+            
+            <div class="social-buttons">
+                <button class="social-button">
+                    <svg class="social-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                    GitHub
+                </button>
+                <button class="social-button">
+                    <svg class="social-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M15.545 6.558a9.42 9.42 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.689 7.689 0 0 1 5.352 2.082l-2.284 2.284A4.347 4.347 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.792 4.792 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.702 3.702 0 0 0 1.599-2.431H8v-3.08h7.545z"/>
+                    </svg>
+                    Google
+                </button>
+            </div>
+            
+            <p class="bottom-text" id="switch-text">
+                Não tem uma conta? <a href="#" class="bottom-link" onclick="switchTab('register')">Cadastre-se</a>
+            </p>
+        </div>
+        
+        <div class="auth-nav">
+            <a href="index.html">Home</a>
+            <a href="#">Ajuda</a>
+            <a href="#">Termos</a>
+            <a href="#">Privacidade</a>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            const loginButton = document.querySelector('.tab-button:nth-child(1)');
+            const registerButton = document.querySelector('.tab-button:nth-child(2)');
+            const formTitle = document.getElementById('form-title');
+            const submitButton = document.getElementById('submit-button');
+            const loginOptions = document.getElementById('login-options');
+            const switchText = document.getElementById('switch-text');
+            
+            if (tab === 'login') {
+                loginButton.classList.add('active');
+                registerButton.classList.remove('active');
+                formTitle.textContent = 'Faça login na sua conta';
+                submitButton.textContent = 'Entrar';
+                loginOptions.style.display = 'flex';
+                switchText.innerHTML = 'Não tem uma conta? <a href="#" class="bottom-link" onclick="switchTab(\'register\')">Cadastre-se</a>';
+            } else {
+                loginButton.classList.remove('active');
+                registerButton.classList.add('active');
+                formTitle.textContent = 'Crie sua conta';
+                submitButton.textContent = 'Criar conta';
+                loginOptions.style.display = 'none';
+                switchText.innerHTML = 'Já tem uma conta? <a href="#" class="bottom-link" onclick="switchTab(\'login\')">Faça login</a>';
+            }
+        }
+        
+        document.getElementById('submit-button').addEventListener('click', function() {
+            this.innerHTML = '<div style="display: flex; align-items: center; justify-content: center;"><svg style="margin-right: 8px; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 12a4 4 0 1 1-8 0"></path></svg>Processando...</div>';
+            
+            setTimeout(() => {
+                window.location.href = 'dashboard-simple.html';
+            }, 1500);
+        });
+        
+        // Define o estilo para a animação do spinner
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

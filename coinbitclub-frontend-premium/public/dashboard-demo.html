@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinBitClub - Dashboard Executivo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #000000;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 20px;
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 30px rgba(255,215,0,0.3);
+        }
+        .status {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #EC4899, #3B82F6);
+            color: #000;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: rgba(0,0,0,0.8);
+            padding: 25px;
+            border-radius: 20px;
+            border: 2px solid;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card.neon-gold {
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.3);
+        }
+        .card.neon-blue {
+            border-color: #3B82F6;
+            box-shadow: 0 0 20px rgba(59,130,246,0.3);
+        }
+        .card.neon-pink {
+            border-color: #EC4899;
+            box-shadow: 0 0 20px rgba(236,72,153,0.3);
+        }
+        .card h3 {
+            margin: 0 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .card.neon-gold h3 { color: #FFD700; }
+        .card.neon-blue h3 { color: #3B82F6; }
+        .card.neon-pink h3 { color: #EC4899; }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .metric:last-child {
+            border-bottom: none;
+        }
+        .value {
+            font-weight: bold;
+            font-size: 1.4em;
+        }
+        .positive { color: #EC4899; }
+        .negative { color: #3B82F6; }
+        .neutral { color: #FFD700; }
+        .market-direction {
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: bold;
+            padding: 30px;
+            margin: 30px 0;
+            background: rgba(0,0,0,0.8);
+            border: 3px solid #EC4899;
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(236,72,153,0.4);
+            color: #FFD700;
+        }
+        .signal-item {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        .operations-list {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        .operation {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid #EC4899;
+            border: 1px solid rgba(236,72,153,0.3);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 20px;
+            border: 1px solid #FFD700;
+            color: #3B82F6;
+        }
+        .live-indicator {
+            width: 12px;
+            height: 12px;
+            background: #EC4899;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .update-time {
+            font-size: 1em;
+            color: #3B82F6;
+            font-weight: bold;
+        }
+        .big-number {
+            font-size: 3em;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .neon-glow {
+            text-shadow: 0 0 10px currentColor;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="neon-glow" style="color: #FFD700; font-size: 2.5em;">⚡ CoinBitClub ⚡</h1>
+            <p style="color: #3B82F6; font-size: 1.3em; font-weight: bold;">DASHBOARD EXECUTIVO - MONITORAMENTO EM TEMPO REAL</p>
+            <div class="status">
+                <span class="live-indicator"></span>
+                SISTEMA OPERACIONAL - ONLINE
+            </div>
+            <div class="update-time" id="updateTime">Última atualização: Carregando...</div>
+        </div>
+
+        <div class="market-direction neon-glow">
+            🔺 MERCADO: LONG (Confiança: 87%)
+            <div style="font-size: 0.4em; margin-top: 15px; color: #3B82F6; font-weight: normal;">
+                Análise IA: Momentum altista sustentável detectado. RSI favorável, MACD positivo com volume institucional crescente.
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card neon-pink">
+                <h3>📡 SINAIS EM TEMPO REAL</h3>
+                <div class="signal-item">
+                    <span style="color: #FFD700; font-weight: bold;">BTCUSDT - TradingView</span>
+                    <span class="positive neon-glow">STRONG_BUY (92%)</span>
+                </div>
+                <div class="signal-item">
+                    <span style="color: #FFD700; font-weight: bold;">ETHUSDT - TradingView</span>
+                    <span class="positive neon-glow">BUY (88%)</span>
+                </div>
+                <div class="signal-item">
+                    <span style="color: #FFD700; font-weight: bold;">BTCUSDT - Algoritmo Próprio</span>
+                    <span class="positive neon-glow">LONG (89%)</span>
+                </div>
+                <div class="signal-item">
+                    <span style="color: #FFD700; font-weight: bold;">ETHUSDT - Algoritmo Próprio</span>
+                    <span class="positive neon-glow">LONG (85%)</span>
+                </div>
+            </div>
+
+            <div class="card neon-blue">
+                <h3>🎯 PERFORMANCE DO SISTEMA</h3>
+                <div class="metric">
+                    <span style="color: #FFD700; font-weight: bold;">Assertividade Hoje:</span>
+                    <span class="value positive neon-glow">94.7%</span>
+                </div>
+                <div class="metric">
+                    <span style="color: #FFD700; font-weight: bold;">Assertividade Histórica:</span>
+                    <span class="value positive neon-glow">91.3%</span>
+                </div>
+                <div class="metric">
+                    <span style="color: #FFD700; font-weight: bold;">Retorno Hoje:</span>
+                    <span class="value positive neon-glow">+4.8%</span>
+                </div>
+                <div class="metric">
+                    <span style="color: #FFD700; font-weight: bold;">Retorno Histórico:</span>
+                    <span class="value positive neon-glow">+47.6%</span>
+                </div>
+            </div>
+
+            <div class="card neon-gold">
+                <h3>⚙️ STATUS DOS MICROSERVIÇOS</h3>
+                <div class="metric">
+                    <span style="color: #3B82F6; font-weight: bold;">Signal Ingestor:</span>
+                    <span class="value positive neon-glow">✅ ONLINE (2,847)</span>
+                </div>
+                <div class="metric">
+                    <span style="color: #3B82F6; font-weight: bold;">Signal Processor:</span>
+                    <span class="value positive neon-glow">✅ ONLINE (2,791)</span>
+                </div>
+                <div class="metric">
+                    <span style="color: #3B82F6; font-weight: bold;">Decision Engine:</span>
+                    <span class="value positive neon-glow">✅ ONLINE (147)</span>
+                </div>
+                <div class="metric">
+                    <span style="color: #3B82F6; font-weight: bold;">Order Executor:</span>
+                    <span class="value positive neon-glow">✅ ONLINE (89)</span>
+                </div>
+            </div>
+
+            <div class="card neon-pink">
+                <h3>👥 USUÁRIOS HOJE</h3>
+                <div class="big-number neutral neon-glow">73</div>
+                <div class="metric">
+                    <span style="color: #3B82F6; font-weight: bold;">Conta Teste Ativa:</span>
+                    <span class="value neutral neon-glow">41</span>
+                </div>
+                <div class="metric">
+                    <span style="color: #3B82F6; font-weight: bold;">Conta Produção:</span>
+                    <span class="value positive neon-glow">28</span>
+                </div>
+                <div class="metric">
+                    <span style="color: #3B82F6; font-weight: bold;">Taxa Conversão:</span>
+                    <span class="value positive neon-glow">38.4%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card neon-blue" style="grid-column: 1 / -1;">
+            <h3>💹 OPERAÇÕES ATIVAS EM TEMPO REAL</h3>
+            <div class="operations-list">
+                <div class="operation">
+                    <strong style="color: #FFD700;">BTCUSDT - LONG</strong> | Status: <span style="color: #EC4899;">RUNNING</span> | PnL: <span class="positive neon-glow">+$347.85</span> | Início: 14:32
+                </div>
+                <div class="operation">
+                    <strong style="color: #FFD700;">ETHUSDT - LONG</strong> | Status: <span style="color: #EC4899;">RUNNING</span> | PnL: <span class="positive neon-glow">+$189.42</span> | Início: 14:47
+                </div>
+                <div class="operation">
+                    <strong style="color: #FFD700;">BNBUSDT - LONG</strong> | Status: <span style="color: #EC4899;">RUNNING</span> | PnL: <span class="positive neon-glow">+$67.23</span> | Início: 15:02
+                </div>
+                <div class="operation">
+                    <strong style="color: #FFD700;">SOLUSDT - LONG</strong> | Status: <span style="color: #3B82F6;">PENDING</span> | PnL: <span class="neutral neon-glow">$0.00</span> | Início: 15:12
+                </div>
+            </div>
+        </div>
+
+        <div class="card neon-gold" style="grid-column: 1 / -1;">
+            <h3>🧠 RELATÓRIOS DE IA (ÚLTIMAS 4H)</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">
+                <div class="signal-item">
+                    <div>
+                        <strong style="color: #EC4899;">15:10</strong> - Mercado em tendência altista sustentável. Fluxo institucional positivo detectado.
+                        <div style="color: #3B82F6; font-size: 0.9em; margin-top: 5px;">Confiança: <span class="neon-glow">91%</span></div>
+                    </div>
+                </div>
+                <div class="signal-item">
+                    <div>
+                        <strong style="color: #EC4899;">14:10</strong> - Volatilidade reduzida, consolidação antes de movimento de alta.
+                        <div style="color: #3B82F6; font-size: 0.9em; margin-top: 5px;">Confiança: <span class="neon-glow">86%</span></div>
+                    </div>
+                </div>
+                <div class="signal-item">
+                    <div>
+                        <strong style="color: #EC4899;">13:10</strong> - Rompimento de resistência em $43k confirma continuidade altista.
+                        <div style="color: #3B82F6; font-size: 0.9em; margin-top: 5px;">Confiança: <span class="neon-glow">89%</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong style="color: #FFD700; font-size: 1.5em;">⚡ DASHBOARD EXECUTIVO COINBITCLUB ⚡</strong></p>
+            <p style="color: #EC4899; font-weight: bold;">Sistema integrado com PostgreSQL, TradingView, CoinStats e Microserviços de IA</p>
+            <p style="color: #3B82F6; font-weight: bold;">Atualização automática a cada 30 segundos</p>
+            <p style="margin-top: 30px;">
+                <a href="http://localhost:3000/admin/dashboard-executive" 
+                   style="color: #000; background: linear-gradient(45deg, #FFD700, #EC4899); text-decoration: none; padding: 15px 30px; border-radius: 25px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
+                   🚀 ACESSAR DASHBOARD COMPLETO 🚀
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('updateTime').textContent = 
+                'Última atualização: ' + now.toLocaleString('pt-BR');
+        }
+        
+        updateTime();
+        setInterval(updateTime, 30000); // Atualiza a cada 30 segundos
+    </script>
+</body>
+</html>

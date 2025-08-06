@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-07-28T16:40:10.891Z",
+  "validation_results": {
+    "connectivity": true,
+    "authentication": false,
+    "trading": true,
+    "security": true,
+    "performance": true,
+    "resilience": true
+  },
+  "deployment_readiness": {
+    "backend": false,
+    "frontend": false,
+    "database": false,
+    "security": true,
+    "monitoring": true
+  },
+  "success_rate": 83.33333333333334,
+  "deployment_score": 40,
+  "final_status": "🔴 NÃO APROVADO",
+  "deploy_recommendation": "❌ DEPLOY NÃO RECOMENDADO",
+  "details": {
+    "connectivity": "PASS",
+    "authentication": "FAIL",
+    "trading": "PASS",
+    "security": "PASS",
+    "performance": "PASS",
+    "resilience": "PASS"
+  },
+  "recommendations": [
+    "Revisar sistema de autenticação"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "coinbitclub-market-bot",
+  "version": "3.0.0",
+  "description": "CoinBitClub Market Bot V3 - Recovered",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  }
+}

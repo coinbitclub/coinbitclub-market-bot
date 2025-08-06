@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Simples - CoinBitClub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0f0f23;
+            color: white;
+        }
+        .container {
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input {
+            background: #2a2a3e;
+            color: white;
+        }
+        button {
+            background: #ffa500;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background: #1a3a4a;
+            border: 1px solid #2a5a7a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🔐 Login CoinBitClub</h2>
+        
+        <input type="email" id="email" placeholder="Email" value="faleconosco@coinbitclub.vip">
+        <input type="password" id="password" placeholder="Senha" value="password">
+        <button onclick="fazerLogin()">🚀 Login</button>
+        
+        <div class="result" id="resultado">
+            Sistema pronto. Clique em Login para testar.
+        </div>
+    </div>
+
+    <script>
+        async function fazerLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultado = document.getElementById('resultado');
+            
+            resultado.innerHTML = '⏳ Fazendo login...';
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    resultado.innerHTML = `
+                        <strong>✅ SUCESSO!</strong><br>
+                        Usuário: ${data.user.name}<br>
+                        Role: ${data.user.role}<br>
+                        Token: ${data.token.substring(0, 30)}...
+                    `;
+                    
+                    // Salvar no localStorage
+                    localStorage.setItem('auth_token', data.token);
+                    localStorage.setItem('user_data', JSON.stringify(data.user));
+                    
+                } else {
+                    resultado.innerHTML = `❌ Erro: ${data.message || 'Login falhou'}`;
+                }
+                
+            } catch (error) {
+                resultado.innerHTML = `❌ Erro de conexão: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
