@@ -11,9 +11,10 @@ class CommissionSystem {
             PREPAID_FOREIGN: parseFloat(process.env.COMMISSION_PREPAID_FOREIGN) || 20  // 20% para plano pré-pago exterior
         };
 
-        this.affiliateRates = {
-            normal: parseFloat(process.env.AFFILIATE_NORMAL_RATE) || 1.5,  // 1.5% para afiliados normais
-            vip: parseFloat(process.env.AFFILIATE_VIP_RATE) || 5.0         // 5.0% para afiliados VIP
+        // Porcentagem da comissão total que o afiliado recebe
+        this.affiliateShares = {
+            normal: parseFloat(process.env.AFFILIATE_NORMAL_SHARE) || 15,  // 15% da comissão total
+            vip: parseFloat(process.env.AFFILIATE_VIP_SHARE) || 25         // 25% da comissão total
         };
         
         this.minimumCommission = 1.0; // Mínimo R$ 1,00
@@ -46,26 +47,38 @@ class CommissionSystem {
         }
 
         const companyRate = this.commissionRates[planKey] || this.commissionRates.MONTHLY_BRAZIL;
-        const companyCommission = Math.max(profit * (companyRate / 100), this.minimumCommission);
+        const totalCommission = Math.max(profit * (companyRate / 100), this.minimumCommission);
 
-        // Calcular comissão do afiliado (sobre a comissão da empresa)
+        // Calcular comissão do afiliado (porcentagem da comissão total)
         let affiliateCommission = 0;
-        if (affiliateType !== 'none' && this.affiliateRates[affiliateType]) {
-            const affiliateRate = this.affiliateRates[affiliateType];
-            affiliateCommission = companyCommission * (affiliateRate / 100);
+        let companyCommission = totalCommission;
+        
+        if (affiliateType !== 'none' && this.affiliateShares[affiliateType]) {
+            const affiliateShare = this.affiliateShares[affiliateType];
+            affiliateCommission = totalCommission * (affiliateShare / 100);
+            companyCommission = totalCommission - affiliateCommission;
         }
 
-        const netProfit = profit - companyCommission;
+        const netProfit = profit - totalCommission;
 
         return {
+            totalCommission: Math.round(totalCommission * 100) / 100,
             companyCommission: Math.round(companyCommission * 100) / 100,
             affiliateCommission: Math.round(affiliateCommission * 100) / 100,
             netProfit: Math.round(netProfit * 100) / 100,
             rates: {
-                company: companyRate + '%',
-                affiliate: affiliateType !== 'none' ? this.affiliateRates[affiliateType] + '%' : '0%'
+                total: companyRate + '%',
+                company: Math.round((companyCommission / totalCommission * 100) * 100) / 100 + '%',
+                affiliate: affiliateType !== 'none' ? this.affiliateShares[affiliateType] + '%' : '0%'
             },
-            details: `Comissão calculada sobre lucro de R$ ${profit.toFixed(2)}`,
+            breakdown: {
+                profit: `R$ ${profit.toFixed(2)}`,
+                totalCommission: `R$ ${totalCommission.toFixed(2)}`,
+                companyShare: `R$ ${companyCommission.toFixed(2)}`,
+                affiliateShare: `R$ ${affiliateCommission.toFixed(2)}`,
+                netProfit: `R$ ${netProfit.toFixed(2)}`
+            },
+            details: `Comissão total de ${companyRate}% sobre lucro de R$ ${profit.toFixed(2)}`,
             plan: planKey,
             affiliateType: affiliateType
         };
@@ -79,12 +92,12 @@ class CommissionSystem {
                 prepaid_brazil: this.commissionRates.PREPAID_BRAZIL + '%',
                 prepaid_foreign: this.commissionRates.PREPAID_FOREIGN + '%'
             },
-            affiliateRates: {
-                normal: this.affiliateRates.normal + '%',
-                vip: this.affiliateRates.vip + '%'
+            affiliateShares: {
+                normal: this.affiliateShares.normal + '% da comissão total',
+                vip: this.affiliateShares.vip + '% da comissão total'
             },
             minimum: `R$ ${this.minimumCommission.toFixed(2)}`,
-            description: 'Sistema de comissões enterprise baseado no plano e localização do usuário'
+            description: 'Sistema de comissões enterprise: empresa fica com 85%/75% e afiliado recebe 15%/25% da comissão total'
         };
     }
 
@@ -93,7 +106,7 @@ class CommissionSystem {
             commission_structure: this.getCommissionInfo(),
             calculation_rules: {
                 company_commission: 'Calculada sobre o lucro bruto',
-                affiliate_commission: 'Calculada sobre a comissão da empresa',
+                affiliate_commission: 'Calculada como porcentagem da comissão total (15% ou 25%)',
                 minimum_commission: 'Valor mínimo garantido',
                 plan_differentiation: 'Baseado em localização e tipo de assinatura'
             }
