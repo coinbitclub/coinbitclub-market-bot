@@ -1,36 +1,55 @@
-# 🚀 COINBITCLUB MARKET BOT - DOCKERFILE PRODUCTION
+﻿#  COINBITCLUB - ANTI-CACHE DOCKERFILE v5.2.0
 FROM node:18-alpine
 
-# Instalar dependências do sistema
+# ANTI-CACHE LAYER
+ARG CACHEBUST=1
+RUN echo "CACHE_BUST=$CACHEBUST" > /tmp/cachebust
+
+# Sistema
 RUN apk update && apk add --no-cache dumb-init
 
-# Criar diretório da aplicação
 WORKDIR /app
 
-# Copiar arquivos de dependências
+# Dependencies com força
 COPY package*.json ./
-
-# Instalar dependências de produção
 RUN npm ci --omit=dev --no-audit --no-fund
 
-# Copiar código da aplicação
+# Código com timestamp
 COPY . .
+RUN echo "BUILD_TIME=$(date)" > /app/build.info
 
-# Criar usuário não-root
+# User
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S backend -u 1001 && \
     chown -R backend:nodejs /app
 
-# Definir usuário
 USER backend
-
-# Expor porta
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node -e "const http=require('http');const options={hostname:'localhost',port:process.env.PORT||3000,path:'/health',timeout:2000};const req=http.request(options,(res)=>{if(res.statusCode===200){process.exit(0)}else{process.exit(1)}});req.on('error',()=>process.exit(1));req.on('timeout',()=>process.exit(1));req.end();"
+# Health check agressivo  
+HEALTHCHECK --interval=15s --timeout=3s --start-period=5s --retries=2 \
+    CMD node -e "const http=require(
+'
+http
+'
+);const req=http.request({hostname:
+'
+localhost
+'
+,port:process.env.PORT||3000,path:
+'
+/health
+'
+,timeout:2000},(res)=>{process.exit(res.statusCode===200?0:1)});req.on(
+'
+error
+'
+,()=>process.exit(1));req.on(
+'
+timeout
+'
+,()=>process.exit(1));req.end();"
 
-# Comando de inicialização
+# Start com força
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "main.js"]
