@@ -578,7 +578,6 @@ class CoinBitClubServer {
                     SELECT p.*, u.username 
                     FROM positions p
                     LEFT JOIN users u ON p.user_id = u.id
-                    WHERE p.status = 'ACTIVE'
                     ORDER BY p.created_at DESC
                 `);
                 client.release();
