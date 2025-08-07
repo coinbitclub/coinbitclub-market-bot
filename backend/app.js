@@ -550,7 +550,7 @@ class CoinBitClubServer {
             try {
                 const client = await this.pool.connect();
                 const result = await client.query(`
-                    SELECT id, username, email, created_at, is_active, balance_brl, balance_usd
+                    SELECT id, username, email, created_at, is_active
                     FROM users 
                     ORDER BY created_at DESC
                 `);
