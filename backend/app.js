@@ -720,7 +720,6 @@ class CoinBitClubServer {
             });
         });
 
-        
         // API Signals
         this.app.get('/api/signals', async (req, res) => {
             try {
@@ -747,7 +746,6 @@ class CoinBitClubServer {
             }
         });
 
-        
         // API Balance (simulated response)
         this.app.get('/api/balance', (req, res) => {
             // Simulação - em produção seria autenticado
@@ -765,7 +763,6 @@ class CoinBitClubServer {
             });
         });
 
-        
         // API Financial Summary
         this.app.get('/api/financial/summary', async (req, res) => {
             try {
@@ -804,7 +801,6 @@ class CoinBitClubServer {
             }
         });
 
-        
         // API Market Data
         this.app.get('/api/market/data', (req, res) => {
             res.json({
@@ -830,7 +826,6 @@ class CoinBitClubServer {
             });
         });
 
-        
         // API Dominance
         this.app.get('/api/dominance', (req, res) => {
             res.json({
@@ -843,7 +838,6 @@ class CoinBitClubServer {
             });
         });
 
-        
         // API Register
         this.app.post('/api/register', (req, res) => {
             const { username, email, password } = req.body;
@@ -864,7 +858,6 @@ class CoinBitClubServer {
             });
         });
 
-        
         // API Login
         this.app.post('/api/login', (req, res) => {
             const { email, password } = req.body;
