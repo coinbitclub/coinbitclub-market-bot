@@ -1,34 +1,41 @@
 #!/usr/bin/env node
+
 /**
- * COINBITCLUB MARKET BOT - ENTRY POINT
- * ====================================
- * Entry point principal que carrega o servidor do backend
+ * 🚀 COINBITCLUB MARKET BOT - PONTO DE ENTRADA PRINCIPAL
+ * ======================================================
+ * 
+ * Arquivo principal que inicializa o sistema completo
  */
-const CoinBitClubServer = require('./backend/app.js');
 
-async function main() {
-    try {
-        console.log(' Iniciando CoinBitClub Market Bot...');
-        const server = new CoinBitClubServer();
-        await server.start();
-        
-        // Graceful shutdown
-        process.on('SIGTERM', () => {
-            console.log(' SIGTERM recebido, encerrando servidor...');
-            process.exit(0);
-        });
-        
-        process.on('SIGINT', () => {
-            console.log(' SIGINT recebido, encerrando servidor...');
-            process.exit(0);
-        });
-        
-    } catch (error) {
-        console.error(' Erro crítico:', error);
-        process.exit(1);
-    }
-}
+require('dotenv').config({ path: '.env.production' });
 
-if (require.main === module) {
-    main();
-}
+const CoinBitClubServer = require('./app.js');
+
+// Handlers de erro global
+process.on('uncaughtException', (error) => {
+    console.error('❌ Erro não capturado:', error);
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Promise rejeitada:', reason);
+    process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('🛑 Recebido SIGTERM, finalizando servidor...');
+    process.exit(0);
+});
+
+process.on('SIGINT', () => {
+    console.log('🛑 Recebido SIGINT, finalizando servidor...');
+    process.exit(0);
+});
+
+// Inicializar servidor
+const server = new CoinBitClubServer();
+server.start().catch(error => {
+    console.error('💥 Falha ao iniciar servidor:', error);
+    process.exit(1);
+});
