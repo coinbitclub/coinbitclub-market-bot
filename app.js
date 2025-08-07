@@ -1,11 +1,11 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 
 /**
- * 🚀 COINBITCLUB MARKET BOT - SERVIDOR PRINCIPAL v5.1.1
+ * ðŸš€ COINBITCLUB MARKET BOT - SERVIDOR PRINCIPAL v5.1.1
  * ===================================================
  * 
- * Aplicação principal para sistema de trading automatizado
- * Recursos: Multiusuário, Trading Real, Position Safety, Monitoramento
+ * AplicaÃ§Ã£o principal para sistema de trading automatizado
+ * Recursos: MultiusuÃ¡rio, Trading Real, Position Safety, Monitoramento
  * Deploy: 2025-08-06 (USD/BRL System)
  */
 
@@ -15,7 +15,7 @@ const bodyParser = require('body-parser');
 const { Pool } = require('pg');
 require('dotenv').config({ path: '.env.production' });
 
-// Importar módulos especializados
+// Importar mÃ³dulos especializados
 const PositionSafetyValidator = require('./position-safety-validator.js');
 const EnhancedSignalProcessor = require('./enhanced-signal-processor.js');
 const CommissionSystem = require('./commission-system.js');
@@ -43,7 +43,7 @@ class CoinBitClubServer {
             ssl: { rejectUnauthorized: false }
         });
 
-        // Inicializar módulos
+        // Inicializar mÃ³dulos
         this.positionSafety = new PositionSafetyValidator();
         this.signalProcessor = new EnhancedSignalProcessor();
         this.commissionSystem = new CommissionSystem();
@@ -82,7 +82,7 @@ class CoinBitClubServer {
     }
 
     setupHealthCheck() {
-        // Health check removido - já definido no constructor
+        // Health check removido - jÃ¡ definido no constructor
     }
 
     setupMiddleware() {
@@ -106,7 +106,7 @@ class CoinBitClubServer {
     }
 
     setupRoutes() {
-        // Status detalhado com verificação de banco
+        // Status detalhado com verificaÃ§Ã£o de banco
         this.app.get('/status', async (req, res) => {
             try {
                 const client = await this.pool.connect();
@@ -120,7 +120,7 @@ class CoinBitClubServer {
                     environment: process.env.NODE_ENV || 'production',
                     database: 'connected',
                     trading: process.env.ENABLE_REAL_TRADING === 'true' ? 'REAL' : 'SIMULATION',
-                    version: '5.0.0'
+                    version: "5.2.0-RAILWAY"'
                 });
             } catch (error) {
                 res.status(503).json({
@@ -143,10 +143,10 @@ class CoinBitClubServer {
                 timestamp: new Date().toISOString(),
                 features: [
                     'Trading Real Ativado',
-                    'Position Safety Obrigatório',
-                    'Sistema Multiusuário',
+                    'Position Safety ObrigatÃ³rio',
+                    'Sistema MultiusuÃ¡rio',
                     'Monitoramento Tempo Real',
-                    'Proteções Máximas'
+                    'ProteÃ§Ãµes MÃ¡ximas'
                 ]
             });
         });
@@ -171,10 +171,10 @@ class CoinBitClubServer {
                         trades: parseInt(trades.rows[0].total)
                     },
                     trading: {
-                        status: process.env.ENABLE_REAL_TRADING === 'true' ? 'REAL' : 'SIMULAÇÃO',
-                        positionSafety: 'OBRIGATÓRIO',
-                        stopLoss: 'OBRIGATÓRIO',
-                        takeProfit: 'OBRIGATÓRIO',
+                        status: process.env.ENABLE_REAL_TRADING === 'true' ? 'REAL' : 'SIMULAÃ‡ÃƒO',
+                        positionSafety: 'OBRIGATÃ“RIO',
+                        stopLoss: 'OBRIGATÃ“RIO',
+                        takeProfit: 'OBRIGATÃ“RIO',
                         maxLeverage: process.env.MAX_LEVERAGE || '10x'
                     },
                     urls: {
@@ -196,13 +196,13 @@ class CoinBitClubServer {
         // Webhook principal para sinais
         this.app.post('/webhook', async (req, res) => {
             try {
-                console.log('📡 Webhook recebido:', {
+                console.log('ðŸ“¡ Webhook recebido:', {
                     headers: req.headers,
                     body: req.body,
                     timestamp: new Date().toISOString()
                 });
 
-                // Processar sinal através do Enhanced Signal Processor
+                // Processar sinal atravÃ©s do Enhanced Signal Processor
                 const resultado = await this.signalProcessor.processSignal(req.body);
 
                 res.json({
@@ -212,7 +212,7 @@ class CoinBitClubServer {
                 });
 
             } catch (error) {
-                console.error('❌ Erro no webhook:', error);
+                console.error('âŒ Erro no webhook:', error);
                 res.status(500).json({
                     error: 'Erro ao processar sinal',
                     details: error.message
@@ -223,13 +223,13 @@ class CoinBitClubServer {
         // API Webhook para sinais (rota alternativa)
         this.app.post('/api/webhooks/signal', async (req, res) => {
             try {
-                console.log('📡 API Webhook recebido:', {
+                console.log('ðŸ“¡ API Webhook recebido:', {
                     headers: req.headers,
                     body: req.body,
                     timestamp: new Date().toISOString()
                 });
 
-                // Processar sinal através do Enhanced Signal Processor
+                // Processar sinal atravÃ©s do Enhanced Signal Processor
                 const resultado = await this.signalProcessor.processSignal(req.body);
 
                 res.json({
@@ -239,7 +239,7 @@ class CoinBitClubServer {
                 });
 
             } catch (error) {
-                console.error('❌ Erro no API webhook:', error);
+                console.error('âŒ Erro no API webhook:', error);
                 res.status(500).json({
                     error: 'Erro ao processar sinal via API',
                     details: error.message
@@ -266,20 +266,20 @@ class CoinBitClubServer {
 
             } catch (error) {
                 res.status(400).json({
-                    error: 'Erro na validação',
+                    error: 'Erro na validaÃ§Ã£o',
                     details: error.message
                 });
             }
         });
 
-        // Rota para calcular comissões
+        // Rota para calcular comissÃµes
         this.app.post('/calculate-commission', async (req, res) => {
             try {
                 const { profit, plan, affiliateType, country, currency } = req.body;
                 
                 if (!profit || profit <= 0) {
                     return res.json({
-                        message: 'Comissão calculada apenas sobre LUCRO',
+                        message: 'ComissÃ£o calculada apenas sobre LUCRO',
                         commission: {
                             totalCommission: 0,
                             companyCommission: 0,
@@ -305,13 +305,13 @@ class CoinBitClubServer {
 
             } catch (error) {
                 res.status(400).json({
-                    error: 'Erro no cálculo de comissão',
+                    error: 'Erro no cÃ¡lculo de comissÃ£o',
                     details: error.message
                 });
             }
         });
 
-        // Rota para informações dos planos de comissionamento
+        // Rota para informaÃ§Ãµes dos planos de comissionamento
         this.app.get('/commission-plans', async (req, res) => {
             const plansInfo = this.commissionSystem.getPlansInfo();
             
@@ -329,7 +329,7 @@ class CoinBitClubServer {
                         })
                     },
                     {
-                        scenario: 'Lucro $100 USD - Plano Pré-pago BR - Afiliado VIP',
+                        scenario: 'Lucro $100 USD - Plano PrÃ©-pago BR - Afiliado VIP',
                         calculation: await this.commissionSystem.calculateCommission({
                             profit: 100,
                             plan: 'PREPAID',
@@ -355,7 +355,7 @@ class CoinBitClubServer {
 
         // ==================== SISTEMA FINANCEIRO ====================
 
-        // Consultar saldos do usuário
+        // Consultar saldos do usuÃ¡rio
         this.app.get('/api/user/:userId/balances', async (req, res) => {
             try {
                 const { userId } = req.params;
@@ -382,7 +382,7 @@ class CoinBitClubServer {
                 
                 if (!userId || !amount || amount <= 0) {
                     return res.status(400).json({
-                        error: 'Dados inválidos',
+                        error: 'Dados invÃ¡lidos',
                         required: ['userId', 'amount']
                     });
                 }
@@ -410,7 +410,7 @@ class CoinBitClubServer {
                 
                 if (!adminId || !couponCode || !creditAmount) {
                     return res.status(400).json({
-                        error: 'Dados inválidos',
+                        error: 'Dados invÃ¡lidos',
                         required: ['adminId', 'couponCode', 'creditAmount']
                     });
                 }
@@ -438,7 +438,7 @@ class CoinBitClubServer {
                 
                 if (!userId || !couponCode) {
                     return res.status(400).json({
-                        error: 'Dados inválidos',
+                        error: 'Dados invÃ¡lidos',
                         required: ['userId', 'couponCode']
                     });
                 }
@@ -466,7 +466,7 @@ class CoinBitClubServer {
                 
                 if (!userId || !amount || amount <= 0) {
                     return res.status(400).json({
-                        error: 'Dados inválidos',
+                        error: 'Dados invÃ¡lidos',
                         required: ['userId', 'amount']
                     });
                 }
@@ -481,20 +481,20 @@ class CoinBitClubServer {
 
             } catch (error) {
                 res.status(400).json({
-                    error: 'Erro na solicitação de saque',
+                    error: 'Erro na solicitaÃ§Ã£o de saque',
                     details: error.message
                 });
             }
         });
 
-        // Converter comissão para crédito administrativo (+10% bonus)
+        // Converter comissÃ£o para crÃ©dito administrativo (+10% bonus)
         this.app.post('/api/affiliate/convert-commission', async (req, res) => {
             try {
                 const { userId, amount, currency = 'BRL' } = req.body;
                 
                 if (!userId || !amount || amount <= 0) {
                     return res.status(400).json({
-                        error: 'Dados inválidos',
+                        error: 'Dados invÃ¡lidos',
                         required: ['userId', 'amount']
                     });
                 }
@@ -509,13 +509,13 @@ class CoinBitClubServer {
 
             } catch (error) {
                 res.status(400).json({
-                    error: 'Erro na conversão',
+                    error: 'Erro na conversÃ£o',
                     details: error.message
                 });
             }
         });
 
-        // Relatório financeiro geral
+        // RelatÃ³rio financeiro geral
         this.app.get('/api/admin/financial-summary', async (req, res) => {
             try {
                 const summary = await this.financialManager.getFinancialSummary();
@@ -528,13 +528,13 @@ class CoinBitClubServer {
 
             } catch (error) {
                 res.status(500).json({
-                    error: 'Erro no relatório',
+                    error: 'Erro no relatÃ³rio',
                     details: error.message
                 });
             }
         });
 
-        // Gerar código de cupom automático
+        // Gerar cÃ³digo de cupom automÃ¡tico
         this.app.get('/api/admin/generate-coupon-code', (req, res) => {
             const code = this.financialManager.generateCouponCode('CBC');
             
@@ -545,7 +545,7 @@ class CoinBitClubServer {
             });
         });
 
-        // API para gerenciar usuários
+        // API para gerenciar usuÃ¡rios
         this.app.get('/api/users', async (req, res) => {
             try {
                 const client = await this.pool.connect();
@@ -564,13 +564,13 @@ class CoinBitClubServer {
 
             } catch (error) {
                 res.status(500).json({
-                    error: 'Erro ao buscar usuários',
+                    error: 'Erro ao buscar usuÃ¡rios',
                     details: error.message
                 });
             }
         });
 
-        // API para posições ativas
+        // API para posiÃ§Ãµes ativas
         this.app.get('/api/positions', async (req, res) => {
             try {
                 const client = await this.pool.connect();
@@ -591,7 +591,7 @@ class CoinBitClubServer {
 
             } catch (error) {
                 res.status(500).json({
-                    error: 'Erro ao buscar posições',
+                    error: 'Erro ao buscar posiÃ§Ãµes',
                     details: error.message
                 });
             }
@@ -620,48 +620,48 @@ class CoinBitClubServer {
                 </head>
                 <body>
                     <div class="header">
-                        <h1>🚀 CoinBitClub Market Bot</h1>
+                        <h1>ðŸš€ CoinBitClub Market Bot</h1>
                         <h2 class="success">Sistema Totalmente Ativo</h2>
                     </div>
 
                     <div class="status">
-                        <h3>📊 Status do Sistema</h3>
-                        <p><span class="success">✅ Trading Real:</span> Ativado</p>
-                        <p><span class="success">✅ Position Safety:</span> Obrigatório</p>
-                        <p><span class="success">✅ Banco de Dados:</span> Conectado</p>
-                        <p><span class="info">🌐 Webhook:</span> ${process.env.BACKEND_URL}/webhook</p>
+                        <h3>ðŸ“Š Status do Sistema</h3>
+                        <p><span class="success">âœ… Trading Real:</span> Ativado</p>
+                        <p><span class="success">âœ… Position Safety:</span> ObrigatÃ³rio</p>
+                        <p><span class="success">âœ… Banco de Dados:</span> Conectado</p>
+                        <p><span class="info">ðŸŒ Webhook:</span> ${process.env.BACKEND_URL}/webhook</p>
                     </div>
 
                     <div class="grid">
                         <div class="card">
-                            <h3>🔒 Segurança</h3>
-                            <p>Stop Loss: <span class="success">Obrigatório</span></p>
-                            <p>Take Profit: <span class="success">Obrigatório</span></p>
-                            <p>Leverage Máximo: <span class="warning">${process.env.MAX_LEVERAGE || 10}x</span></p>
+                            <h3>ðŸ”’ SeguranÃ§a</h3>
+                            <p>Stop Loss: <span class="success">ObrigatÃ³rio</span></p>
+                            <p>Take Profit: <span class="success">ObrigatÃ³rio</span></p>
+                            <p>Leverage MÃ¡ximo: <span class="warning">${process.env.MAX_LEVERAGE || 10}x</span></p>
                         </div>
 
                         <div class="card">
-                            <h3>💰 Sistema Financeiro</h3>
-                            <p><strong>Comissão:</strong> <span class="info">Apenas sobre LUCRO</span></p>
-                            <p><strong>Operações:</strong> USD (com conversão BRL para planos BR)</p>
-                            <p><strong>Planos:</strong> Mensal 10% | Pré-pago 20%</p>
+                            <h3>ðŸ’° Sistema Financeiro</h3>
+                            <p><strong>ComissÃ£o:</strong> <span class="info">Apenas sobre LUCRO</span></p>
+                            <p><strong>OperaÃ§Ãµes:</strong> USD (com conversÃ£o BRL para planos BR)</p>
+                            <p><strong>Planos:</strong> Mensal 10% | PrÃ©-pago 20%</p>
                             <p><strong>Afiliados:</strong></p>
-                            <p>• Normal: 15% da comissão total</p>
-                            <p>• VIP: 25% da comissão total</p>
-                            <p><small><strong>Ex BR:</strong> $100 → R$ ${(100 * 5.5).toFixed(0)} (câmbio 5.50)</small></p>
+                            <p>â€¢ Normal: 15% da comissÃ£o total</p>
+                            <p>â€¢ VIP: 25% da comissÃ£o total</p>
+                            <p><small><strong>Ex BR:</strong> $100 â†’ R$ ${(100 * 5.5).toFixed(0)} (cÃ¢mbio 5.50)</small></p>
                             <p><small><strong>Mensal BR:</strong> R$ ${(550 * 0.085).toFixed(0)} empresa + R$ ${(550 * 0.015).toFixed(0)} afiliado</small></p>
                             <br>
                             <p><strong>Tipos de Saldo:</strong></p>
-                            <p>🟢 <strong>Real (Stripe):</strong> Pode sacar</p>
-                            <p>🟡 <strong>Administrativo:</strong> Cupons, 30 dias</p>
-                            <p>🔴 <strong>Comissão:</strong> Não saca, converte +10%</p>
-                            <p><strong>💱 Câmbio:</strong> Atualizado automaticamente</p>
+                            <p>ðŸŸ¢ <strong>Real (Stripe):</strong> Pode sacar</p>
+                            <p>ðŸŸ¡ <strong>Administrativo:</strong> Cupons, 30 dias</p>
+                            <p>ðŸ”´ <strong>ComissÃ£o:</strong> NÃ£o saca, converte +10%</p>
+                            <p><strong>ðŸ’± CÃ¢mbio:</strong> Atualizado automaticamente</p>
                         </div>
 
                         <div class="card">
-                            <h3>🌐 APIs Disponíveis</h3>
-                            <p><a href="/api/users" style="color: #2196F3;">/api/users</a> - Usuários</p>
-                            <p><a href="/api/positions" style="color: #2196F3;">/api/positions</a> - Posições</p>
+                            <h3>ðŸŒ APIs DisponÃ­veis</h3>
+                            <p><a href="/api/users" style="color: #2196F3;">/api/users</a> - UsuÃ¡rios</p>
+                            <p><a href="/api/positions" style="color: #2196F3;">/api/positions</a> - PosiÃ§Ãµes</p>
                             <p><a href="/status" style="color: #2196F3;">/status</a> - Status Completo</p>
                             <br>
                             <p><strong>APIs Financeiras:</strong></p>
@@ -673,7 +673,7 @@ class CoinBitClubServer {
                         </div>
 
                         <div class="card">
-                            <h3>📈 Monitoramento</h3>
+                            <h3>ðŸ“ˆ Monitoramento</h3>
                             <p>Tempo Real: <span class="success">Ativo</span></p>
                             <p>Logs: <span class="success">Ativo</span></p>
                             <p>Alertas: <span class="success">Configurado</span></p>
@@ -696,10 +696,10 @@ class CoinBitClubServer {
     }
 
     setupErrorHandling() {
-        // Handler para rotas não encontradas
+        // Handler para rotas nÃ£o encontradas
         this.app.use('*', (req, res) => {
             res.status(404).json({
-                error: 'Rota não encontrada',
+                error: 'Rota nÃ£o encontrada',
                 path: req.originalUrl,
                 availableRoutes: [
                     'GET /',
@@ -715,7 +715,7 @@ class CoinBitClubServer {
 
         // Handler para erros gerais
         this.app.use((error, req, res, next) => {
-            console.error('❌ Erro no servidor:', error);
+            console.error('âŒ Erro no servidor:', error);
             res.status(500).json({
                 error: 'Erro interno do servidor',
                 details: error.message,
@@ -729,71 +729,81 @@ class CoinBitClubServer {
             const client = await this.pool.connect();
             await client.query('SELECT NOW()');
             client.release();
-            console.log('✅ Banco de dados: CONECTADO');
+            console.log('âœ… Banco de dados: CONECTADO');
             return true;
         } catch (error) {
-            console.error('❌ Banco de dados: ERRO', error.message);
+            console.error('âŒ Banco de dados: ERRO', error.message);
             return false;
         }
     }
 
     async start() {
         try {
-            console.log('🚀 COINBITCLUB MARKET BOT - INICIANDO...');
+            console.log('ðŸš€ COINBITCLUB MARKET BOT - INICIANDO...');
             console.log('=========================================');
             console.log('');
 
-            // Testar conexão com banco
+            // Testar conexÃ£o com banco
             const dbConnected = await this.testDatabaseConnection();
             if (!dbConnected) {
-                throw new Error('Falha na conexão com banco de dados');
+                throw new Error('Falha na conexÃ£o com banco de dados');
             }
 
-            // Inicializar tabelas necessárias
-            console.log('🔧 Inicializando estrutura do banco...');
+            // Inicializar tabelas necessÃ¡rias
+            console.log('ðŸ”§ Inicializando estrutura do banco...');
             await this.signalProcessor.createSignalsTable();
             await this.financialManager.createFinancialTables();
-            console.log('✅ Estrutura do banco inicializada');
+            console.log('âœ… Estrutura do banco inicializada');
             console.log('');
 
             // Iniciar servidor
             this.app.listen(this.port, '0.0.0.0', () => {
-                console.log('🎯 SISTEMA TOTALMENTE ATIVO!');
+                console.log('ðŸŽ¯ SISTEMA TOTALMENTE ATIVO!');
                 console.log('');
-                console.log('🌐 Servidor rodando em:');
-                console.log(`   • Local: http://localhost:${this.port}`);
-                console.log(`   • Produção: ${process.env.BACKEND_URL || 'https://coinbitclub-backend.railway.app'}`);
+                console.log('ðŸŒ Servidor rodando em:');
+                console.log(`   â€¢ Local: http://localhost:${this.port}`);
+                console.log(`   â€¢ ProduÃ§Ã£o: ${process.env.BACKEND_URL || 'https://coinbitclub-backend.railway.app'}`);
                 console.log('');
-                console.log('📡 Endpoints disponíveis:');
-                console.log(`   • Health: http://localhost:${this.port}/health`);
-                console.log(`   • Status: http://localhost:${this.port}/status`);
-                console.log(`   • Dashboard: http://localhost:${this.port}/dashboard`);
-                console.log(`   • Webhook: http://localhost:${this.port}/webhook`);
-                console.log(`   • API Users: http://localhost:${this.port}/api/users`);
-                console.log(`   • API Positions: http://localhost:${this.port}/api/positions`);
+                console.log('ðŸ“¡ Endpoints disponÃ­veis:');
+                console.log(`   â€¢ Health: http://localhost:${this.port}/health`);
+                console.log(`   â€¢ Status: http://localhost:${this.port}/status`);
+                console.log(`   â€¢ Dashboard: http://localhost:${this.port}/dashboard`);
+                console.log(`   â€¢ Webhook: http://localhost:${this.port}/webhook`);
+                console.log(`   â€¢ API Users: http://localhost:${this.port}/api/users`);
+                console.log(`   â€¢ API Positions: http://localhost:${this.port}/api/positions`);
                 console.log('');
-                console.log('🔒 Configurações de segurança:');
-                console.log(`   • Trading Real: ${process.env.ENABLE_REAL_TRADING === 'true' ? 'ATIVO' : 'SIMULAÇÃO'}`);
-                console.log(`   • Position Safety: ${process.env.POSITION_SAFETY_ENABLED === 'true' ? 'OBRIGATÓRIO' : 'OPCIONAL'}`);
-                console.log(`   • Stop Loss: ${process.env.MANDATORY_STOP_LOSS === 'true' ? 'OBRIGATÓRIO' : 'OPCIONAL'}`);
-                console.log(`   • Take Profit: ${process.env.MANDATORY_TAKE_PROFIT === 'true' ? 'OBRIGATÓRIO' : 'OPCIONAL'}`);
+                console.log('ðŸ”’ ConfiguraÃ§Ãµes de seguranÃ§a:');
+                console.log(`   â€¢ Trading Real: ${process.env.ENABLE_REAL_TRADING === 'true' ? 'ATIVO' : 'SIMULAÃ‡ÃƒO'}`);
+                console.log(`   â€¢ Position Safety: ${process.env.POSITION_SAFETY_ENABLED === 'true' ? 'OBRIGATÃ“RIO' : 'OPCIONAL'}`);
+                console.log(`   â€¢ Stop Loss: ${process.env.MANDATORY_STOP_LOSS === 'true' ? 'OBRIGATÃ“RIO' : 'OPCIONAL'}`);
+                console.log(`   â€¢ Take Profit: ${process.env.MANDATORY_TAKE_PROFIT === 'true' ? 'OBRIGATÃ“RIO' : 'OPCIONAL'}`);
                 console.log('');
-                console.log('💰 Sistema pronto para operações reais!');
-                console.log('🎉 COINBITCLUB MARKET BOT 100% OPERACIONAL!');
+                console.log('ðŸ’° Sistema pronto para operaÃ§Ãµes reais!');
+                console.log('ðŸŽ‰ COINBITCLUB MARKET BOT 100% OPERACIONAL!');
                 console.log('=========================================');
             });
 
         } catch (error) {
-            console.error('💥 Erro ao iniciar servidor:', error);
+            console.error('ðŸ’¥ Erro ao iniciar servidor:', error);
             process.exit(1);
         }
     }
 }
 
-// Iniciar aplicação
+// Iniciar aplicaÃ§Ã£o
 if (require.main === module) {
     const server = new CoinBitClubServer();
     server.start();
 }
 
 module.exports = CoinBitClubServer;
+a p p . g e t ( " / h e a l t h " ,   ( r e q ,   r e s )   = >   { 
+         r e s . j s o n ( {   
+                 s t a t u s :   " o k " , 
+                 v e r s i o n :   " 5 . 2 . 0 - R A I L W A Y " ,   
+                 t i m e s t a m p :   n e w   D a t e ( ) . t o I S O S t r i n g ( ) , 
+                 p o r t :   p r o c e s s . e n v . P O R T   | |   3 0 0 0 , 
+                 r a i l w a y :   t r u e 
+         } ) ; 
+ } ) ;  
+ 
