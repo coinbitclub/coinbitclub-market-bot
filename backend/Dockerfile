@@ -7,14 +7,14 @@ RUN apk update && apk add --no-cache dumb-init
 # Criar diretório da aplicação
 WORKDIR /app
 
-# Copiar arquivos de dependências do backend
-COPY backend/package*.json ./
+# Copiar arquivos de dependências
+COPY package*.json ./
 
 # Instalar dependências de produção
 RUN npm ci --omit=dev --no-audit --no-fund
 
-# Copiar código da aplicação do backend
-COPY backend/ .
+# Copiar código da aplicação
+COPY . .
 
 # Criar usuário não-root
 RUN addgroup -g 1001 -S nodejs && \
