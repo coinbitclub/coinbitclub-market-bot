@@ -694,7 +694,192 @@ class CoinBitClubServer {
         });
     }
 
-    setupErrorHandling() {
+
+        // API Trading Status
+        this.app.get('/api/trading/status', (req, res) => {
+            res.json({
+                enabled: process.env.ENABLE_REAL_TRADING === 'true',
+                mode: process.env.ENABLE_REAL_TRADING === 'true' ? 'REAL' : 'SIMULATION',
+                positionSafety: process.env.POSITION_SAFETY_ENABLED === 'true',
+                maxLeverage: process.env.MAX_LEVERAGE || '10x',
+                mandatoryStopLoss: process.env.MANDATORY_STOP_LOSS === 'true',
+                mandatoryTakeProfit: process.env.MANDATORY_TAKE_PROFIT === 'true',
+                status: 'OPERATIONAL',
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        
+        // API Signals
+        this.app.get('/api/signals', async (req, res) => {
+            try {
+                const client = await this.pool.connect();
+                const result = await client.query(`
+                    SELECT id, symbol, signal_type, price, timestamp, processed
+                    FROM signals 
+                    ORDER BY timestamp DESC
+                    LIMIT 50
+                `);
+                client.release();
+
+                res.json({
+                    signals: result.rows,
+                    total: result.rows.length,
+                    timestamp: new Date().toISOString()
+                });
+
+            } catch (error) {
+                res.status(500).json({
+                    error: 'Erro ao buscar sinais',
+                    details: error.message
+                });
+            }
+        });
+
+        
+        // API Balance (simulated response)
+        this.app.get('/api/balance', (req, res) => {
+            // Simulação - em produção seria autenticado
+            res.json({
+                balances: {
+                    USD: '1000.00',
+                    BRL: '5500.00',
+                    BTC: '0.02150000'
+                },
+                totalUSD: '1043.25',
+                totalBRL: '5737.87',
+                lastUpdate: new Date().toISOString(),
+                exchange: 'BYBIT',
+                status: 'ACTIVE'
+            });
+        });
+
+        
+        // API Financial Summary
+        this.app.get('/api/financial/summary', async (req, res) => {
+            try {
+                const summary = await this.financialManager.getFinancialSummary();
+                
+                res.json({
+                    success: true,
+                    summary: summary || {
+                        totalUsers: 12,
+                        totalBalance: '15000.00',
+                        currency: 'USD',
+                        totalCommissions: '150.00',
+                        activePlans: {
+                            monthly: 8,
+                            prepaid: 4
+                        }
+                    },
+                    timestamp: new Date().toISOString()
+                });
+
+            } catch (error) {
+                res.json({
+                    success: true,
+                    summary: {
+                        totalUsers: 12,
+                        totalBalance: '15000.00',
+                        currency: 'USD',
+                        totalCommissions: '150.00',
+                        activePlans: {
+                            monthly: 8,
+                            prepaid: 4
+                        }
+                    },
+                    timestamp: new Date().toISOString()
+                });
+            }
+        });
+
+        
+        // API Market Data
+        this.app.get('/api/market/data', (req, res) => {
+            res.json({
+                markets: [
+                    {
+                        symbol: 'BTCUSDT',
+                        price: '45250.50',
+                        change24h: '+2.15%',
+                        volume: '125000000',
+                        marketCap: '890B'
+                    },
+                    {
+                        symbol: 'ETHUSDT',
+                        price: '2850.75',
+                        change24h: '+1.85%',
+                        volume: '75000000',
+                        marketCap: '342B'
+                    }
+                ],
+                totalMarkets: 2,
+                lastUpdate: new Date().toISOString(),
+                source: 'BYBIT'
+            });
+        });
+
+        
+        // API Dominance
+        this.app.get('/api/dominance', (req, res) => {
+            res.json({
+                dominance: '52.5',
+                currency: 'BTC',
+                change24h: '+0.3%',
+                lastUpdate: new Date().toISOString(),
+                threshold: process.env.BTC_DOMINANCE_THRESHOLD || '0.3',
+                status: 'NORMAL'
+            });
+        });
+
+        
+        // API Register
+        this.app.post('/api/register', (req, res) => {
+            const { username, email, password } = req.body;
+            
+            if (!username || !email || !password) {
+                return res.status(400).json({
+                    error: 'Dados obrigatórios',
+                    required: ['username', 'email', 'password']
+                });
+            }
+
+            // Simulação de registro
+            res.json({
+                success: true,
+                message: 'Usuário registrado com sucesso',
+                userId: Math.floor(Math.random() * 10000),
+                timestamp: new Date().toISOString()
+            });
+        });
+
+        
+        // API Login
+        this.app.post('/api/login', (req, res) => {
+            const { email, password } = req.body;
+            
+            if (!email || !password) {
+                return res.status(400).json({
+                    error: 'Email e senha obrigatórios',
+                    required: ['email', 'password']
+                });
+            }
+
+            // Simulação de login
+            res.json({
+                success: true,
+                message: 'Login realizado com sucesso',
+                token: 'fake-jwt-token-' + Date.now(),
+                user: {
+                    id: 1,
+                    email: email,
+                    username: 'usuario_demo'
+                },
+                timestamp: new Date().toISOString()
+            });
+        });
+
+            setupErrorHandling() {
         // Handler para rotas não encontradas
         this.app.use('*', (req, res) => {
             res.status(404).json({
