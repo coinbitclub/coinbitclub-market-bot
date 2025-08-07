@@ -1,60 +1,85 @@
-# 🚀 COINBITCLUB DOCKERIGNORE
-# Ignorar arquivos desnecessários no build Docker
-
-# Node modules
+# Node.js
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.npm
 
 # Logs
 logs/
 *.log
 *.log.*
 
-# Environment files (serão passados via variáveis)
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Environment files (usar variáveis de ambiente)
 .env*
 !.env.production
 
-# Development files
+# Git
 .git/
 .gitignore
+.gitattributes
+
+# Documentation
 README.md
 *.md
+docs/
 
-# Testing
-coverage/
-.nyc_output/
-
-# IDEs
+# IDEs e editores
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
-# OS
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
 # Build artifacts
 dist/
 build/
+coverage/
+.nyc_output/
 
-# Analytics
+# Analytics e ML (não necessário em produção)
 analytics-out/
-
-# ML Dashboard (não necessário em produção)
 ml-dashboard/
+ml-services/
 
-# Documentation
-docs/
-
-# Scripts de desenvolvimento
+# Scripts de desenvolvimento e teste
 *.test.js
 test-*.js
 verify-*.js
 check-*.js
+clean-*.js
+setup-*.js
+prepare-*.js
+sistema-completo-pagamentos-stripe-producao.js
+sistema-stripe-producao-completo.js
+verificador-completo-integracoes-externas.js
+verificador-integracoes-externas-completo.js
 
-# Arquivos temporários
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Temporários
 *.tmp
 *.temp
+.next/
+
+# Backup files
+*.backup
+*-backup.json
