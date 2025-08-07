@@ -692,8 +692,19 @@ class CoinBitClubServer {
                 </html>
             `);
         });
-    }
 
+        // Webhook GET (informações sobre o webhook)
+        this.app.get('/webhook', (req, res) => {
+            res.json({
+                status: 'WEBHOOK ATIVO',
+                endpoint: '/webhook',
+                method: 'POST',
+                description: 'Endpoint para receber sinais de trading',
+                lastSignal: 'N/A',
+                timestamp: new Date().toISOString(),
+                version: '5.1.0'
+            });
+        });
 
         // API Trading Status
         this.app.get('/api/trading/status', (req, res) => {
@@ -878,8 +889,9 @@ class CoinBitClubServer {
                 timestamp: new Date().toISOString()
             });
         });
+    }
 
-            setupErrorHandling() {
+    setupErrorHandling() {
         // Handler para rotas não encontradas
         this.app.use('*', (req, res) => {
             res.status(404).json({
