@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 
 /**
  * ðŸš€ COINBITCLUB MARKET BOT - SERVIDOR PRINCIPAL v5.1.1
