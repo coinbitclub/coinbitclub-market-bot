@@ -112,17 +112,17 @@ class FinalSystemValidation {
             {
                 name: 'OpenAI',
                 key: process.env.OPENAI_API_KEY,
-                test: '[SENSITIVE_DATA_REMOVED]
+                test: 'sk-proj-'
             },
             {
                 name: 'Stripe Secret',
                 key: process.env.STRIPE_SECRET_KEY,
-                test: '[SENSITIVE_DATA_REMOVED]
+                test: 'sk_live_'
             },
             {
                 name: 'Stripe Publishable',
                 key: process.env.STRIPE_PUBLISHABLE_KEY,
-                test: '[SENSITIVE_DATA_REMOVED]
+                test: 'pk_live_'
             }
         ];
 

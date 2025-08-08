@@ -25,15 +25,15 @@ class DatabaseStructureFixer {
             await this.addMissingColumns();
             await this.createMissingTables();
             await this.updateDefaultValues();
+            await this.addExchangeApiColumns(); // Nova função para chaves de API
             
             console.log('\n✅ ESTRUTURA DO BANCO CORRIGIDA COM SUCESSO!');
             
         } catch (error) {
             console.error('❌ ERRO na correção:', error);
             throw error;
-        } finally {
-            await this.pool.end();
         }
+        // Não fechar pool aqui - será fechado no final
     }
 
     async addMissingColumns() {
@@ -201,6 +201,68 @@ class DatabaseStructureFixer {
         }
     }
 
+    async addExchangeApiColumns() {
+        console.log('🔑 Adicionando colunas para chaves de API das exchanges...');
+        
+        const client = await this.pool.connect();
+        
+        try {
+            // Adicionar colunas para chaves de exchanges criptografadas
+            await client.query(`
+                ALTER TABLE users 
+                ADD COLUMN IF NOT EXISTS binance_api_key_encrypted TEXT,
+                ADD COLUMN IF NOT EXISTS binance_api_secret_encrypted TEXT,
+                ADD COLUMN IF NOT EXISTS bybit_api_key_encrypted TEXT,
+                ADD COLUMN IF NOT EXISTS bybit_api_secret_encrypted TEXT,
+                ADD COLUMN IF NOT EXISTS exchange_testnet_mode BOOLEAN DEFAULT true,
+                ADD COLUMN IF NOT EXISTS exchange_auto_trading BOOLEAN DEFAULT false,
+                ADD COLUMN IF NOT EXISTS last_api_validation TIMESTAMP,
+                ADD COLUMN IF NOT EXISTS api_validation_status VARCHAR(20) DEFAULT 'pending'
+            `);
+            
+            console.log('   ✅ Colunas de chaves de exchanges adicionadas');
+            
+            // Criar tabela para logs de operações por usuário
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS user_trading_executions (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER NOT NULL REFERENCES users(id),
+                    signal_id INTEGER REFERENCES signals(id),
+                    exchange VARCHAR(20) NOT NULL,
+                    order_id VARCHAR(100),
+                    symbol VARCHAR(20) NOT NULL,
+                    side VARCHAR(10) NOT NULL,
+                    amount DECIMAL(15,8) NOT NULL,
+                    price DECIMAL(15,8),
+                    status VARCHAR(20) NOT NULL,
+                    profit_loss DECIMAL(15,8) DEFAULT 0,
+                    commission_paid DECIMAL(15,8) DEFAULT 0,
+                    testnet_mode BOOLEAN DEFAULT true,
+                    error_message TEXT,
+                    executed_at TIMESTAMP DEFAULT NOW(),
+                    closed_at TIMESTAMP,
+                    raw_response JSONB
+                )
+            `);
+            
+            console.log('   ✅ Tabela user_trading_executions criada');
+            
+            // Criar índices para performance
+            await client.query(`
+                CREATE INDEX IF NOT EXISTS idx_users_exchange_auto_trading ON users(exchange_auto_trading);
+                CREATE INDEX IF NOT EXISTS idx_users_testnet_mode ON users(exchange_testnet_mode);
+                CREATE INDEX IF NOT EXISTS idx_user_trading_executions_user_id ON user_trading_executions(user_id);
+                CREATE INDEX IF NOT EXISTS idx_user_trading_executions_executed_at ON user_trading_executions(executed_at);
+                CREATE INDEX IF NOT EXISTS idx_user_trading_executions_exchange ON user_trading_executions(exchange);
+            `);
+            
+            console.log('   ✅ Índices de exchanges criados');
+            
+        } finally {
+            client.release();
+        }
+    }
+
     async verifyStructure() {
         console.log('\n🔍 VERIFICANDO ESTRUTURA FINAL...');
         
@@ -262,6 +324,9 @@ if (require.main === module) {
         .then(() => fixer.verifyStructure())
         .then(() => {
             console.log('\n🎉 BANCO DE DADOS TOTALMENTE CORRIGIDO E OPERACIONAL!');
+            return fixer.pool.end();
+        })
+        .then(() => {
             process.exit(0);
         })
         .catch(error => {

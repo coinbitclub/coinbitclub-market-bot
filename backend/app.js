@@ -15,9 +15,9 @@ const bodyParser = require('body-parser');
 const { Pool } = require('pg');
 require('dotenv').config({ path: '.env.production' });
 
-// Importar módulos especializados
+// Importar módulos especializados - SISTEMA MULTI-USUÁRIO COM CHAVES INDIVIDUAIS
 const PositionSafetyValidator = require('./position-safety-validator.js');
-const EnhancedSignalProcessor = require('./enhanced-signal-processor.js');
+const MultiUserSignalProcessor = require('./multi-user-signal-processor.js');
 const CommissionSystem = require('./commission-system.js');
 const FinancialManager = require('./financial-manager.js');
 
@@ -43,9 +43,9 @@ class CoinBitClubServer {
             ssl: { rejectUnauthorized: false }
         });
 
-        // Inicializar módulos
+        // Inicializar módulos - SISTEMA MULTI-USUÁRIO!
         this.positionSafety = new PositionSafetyValidator();
-        this.signalProcessor = new EnhancedSignalProcessor();
+        this.signalProcessor = new MultiUserSignalProcessor();
         this.commissionSystem = new CommissionSystem();
         this.financialManager = new FinancialManager(this.pool);
 
