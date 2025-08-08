@@ -157,7 +157,7 @@ STRIPE_SECRET_KEY=sk_live_your-real-stripe-secret
 STRIPE_PUBLISHABLE_KEY=pk_live_your-real-stripe-public
 
 # OpenAI (SUBSTITUIR por chave real)
-OPENAI_API_KEY=sk-proj-your-real-openai-key
+OPENAI_API_KEY=sua_chave_openai_real
 ```
 
 ---

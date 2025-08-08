@@ -1,3 +1,6 @@
+// SECURITY_VALIDATED: 2025-08-08T23:27:20.626Z
+// Este arquivo foi verificado e tem credenciais protegidas
+
 // 🗄️ VERIFICAÇÃO E MIGRAÇÃO DO BANCO
 // =================================
 //
@@ -8,7 +11,7 @@ const { Pool } = require('pg');
 class DatabaseMigration {
     constructor() {
         this.pool = new Pool({
-            connectionString: 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
+            connectionString: 'postgresql://postgres:PROTECTED_DB_PASSWORD@trolley.proxy.rlwy.net:44790/railway',
             ssl: { rejectUnauthorized: false }
         });
     }

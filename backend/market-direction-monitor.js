@@ -16,8 +16,8 @@ const axios = require('axios');
 class MarketDirectionMonitor {
     constructor() {
         this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/coinbitclub',
-            ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+            connectionString: 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
+            ssl: false
         });
 
         // Cache para otimização

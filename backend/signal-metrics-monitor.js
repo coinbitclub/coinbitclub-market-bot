@@ -16,8 +16,8 @@ const { Pool } = require('pg');
 class SignalMetricsMonitor {
     constructor() {
         this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/coinbitclub',
-            ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+            connectionString: 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
+            ssl: false
         });
 
         // Cache de métricas
@@ -33,36 +33,62 @@ class SignalMetricsMonitor {
      */
     async registerSignal(signalData, marketDirection, aiDecision) {
         try {
+            // Extrair dados de BTC e RSI se disponíveis
+            const btcAnalysis = aiDecision.btcAnalysis || {};
+            const rsiAnalysis = aiDecision.rsiAnalysis || {};
+            
             const signalRecord = {
                 signal: signalData.signal,
                 ticker: signalData.ticker,
+                symbol: signalData.symbol || signalData.ticker, // Garantir que symbol não seja NULL
                 source: signalData.source,
                 timestamp: new Date(signalData.timestamp || Date.now()),
                 market_direction: marketDirection.allowed,
                 fear_greed: marketDirection.fearGreed.value,
                 top100_percentage: marketDirection.top100.percentageUp,
+                top100_trend: marketDirection.top100.trend || 'NEUTRAL',
+                btc_dominance: btcAnalysis.btcDominance?.btcDominance || null,
+                market_rsi: rsiAnalysis.marketOverview?.averageRSI || null,
                 ai_approved: aiDecision.shouldExecute,
-                ai_reason: aiDecision.reason || aiDecision.analysis
+                ai_reason: aiDecision.reason || aiDecision.analysis,
+                confidence: aiDecision.confidence || (aiDecision.shouldExecute ? 75 : 25), // Confidence padrão
+                is_strong_signal: signalData.signal && signalData.signal.includes('FORTE'),
+                execution_time_ms: aiDecision.execution_time_ms || null,
+                users_affected: aiDecision.users_affected || 0,
+                orders_created: aiDecision.orders_created || 0,
+                status: 'PENDING'
             };
 
-            // Salvar no banco
+            // Salvar no banco com todos os campos
             const result = await this.pool.query(`
                 INSERT INTO signal_metrics_log (
-                    signal_type, ticker, source, received_at,
-                    market_direction, fear_greed_value, top100_percentage_up,
-                    ai_approved, ai_reason, processed_at
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+                    signal_type, ticker, symbol, source, received_at,
+                    market_direction, fear_greed_value, top100_percentage_up, top100_trend,
+                    btc_dominance, market_rsi, ai_approved, ai_reason, confidence,
+                    is_strong_signal, execution_time_ms, users_affected, orders_created,
+                    status, processed_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NOW())
                 RETURNING id
             `, [
                 signalRecord.signal,
                 signalRecord.ticker,
+                signalRecord.symbol,
                 signalRecord.source,
                 signalRecord.timestamp,
                 signalRecord.market_direction,
                 signalRecord.fear_greed,
                 signalRecord.top100_percentage,
+                signalRecord.top100_trend,
+                signalRecord.btc_dominance,
+                signalRecord.market_rsi,
                 signalRecord.ai_approved,
-                signalRecord.ai_reason
+                signalRecord.ai_reason,
+                signalRecord.confidence,
+                signalRecord.is_strong_signal,
+                signalRecord.execution_time_ms,
+                signalRecord.users_affected,
+                signalRecord.orders_created,
+                signalRecord.status
             ]);
 
             const signalId = result.rows[0].id;

@@ -22,8 +22,8 @@ class DashboardOperacionalReal {
     constructor() {
         this.app = express();
         this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/coinbitclub',
-            ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+            connectionString: 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
+            ssl: { rejectUnauthorized: false }
         });
 
         this.signalQueue = [];

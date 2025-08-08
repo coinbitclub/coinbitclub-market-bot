@@ -11,6 +11,14 @@
  * ✅ Relatórios e logs
  */
 
+const { Pool } = require('pg');
+require('dotenv').config();
+
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
+    ssl: { rejectUnauthorized: false }
+});
+
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');

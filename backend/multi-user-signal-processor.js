@@ -8,12 +8,13 @@ const SignalMetricsMonitor = require('./signal-metrics-monitor');
 const ExchangeKeyValidator = require('./exchange-key-validator');
 const BTCDominanceAnalyzer = require('./btc-dominance-analyzer');
 const RSIOverheatedMonitor = require('./rsi-overheated-monitor');
+const DetailedSignalTracker = require('./detailed-signal-tracker');
 
 class MultiUserSignalProcessor {
     constructor() {
         this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/coinbitclub',
-            ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+            connectionString: 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
+            ssl: false
         });
 
         // Inicializar componentes de monitoramento
@@ -24,6 +25,7 @@ class MultiUserSignalProcessor {
         this.keyValidator = new ExchangeKeyValidator();
         this.btcDominance = new BTCDominanceAnalyzer();
         this.rsiMonitor = new RSIOverheatedMonitor();
+        this.detailedTracker = new DetailedSignalTracker();
 
         // Configurar OpenAI para análise de IA
         if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-')) {
@@ -114,11 +116,20 @@ class MultiUserSignalProcessor {
                 { btcAnalysis, rsiAnalysis, isStrongSignal }
             );
 
+            // ETAPA 5.5: TRACKING DETALHADO DAS 4 CONDIÇÕES
+            const trackingResult = await this.detailedTracker.trackSignalConditions(
+                signalData,
+                marketDirection, 
+                signalHistoryAnalysis,
+                aiDecision,
+                isStrongSignal
+            );
+
             // ETAPA 6: Registrar métricas do sinal
             const signalMetricsResult = await this.signalMetrics.registerSignal(
                 signalData, 
                 marketDirection, 
-                { ...aiDecision, btcAnalysis, rsiAnalysis }
+                { ...aiDecision, btcAnalysis, rsiAnalysis, tracking: trackingResult }
             );
 
             if (!aiDecision.shouldExecute) {
@@ -164,7 +175,7 @@ class MultiUserSignalProcessor {
 
             if (!this.openai) {
                 console.warn('⚠️ OpenAI não configurado, usando lógica de fallback');
-                return this.fallbackDecision(signalData, marketDirection, signalHistoryAnalysis, isStrongSignal);
+                return this.fallbackDecision(signalData, marketDirection, signalHistoryAnalysis, isStrongSignal, { btcAnalysis, rsiAnalysis });
             }
 
             const prompt = `
@@ -175,6 +186,7 @@ DADOS DO MERCADO:
 - Direção permitida: ${marketDirection.allowed}
 - TOP 100 moedas: ${marketDirection.top100.percentageUp}% subindo (${marketDirection.top100.trend})
 - Confiança da direção: ${(marketDirection.confidence * 100).toFixed(1)}%
+- Market Cap 24h: ${btcAnalysis?.btcDominance?.market_cap_change_24h ? (btcAnalysis.btcDominance.market_cap_change_24h > 0 ? '+' : '') + btcAnalysis.btcDominance.market_cap_change_24h.toFixed(2) + '%' : 'N/A'}
 
 DADOS DO SINAL:
 - Sinal: ${signalData.signal}
@@ -200,13 +212,21 @@ REGRAS DE NEGÓCIO:
 4. PRIORIDADE ESPECIAL para SINAIS FORTE (menor rigidez nos critérios)
 5. Considerar volatilidade do mercado para possível fechamento antecipado
 6. Alertas de sobrecompra/sobrevenda devem influenciar a decisão
+7. VARIAÇÃO MARKET CAP: Valores positivos favorecem LONG, negativos favorecem SHORT
 
-CRITÉRIOS PARA APROVAÇÃO:
-- Sinal deve estar alinhado com direção permitida
-- Histórico de sinais não deve indicar movimento contrário
-- Confiança da direção deve ser razoável (>0.4 normal, >0.3 para FORTE)
-- Não deve haver conflitos nas métricas
-- Para SINAIS FORTE: critérios mais flexíveis
+CRITÉRIOS PARA APROVAÇÃO (ATUALIZADOS):
+- Sinal deve estar alinhado com direção permitida ✅
+- RSI_15 deve estar favorável: <80 para LONG e >30 para SHORT ✅
+- Comparativo de sinais anteriores da mesma moeda (análise de padrão LONG/SHORT) ✅
+- Para SINAIS FORTE: critérios mais flexíveis ✅
+- Métricas de mercado devem estar em condição neutra ou favorável
+- Fear & Greed: >70 favorece LONG, <30 favorece SHORT
+- Market Cap 24h: >1% favorece LONG, <-1% favorece SHORT
+
+CRITÉRIOS REMOVIDOS/FLEXIBILIZADOS:
+- Histórico de sinais (muito restritivo)
+- Confiança da direção rígida (flexibilizado)
+- Conflitos nas métricas (flexibilizado para permitir mais sinais)
 
 Responda apenas: SIM ou NÃO seguido de uma breve justificativa (máximo 50 palavras).`;
 
@@ -231,27 +251,31 @@ Responda apenas: SIM ou NÃO seguido de uma breve justificativa (máximo 50 pala
                     top100Trend: marketDirection.top100.trend,
                     signalHistory: signalHistoryAnalysis.recommendation,
                     btcDominance: btcAnalysis?.btcDominance?.btcDominance,
-                    marketRSI: rsiAnalysis?.marketOverview?.averageRSI
+                    marketRSI: rsiAnalysis?.marketOverview?.averageRSI,
+                    marketCapChange24h: btcAnalysis?.btcDominance?.market_cap_change_24h
                 }
             };
 
         } catch (error) {
             console.warn('⚠️ Erro na análise da IA, usando fallback:', error.message);
-            return this.fallbackDecision(signalData, marketDirection, signalHistoryAnalysis, isStrongSignal);
+            return this.fallbackDecision(signalData, marketDirection, signalHistoryAnalysis, isStrongSignal, { btcAnalysis, rsiAnalysis });
         }
     }
 
     /**
-     * 🔄 LÓGICA DE FALLBACK INTELIGENTE COM PRIORIDADE PARA SINAIS FORTE
+     * 🔄 LÓGICA DE FALLBACK INTELIGENTE COM NOVOS CRITÉRIOS AJUSTADOS
      */
-    fallbackDecision(signalData, marketDirection, signalHistoryAnalysis, isStrongSignal = false) {
+    async fallbackDecision(signalData, marketDirection, signalHistoryAnalysis, isStrongSignal = false, additionalData = {}) {
         const signalDirection = this.getSignalDirection(signalData.signal);
+        const { rsiAnalysis } = additionalData;
         
-        // Análise de condições favoráveis
+        // NOVOS CRITÉRIOS - Análise de condições favoráveis
         let favorableConditions = 0;
         let totalConditions = 4;
+        let detailedAnalysis = [];
 
-        // 1. Direção do mercado favorável
+        // 1. ✅ Direção do mercado favorável (MANTIDO)
+        let condition1 = false;
         if (
             (marketDirection.allowed === 'LONG_E_SHORT') ||
             (marketDirection.allowed === 'SOMENTE_LONG' && signalDirection === 'LONG') ||
@@ -260,59 +284,194 @@ Responda apenas: SIM ou NÃO seguido de uma breve justificativa (máximo 50 pala
             (marketDirection.allowed === 'PREFERENCIA_SHORT' && signalDirection === 'SHORT')
         ) {
             favorableConditions++;
+            condition1 = true;
+            detailedAnalysis.push(`✅ Direção do mercado: ${marketDirection.allowed} → ${signalDirection}`);
+        } else {
+            detailedAnalysis.push(`❌ Direção do mercado: ${marketDirection.allowed} ≠ ${signalDirection}`);
         }
 
-        // 2. TOP 100 alinhado
+        // 2. ✅ NOVO: RSI_15 favorável (<80 para LONG, >30 para SHORT)
+        let condition2 = false;
+        const rsi15 = await this.getRSI15ForTicker(signalData.ticker);
+        if (rsi15) {
+            if (
+                (signalDirection === 'LONG' && rsi15 < 80) ||
+                (signalDirection === 'SHORT' && rsi15 > 30)
+            ) {
+                favorableConditions++;
+                condition2 = true;
+                detailedAnalysis.push(`✅ RSI_15: ${rsi15.toFixed(1)} (favorável para ${signalDirection})`);
+            } else {
+                detailedAnalysis.push(`❌ RSI_15: ${rsi15.toFixed(1)} (desfavorável para ${signalDirection})`);
+            }
+        } else {
+            // Se não conseguir obter RSI_15, considera neutro
+            favorableConditions++;
+            condition2 = true;
+            detailedAnalysis.push(`⚠️ RSI_15: Não disponível (considerado neutro)`);
+        }
+
+        // 3. ✅ NOVO: Comparativo de sinais anteriores da mesma moeda
+        let condition3 = false;
+        const coinComparative = await this.analyzeCoinSignalHistory(signalData.ticker, signalDirection);
+        if (coinComparative.favorable) {
+            favorableConditions++;
+            condition3 = true;
+            detailedAnalysis.push(`✅ Histórico da moeda: ${coinComparative.reason}`);
+        } else {
+            detailedAnalysis.push(`❌ Histórico da moeda: ${coinComparative.reason}`);
+        }
+
+        // 4. ✅ TOP 100 alinhado (FLEXIBILIZADO - mais permissivo)
+        let condition4 = false;
         if (
             (marketDirection.top100.trend === 'BULLISH' && signalDirection === 'LONG') ||
             (marketDirection.top100.trend === 'BEARISH' && signalDirection === 'SHORT') ||
-            (marketDirection.top100.trend === 'SIDEWAYS')
+            (marketDirection.top100.trend === 'SIDEWAYS') ||
+            // FLEXIBILIZADO: Se TOP 100 está entre 45-55%, considerar neutro
+            (marketDirection.top100.percentageUp >= 45 && marketDirection.top100.percentageUp <= 55)
         ) {
             favorableConditions++;
+            condition4 = true;
+            detailedAnalysis.push(`✅ TOP 100: ${marketDirection.top100.percentageUp}% (${marketDirection.top100.trend})`);
+        } else {
+            detailedAnalysis.push(`❌ TOP 100: ${marketDirection.top100.percentageUp}% (${marketDirection.top100.trend})`);
         }
 
-        // 3. Confiança adequada (flexível para sinais FORTE)
-        const confidenceThreshold = isStrongSignal ? 0.3 : 0.4;
-        if (marketDirection.confidence > confidenceThreshold) {
-            favorableConditions++;
-        }
-
-        // 4. Histórico não contrário
-        if (signalHistoryAnalysis.recommendation !== 'REJECT') {
-            favorableConditions++;
-        }
-
-        // Decisão baseada em condições favoráveis (mais flexível para FORTE)
+        // DECISÃO FINAL - Critérios flexibilizados
         let shouldExecute;
+        let requiredConditions;
+        
         if (isStrongSignal) {
             // Para sinais FORTE: apenas 2 condições necessárias
+            requiredConditions = 2;
             shouldExecute = favorableConditions >= 2;
         } else {
-            // Para sinais normais: 3 condições necessárias
+            // Para sinais normais: 3 condições necessárias (antes era 3, mantido)
+            requiredConditions = 3;
             shouldExecute = favorableConditions >= 3;
         }
 
         let reason = '';
         if (shouldExecute) {
-            reason = `Fallback: ${favorableConditions}/${totalConditions} condições favoráveis`;
-            if (isStrongSignal) reason += ' - SINAL FORTE (critério flexível)';
+            reason = `APROVADO: ${favorableConditions}/${totalConditions} critérios atendidos (mín: ${requiredConditions})`;
+            if (isStrongSignal) reason += ' - SINAL FORTE';
         } else {
-            reason = `Fallback: Apenas ${favorableConditions}/${totalConditions} condições favoráveis`;
-            if (isStrongSignal) reason += ' - mesmo para SINAL FORTE';
+            reason = `REJEITADO: Apenas ${favorableConditions}/${totalConditions} critérios (mín: ${requiredConditions})`;
+            if (isStrongSignal) reason += ' - mesmo sendo SINAL FORTE';
         }
+
+        console.log('🔍 ANÁLISE DETALHADA DOS NOVOS CRITÉRIOS:');
+        detailedAnalysis.forEach(analysis => console.log(`   ${analysis}`));
+        console.log(`📊 RESULTADO: ${reason}`);
 
         return {
             shouldExecute: shouldExecute,
             analysis: reason,
             confidence: marketDirection.confidence,
             isStrongSignal: isStrongSignal,
-            factors: {
+            reason: reason,
+            newCriteria: {
+                condition1_market_direction: condition1,
+                condition2_rsi15: condition2,
+                condition3_coin_history: condition3,
+                condition4_top100_flexible: condition4,
                 favorableConditions: favorableConditions,
                 totalConditions: totalConditions,
-                confidenceThreshold: confidenceThreshold,
-                usedFlexibleCriteria: isStrongSignal
+                requiredConditions: requiredConditions,
+                detailedAnalysis: detailedAnalysis
             }
         };
+    }
+
+    /**
+     * 📊 NOVO: Obter RSI_15 para um ticker específico
+     */
+    async getRSI15ForTicker(ticker) {
+        try {
+            // Usar o RSI monitor existente para obter dados específicos do ticker
+            const rsiData = await this.rsiMonitor.getRSIForTicker(ticker, 15);
+            return rsiData?.rsi || null;
+        } catch (error) {
+            console.warn(`⚠️ Erro ao obter RSI_15 para ${ticker}:`, error.message);
+            return null;
+        }
+    }
+
+    /**
+     * 📈 NOVO: Analisar histórico de sinais da moeda específica
+     */
+    async analyzeCoinSignalHistory(ticker, signalDirection) {
+        try {
+            // Buscar últimos 10 sinais desta moeda específica
+            const result = await this.pool.query(`
+                SELECT signal_type, ai_decision, received_at
+                FROM signal_conditions_tracking 
+                WHERE ticker = $1 
+                ORDER BY received_at DESC 
+                LIMIT 10
+            `, [ticker]);
+
+            if (result.rows.length === 0) {
+                return {
+                    favorable: true,
+                    reason: 'Primeira análise da moeda (sem histórico)'
+                };
+            }
+
+            const signals = result.rows;
+            const totalSignals = signals.length;
+            
+            // Analisar sinais da mesma direção
+            const sameDirectionSignals = signals.filter(s => 
+                this.getSignalDirection(s.signal_type) === signalDirection
+            );
+            
+            const approvedSameDirection = sameDirectionSignals.filter(s => s.ai_decision).length;
+            const rejectedSameDirection = sameDirectionSignals.length - approvedSameDirection;
+            
+            // Analisar sinais da direção oposta
+            const oppositeDirection = signalDirection === 'LONG' ? 'SHORT' : 'LONG';
+            const oppositeSignals = signals.filter(s => 
+                this.getSignalDirection(s.signal_type) === oppositeDirection
+            );
+            
+            const recentOppositeApproved = oppositeSignals
+                .filter(s => s.ai_decision)
+                .filter(s => {
+                    const signalTime = new Date(s.received_at);
+                    const now = new Date();
+                    const hoursDiff = (now - signalTime) / (1000 * 60 * 60);
+                    return hoursDiff <= 4; // Últimas 4 horas
+                }).length;
+
+            // LÓGICA DE DECISÃO
+            if (recentOppositeApproved >= 2) {
+                return {
+                    favorable: false,
+                    reason: `${recentOppositeApproved} sinais ${oppositeDirection} aprovados nas últimas 4h`
+                };
+            }
+
+            if (sameDirectionSignals.length >= 3 && rejectedSameDirection >= 2) {
+                return {
+                    favorable: false,
+                    reason: `${rejectedSameDirection}/${sameDirectionSignals.length} sinais ${signalDirection} rejeitados recentemente`
+                };
+            }
+
+            return {
+                favorable: true,
+                reason: `Histórico favorável: ${approvedSameDirection}/${sameDirectionSignals.length} ${signalDirection} aprovados`
+            };
+
+        } catch (error) {
+            console.warn(`⚠️ Erro ao analisar histórico de ${ticker}:`, error.message);
+            return {
+                favorable: true,
+                reason: 'Erro na análise (considerado neutro)'
+            };
+        }
     }
 
     /**

@@ -1,11 +1,12 @@
 // 🔧 MIGRAÇÃO SIMPLIFICADA - ADICIONAR CÓDIGO DE AFILIADO
 // ======================================================
 
+require('dotenv').config();
 const { Pool } = require('pg');
 
 async function addAffiliateCode() {
     const pool = new Pool({
-        connectionString: 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
+        connectionString: process.env.DATABASE_URL || 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
         ssl: { rejectUnauthorized: false }
     });
 

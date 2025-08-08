@@ -53,7 +53,7 @@ Secret: xX5KU5VhxvXy1YZ2sN51GCTLp4DGBxKygrwG
 ```
 
 ### ✅ APIs Integradas
-- **OpenAI**: `sk-proj-BTd4kZ1gYUpOw...` (REAL)
+- **OpenAI**: Configurado via process.env.OPENAI_API_KEY (REAL)
 - **Stripe Live**: `sk_live_51QCOIiBb...` (REAL)
 - **CoinStats**: `ZFIxigBcVaCyXDL...` (REAL)
 - **Twilio**: `AC66f0547950...` (REAL)

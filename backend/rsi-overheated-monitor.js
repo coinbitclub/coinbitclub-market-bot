@@ -520,7 +520,85 @@ class RSIOverheatedMonitor {
     }
 
     /**
-     * 🚀 MONITORAMENTO CONTÍNUO
+     * � OBTER RSI ESPECÍFICO PARA UM TICKER
+     */
+    async getRSIForTicker(ticker, period = 15) {
+        try {
+            // Converter ticker para formato Binance se necessário
+            let symbol = ticker;
+            if (!ticker.endsWith('USDT')) {
+                symbol = ticker + 'USDT';
+            }
+
+            const url = `https://api.binance.com/api/v3/klines`;
+            const response = await axios.get(url, {
+                params: {
+                    symbol: symbol,
+                    interval: '15m', // 15 minutos para RSI_15
+                    limit: period + 20 // Dados extras para cálculo preciso
+                },
+                timeout: 5000
+            });
+
+            if (!response.data || response.data.length < period) {
+                console.warn(`⚠️ Dados insuficientes para calcular RSI_${period} de ${ticker}`);
+                return null;
+            }
+
+            // Calcular RSI
+            const closes = response.data.map(candle => parseFloat(candle[4]));
+            const rsi = this.calculateRSI(closes, period);
+            
+            return {
+                ticker: ticker,
+                rsi: rsi,
+                period: period,
+                timestamp: new Date(),
+                recommendation: this.getCoinRecommendation(rsi, ticker)
+            };
+
+        } catch (error) {
+            console.warn(`⚠️ Erro ao obter RSI_${period} para ${ticker}:`, error.message);
+            return null;
+        }
+    }
+
+    /**
+     * 🔢 CALCULAR RSI MANUAL
+     */
+    calculateRSI(closes, period = 14) {
+        if (closes.length < period + 1) return null;
+
+        let gains = [];
+        let losses = [];
+
+        // Calcular ganhos e perdas
+        for (let i = 1; i < closes.length; i++) {
+            const change = closes[i] - closes[i - 1];
+            gains.push(change > 0 ? change : 0);
+            losses.push(change < 0 ? Math.abs(change) : 0);
+        }
+
+        // Calcular médias iniciais
+        let avgGain = gains.slice(0, period).reduce((a, b) => a + b) / period;
+        let avgLoss = losses.slice(0, period).reduce((a, b) => a + b) / period;
+
+        // RSI Wilder smoothing
+        for (let i = period; i < gains.length; i++) {
+            avgGain = (avgGain * (period - 1) + gains[i]) / period;
+            avgLoss = (avgLoss * (period - 1) + losses[i]) / period;
+        }
+
+        if (avgLoss === 0) return 100;
+        
+        const rs = avgGain / avgLoss;
+        const rsi = 100 - (100 / (1 + rs));
+        
+        return Math.round(rsi * 100) / 100; // 2 casas decimais
+    }
+
+    /**
+     * �🚀 MONITORAMENTO CONTÍNUO
      */
     startContinuousMonitoring() {
         console.log('🔄 Iniciando monitoramento contínuo RSI...');

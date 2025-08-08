@@ -10,13 +10,14 @@
  * • Integração completa com banco PostgreSQL
  */
 
+require('dotenv').config();
 const { Pool } = require('pg');
 const axios = require('axios');
 const cron = require('node-cron');
 
 // Configuração da conexão com banco
 const DB_CONFIG = {
-    connectionString: 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
+    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
     ssl: { rejectUnauthorized: false }
 };
 
