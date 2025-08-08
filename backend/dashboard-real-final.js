@@ -1,13 +1,11 @@
 // SECURITY_VALIDATED: 2025-08-08T23:27:20.620Z
 // Este arquivo foi verificado e tem credenciais protegidas
 
-#!/usr/bin/env node
-
 /**
- * 📊 COINBITCLUB - DASHBOARD REAL FINAL
- * =====================================
+ * COINBITCLUB - DASHBOARD REAL FINAL
+ * ===================================
  * Dashboard final com dados 100% reais
- * Sem mock data - Sistema pronto para produção
+ * Sem mock data - Sistema pronto para producao
  */
 
 require('dotenv').config();
