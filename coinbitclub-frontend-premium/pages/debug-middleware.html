@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Middleware - CoinBitClub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #fff;
+        }
+        .debug-panel {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #1a4d3a; border: 1px solid #28a745; }
+        .error { background: #4d1a1a; border: 1px solid #dc3545; }
+        .warning { background: #4d3a1a; border: 1px solid #ffc107; color: #000; }
+        .info { background: #1a3a4d; border: 1px solid #17a2b8; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre { background: #2a2a2a; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Middleware - CoinBitClub</h1>
+    
+    <div class="debug-panel">
+        <h2>📊 Status da Autenticação</h2>
+        <div id="auth-status"></div>
+        
+        <h3>🍪 Cookies</h3>
+        <pre id="cookies-info"></pre>
+        
+        <h3>💾 localStorage</h3>
+        <pre id="localStorage-info"></pre>
+        
+        <h3>🔐 Dados do Usuário</h3>
+        <pre id="user-data"></pre>
+    </div>
+    
+    <div class="debug-panel">
+        <h2>🚦 Testes de Redirecionamento</h2>
+        <button onclick="testRoute('/admin/dashboard')">Testar Admin Dashboard</button>
+        <button onclick="testRoute('/user/dashboard')">Testar User Dashboard</button>
+        <button onclick="testRoute('/gestor/dashboard')">Testar Gestor Dashboard</button>
+        <button onclick="testRoute('/affiliate/dashboard')">Testar Affiliate Dashboard</button>
+        <button onclick="clearAuth()">Limpar Autenticação</button>
+        <button onclick="location.reload()">Atualizar Página</button>
+        
+        <div id="test-results"></div>
+    </div>
+    
+    <div class="debug-panel">
+        <h2>🔧 Ações de Debug</h2>
+        <button onclick="debugUserRole()">Debug Role do Usuário</button>
+        <button onclick="simulateLogin()">Simular Login Admin</button>
+        <button onclick="checkMiddleware()">Verificar Middleware</button>
+    </div>
+
+    <script>
+        function updateAuthStatus() {
+            const authToken = localStorage.getItem('auth_token');
+            const userData = localStorage.getItem('user_data');
+            
+            // Cookies
+            const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+                const [key, value] = cookie.trim().split('=');
+                if (key) acc[key] = value;
+                return acc;
+            }, {});
+            
+            // Status
+            const statusDiv = document.getElementById('auth-status');
+            if (authToken && userData) {
+                statusDiv.innerHTML = '<div class="success">✅ Usuário autenticado</div>';
+            } else {
+                statusDiv.innerHTML = '<div class="error">❌ Usuário não autenticado</div>';
+            }
+            
+            // Mostrar cookies
+            document.getElementById('cookies-info').textContent = JSON.stringify(cookies, null, 2);
+            
+            // Mostrar localStorage
+            const localStorageData = {
+                auth_token: localStorage.getItem('auth_token'),
+                user_data: localStorage.getItem('user_data')
+            };
+            document.getElementById('localStorage-info').textContent = JSON.stringify(localStorageData, null, 2);
+            
+            // Mostrar dados do usuário
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    document.getElementById('user-data').textContent = JSON.stringify(user, null, 2);
+                } catch (e) {
+                    document.getElementById('user-data').textContent = 'Erro ao parsear dados do usuário';
+                }
+            } else {
+                document.getElementById('user-data').textContent = 'Nenhum dado de usuário encontrado';
+            }
+        }
+        
+        function testRoute(route) {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML += `<div class="info">🔄 Testando rota: ${route}</div>`;
+            
+            // Tentar acessar a rota
+            window.location.href = route;
+        }
+        
+        function clearAuth() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_data');
+            
+            // Limpar cookies
+            document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            document.cookie = 'user_data=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            
+            updateAuthStatus();
+            
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<div class="success">✅ Autenticação limpa</div>';
+        }
+        
+        function debugUserRole() {
+            const userData = localStorage.getItem('user_data');
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    const resultsDiv = document.getElementById('test-results');
+                    resultsDiv.innerHTML = `
+                        <div class="info">
+                            <h4>🎭 Debug Role:</h4>
+                            <p><strong>Role:</strong> ${user.role}</p>
+                            <p><strong>Role Normalizado:</strong> ${user.role.toLowerCase()}</p>
+                            <p><strong>Dashboard Esperado:</strong> ${getDashboardRoute(user.role)}</p>
+                        </div>
+                    `;
+                } catch (e) {
+                    const resultsDiv = document.getElementById('test-results');
+                    resultsDiv.innerHTML = '<div class="error">❌ Erro ao parsear dados do usuário</div>';
+                }
+            } else {
+                const resultsDiv = document.getElementById('test-results');
+                resultsDiv.innerHTML = '<div class="warning">⚠️ Nenhum dado de usuário encontrado</div>';
+            }
+        }
+        
+        function getDashboardRoute(role) {
+            const normalizedRole = role.toLowerCase();
+            switch (normalizedRole) {
+                case 'admin':
+                    return '/admin/dashboard';
+                case 'gestor':
+                    return '/gestor/dashboard';
+                case 'operador':
+                    return '/operador/dashboard';
+                case 'afiliado':
+                case 'affiliate':
+                    return '/affiliate/dashboard';
+                case 'usuario':
+                case 'user':
+                    return '/user/dashboard';
+                default:
+                    return '/user/dashboard';
+            }
+        }
+        
+        function simulateLogin() {
+            // Simular um login de admin
+            const userData = {
+                id: 1,
+                nome: 'Admin Teste',
+                email: 'admin@test.com',
+                role: 'admin'
+            };
+            
+            const token = 'fake-jwt-token-' + Date.now();
+            
+            // Salvar no localStorage
+            localStorage.setItem('auth_token', token);
+            localStorage.setItem('user_data', JSON.stringify(userData));
+            
+            // Salvar nos cookies
+            document.cookie = `auth_token=${token}; path=/; max-age=86400`;
+            document.cookie = `user_data=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=86400`;
+            
+            updateAuthStatus();
+            
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<div class="success">✅ Login simulado realizado</div>';
+        }
+        
+        function checkMiddleware() {
+            fetch('/api/auth/check', {
+                method: 'GET',
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('test-results');
+                resultsDiv.innerHTML = `
+                    <div class="info">
+                        <h4>🔍 Resposta do Middleware:</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            })
+            .catch(error => {
+                const resultsDiv = document.getElementById('test-results');
+                resultsDiv.innerHTML = `<div class="error">❌ Erro: ${error.message}</div>`;
+            });
+        }
+        
+        // Atualizar status ao carregar a página
+        updateAuthStatus();
+        
+        // Mostrar URL atual
+        document.getElementById('test-results').innerHTML = `
+            <div class="info">
+                <h4>📍 URL Atual:</h4>
+                <p>${window.location.href}</p>
+            </div>
+        `;
+    </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+# Multi-stage build for production
+FROM node:18-alpine AS base
+
+# Install basic dependencies
+RUN apk add --no-cache dumb-init
+
+# Set working directory to root of app
+WORKDIR /app
+
+# Copy package files for dependency resolution
+COPY backend/api-gateway/package*.json ./backend/api-gateway/
+COPY coinbitclub-frontend-premium/package*.json ./coinbitclub-frontend-premium/
+
+# Copy main server file to root
+COPY test-user-api-server.cjs ./
+
+# Copy source code
+COPY backend/ ./backend/
+COPY coinbitclub-frontend-premium/ ./coinbitclub-frontend-premium/
+
+# Install only production dependencies for backend
+WORKDIR /app/backend/api-gateway
+RUN npm ci --only=production || npm install --production
+
+# Install only production dependencies for frontend
+WORKDIR /app/coinbitclub-frontend-premium
+RUN npm ci --only=production || npm install --production
+
+# Build frontend
+RUN npm run build
+
+# Back to root for runtime
+WORKDIR /app
+
+# Set NODE_ENV
+ENV NODE_ENV=production
+ENV PORT=8080
+
+# Expose port
+EXPOSE 8080
+
+# Set user for security
+USER node
+
+# Start the application using the main server file
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "test-user-api-server.cjs"]

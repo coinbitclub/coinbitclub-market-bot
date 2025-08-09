@@ -1,0 +1,21 @@
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.secure
+# Logs
+logs
+*.log
+npm-debug.log*
+# Dependencies
+node_modules/
+# Security
+security-backup/
+*.key
+*.pem
+# OS generated files
+.DS_Store
+Thumbs.db

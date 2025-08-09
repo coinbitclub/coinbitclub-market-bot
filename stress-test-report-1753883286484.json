@@ -1,0 +1,35 @@
+{
+  "timestamp": "2025-07-30T13:48:06.483Z",
+  "duracao": -1753883128504,
+  "estatisticas": {
+    "totalRequests": 160,
+    "successfulRequests": 160,
+    "failedRequests": 0,
+    "responseTimeSum": 106865,
+    "minResponseTime": 146,
+    "maxResponseTime": 1331,
+    "errors": [],
+    "memoryUsage": [
+      {
+        "fase": "Carga Pesada",
+        "timestamp": "2025-07-30T13:45:30.416Z",
+        "rss": 59,
+        "heapTotal": 16,
+        "heapUsed": 11,
+        "external": 3
+      },
+      {
+        "fase": "Carga Extrema",
+        "timestamp": "2025-07-30T13:45:31.779Z",
+        "rss": 57,
+        "heapTotal": 13,
+        "heapUsed": 10,
+        "external": 3
+      }
+    ],
+    "startTime": "2025-07-30T13:45:28.504Z",
+    "endTime": null
+  },
+  "sistema": "CoinBitClub Dynamic System",
+  "versao": "2.0"
+}

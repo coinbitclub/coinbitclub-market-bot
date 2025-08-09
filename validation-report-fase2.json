@@ -1,0 +1,151 @@
+{
+  "timestamp": "2025-07-28T12:58:32.052Z",
+  "phase": "FASE_2",
+  "summary": {
+    "total": 12,
+    "passed": 2,
+    "failed": 10,
+    "successRate": 16.7,
+    "duration": 2.118
+  },
+  "categories": {
+    "Básico": [
+      "Server Health",
+      "Credit System"
+    ],
+    "Dashboard": [
+      "Dashboard Structure",
+      "Dashboard Performance",
+      "Dashboard Access"
+    ],
+    "Alertas": [
+      "Alerts List",
+      "Alert Resolution",
+      "Alert System"
+    ],
+    "Métricas": [
+      "Metrics Structure",
+      "System Health Metrics",
+      "Metrics Access"
+    ],
+    "Health Check": [
+      "Advanced Health Check",
+      "Phase Detection",
+      "Version Check"
+    ],
+    "Relatórios": [
+      "Usage Report Structure",
+      "Performance Analysis",
+      "Usage Reports"
+    ],
+    "Monitoramento": [
+      "Monitoring Integration",
+      "System Health Collection"
+    ],
+    "Endpoints": [
+      "Monitoring Endpoints Listed",
+      "Version Updated",
+      "Phase Updated",
+      "New Features Listed"
+    ]
+  },
+  "results": [
+    {
+      "test": "Server Health",
+      "success": true,
+      "message": "Servidor respondendo normalmente",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:29.984Z",
+      "phase": "FASE_2"
+    },
+    {
+      "test": "Credit System",
+      "success": true,
+      "message": "Sistema de crédito funcionando",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:29.991Z",
+      "phase": "FASE_2"
+    },
+    {
+      "test": "Dashboard Access",
+      "success": false,
+      "message": "Erro: Rota não encontrada",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:29.997Z",
+      "phase": "FASE_2"
+    },
+    {
+      "test": "Alert System",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:30.002Z",
+      "phase": "FASE_2"
+    },
+    {
+      "test": "Metrics Access",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:30.006Z",
+      "phase": "FASE_2"
+    },
+    {
+      "test": "Advanced Health Check",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:30.010Z",
+      "phase": "FASE_2"
+    },
+    {
+      "test": "Usage Reports",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:30.014Z",
+      "phase": "FASE_2"
+    },
+    {
+      "test": "Monitoring Integration",
+      "success": false,
+      "message": "Erro: Request failed with status code 404",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:32.041Z",
+      "phase": "FASE_2"
+    },
+    {
+      "test": "Monitoring Endpoints Listed",
+      "success": false,
+      "message": "Seção monitoring_dashboard não encontrada",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:32.045Z",
+      "phase": "FASE_2"
+    },
+    {
+      "test": "Version Updated",
+      "success": false,
+      "message": "Versão: undefined, esperado: 3.2.0",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:32.045Z",
+      "phase": "FASE_2"
+    },
+    {
+      "test": "Phase Updated",
+      "success": false,
+      "message": "Fase: undefined, esperado: FASE_2_COMPLETA",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:32.045Z",
+      "phase": "FASE_2"
+    },
+    {
+      "test": "New Features Listed",
+      "success": false,
+      "message": "Funcionalidades da Fase 2 não listadas adequadamente",
+      "data": null,
+      "timestamp": "2025-07-28T12:58:32.045Z",
+      "phase": "FASE_2"
+    }
+  ],
+  "status": "FAILED"
+}

@@ -1,0 +1,14 @@
+﻿frontend/
+coinbitclub-frontend-premium/
+scripts/
+migrations/
+node_modules/
+__tests__/
+.next/
+*.cjs
+server-*.js
+test-*.js
+*.md
+*.ps1
+*.bat
+*.sh

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Integração - CoinbitClub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            width: 240px;
+            background-color: #1e293b;
+            border-right: 1px solid #334155;
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        
+        .menu-item:hover {
+            background-color: #293548;
+            color: #f8fafc;
+        }
+        
+        .menu-item.active {
+            background-color: #293548;
+            color: #10b981;
+            border-left: 3px solid #10b981;
+        }
+        
+        .menu-icon {
+            margin-right: 12px;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 240px;
+            padding: 20px;
+        }
+        
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+        }
+        
+        .notification-icon {
+            margin-right: 20px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ef4444;
+            color: white;
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .user-name {
+            font-weight: 500;
+        }
+        
+        /* Integration Test Styles */
+        .integration-container {
+            background-color: #1e293b;
+            border-radius: 12px;
+            padding: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #f8fafc;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: #293548;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #f8fafc;
+            font-size: 15px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: #10b981;
+            border: none;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0d9668;
+        }
+        
+        .btn-secondary {
+            background-color: #475569;
+            border: none;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #334155;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .integration-card {
+            background-color: #293548;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #475569;
+        }
+        
+        .integration-card.connected {
+            border-color: #10b981;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .integration-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+        
+        .integration-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .integration-status {
+            margin-top: 5px;
+            font-size: 13px;
+        }
+        
+        .status-connected {
+            color: #10b981;
+        }
+        
+        .status-disconnected {
+            color: #94a3b8;
+        }
+        
+        .card-actions {
+            margin-top: 15px;
+        }
+        
+        .test-result {
+            margin-top: 30px;
+            background-color: #293548;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: monospace;
+            white-space: pre;
+            overflow-x: auto;
+            color: #cbd5e1;
+            display: none;
+        }
+        
+        .test-result.success {
+            border-left: 4px solid #10b981;
+        }
+        
+        .test-result.error {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .test-result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .result-title {
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            color: #f8fafc;
+        }
+        
+        .result-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: Arial, sans-serif;
+        }
+        
+        .status-success {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        
+        .status-error {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .loading-indicator {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(75, 85, 99, 0.3);
+            border-top: 3px solid #10b981;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 64px;
+            }
+            
+            .logo, .menu-text {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 64px;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">CoinbitClub</div>
+            </div>
+            <div class="sidebar-menu">
+                <a href="dashboard-simple.html" class="menu-item">
+                    <span class="menu-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                    </span>
+                    <span class="menu-text">Dashboard</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="menu-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="20" x2="12" y2="10"></line>
+                            <line x1="18" y1="20" x2="18" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="16"></line>
+                        </svg>
+                    </span>
+                    <span class="menu-text">Estatísticas</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="menu-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </span>
+                    <span class="menu-text">Histórico</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="menu-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                            <line x1="1" y1="10" x2="23" y2="10"></line>
+                        </svg>
+                    </span>
+                    <span class="menu-text">Pagamentos</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <span class="menu-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </span>
+                    <span class="menu-text">Referências</span>
+                </a>
+                <a href="settings.html" class="menu-item">
+                    <span class="menu-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                    </span>
+                    <span class="menu-text">Configurações</span>
+                </a>
+                <a href="test-integration.html" class="menu-item active">
+                    <span class="menu-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                            <polyline points="2 17 12 22 22 17"></polyline>
+                            <polyline points="2 12 12 17 22 12"></polyline>
+                        </svg>
+                    </span>
+                    <span class="menu-text">Integrações</span>
+                </a>
+                <a href="auth.html" class="menu-item">
+                    <span class="menu-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </span>
+                    <span class="menu-text">Sair</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <h1 class="page-title">Teste de Integração</h1>
+                <div class="user-menu">
+                    <div class="notification-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span class="notification-badge">3</span>
+                    </div>
+                    <div class="user-profile">
+                        <div class="avatar">JS</div>
+                        <div class="user-name">João Silva</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="integration-container">
+                <div class="test-section">
+                    <h2 class="section-title">Integrações de Exchanges</h2>
+                    
+                    <div class="card-grid">
+                        <div class="integration-card connected">
+                            <div class="card-header">
+                                <div class="integration-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f8fafc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="integration-name">Binance</div>
+                                    <div class="integration-status status-connected">Conectado</div>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-secondary" onclick="testIntegration('binance')">Testar Conexão</button>
+                            </div>
+                        </div>
+                        
+                        <div class="integration-card">
+                            <div class="card-header">
+                                <div class="integration-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f8fafc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="integration-name">Coinbase</div>
+                                    <div class="integration-status status-disconnected">Desconectado</div>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-primary" onclick="showConnectForm('coinbase')">Conectar</button>
+                            </div>
+                        </div>
+                        
+                        <div class="integration-card">
+                            <div class="card-header">
+                                <div class="integration-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f8fafc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="integration-name">Kraken</div>
+                                    <div class="integration-status status-disconnected">Desconectado</div>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-primary" onclick="showConnectForm('kraken')">Conectar</button>
+                            </div>
+                        </div>
+                        
+                        <div class="integration-card">
+                            <div class="card-header">
+                                <div class="integration-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f8fafc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="integration-name">KuCoin</div>
+                                    <div class="integration-status status-disconnected">Desconectado</div>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-primary" onclick="showConnectForm('kucoin')">Conectar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="connect-form" style="display: none; margin-top: 30px; padding-top: 30px; border-top: 1px solid #334155;">
+                    <h3 id="form-title" class="section-title">Conectar à Exchange</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">API Key</label>
+                        <input type="text" id="api-key" class="form-input" placeholder="Insira sua API Key">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">API Secret</label>
+                        <input type="password" id="api-secret" class="form-input" placeholder="Insira seu API Secret">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Apelido (opcional)</label>
+                        <input type="text" id="api-nickname" class="form-input" placeholder="Um nome para identificar esta conexão">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-checkbox">
+                            <input type="checkbox" id="api-trading-permission">
+                            <span>Permitir operações de trading (compra/venda)</span>
+                        </label>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="hideConnectForm()">Cancelar</button>
+                        <button class="btn btn-primary" onclick="connectExchange()">Conectar</button>
+                    </div>
+                </div>
+                
+                <div id="loading-indicator" class="loading-indicator">
+                    <div class="spinner"></div>
+                    <div>Processando solicitação...</div>
+                </div>
+                
+                <div id="test-result" class="test-result">
+                    <div class="test-result-header">
+                        <div class="result-title">Resultado do Teste</div>
+                        <div id="result-status" class="result-status status-success">Sucesso</div>
+                    </div>
+                    <div id="result-content">
+// Exemplo de resultado
+{
+    "status": "success",
+    "connection": "active",
+    "permissions": ["read", "trade"],
+    "account_info": {
+        "balances": {
+            "BTC": "0.0123",
+            "ETH": "0.456",
+            "USDT": "789.01"
+        }
+    },
+    "latency": "45ms"
+}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentExchange = '';
+        
+        function showConnectForm(exchange) {
+            currentExchange = exchange;
+            document.getElementById('form-title').textContent = `Conectar à ${exchange.charAt(0).toUpperCase() + exchange.slice(1)}`;
+            document.getElementById('connect-form').style.display = 'block';
+            document.getElementById('api-key').focus();
+        }
+        
+        function hideConnectForm() {
+            document.getElementById('connect-form').style.display = 'none';
+            document.getElementById('api-key').value = '';
+            document.getElementById('api-secret').value = '';
+            document.getElementById('api-nickname').value = '';
+            document.getElementById('api-trading-permission').checked = false;
+        }
+        
+        function testIntegration(exchange) {
+            document.getElementById('loading-indicator').style.display = 'flex';
+            document.getElementById('test-result').style.display = 'none';
+            
+            setTimeout(() => {
+                document.getElementById('loading-indicator').style.display = 'none';
+                document.getElementById('test-result').style.display = 'block';
+                document.getElementById('test-result').className = 'test-result success';
+                document.getElementById('result-status').className = 'result-status status-success';
+                document.getElementById('result-status').textContent = 'Sucesso';
+                
+                // Simular resposta de API
+                document.getElementById('result-content').textContent = 
+`// Resultado do teste para ${exchange}
+{
+    "status": "success",
+    "connection": "active",
+    "permissions": ["read", "trade"],
+    "account_info": {
+        "balances": {
+            "BTC": "0.0123",
+            "ETH": "0.456",
+            "USDT": "789.01"
+        }
+    },
+    "latency": "45ms"
+}`;
+            }, 1500);
+        }
+        
+        function connectExchange() {
+            const apiKey = document.getElementById('api-key').value;
+            const apiSecret = document.getElementById('api-secret').value;
+            
+            if (!apiKey || !apiSecret) {
+                alert('Por favor, preencha API Key e API Secret');
+                return;
+            }
+            
+            document.getElementById('loading-indicator').style.display = 'flex';
+            document.getElementById('connect-form').style.display = 'none';
+            
+            setTimeout(() => {
+                document.getElementById('loading-indicator').style.display = 'none';
+                
+                // Simular conexão bem-sucedida
+                const card = document.querySelector(`.integration-card:nth-child(${getExchangeIndex(currentExchange)})`);
+                const statusElement = card.querySelector('.integration-status');
+                const actionButton = card.querySelector('.btn');
+                
+                card.classList.add('connected');
+                statusElement.className = 'integration-status status-connected';
+                statusElement.textContent = 'Conectado';
+                
+                actionButton.className = 'btn btn-secondary';
+                actionButton.textContent = 'Testar Conexão';
+                actionButton.onclick = function() { testIntegration(currentExchange); };
+                
+                // Mostrar resultado do teste
+                document.getElementById('test-result').style.display = 'block';
+                document.getElementById('test-result').className = 'test-result success';
+                document.getElementById('result-status').className = 'result-status status-success';
+                document.getElementById('result-status').textContent = 'Conexão Estabelecida';
+                
+                document.getElementById('result-content').textContent = 
+`// Conexão estabelecida com ${currentExchange}
+{
+    "status": "success",
+    "message": "API conectada com sucesso",
+    "connection_id": "${Math.random().toString(36).substring(2, 10)}",
+    "permissions": [
+        "read", 
+        ${document.getElementById('api-trading-permission').checked ? '"trade"' : ''}
+    ],
+    "nickname": "${document.getElementById('api-nickname').value || currentExchange}"
+}`;
+            }, 2000);
+        }
+        
+        function getExchangeIndex(exchange) {
+            const exchanges = ['binance', 'coinbase', 'kraken', 'kucoin'];
+            return exchanges.indexOf(exchange) + 1;
+        }
+    </script>
+</body>
+</html>

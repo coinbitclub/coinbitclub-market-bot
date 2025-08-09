@@ -1,0 +1,44 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Next.js Dev Server",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"dev"
+			],
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": [],
+			"options": {
+				"cwd": "${workspaceFolder}/coinbitclub-frontend-premium"
+			}
+		},
+		{
+			"label": "frontend-dev",
+			"type": "shell",
+			"command": "npm",
+			"args": ["run", "dev"],
+			"group": "build",
+			"isBackground": true,
+			"options": {
+				"cwd": "${workspaceFolder}/coinbitclub-frontend-premium"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Start Backend API Gateway",
+			"type": "shell",
+			"command": "npm",
+			"args": ["start"],
+			"group": "build",
+			"isBackground": true,
+			"options": {
+				"cwd": "${workspaceFolder}/backend/api-gateway"
+			},
+			"problemMatcher": []
+		}
+	]
+}

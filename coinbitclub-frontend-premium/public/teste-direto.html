@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Login Direto</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            padding: 20px; 
+            background: #111; 
+            color: white; 
+        }
+        .form { 
+            max-width: 400px; 
+            margin: 0 auto; 
+            background: #222; 
+            padding: 20px; 
+            border-radius: 8px;
+        }
+        input, button { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 10px 0; 
+            box-sizing: border-box; 
+        }
+        button { 
+            background: orange; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold;
+        }
+        .result { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background: #333; 
+            border-radius: 5px;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="form">
+        <h2>🔐 Login CoinBitClub</h2>
+        
+        <div>
+            <label>Email:</label>
+            <input type="email" id="email" value="faleconosco@coinbitclub.vip">
+        </div>
+        
+        <div>
+            <label>Senha:</label>
+            <input type="password" id="password" value="password">
+        </div>
+        
+        <button onclick="login()">🚀 FAZER LOGIN</button>
+        
+        <div class="result" id="resultado">
+            Pronto para testar. Clique no botão acima.
+        </div>
+    </div>
+
+    <script>
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultado = document.getElementById('resultado');
+            
+            resultado.innerHTML = '⏳ Processando login...';
+            
+            fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
+            })
+            .then(response => {
+                console.log('Status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Data:', data);
+                
+                if (data.token) {
+                    resultado.innerHTML = `
+                        <strong>✅ LOGIN BEM-SUCEDIDO!</strong><br>
+                        <strong>Nome:</strong> ${data.user.name}<br>
+                        <strong>Email:</strong> ${data.user.email}<br>
+                        <strong>Role:</strong> ${data.user.role}<br>
+                        <strong>Token:</strong> ${data.token.substring(0, 40)}...<br>
+                        <br>
+                        <em>Token salvo no localStorage!</em>
+                    `;
+                    
+                    // Salvar no localStorage
+                    localStorage.setItem('auth_token', data.token);
+                    localStorage.setItem('user_data', JSON.stringify(data.user));
+                    
+                } else {
+                    resultado.innerHTML = `
+                        <strong>❌ ERRO:</strong><br>
+                        ${data.message || data.error || 'Erro desconhecido'}
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                resultado.innerHTML = `
+                    <strong>❌ ERRO DE CONEXÃO:</strong><br>
+                    ${error.message}
+                `;
+            });
+        }
+        
+        // Auto-executar para demonstração
+        window.onload = function() {
+            setTimeout(() => {
+                resultado.innerHTML = 'Sistema carregado. Teste o login!';
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

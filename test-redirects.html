@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Redirecionamentos - CoinBitClub</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ffd700;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .section h2 {
+            color: #ff6b35;
+            margin-bottom: 20px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .test-item h3 {
+            color: #4ecdc4;
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+        
+        .test-item p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #ccc;
+        }
+        
+        .test-item .expected {
+            color: #90EE90;
+            font-weight: bold;
+        }
+        
+        .test-item .current {
+            color: #FFB6C1;
+        }
+        
+        .login-form {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ffd700;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+        
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #ffd700, #ff6b35);
+            color: black;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-test {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: rgba(144, 238, 144, 0.2);
+            border: 1px solid #90EE90;
+            color: #90EE90;
+        }
+        
+        .status.error {
+            background: rgba(255, 99, 99, 0.2);
+            border: 1px solid #ff6363;
+            color: #ff6363;
+        }
+        
+        .status.warning {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid #ffc107;
+            color: #ffc107;
+        }
+        
+        .routes-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .routes-table th,
+        .routes-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .routes-table th {
+            background: rgba(255, 215, 0, 0.1);
+            color: #ffd700;
+            font-weight: bold;
+        }
+        
+        .routes-table td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .role-admin { color: #ff6b35; }
+        .role-gestor { color: #4ecdc4; }
+        .role-operador { color: #ffd700; }
+        .role-afiliado { color: #90EE90; }
+        .role-usuario { color: #FFB6C1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Teste de Redirecionamentos - CoinBitClub</h1>
+        
+        <!-- Status da aplicação -->
+        <div class="section">
+            <h2>📊 Status da Aplicação</h2>
+            <div id="app-status" class="status warning">
+                🔄 Verificando status da aplicação...
+            </div>
+        </div>
+        
+        <!-- Formulário de login -->
+        <div class="section">
+            <h2>🔐 Teste de Login e Redirecionamento</h2>
+            
+            <div class="login-form">
+                <div class="form-group">
+                    <label for="testEmail">Email:</label>
+                    <input type="email" id="testEmail" value="faleconosco@coinbitclub.vip" placeholder="Digite o email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="testPassword">Senha:</label>
+                    <input type="password" id="testPassword" value="123456" placeholder="Digite a senha">
+                </div>
+                
+                <div class="form-group">
+                    <label for="expectedRole">Role Esperado:</label>
+                    <select id="expectedRole">
+                        <option value="admin">ADMIN</option>
+                        <option value="gestor">GESTOR</option>
+                        <option value="operador">OPERADOR</option>
+                        <option value="afiliado">AFILIADO</option>
+                        <option value="usuario">USUARIO</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-test" onclick="testLogin()">🧪 Testar Login</button>
+                <button class="btn" onclick="clearTest()">🧹 Limpar</button>
+            </div>
+            
+            <div id="login-result"></div>
+        </div>
+        
+        <!-- Mapeamento de rotas -->
+        <div class="section">
+            <h2>🗺️ Mapeamento de Rotas por Perfil</h2>
+            
+            <div class="status success">
+                ✅ <strong>Dashboard Principal:</strong> O projeto usa <code>/dashboard-premium</code> como dashboard único para todos os perfis
+            </div>
+            
+            <table class="routes-table">
+                <thead>
+                    <tr>
+                        <th>Perfil</th>
+                        <th>Dashboard Esperado</th>
+                        <th>Rotas Permitidas</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="role-admin">ADMIN</td>
+                        <td>/dashboard-premium</td>
+                        <td>Acesso total: /dashboard/**, /admin/**, /gestor/**, /operador/**, /affiliate/**, /user/**</td>
+                        <td><button class="btn btn-test" onclick="testRoute('admin', '/dashboard-premium')">Testar</button></td>
+                    </tr>
+                    <tr>
+                        <td class="role-gestor">GESTOR</td>
+                        <td>/dashboard-premium</td>
+                        <td>/dashboard/**, /gestor/**, /operador/**, /affiliate/**, /user/**, /admin/operations, /admin/affiliates</td>
+                        <td><button class="btn btn-test" onclick="testRoute('gestor', '/dashboard-premium')">Testar</button></td>
+                    </tr>
+                    <tr>
+                        <td class="role-operador">OPERADOR</td>
+                        <td>/dashboard-premium</td>
+                        <td>/dashboard/**, /operador/**, /user/**</td>
+                        <td><button class="btn btn-test" onclick="testRoute('operador', '/dashboard-premium')">Testar</button></td>
+                    </tr>
+                    <tr>
+                        <td class="role-afiliado">AFILIADO</td>
+                        <td>/dashboard-premium</td>
+                        <td>/dashboard/**, /affiliate/**, /user/**</td>
+                        <td><button class="btn btn-test" onclick="testRoute('afiliado', '/dashboard-premium')">Testar</button></td>
+                    </tr>
+                    <tr>
+                        <td class="role-usuario">USUARIO</td>
+                        <td>/dashboard-premium</td>
+                        <td>/dashboard/**, /user/**</td>
+                        <td><button class="btn btn-test" onclick="testRoute('usuario', '/dashboard-premium')">Testar</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Problemas identificados -->
+        <div class="section">
+            <h2>⚠️ Problemas Identificados</h2>
+            <div id="problems-list">
+                <div class="status warning">
+                    🔍 Executando verificações...
+                </div>
+            </div>
+        </div>
+        
+        <!-- Correções sugeridas -->
+        <div class="section">
+            <h2>🔧 Correções Sugeridas</h2>
+            <div id="fixes-list">
+                <div class="status warning">
+                    📋 Analisando sistema...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração da API
+        const API_BASE = 'http://localhost:3001';
+        
+        // Verificar status da aplicação
+        async function checkAppStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const status = document.getElementById('app-status');
+                
+                if (response.ok) {
+                    status.className = 'status success';
+                    status.innerHTML = '✅ Aplicação rodando em localhost:3001';
+                } else {
+                    status.className = 'status error';
+                    status.innerHTML = '❌ Aplicação não está respondendo';
+                }
+            } catch (error) {
+                const status = document.getElementById('app-status');
+                status.className = 'status error';
+                status.innerHTML = '❌ Erro ao conectar com localhost:3001 - ' + error.message;
+            }
+        }
+        
+        // Testar login
+        async function testLogin() {
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            const expectedRole = document.getElementById('expectedRole').value;
+            const resultDiv = document.getElementById('login-result');
+            
+            if (!email || !password) {
+                resultDiv.innerHTML = '<div class="status error">❌ Email e senha são obrigatórios</div>';
+                return;
+            }
+            
+            try {
+                resultDiv.innerHTML = '<div class="status warning">🔄 Fazendo login...</div>';
+                
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const userRole = data.user.role.toLowerCase();
+                    const expectedDashboard = getDashboardRoute(userRole);
+                    
+                    let html = '<div class="status success">✅ Login realizado com sucesso!</div>';
+                    html += `<div class="test-item">`;
+                    html += `<h3>Dados do usuário:</h3>`;
+                    html += `<p><strong>Nome:</strong> ${data.user.name}</p>`;
+                    html += `<p><strong>Email:</strong> ${data.user.email}</p>`;
+                    html += `<p><strong>Role:</strong> <span class="role-${userRole}">${data.user.role}</span></p>`;
+                    html += `<p><strong>Status:</strong> ${data.user.status}</p>`;
+                    html += `</div>`;
+                    
+                    html += `<div class="test-item">`;
+                    html += `<h3>Redirecionamento:</h3>`;
+                    html += `<p class="expected">Dashboard esperado: ${expectedDashboard}</p>`;
+                    html += `<p><button class="btn btn-test" onclick="testDashboardAccess('${expectedDashboard}')">🧪 Testar Acesso ao Dashboard</button></p>`;
+                    html += `</div>`;
+                    
+                    if (userRole !== expectedRole) {
+                        html += '<div class="status warning">⚠️ Role retornado difere do esperado!</div>';
+                    }
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<div class="status error">❌ Erro no login: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">❌ Erro na requisição: ${error.message}</div>`;
+            }
+        }
+        
+        // Obter rota do dashboard
+        function getDashboardRoute(role) {
+            // Projeto usa dashboard-premium como dashboard principal
+            return '/dashboard-premium';
+        }
+        
+        // Testar acesso ao dashboard
+        async function testDashboardAccess(dashboardPath) {
+            try {
+                const fullUrl = `http://localhost:3001${dashboardPath}`;
+                window.open(fullUrl, '_blank');
+            } catch (error) {
+                alert('Erro ao abrir dashboard: ' + error.message);
+            }
+        }
+        
+        // Testar rota específica
+        async function testRoute(role, expectedPath) {
+            const fullUrl = `http://localhost:3001${expectedPath}`;
+            window.open(fullUrl, '_blank');
+        }
+        
+        // Limpar teste
+        function clearTest() {
+            document.getElementById('login-result').innerHTML = '';
+            document.getElementById('testEmail').value = '';
+            document.getElementById('testPassword').value = '';
+        }
+        
+        // Verificar problemas
+        function checkProblems() {
+            const problems = [
+                "1. 🔍 Verificar se todas as páginas de dashboard existem",
+                "2. 🔍 Verificar se o middleware está aplicando as regras corretas",
+                "3. 🔍 Verificar se o AuthStore está fazendo os redirecionamentos",
+                "4. 🔍 Verificar se os roles no banco estão corretos",
+                "5. 🔍 Verificar se há conflitos entre middleware e frontend"
+            ];
+            
+            document.getElementById('problems-list').innerHTML = 
+                problems.map(p => `<div class="status warning">${p}</div>`).join('');
+        }
+        
+        // Sugerir correções
+        function suggestFixes() {
+            const fixes = [
+                "1. ✅ Dashboard único: Todos os perfis usam /dashboard-premium",
+                "2. ✅ Middleware atualizado: Redirecionamentos para dashboard principal",
+                "3. ✅ AuthStore sincronizado: getDashboardRoute() retorna /dashboard-premium",
+                "4. ✅ Login corrigido: Redireciona para dashboard principal após login",
+                "5. ✅ Controle de acesso: Perfis têm permissões específicas no mesmo dashboard",
+                "6. ✅ Dashboard adaptativo: Conteúdo muda baseado no role do usuário"
+            ];
+            
+            document.getElementById('fixes-list').innerHTML = 
+                fixes.map(f => `<div class="status success">${f}</div>`).join('');
+        }
+        
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAppStatus();
+            checkProblems();
+            suggestFixes();
+        });
+    </script>
+</body>
+</html>

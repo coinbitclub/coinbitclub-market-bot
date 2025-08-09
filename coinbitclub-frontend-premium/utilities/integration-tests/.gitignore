@@ -1,0 +1,14 @@
+
+# Test Reports
+*.json
+*.html
+reports/
+screenshots/
+
+# Test Database
+test.db
+*.sqlite
+
+# Logs
+*.log
+test-logs/

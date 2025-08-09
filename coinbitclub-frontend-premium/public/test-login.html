@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Login - CoinBitClub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #0f0f23;
+            color: white;
+        }
+        .container {
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #16213e;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background: #2a2a3e;
+            color: white;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #ffa500;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #ff8c00;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            background: #1a4a3a;
+            border: 1px solid #2a7a5a;
+            color: #4afa7a;
+        }
+        .error {
+            background: #4a1a1a;
+            border: 1px solid #7a2a2a;
+            color: #fa4a4a;
+        }
+        .info {
+            background: #1a3a4a;
+            border: 1px solid #2a5a7a;
+            color: #4a7afa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Teste de Login CoinBitClub</h1>
+        
+        <form id="loginForm">
+            <label>Email:</label>
+            <input type="email" id="email" value="faleconosco@coinbitclub.vip" required>
+            
+            <label>Senha:</label>
+            <input type="password" id="password" value="password" required>
+            
+            <button type="submit">🚀 Fazer Login</button>
+        </form>
+        
+        <div id="result"></div>
+        
+        <div class="info">
+            <strong>ℹ️ Informações do Sistema:</strong><br>
+            Frontend: http://localhost:3001<br>
+            Backend: http://localhost:8080<br>
+            Database: PostgreSQL Railway ✅
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const resultDiv = document.getElementById('result');
+        
+        // Verificar se elementos existem
+        if (!form || !resultDiv) {
+            console.error('Elementos não encontrados');
+        }
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            resultDiv.innerHTML = '<div class="info">⏳ Fazendo login...</div>';
+            
+            try {
+                console.log('Tentando login com:', email);
+                
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok && data.token) {
+                    // Login bem-sucedido
+                    localStorage.setItem('auth_token', data.token);
+                    localStorage.setItem('user_data', JSON.stringify(data.user));
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>✅ LOGIN REALIZADO COM SUCESSO!</strong><br><br>
+                            <strong>Usuário:</strong> ${data.user.name}<br>
+                            <strong>Email:</strong> ${data.user.email}<br>
+                            <strong>Tipo:</strong> ${data.user.role}<br>
+                            <strong>Token:</strong> ${data.token.substring(0, 50)}...<br><br>
+                            <strong>🎯 Redirecionamento sugerido:</strong><br>
+                            ${data.user.role === 'admin' ? '/admin/dashboard' : '/dashboard'}
+                        </div>
+                    `;
+                    
+                } else {
+                    // Erro no login
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>❌ ERRO NO LOGIN:</strong><br>
+                            ${data.message || data.error || 'Erro desconhecido'}
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Erro no login:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ ERRO DE CONEXÃO:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        });
+        
+        // Mostrar informações do sistema
+        document.addEventListener('DOMContentLoaded', () => {
+            resultDiv.innerHTML = `
+                <div class="info">
+                    <strong>🔧 Sistema Pronto para Teste</strong><br>
+                    Clique em "Fazer Login" para testar a autenticação.
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>

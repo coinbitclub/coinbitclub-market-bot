@@ -1,0 +1,23 @@
+# Ignore specific Dockerfiles to use only root Dockerfile
+backend/*/Dockerfile
+backend/api-gateway/Dockerfile
+backend/admin-panel/Dockerfile
+backend/accounting/Dockerfile
+backend/decision-engine/Dockerfile
+backend/notifications/Dockerfile
+backend/order-executor/Dockerfile
+backend/signal-ingestor/Dockerfile
+backend/signal-processor/Dockerfile
+
+# Ignore node_modules
+node_modules/
+*/node_modules/
+
+# Ignore build files
+.next/
+dist/
+build/
+
+# Ignore local env files
+.env
+.env.local

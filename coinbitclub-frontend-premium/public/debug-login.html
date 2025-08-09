@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Login Redirecionamento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #444;
+        }
+        input, button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #333;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #ffa500;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover:not(:disabled) {
+            background: #ff8c00;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .log-area {
+            background: #000;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Debug Login e Redirecionamento</h1>
+        
+        <form id="debugForm">
+            <input type="email" id="email" value="faleconosco@coinbitclub.vip" placeholder="Email">
+            <input type="password" id="password" value="password" placeholder="Senha">
+            <button type="submit" id="loginBtn">🚀 Login com Debug Completo</button>
+        </form>
+
+        <div id="logArea" class="log-area">Logs aparecerão aqui...\n</div>
+
+        <button onclick="clearLogs()">🗑️ Limpar Logs</button>
+        <button onclick="testDashboard()">🧪 Testar Dashboard Direto</button>
+    </div>
+
+    <script>
+        function log(message) {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            logArea.textContent += logEntry;
+            logArea.scrollTop = logArea.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLogs() {
+            document.getElementById('logArea').textContent = 'Logs limpos...\n';
+        }
+
+        function testDashboard() {
+            log('🧪 Testando acesso direto ao dashboard...');
+            try {
+                window.location.href = '/admin/dashboard';
+                log('✅ Comando de redirecionamento executado');
+            } catch (e) {
+                log('❌ Erro no redirecionamento: ' + e.message);
+            }
+        }
+
+        document.getElementById('debugForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            log('=== INÍCIO DEBUG LOGIN ===');
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            log('📧 Email: ' + email);
+            log('🔒 Password length: ' + password.length);
+            
+            loginBtn.textContent = '⏳ Processando...';
+            loginBtn.disabled = true;
+            
+            try {
+                log('📤 Enviando requisição POST para /api/auth/login...');
+                
+                const startTime = Date.now();
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const endTime = Date.now();
+                log(`📥 Resposta recebida em ${endTime - startTime}ms`);
+                log(`📊 Status: ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                log('📋 Dados recebidos:');
+                log(JSON.stringify(data, null, 2));
+                
+                if (response.status === 200 && data.success !== false) {
+                    log('✅ Login bem-sucedido!');
+                    
+                    // Salvar no localStorage
+                    log('💾 Salvando dados no localStorage e cookies...');
+                    try {
+                        // LocalStorage
+                        localStorage.setItem('auth_token', data.token);
+                        localStorage.setItem('user_data', JSON.stringify(data.user));
+                        
+                        // Cookies (para middleware)
+                        document.cookie = `auth_token=${data.token}; path=/; max-age=${7*24*60*60}`;
+                        document.cookie = `user_data=${encodeURIComponent(JSON.stringify(data.user))}; path=/; max-age=${7*24*60*60}`;
+                        
+                        log('✅ Dados salvos com sucesso em localStorage e cookies');
+                        
+                        // Verificar se foram salvos
+                        const savedToken = localStorage.getItem('auth_token');
+                        const savedUser = localStorage.getItem('user_data');
+                        log(`📦 LocalStorage - Token: ${savedToken ? 'SIM' : 'NÃO'}`);
+                        log(`📦 LocalStorage - User data: ${savedUser ? 'SIM' : 'NÃO'}`);
+                        log(`🍪 Cookies salvos para middleware`);
+                        
+                    } catch (e) {
+                        log('❌ Erro ao salvar localStorage/cookies: ' + e.message);
+                    }
+                    
+                    // Determinar redirecionamento
+                    const userRole = data.user?.role || data.user?.user_type || 'user';
+                    log(`👔 Role detectado: "${userRole}"`);
+                    
+                    let redirectUrl;
+                    switch (userRole.toLowerCase()) {
+                        case 'admin':
+                            redirectUrl = '/admin/dashboard';
+                            break;
+                        case 'affiliate':
+                        case 'afiliado':
+                            redirectUrl = '/affiliate/dashboard';
+                            break;
+                        case 'gestor':
+                        case 'manager':
+                            redirectUrl = '/gestor/dashboard';
+                            break;
+                        case 'operador':
+                        case 'operator':
+                            redirectUrl = '/operador/dashboard';
+                            break;
+                        case 'user':
+                        case 'usuario':
+                        default:
+                            redirectUrl = '/user/dashboard';
+                            break;
+                    }
+                    
+                    log(`🎯 URL de destino determinada: "${redirectUrl}"`);
+                    
+                    // Aguardar um momento para ver os logs
+                    log('⏰ Aguardando 3 segundos antes do redirecionamento...');
+                    log('🚀 INICIANDO REDIRECIONAMENTO EM 3... 2... 1...');
+                    
+                    setTimeout(() => {
+                        log('🔄 EXECUTANDO: window.location.href = "' + redirectUrl + '"');
+                        try {
+                            window.location.href = redirectUrl;
+                            log('✅ Comando executado com sucesso');
+                        } catch (e) {
+                            log('❌ ERRO no redirecionamento: ' + e.message);
+                            log('🔄 Tentativa alternativa com window.location.replace...');
+                            try {
+                                window.location.replace(redirectUrl);
+                                log('✅ Comando alternativo executado');
+                            } catch (e2) {
+                                log('❌ ERRO na tentativa alternativa: ' + e2.message);
+                            }
+                        }
+                    }, 3000);
+                    
+                } else {
+                    log('❌ ERRO no login: ' + (data.message || data.error || 'Erro desconhecido'));
+                }
+                
+            } catch (error) {
+                log('❌ ERRO na requisição: ' + error.message);
+                log('📋 Stack trace: ' + error.stack);
+            } finally {
+                loginBtn.textContent = '🚀 Login com Debug Completo';
+                loginBtn.disabled = false;
+            }
+        });
+
+        // Log inicial
+        log('🔧 Página de debug carregada');
+        log('🌐 URL atual: ' + window.location.href);
+        log('📱 User Agent: ' + navigator.userAgent);
+    </script>
+</body>
+</html>

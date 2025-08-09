@@ -1,0 +1,605 @@
+import React from 'react';
+import { NextPage } from 'next';
+import Head from 'next/head';
+import { useState, useEffect } from 'react';
+import AdminLayout from '../../src/components/AdminLayout';
+import {
+  FunnelIcon,
+  DocumentArrowDownIcon,
+  EyeIcon,
+  MagnifyingGlassIcon,
+  CalendarIcon,
+  CurrencyDollarIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
+  ExclamationTriangleIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  ChartBarIcon
+} from '@heroicons/react/24/outline';
+
+interface Operation {
+  id: string;
+  date: string;
+  symbol: string;
+  exchange: 'Binance' | 'Bybit';
+  type: 'BUY' | 'SELL';
+  entryPrice: number;
+  exitPrice?: number;
+  quantity: number;
+  result: number;
+  status: 'OPEN' | 'CLOSED' | 'CANCELLED';
+  userId: string;
+  userName: string;
+  aiJustification?: string;
+  stopLoss?: number;
+  takeProfit?: number;
+  executionTime: number; // em segundos
+}
+
+interface UserOpenOperation {
+  userId: string;
+  userName: string;
+  operations: Operation[];
+  totalInvested: number;
+  currentPnL: number;
+}
+
+const AdminOperations: NextPage = () => {
+  const [operations, setOperations] = useState<Operation[]>([]);
+  const [userOpenOperations, setUserOpenOperations] = useState<UserOpenOperation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'closed' | 'open'>('closed');
+  
+  // Filtros
+  const [filters, setFilters] = useState({
+    startDate: '',
+    endDate: '',
+    symbol: '',
+    exchange: '',
+    result: '', // 'profit', 'loss', 'all'
+    userId: '',
+    minResult: '',
+    maxResult: ''
+  });
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'date' | 'result' | 'symbol'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  useEffect(() => {
+    loadOperations();
+  }, [filters, sortBy, sortOrder]);
+
+  const loadOperations = async () => {
+    setLoading(true);
+    try {
+      // Simular dados - substituir por chamada real da API
+      const mockClosedOperations: Operation[] = [
+        {
+          id: '1',
+          date: new Date(Date.now() - 86400000).toISOString(),
+          symbol: 'BTCUSDT',
+          exchange: 'Binance',
+          type: 'BUY',
+          entryPrice: 94500.00,
+          exitPrice: 95420.50,
+          quantity: 0.05,
+          result: 46.03,
+          status: 'CLOSED',
+          userId: 'user1',
+          userName: 'João Silva',
+          aiJustification: 'Sinal de alta confirmado por análise técnica. RSI oversold e rompimento de resistência.',
+          stopLoss: 93500.00,
+          takeProfit: 96000.00,
+          executionTime: 3600
+        },
+        {
+          id: '2',
+          date: new Date(Date.now() - 172800000).toISOString(),
+          symbol: 'ETHUSDT',
+          exchange: 'Bybit',
+          type: 'SELL',
+          entryPrice: 3850.00,
+          exitPrice: 3780.50,
+          quantity: 1.2,
+          result: 83.40,
+          status: 'CLOSED',
+          userId: 'user2',
+          userName: 'Maria Santos',
+          aiJustification: 'Padrão de reversão detectado. Volume de venda aumentando significativamente.',
+          stopLoss: 3900.00,
+          takeProfit: 3750.00,
+          executionTime: 7200
+        },
+        {
+          id: '3',
+          date: new Date(Date.now() - 259200000).toISOString(),
+          symbol: 'SOLUSDT',
+          exchange: 'Binance',
+          type: 'BUY',
+          entryPrice: 248.50,
+          exitPrice: 242.30,
+          quantity: 5.0,
+          result: -31.00,
+          status: 'CLOSED',
+          userId: 'user3',
+          userName: 'Pedro Costa',
+          aiJustification: 'Stop loss ativado. Mercado rejeitou a alta devido a notícias macroeconômicas negativas.',
+          stopLoss: 242.00,
+          takeProfit: 255.00,
+          executionTime: 1800
+        }
+      ];
+
+      const mockOpenOperations: UserOpenOperation[] = [
+        {
+          userId: 'user1',
+          userName: 'João Silva',
+          totalInvested: 4725.00,
+          currentPnL: 125.50,
+          operations: [
+            {
+              id: 'open1',
+              date: new Date(Date.now() - 3600000).toISOString(),
+              symbol: 'BTCUSDT',
+              exchange: 'Binance',
+              type: 'BUY',
+              entryPrice: 94500.00,
+              quantity: 0.05,
+              result: 0,
+              status: 'OPEN',
+              userId: 'user1',
+              userName: 'João Silva',
+              aiJustification: 'Breakout confirmado acima de MA200. Volume crescente.',
+              stopLoss: 93000.00,
+              takeProfit: 97000.00,
+              executionTime: 0
+            }
+          ]
+        },
+        {
+          userId: 'user2',
+          userName: 'Maria Santos',
+          totalInvested: 7680.00,
+          currentPnL: -85.20,
+          operations: [
+            {
+              id: 'open2',
+              date: new Date(Date.now() - 7200000).toISOString(),
+              symbol: 'ETHUSDT',
+              exchange: 'Bybit',
+              type: 'BUY',
+              entryPrice: 3840.00,
+              quantity: 2.0,
+              result: 0,
+              status: 'OPEN',
+              userId: 'user2',
+              userName: 'Maria Santos',
+              aiJustification: 'Suporte forte em $3800. Momentum altista mantido.',
+              stopLoss: 3750.00,
+              takeProfit: 3950.00,
+              executionTime: 0
+            }
+          ]
+        }
+      ];
+
+      setOperations(mockClosedOperations);
+      setUserOpenOperations(mockOpenOperations);
+    } catch (error) {
+      console.error('Erro ao carregar operações:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredOperations = operations.filter(op => {
+    if (searchTerm && !op.symbol.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !op.userName.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+    
+    if (filters.startDate && new Date(op.date) < new Date(filters.startDate)) return false;
+    if (filters.endDate && new Date(op.date) > new Date(filters.endDate)) return false;
+    if (filters.symbol && op.symbol !== filters.symbol) return false;
+    if (filters.exchange && op.exchange !== filters.exchange) return false;
+    if (filters.result === 'profit' && op.result <= 0) return false;
+    if (filters.result === 'loss' && op.result >= 0) return false;
+    if (filters.userId && op.userId !== filters.userId) return false;
+    if (filters.minResult && op.result < parseFloat(filters.minResult)) return false;
+    if (filters.maxResult && op.result > parseFloat(filters.maxResult)) return false;
+    
+    return true;
+  });
+
+  const sortedOperations = [...filteredOperations].sort((a, b) => {
+    let comparison = 0;
+    
+    switch (sortBy) {
+      case 'date':
+        comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+        break;
+      case 'result':
+        comparison = a.result - b.result;
+        break;
+      case 'symbol':
+        comparison = a.symbol.localeCompare(b.symbol);
+        break;
+    }
+    
+    return sortOrder === 'asc' ? comparison : -comparison;
+  });
+
+  const exportToCSV = () => {
+    const headers = ['Data', 'Símbolo', 'Operadora', 'Tipo', 'Preço Entrada', 'Preço Saída', 'Quantidade', 'Resultado', 'Usuário', 'Justificativa IA'];
+    const csvData = sortedOperations.map(op => [
+      new Date(op.date).toLocaleString('pt-BR'),
+      op.symbol,
+      op.exchange,
+      op.type,
+      op.entryPrice.toFixed(2),
+      op.exitPrice?.toFixed(2) || '',
+      op.quantity.toString(),
+      op.result.toFixed(2),
+      op.userName,
+      op.aiJustification || ''
+    ]);
+    
+    const csvContent = [headers, ...csvData].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `operacoes_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  return (
+    <>
+      <Head>
+        <title>Operações - Admin CoinBitClub</title>
+      </Head>
+      
+      <AdminLayout title="Gestão de Operações">
+        <div className="space-y-6">
+          
+          {/* Tabs */}
+          <div className="flex space-x-1 rounded-lg bg-gray-800 p-1">
+            <button
+              onClick={() => setActiveTab('closed')}
+              className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'closed'
+                  ? 'bg-yellow-500 text-black'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Operações Fechadas
+            </button>
+            <button
+              onClick={() => setActiveTab('open')}
+              className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'open'
+                  ? 'bg-yellow-500 text-black'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Operações Abertas por Usuário
+            </button>
+          </div>
+
+          {activeTab === 'closed' && (
+            <>
+              {/* Filtros e Controles */}
+              <div className="rounded-xl border border-gray-700 bg-gray-800 p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="flex items-center text-lg font-semibold text-white">
+                    <FunnelIcon className="mr-2 size-5" />
+                    Filtros e Controles
+                  </h3>
+                  <button
+                    onClick={exportToCSV}
+                    className="flex items-center space-x-2 rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
+                  >
+                    <DocumentArrowDownIcon className="size-4" />
+                    <span>Exportar CSV</span>
+                  </button>
+                </div>
+                
+                <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <label className="mb-1 block text-sm text-gray-400">Data Início</label>
+                    <input
+                      type="date"
+                      value={filters.startDate}
+                      onChange={(e) = /> setFilters({...filters, startDate: e.target.value})}
+                      className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="mb-1 block text-sm text-gray-400">Data Fim</label>
+                    <input
+                      type="date"
+                      value={filters.endDate}
+                      onChange={(e) = /> setFilters({...filters, endDate: e.target.value})}
+                      className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="mb-1 block text-sm text-gray-400">Operadora</label>
+                    <select
+                      value={filters.exchange}
+                      onChange={(e) => setFilters({...filters, exchange: e.target.value})}
+                      className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                    >
+                      <option value="">Todas</option>
+                      <option value="Binance">Binance</option>
+                      <option value="Bybit">Bybit</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="mb-1 block text-sm text-gray-400">Resultado</label>
+                    <select
+                      value={filters.result}
+                      onChange={(e) => setFilters({...filters, result: e.target.value})}
+                      className="w-full rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                    >
+                      <option value="">Todos</option>
+                      <option value="profit">Lucro</option>
+                      <option value="loss">Prejuízo</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col gap-4 md:flex-row">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <MagnifyingGlassIcon className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Buscar por símbolo ou usuário..."
+                        value={searchTerm}
+                        onChange={(e) = /> setSearchTerm(e.target.value)}
+                        className="w-full rounded-lg border border-gray-600 bg-gray-700 py-2 pl-10 pr-3 text-white"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as any)}
+                      className="rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white"
+                    >
+                      <option value="date">Ordenar por Data</option>
+                      <option value="result">Ordenar por Resultado</option>
+                      <option value="symbol">Ordenar por Símbolo</option>
+                    </select>
+                    
+                    <button
+                      onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                      className="rounded-lg border border-gray-600 bg-gray-700 px-3 py-2 text-white hover:bg-gray-600"
+                    >
+                      {sortOrder === 'asc' ? '↑' : '↓'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tabela de Operações Fechadas */}
+              <div className="overflow-hidden rounded-xl border border-gray-700 bg-gray-800">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-900">
+                      <tr>
+                        <th className="px-6 py-4 text-left font-medium text-gray-400">Data</th>
+                        <th className="px-6 py-4 text-left font-medium text-gray-400">Símbolo</th>
+                        <th className="px-6 py-4 text-left font-medium text-gray-400">Operadora</th>
+                        <th className="px-6 py-4 text-left font-medium text-gray-400">Tipo</th>
+                        <th className="px-6 py-4 text-left font-medium text-gray-400">Entrada</th>
+                        <th className="px-6 py-4 text-left font-medium text-gray-400">Saída</th>
+                        <th className="px-6 py-4 text-left font-medium text-gray-400">Qtd</th>
+                        <th className="px-6 py-4 text-left font-medium text-gray-400">Resultado</th>
+                        <th className="px-6 py-4 text-left font-medium text-gray-400">Usuário</th>
+                        <th className="px-6 py-4 text-left font-medium text-gray-400">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loading ? (
+                        <tr>
+                          <td colSpan={10} className="py-8 text-center">
+                            <div className="mx-auto size-8 animate-spin rounded-full border-b-2 border-yellow-400"></div>
+                          </td>
+                        </tr>
+                      ) : sortedOperations.length === 0 ? (
+                        <tr>
+                          <td colSpan={10} className="py-8 text-center text-gray-400">
+                            Nenhuma operação encontrada
+                          </td>
+                        </tr>
+                      ) : (
+                        sortedOperations.map((operation) => (
+                          <tr key={operation.id} className="border-b border-gray-700 hover:bg-gray-700/50">
+                            <td className="px-6 py-4 text-white">
+                              {new Date(operation.date).toLocaleDateString('pt-BR')}
+                              <div className="text-xs text-gray-400">
+                                {new Date(operation.date).toLocaleTimeString('pt-BR')}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 font-medium text-white">{operation.symbol}</td>
+                            <td className="px-6 py-4">
+                              <span className={`rounded px-2 py-1 text-xs ${
+                                operation.exchange === 'Binance' ? 'bg-yellow-900 text-yellow-300' : 'bg-blue-900 text-blue-300'
+                              }`}>
+                                {operation.exchange}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`rounded px-2 py-1 text-xs ${
+                                operation.type === 'BUY' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
+                              }`}>
+                                {operation.type}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-white">${operation.entryPrice.toLocaleString()}</td>
+                            <td className="px-6 py-4 text-white">${operation.exitPrice?.toLocaleString() || '-'}</td>
+                            <td className="px-6 py-4 text-white">{operation.quantity}</td>
+                            <td className="px-6 py-4">
+                              <span className={`font-bold ${operation.result >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                ${operation.result.toFixed(2)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-white">{operation.userName}</td>
+                            <td className="px-6 py-4">
+                              <button className="p-1 text-blue-400 hover:text-blue-300">
+                                <EyeIcon className="size-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Resumo Estatístico */}
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+                <div className="rounded-xl border border-gray-700 bg-gray-800 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-400">Total de Operações</p>
+                      <p className="text-2xl font-bold text-white">{filteredOperations.length}</p>
+                    </div>
+                    <ChartBarIcon className="size-8 text-blue-400" />
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-gray-700 bg-gray-800 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-400">Operações Lucrativas</p>
+                      <p className="text-2xl font-bold text-green-400">
+                        {filteredOperations.filter(op => op.result > 0).length}
+                      </p>
+                    </div>
+                    <ArrowTrendingUpIcon className="size-8 text-green-400" />
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-gray-700 bg-gray-800 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-400">Taxa de Acerto</p>
+                      <p className="text-2xl font-bold text-white">
+                        {filteredOperations.length > 0 
+                          ? ((filteredOperations.filter(op => op.result > 0).length / filteredOperations.length) * 100).toFixed(1)
+                          : 0
+                        }%
+                      </p>
+                    </div>
+                    <CheckCircleIcon className="size-8 text-yellow-400" />
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-gray-700 bg-gray-800 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-400">Lucro Total</p>
+                      <p className={`text-2xl font-bold ${
+                        filteredOperations.reduce((sum, op) => sum + op.result, 0) >= 0 ? 'text-green-400' : 'text-red-400'
+                      }`}>
+                        ${filteredOperations.reduce((sum, op) => sum + op.result, 0).toFixed(2)}
+                      </p>
+                    </div>
+                    <CurrencyDollarIcon className="size-8 text-green-400" />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'open' && (
+            <div className="space-y-6">
+              {userOpenOperations.map((userOps) => (
+                <div key={userOps.userId} className="rounded-xl border border-gray-700 bg-gray-800 p-6">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">{userOps.userName}</h3>
+                      <p className="text-sm text-gray-400">ID: {userOps.userId}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-white">
+                        Investido: <span className="font-bold">${userOps.totalInvested.toLocaleString()}</span>
+                      </div>
+                      <div className={`font-bold ${userOps.currentPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        P&L: ${userOps.currentPnL.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-700">
+                          <th className="py-2 text-left text-gray-400">Símbolo</th>
+                          <th className="py-2 text-left text-gray-400">Operadora</th>
+                          <th className="py-2 text-left text-gray-400">Tipo</th>
+                          <th className="py-2 text-left text-gray-400">Entrada</th>
+                          <th className="py-2 text-left text-gray-400">Quantidade</th>
+                          <th className="py-2 text-left text-gray-400">Stop Loss</th>
+                          <th className="py-2 text-left text-gray-400">Take Profit</th>
+                          <th className="py-2 text-left text-gray-400">Tempo</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {userOps.operations.map((op) => (
+                          <tr key={op.id} className="border-b border-gray-700">
+                            <td className="py-2 font-medium text-white">{op.symbol}</td>
+                            <td className="py-2">
+                              <span className={`rounded px-2 py-1 text-xs ${
+                                op.exchange === 'Binance' ? 'bg-yellow-900 text-yellow-300' : 'bg-blue-900 text-blue-300'
+                              }`}>
+                                {op.exchange}
+                              </span>
+                            </td>
+                            <td className="py-2">
+                              <span className={`rounded px-2 py-1 text-xs ${
+                                op.type === 'BUY' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
+                              }`}>
+                                {op.type}
+                              </span>
+                            </td>
+                            <td className="py-2 text-white">${op.entryPrice.toLocaleString()}</td>
+                            <td className="py-2 text-white">{op.quantity}</td>
+                            <td className="py-2 text-red-400">${op.stopLoss?.toLocaleString() || '-'}</td>
+                            <td className="py-2 text-green-400">${op.takeProfit?.toLocaleString() || '-'}</td>
+                            <td className="py-2 text-gray-400">
+                              {Math.floor((Date.now() - new Date(op.date).getTime()) / 60000)}m
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  {userOps.operations[0]?.aiJustification && (
+                    <div className="mt-4 rounded-lg bg-gray-900 p-3">
+                      <p className="mb-1 text-sm text-gray-400">Justificativa da IA:</p>
+                      <p className="text-sm text-white">{userOps.operations[0].aiJustification}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+        </div>
+      </AdminLayout>
+    </>
+  );
+};
+
+export default AdminOperations;

@@ -1,0 +1,188 @@
+{
+  "vercel": {
+    "name": "CoinBitClub Market Bot - Frontend",
+    "description": "Variáveis de ambiente para o frontend do CoinBitClub Market Bot no Vercel",
+    "variables": {
+      "NEXT_PUBLIC_API_URL": {
+        "value": "https://coinbitclub-market-bot.up.railway.app",
+        "description": "URL da API do backend no Railway"
+      },
+      "NEXT_PUBLIC_ADMIN_API_URL": {
+        "value": "https://coinbitclub-market-bot.up.railway.app",
+        "description": "URL da API administrativa"
+      },
+      "NEXT_PUBLIC_SITE_URL": {
+        "value": "https://coinbitclub-market-bot.vercel.app",
+        "description": "URL do site frontend"
+      },
+      "NEXT_PUBLIC_SITE_NAME": {
+        "value": "CoinbitClub Market Bot",
+        "description": "Nome do site"
+      },
+      "NEXT_PUBLIC_ENV": {
+        "value": "production",
+        "description": "Ambiente de execução"
+      },
+      "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": {
+        "value": "pk_live_51QCOIiBbdaDz4TVOX8Vh9KlFguewjyA2B2FNSSx5i5bUtzcei1aD399iUTyIk6PGQ3N8EW2lCO2lNRd1dWPp2E2X00ydaBMVUI",
+        "description": "Chave pública do Stripe para produção"
+      },
+      "NEXT_PUBLIC_ENABLE_ANALYTICS": {
+        "value": "true",
+        "description": "Habilitar analytics"
+      },
+      "NEXT_PUBLIC_ENABLE_CHAT": {
+        "value": "true",
+        "description": "Habilitar chat"
+      },
+      "NEXT_PUBLIC_ENABLE_NOTIFICATIONS": {
+        "value": "true",
+        "description": "Habilitar notificações"
+      },
+      "NEXT_PUBLIC_DEBUG": {
+        "value": "false",
+        "description": "Modo debug (desabilitado em produção)"
+      }
+    }
+  },
+  "railway": {
+    "name": "CoinBitClub Market Bot - Backend",
+    "description": "Variáveis de ambiente para o backend do CoinBitClub Market Bot no Railway",
+    "variables": {
+      "NODE_ENV": {
+        "value": "production",
+        "description": "Ambiente Node.js"
+      },
+      "NEXT_PUBLIC_APP_URL": {
+        "value": "https://coinbitclub-market-bot.vercel.app",
+        "description": "URL do frontend"
+      },
+      "FRONTEND_URL": {
+        "value": "https://coinbitclub-market-bot.vercel.app",
+        "description": "URL do frontend para CORS"
+      },
+      "BACKEND_URL": {
+        "value": "https://coinbitclub-market-bot.up.railway.app",
+        "description": "URL do próprio backend"
+      },
+      "DATABASE_URL": {
+        "value": "postgresql://postgres:password@host:5432/railway",
+        "description": "⚠️ SUBSTITUIR pela connection string real do PostgreSQL do Railway",
+        "required": true
+      },
+      "JWT_SECRET": {
+        "value": "your-super-secure-jwt-secret-for-production",
+        "description": "⚠️ SUBSTITUIR por uma chave secreta forte",
+        "required": true
+      },
+      "JWT_EXPIRES_IN": {
+        "value": "7d",
+        "description": "Tempo de expiração do JWT"
+      },
+      "JWT_REFRESH_SECRET": {
+        "value": "your-refresh-secret-for-production",
+        "description": "⚠️ SUBSTITUIR por uma chave secreta forte para refresh tokens",
+        "required": true
+      },
+      "STRIPE_SECRET_KEY": {
+        "value": "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",
+        "description": "Chave secreta do Stripe para produção"
+      },
+      "STRIPE_PUBLISHABLE_KEY": {
+        "value": "pk_live_51QCOIiBbdaDz4TVOX8Vh9KlFguewjyA2B2FNSSx5i5bUtzcei1aD399iUTyIk6PGQ3N8EW2lCO2lNRd1dWPp2E2X00ydaBMVUI",
+        "description": "Chave pública do Stripe"
+      },
+      "STRIPE_WEBHOOK_SECRET": {
+        "value": "whsec_cJ97DwC5rzz84PqCSbmTJfyQxykcrStU",
+        "description": "Segredo do webhook do Stripe"
+      },
+      "STRIPE_SUCCESS_URL": {
+        "value": "https://coinbitclub-market-bot.vercel.app/sucesso?session_id={CHECKOUT_SESSION_ID}",
+        "description": "URL de sucesso do Stripe"
+      },
+      "STRIPE_CANCEL_URL": {
+        "value": "https://coinbitclub-market-bot.vercel.app/cancelado",
+        "description": "URL de cancelamento do Stripe"
+      },
+      "OPENAI_API_KEY": {
+        "value": "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",
+        "description": "Chave da API OpenAI"
+      },
+      "COINSTATS_API_KEY": {
+        "value": "ZFIxigBcVaCyXDL1Qp/Ork7TOL3+h07NM2f3YoSrMkI=",
+        "description": "Chave da API CoinStats"
+      },
+      "ZAPI_INSTANCE": {
+        "value": "3E0819291FB89055AED996E82C2DBF10",
+        "description": "Instância Z-API para WhatsApp"
+      },
+      "ZAPI_TOKEN": {
+        "value": "2ECE7BD31B3B8E299FC68D6C",
+        "description": "Token Z-API para WhatsApp"
+      },
+      "SYSTEM_API_KEY": {
+        "value": "your-system-api-key-for-cron-jobs",
+        "description": "⚠️ SUBSTITUIR por uma chave para jobs do sistema",
+        "required": true
+      },
+      "ENCRYPTION_KEY": {
+        "value": "your-32-character-encryption-key-here",
+        "description": "⚠️ SUBSTITUIR por uma chave de encriptação de 32 caracteres",
+        "required": true
+      },
+      "TRADINGVIEW_WEBHOOK_SECRET": {
+        "value": "your-tradingview-webhook-secret",
+        "description": "⚠️ SUBSTITUIR por um segredo para webhooks TradingView",
+        "required": true
+      },
+      "SMTP_HOST": {
+        "value": "smtp.gmail.com",
+        "description": "Host SMTP para emails"
+      },
+      "SMTP_PORT": {
+        "value": "587",
+        "description": "Porta SMTP"
+      },
+      "SMTP_USER": {
+        "value": "your-email@gmail.com",
+        "description": "⚠️ SUBSTITUIR pelo email real",
+        "required": true
+      },
+      "SMTP_PASS": {
+        "value": "your-app-password",
+        "description": "⚠️ SUBSTITUIR pela senha do app Gmail",
+        "required": true
+      },
+      "ALLOWED_ORIGINS": {
+        "value": "https://coinbitclub-market-bot.vercel.app,https://coinbitclub-market-bot.up.railway.app",
+        "description": "Origins permitidos para CORS"
+      }
+    }
+  },
+  "instructions": {
+    "vercel": [
+      "1. Acesse https://vercel.com/dashboard",
+      "2. Selecione o projeto 'coinbitclub-marketbot'",
+      "3. Vá em Settings → Environment Variables",
+      "4. Adicione cada variável listada acima",
+      "5. Faça um novo deploy após adicionar as variáveis"
+    ],
+    "railway": [
+      "1. Acesse https://railway.app/dashboard",
+      "2. Selecione o projeto 'coinbitclub-market-bot'",
+      "3. Clique na aba 'Variables'",
+      "4. Adicione cada variável listada acima",
+      "5. Substitua os valores marcados com ⚠️ pelos valores reais",
+      "6. O deploy será automático após salvar as variáveis"
+    ],
+    "critical_replacements": [
+      "DATABASE_URL: Use a connection string real do PostgreSQL do Railway",
+      "JWT_SECRET: Gere uma chave forte (ex: openssl rand -base64 32)",
+      "JWT_REFRESH_SECRET: Gere outra chave forte diferente",
+      "SYSTEM_API_KEY: Gere uma chave para APIs internas",
+      "ENCRYPTION_KEY: Gere uma chave de 32 caracteres",
+      "TRADINGVIEW_WEBHOOK_SECRET: Defina um segredo para webhooks",
+      "SMTP_USER/SMTP_PASS: Configure com credenciais reais de email"
+    ]
+  }
+}
