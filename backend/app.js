@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 /**
- * 🚀 COINBITCLUB MARKET BOT - SERVIDOR PRINCIPAL v5.1.1
+ * 🚀 COINBITCLUB MARKET BOT - SERVIDOR PRINCIPAL v5.1.2
  * ===================================================
  * 
  * Aplicação principal para sistema de trading automatizado
  * Recursos: Multiusuário, Trading Real, Position Safety, Monitoramento
- * Deploy: 2025-08-06 (USD/BRL System)
+ * Deploy: 2025-08-09 (Sistemas Automáticos Integrados)
  */
 
 const express = require('express');
