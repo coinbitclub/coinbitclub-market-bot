@@ -172,13 +172,34 @@ class CoinBitClubServer {
                 const apiKeys = apiKeysResult.rows[0];
                 const signals = signalsResult.rows[0];
 
-                // Buscar saldos reais
-                const balanceResult = await this.pool.query(`
-                    SELECT 
-                        COALESCE(SUM(balance), 0) as total_balance
-                    FROM balances 
-                    WHERE currency = 'USDT'
-                `);
+                // Buscar saldos reais (com try/catch para robustez)
+                let totalBalance = 0;
+                try {
+                    const balanceResult = await this.pool.query(`
+                        SELECT COUNT(*) as count FROM information_schema.tables 
+                        WHERE table_name = 'balances'
+                    `);
+                    
+                    if (balanceResult.rows[0].count > 0) {
+                        // Verificar se a coluna balance existe
+                        const columnCheck = await this.pool.query(`
+                            SELECT column_name FROM information_schema.columns 
+                            WHERE table_name = 'balances' AND column_name IN ('balance', 'amount', 'value')
+                        `);
+                        
+                        if (columnCheck.rows.length > 0) {
+                            const columnName = columnCheck.rows[0].column_name;
+                            const balanceQuery = await this.pool.query(`
+                                SELECT COALESCE(SUM(${columnName}), 0) as total_balance
+                                FROM balances
+                            `);
+                            totalBalance = parseFloat(balanceQuery.rows[0].total_balance) || 0;
+                        }
+                    }
+                } catch (balanceError) {
+                    console.log('⚠️ Tabela balances não disponível:', balanceError.message);
+                    totalBalance = 0;
+                }
 
                 // Dados simplificados sem dependências de colunas complexas
                 const dashboardData = {
@@ -199,7 +220,7 @@ class CoinBitClubServer {
                         today: parseInt(signals.today) || 0
                     },
                     volume: {
-                        usd_24h: parseFloat(balanceResult.rows[0]?.total_balance) || 0,
+                        usd_24h: totalBalance,
                         brl_24h: 0
                     },
                     pnl: {
