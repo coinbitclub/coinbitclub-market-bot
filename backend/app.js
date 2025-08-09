@@ -1047,10 +1047,15 @@ class CoinBitClubServer {
             console.log('=========================================');
             console.log('');
 
-            // Testar conexão com banco
+            // Testar conexão com banco (com retry para produção)
             const dbConnected = await this.testDatabaseConnection();
             if (!dbConnected) {
-                throw new Error('Falha na conexão com banco de dados');
+                console.log('⚠️ Aviso: Banco não disponível, continuando em modo degradado');
+                console.log('📋 Sistema funcionará com funcionalidades limitadas');
+                // Em produção, continuamos mesmo sem banco para evitar crash
+                if (process.env.NODE_ENV !== 'production') {
+                    throw new Error('Falha na conexão com banco de dados');
+                }
             }
 
             // Inicializar tabelas necessárias
