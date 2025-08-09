@@ -1,6 +1,21 @@
 const { Pool } = require('pg');
 
-class APIKeyMonitor {
+class APIKe                 // Buscar usuários com chaves API (query segura sem depender de colunas opcionais)
+            const usersWithKeys = await this.pool.query(`
+                SELECT u.id, u.username, u.email, 
+                       uak.api_key, uak.api_secret, uak.exchange
+                FROM users u
+                INNER JOIN user_api_keys uak ON u.id = uak.user_id
+                WHERE uak.api_key IS NOT NULL 
+                AND uak.api_secret IS NOT NULL
+                ORDER BY u.username
+            `);st activeKeys = await pool.query(`
+                SELECT u.id, u.username, u.email,
+                       uak.api_key, uak.api_secret, uak.exchange
+                FROM users u
+                INNER JOIN user_api_keys uak ON u.id = uak.user_id
+                WHERE uak.api_key IS NOT NULL 
+                AND uak.api_secret IS NOT NULLr {
     constructor(pool) {
         this.pool = pool;
         this.monitoringInterval = null;

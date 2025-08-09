@@ -217,11 +217,11 @@ class RobustBalanceCollector {
             // Buscar configurações de API (query segura)
             const apiConfigs = await pool.query(`
                 SELECT u.id, u.username, u.email,
-                       uak.api_key, uak.secret_key, uak.exchange, uak.environment
+                       uak.api_key, uak.api_secret, uak.exchange, uak.environment
                 FROM users u
                 INNER JOIN user_api_keys uak ON u.id = uak.user_id
                 WHERE uak.api_key IS NOT NULL 
-                AND uak.secret_key IS NOT NULL
+                AND uak.api_secret IS NOT NULL
                 ORDER BY u.id
             `);
 
@@ -236,9 +236,9 @@ class RobustBalanceCollector {
                 const environment = config.environment || 'mainnet';
 
                 if (config.exchange === 'binance') {
-                    balance = await this.getBinanceBalance(config.api_key, config.secret_key, environment);
+                    balance = await this.getBinanceBalance(config.api_key, config.api_secret, environment);
                 } else if (config.exchange === 'bybit') {
-                    balance = await this.getBybitBalance(config.api_key, config.secret_key, environment);
+                    balance = await this.getBybitBalance(config.api_key, config.api_secret, environment);
                 } else {
                     console.log(`      ⚠️ Exchange ${config.exchange} não suportada`);
                     continue;
@@ -247,10 +247,8 @@ class RobustBalanceCollector {
                 // Salvar no banco
                 try {
                     await pool.query(`
-                        INSERT INTO balances (user_id, exchange, balance, currency, created_at)
-                        VALUES ($1, $2, $3, 'USDT', NOW())
-                        ON CONFLICT (user_id, exchange)
-                        DO UPDATE SET balance = $3, updated_at = NOW()
+                        INSERT INTO balances (user_id, exchange, wallet_balance, asset, created_at, last_updated)
+                        VALUES ($1, $2, $3, 'USDT', NOW(), NOW())
                     `, [config.id, config.exchange, balance]);
                     
                     console.log(`      💾 Salvo no banco: $${balance.toFixed(2)}`);
