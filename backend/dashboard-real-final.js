@@ -11,7 +11,7 @@
 require('dotenv').config();
 const express = require('express');
 const { Pool } = require('pg');
-const fetch = require('node-fetch');
+const axios = require('axios');
 
 class DashboardRealFinal {
     constructor() {
@@ -294,8 +294,8 @@ class DashboardRealFinal {
         // Atualizar métricas a cada 10 segundos
         setInterval(async () => {
             try {
-                const response = await fetch('/api/metrics');
-                const metrics = await response.json();
+                const response = await axios.get('/api/metrics');
+                const metrics = await response.data;
                 
                 document.getElementById('activeUsers').textContent = metrics.activeUsers;
                 document.getElementById('activeTraders').textContent = metrics.activeTraders;

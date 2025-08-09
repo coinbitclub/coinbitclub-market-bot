@@ -7,7 +7,7 @@
  */
 
 const crypto = require('crypto');
-const fetch = require('node-fetch');
+const axios = require('axios');
 const { Pool } = require('pg');
 
 console.log('🚀 ORDER EXECUTION ENGINE ENTERPRISE');
@@ -186,7 +186,7 @@ class OrderExecutionEngine {
                 'https://testnet.binance.vision' : 
                 'https://api.binance.com';
             
-            const response = await fetch(`${baseUrl}/api/v3/account?${queryString}&signature=${signature}`, {
+            const response = await axios.get(`${baseUrl}/api/v3/account?${queryString}&signature=${signature}`, {
                 method: 'GET',
                 headers: {
                     'X-MBX-APIKEY': config.api_key,
@@ -217,7 +217,7 @@ class OrderExecutionEngine {
                 'https://api-testnet.bybit.com' : 
                 'https://api.bybit.com';
             
-            const response = await fetch(`${baseUrl}/v5/account/wallet-balance?accountType=UNIFIED`, {
+            const response = await axios.get(`${baseUrl}/v5/account/wallet-balance?accountType=UNIFIED`, {
                 method: 'GET',
                 headers: {
                     'X-BAPI-API-KEY': config.api_key,
@@ -229,7 +229,7 @@ class OrderExecutionEngine {
                 }
             });
             
-            const data = await response.json();
+            const data = await response.data;
             return data.retCode === 0;
             
         } catch (error) {
@@ -264,7 +264,7 @@ class OrderExecutionEngine {
                 'https://testnet.binance.vision' : 
                 'https://api.binance.com';
             
-            const response = await fetch(`${baseUrl}/api/v3/account?${queryString}&signature=${signature}`, {
+            const response = await axios.get(`${baseUrl}/api/v3/account?${queryString}&signature=${signature}`, {
                 method: 'GET',
                 headers: {
                     'X-MBX-APIKEY': config.api_key,
@@ -273,7 +273,7 @@ class OrderExecutionEngine {
             });
             
             if (response.ok) {
-                const data = await response.json();
+                const data = await response.data;
                 const usdtBalance = data.balances.find(b => b.asset === 'USDT');
                 return usdtBalance ? parseFloat(usdtBalance.free) : 0;
             }
@@ -297,7 +297,7 @@ class OrderExecutionEngine {
                 'https://api-testnet.bybit.com' : 
                 'https://api.bybit.com';
             
-            const response = await fetch(`${baseUrl}/v5/account/wallet-balance?accountType=UNIFIED`, {
+            const response = await axios.get(`${baseUrl}/v5/account/wallet-balance?accountType=UNIFIED`, {
                 method: 'GET',
                 headers: {
                     'X-BAPI-API-KEY': config.api_key,
@@ -310,7 +310,7 @@ class OrderExecutionEngine {
             });
             
             if (response.ok) {
-                const data = await response.json();
+                const data = await response.data;
                 if (data.retCode === 0 && data.result?.list?.[0]) {
                     return parseFloat(data.result.list[0].totalWalletBalance || 0);
                 }
@@ -582,7 +582,7 @@ class OrderExecutionEngine {
                 'https://testnet.binance.vision' : 
                 'https://api.binance.com';
 
-            const response = await fetch(`${baseUrl}/api/v3/order`, {
+            const response = await axios.get(`${baseUrl}/api/v3/order`, {
                 method: 'POST',
                 headers: {
                     'X-MBX-APIKEY': config.api_key,
@@ -591,7 +591,7 @@ class OrderExecutionEngine {
                 body: finalQuery
             });
 
-            const data = await response.json();
+            const data = await response.data;
 
             if (response.ok) {
                 return {
@@ -644,7 +644,7 @@ class OrderExecutionEngine {
                 'https://api-testnet.bybit.com' : 
                 'https://api.bybit.com';
 
-            const response = await fetch(`${baseUrl}/v5/order/create`, {
+            const response = await axios.get(`${baseUrl}/v5/order/create`, {
                 method: 'POST',
                 headers: {
                     'X-BAPI-API-KEY': config.api_key,
@@ -654,10 +654,10 @@ class OrderExecutionEngine {
                     'X-BAPI-SIGN-TYPE': '2',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(params)
+                body: JSON.stringify(params);
             });
 
-            const data = await response.json();
+            const data = await response.data;
 
             if (data.retCode === 0) {
                 return {

@@ -12,7 +12,7 @@
 
 const express = require('express');
 const { Pool } = require('pg');
-const fetch = require('node-fetch');
+const axios = require('axios');
 require('dotenv').config();
 
 class DashboardTempoReal {
@@ -97,14 +97,14 @@ class DashboardTempoReal {
 
     async updateFearGreedIndex() {
         try {
-            const response = await fetch('https://openapiv1.coinstats.app/insights/fear-and-greed', {
+            const response = await axios.get('https://openapiv1.coinstats.app/insights/fear-and-greed', {
                 headers: {
                     'X-API-KEY': process.env.COINSTATS_API_KEY
                 }
             });
 
             if (response.ok) {
-                const data = await response.json();
+                const data = await response.data;
                 this.metrics.fearGreedIndex = parseInt(data.value) || 50;
             } else {
                 this.metrics.fearGreedIndex = 50; // Fallback
@@ -117,14 +117,14 @@ class DashboardTempoReal {
 
     async updateTopCoinsDirection() {
         try {
-            const response = await fetch('https://openapiv1.coinstats.app/coins?page=1&limit=100', {
+            const response = await axios.get('https://openapiv1.coinstats.app/coins?page=1&limit=100', {
                 headers: {
                     'X-API-KEY': process.env.COINSTATS_API_KEY
                 }
             });
 
             if (response.ok) {
-                const data = await response.json();
+                const data = await response.data;
                 const coins = data.result || [];
                 
                 const positiveCoins = coins.filter(coin => 

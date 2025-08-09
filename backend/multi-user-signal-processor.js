@@ -1,6 +1,6 @@
 const { Pool } = require('pg');
 const axios = require('axios');
-const { OpenAIApi, Configuration } = require('openai');
+const OpenAI = require('openai');
 const SignalHistoryAnalyzer = require('./signal-history-analyzer');
 const OrderManager = require('./order-manager');
 const MarketDirectionMonitor = require('./market-direction-monitor');
@@ -29,10 +29,9 @@ class MultiUserSignalProcessor {
 
         // Configurar OpenAI para análise de IA
         if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-')) {
-            const configuration = new Configuration({
+            this.openai = new OpenAI({
                 apiKey: process.env.OPENAI_API_KEY,
             });
-            this.openai = new OpenAIApi(configuration);
             console.log('🤖 OpenAI: Configurado para análise IA');
         } else {
             this.openai = null;
@@ -230,14 +229,14 @@ CRITÉRIOS REMOVIDOS/FLEXIBILIZADOS:
 
 Responda apenas: SIM ou NÃO seguido de uma breve justificativa (máximo 50 palavras).`;
 
-            const response = await this.openai.createChatCompletion({
+            const response = await this.openai.chat.completions.create({
                 model: 'gpt-3.5-turbo',
                 messages: [{ role: 'user', content: prompt }],
                 max_tokens: 100,
                 temperature: 0.1
             });
 
-            const aiResponse = response.data.choices[0].message.content.trim();
+            const aiResponse = response.choices[0].message.content.trim();
             const shouldExecute = aiResponse.toLowerCase().startsWith('sim');
 
             return {
