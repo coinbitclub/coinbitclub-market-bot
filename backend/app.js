@@ -184,7 +184,7 @@ class CoinBitClubServer {
                         // Verificar se a coluna balance existe
                         const columnCheck = await this.pool.query(`
                             SELECT column_name FROM information_schema.columns 
-                            WHERE table_name = 'balances' AND column_name IN ('balance', 'amount', 'value')
+                            WHERE table_name = 'balances' AND column_name IN ('balance', 'wallet_balance', 'amount', 'value')
                         `);
                         
                         if (columnCheck.rows.length > 0) {
