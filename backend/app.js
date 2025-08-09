@@ -23,7 +23,12 @@ const CommissionSystem = require('./commission-system.js');
 const FinancialManager = require('./financial-manager.js');
 const { dashboardRealFinal } = require('./dashboard-real-final.js');
 const SignalTrackingAPI = require('./signal-tracking-api.js');
-const APIKeyMonitor = require('./api-key-monitor.js');
+
+// NOVO SISTEMA ENTERPRISE DE EXCHANGES
+const EnterpriseExchangeOrchestrator = require('./enterprise-exchange-orchestrator.js');
+
+// SISTEMA DE MONITORAMENTO AUTOMÁTICO
+const MonitoringIntegration = require('./monitoring-integration.js');
 
 // Importar coletores automáticos
 const RobustBalanceCollector = require('./coletor-saldos-robusto.js');
@@ -57,8 +62,11 @@ class CoinBitClubServer {
         this.commissionSystem = new CommissionSystem();
         this.financialManager = new FinancialManager(this.pool);
         
-        // Inicializar monitoramento de chaves API
-        this.apiKeyMonitor = new APIKeyMonitor(this.pool);
+        // Inicializar NOVO SISTEMA ENTERPRISE DE EXCHANGES
+        this.exchangeOrchestrator = new EnterpriseExchangeOrchestrator();
+        
+        // Inicializar SISTEMA DE MONITORAMENTO AUTOMÁTICO
+        this.monitoring = new MonitoringIntegration(this.app);
         
         // Inicializar coletores automáticos
         this.balanceCollector = new RobustBalanceCollector();
@@ -736,12 +744,104 @@ class CoinBitClubServer {
             }
         });
 
+        // API para status do sistema de exchanges enterprise
+        this.app.get('/api/exchanges/status', async (req, res) => {
+            try {
+                const stats = this.exchangeOrchestrator.getCompleteStats();
+                res.json({
+                    success: true,
+                    stats: stats,
+                    timestamp: new Date().toISOString()
+                });
+            } catch (error) {
+                res.status(500).json({
+                    error: 'Erro ao obter status das exchanges',
+                    details: error.message
+                });
+            }
+        });
+
+        // API para conectar usuário específico
+        this.app.post('/api/exchanges/connect-user', async (req, res) => {
+            try {
+                const { userId } = req.body;
+                
+                if (!userId) {
+                    return res.status(400).json({
+                        error: 'userId é obrigatório'
+                    });
+                }
+
+                const result = await this.exchangeOrchestrator.getUserForTrading(userId);
+                
+                res.json({
+                    success: result.success,
+                    result: result,
+                    timestamp: new Date().toISOString()
+                });
+
+            } catch (error) {
+                res.status(500).json({
+                    error: 'Erro ao conectar usuário',
+                    details: error.message
+                });
+            }
+        });
+
+        // API para health check das exchanges
+        this.app.get('/api/exchanges/health', async (req, res) => {
+            try {
+                await this.exchangeOrchestrator.performHealthCheckAllExchanges();
+                const health = this.exchangeOrchestrator.orchestratorState.exchangeHealth;
+                
+                res.json({
+                    success: true,
+                    health: health,
+                    timestamp: new Date().toISOString()
+                });
+
+            } catch (error) {
+                res.status(500).json({
+                    error: 'Erro no health check',
+                    details: error.message
+                });
+            }
+        });
+
+        // API para monitoramento de saldos
+        this.app.get('/api/exchanges/balances', async (req, res) => {
+            try {
+                await this.exchangeOrchestrator.updateAllUserBalances();
+                const balances = await this.pool.query(`
+                    SELECT user_id, exchange, environment, total_balance_usd, last_updated
+                    FROM user_balance_monitoring 
+                    ORDER BY total_balance_usd DESC
+                `);
+                
+                res.json({
+                    success: true,
+                    balances: balances.rows,
+                    totalUsers: balances.rows.length,
+                    totalBalance: balances.rows.reduce((sum, b) => sum + parseFloat(b.total_balance_usd || 0), 0),
+                    timestamp: new Date().toISOString()
+                });
+
+            } catch (error) {
+                res.status(500).json({
+                    error: 'Erro ao obter saldos',
+                    details: error.message
+                });
+            }
+        });
+
         // API para status do monitoramento de chaves
         this.app.get('/api/monitor/status', (req, res) => {
             try {
-                const status = this.apiKeyMonitor.getStatus();
+                const stats = this.exchangeOrchestrator.getCompleteStats();
                 res.json({
-                    monitoring: status,
+                    monitoring: 'enterprise_active',
+                    stats: stats.orchestrator.globalStats,
+                    exchangeHealth: stats.orchestrator.exchangeHealth,
                     timestamp: new Date().toISOString()
                 });
             } catch (error) {
@@ -755,14 +855,17 @@ class CoinBitClubServer {
         // API para forçar verificação das chaves
         this.app.post('/api/monitor/check', async (req, res) => {
             try {
-                await this.apiKeyMonitor.checkAllAPIKeys();
+                await this.exchangeOrchestrator.performHealthCheckAllExchanges();
+                const stats = this.exchangeOrchestrator.getCompleteStats();
+                
                 res.json({
-                    message: 'Verificação de chaves iniciada',
+                    message: 'Verificação enterprise executada com sucesso',
+                    results: stats.orchestrator.exchangeHealth,
                     timestamp: new Date().toISOString()
                 });
             } catch (error) {
                 res.status(500).json({
-                    error: 'Erro ao verificar chaves',
+                    error: 'Erro ao verificar exchanges',
                     details: error.message
                 });
             }
@@ -789,7 +892,7 @@ class CoinBitClubServer {
                         position_safety: this.positionSafety ? 'initialized' : 'not_initialized',
                         commission_system: this.commissionSystem ? 'initialized' : 'not_initialized',
                         financial_manager: this.financialManager ? 'initialized' : 'not_initialized',
-                        api_key_monitor: this.apiKeyMonitor ? 'running' : 'not_running',
+                        exchange_orchestrator: this.exchangeOrchestrator ? 'running' : 'not_running',
                         balance_collector: this.balanceCollector ? 'running' : 'not_running',
                         fear_greed_collector: this.fearGreedCollector ? 'running' : 'not_running'
                     },
@@ -1064,6 +1167,26 @@ class CoinBitClubServer {
             console.log('✅ Estrutura do banco inicializada');
             console.log('');
 
+            // Inicializar sistema enterprise de exchanges
+            console.log('🏢 Iniciando sistema enterprise de exchanges...');
+            await this.exchangeOrchestrator.start();
+            console.log('✅ Sistema enterprise de exchanges iniciado');
+            console.log('');
+
+            // Inicializar sistema de monitoramento automático
+            console.log('🔍 Iniciando sistema de monitoramento automático...');
+            const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway';
+            const monitoringInitialized = await this.monitoring.initialize(databaseUrl);
+            
+            if (monitoringInitialized) {
+                this.monitoring.setupRoutes();
+                console.log('✅ Sistema de monitoramento automático ativo');
+                console.log('📋 Diagnóstico automático será executado em todas as novas chaves API');
+            } else {
+                console.log('⚠️ Sistema de monitoramento inicializado em modo limitado');
+            }
+            console.log('');
+
             // Iniciar servidor
             this.app.listen(this.port, '0.0.0.0', () => {
                 console.log('🎯 SISTEMA TOTALMENTE ATIVO!');
@@ -1089,11 +1212,6 @@ class CoinBitClubServer {
                 console.log('💰 Sistema pronto para operações reais!');
                 console.log('🎉 COINBITCLUB MARKET BOT 100% OPERACIONAL!');
                 console.log('=========================================');
-                
-                // Iniciar monitoramento de chaves API
-                console.log('');
-                console.log('🔑 Iniciando monitoramento de chaves API...');
-                this.apiKeyMonitor.start();
                 
                 // Iniciar coletores automáticos
                 console.log('');

@@ -1,4 +1,7 @@
-# Node.js
+# DOCKERIGNORE - COINBITCLUB TRADING BOT
+# Reduz tamanho da imagem Docker excluindo arquivos desnecessários
+
+# Node modules (será reinstalado no container)
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -52,28 +55,46 @@ build/
 coverage/
 .nyc_output/
 
-# Analytics e ML (não necessário em produção)
-analytics-out/
-ml-dashboard/
-ml-services/
-
-# Scripts de desenvolvimento e teste
-*.test.js
-test-*.js
-verify-*.js
+# Arquivos de desenvolvimento
+*-backup.js
+*-temp.js
+*-debug.js
+*-test.js
 check-*.js
-clean-*.js
+debug-*.js
+test-*.js
+verificar-*.js
+analisar-*.js
+corrigir-*.js
 setup-*.js
-prepare-*.js
-sistema-completo-pagamentos-stripe-producao.js
-sistema-stripe-producao-completo.js
-verificador-completo-integracoes-externas.js
-verificador-integracoes-externas-completo.js
+clean-*.js
+audit*.js
+sistema-teste-*.js
+relatorio-*.js
+*-contingencia.js
+*-monitor.js
+
+# Scripts temporários e de desenvolvimento
+backup-*/
+temp-*/
+debug-*/
+safe-push*/
+scripts/
+implementar-*.sh
+create-*.sh
+setup-*.sh
+find-*.js
+config-*.js
+
+# Arquivos de análise grandes
+*.json.gz
+audit*.json
+*.log.gz
+auditoria-*.json
 
 # Docker
 Dockerfile*
 docker-compose*
-.dockerignore
 
 # Temporários
 *.tmp
@@ -83,3 +104,5 @@ docker-compose*
 # Backup files
 *.backup
 *-backup.json
+backup_originals/
+security-backup/
