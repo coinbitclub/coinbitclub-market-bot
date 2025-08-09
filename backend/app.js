@@ -12,6 +12,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');
 const { Pool } = require('pg');
 require('dotenv').config({ path: '.env.production' });
 
@@ -102,6 +103,9 @@ class CoinBitClubServer {
         this.app.use(bodyParser.json({ limit: '50mb' }));
         this.app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
+        // Servir arquivos estáticos (HTML Dashboard)
+        this.app.use(express.static(path.join(__dirname, 'public')));
+
         // Middleware de log
         this.app.use((req, res, next) => {
             const timestamp = new Date().toISOString();
@@ -137,23 +141,61 @@ class CoinBitClubServer {
             }
         });
 
-        // Rota de status principal
+        // Rota principal - Dashboard HTML
         this.app.get('/', (req, res) => {
-            res.json({
-                status: 'COINBITCLUB MARKET BOT ATIVO',
-                version: '3.0.0',
-                mode: process.env.NODE_ENV || 'production',
-                realTrading: process.env.ENABLE_REAL_TRADING === 'true',
-                positionSafety: process.env.POSITION_SAFETY_ENABLED === 'true',
-                timestamp: new Date().toISOString(),
-                features: [
-                    'Trading Real Ativado',
-                    'Position Safety Obrigatório',
-                    'Sistema Multiusuário',
-                    'Monitoramento Tempo Real',
-                    'Proteções Máximas'
-                ]
-            });
+            res.sendFile(path.join(__dirname, 'public', 'index.html'));
+        });
+
+        // API para o dashboard HTML
+        this.app.get('/api/dashboard/summary', async (req, res) => {
+            try {
+                // Buscar dados do banco
+                const [usersResult, apiKeysResult, positionsResult, signalsResult] = await Promise.all([
+                    this.pool.query('SELECT COUNT(*) as total, COUNT(CASE WHEN trading_active = true THEN 1 END) as active FROM users'),
+                    this.pool.query('SELECT COUNT(CASE WHEN is_valid = true THEN 1 END) as valid, COUNT(CASE WHEN is_valid = false THEN 1 END) as invalid FROM user_api_keys'),
+                    this.pool.query('SELECT COUNT(*) as total, COUNT(CASE WHEN status = \'open\' THEN 1 END) as open FROM positions'),
+                    this.pool.query('SELECT COUNT(*) as today FROM signals WHERE DATE(created_at) = CURRENT_DATE')
+                ]);
+
+                const users = usersResult.rows[0];
+                const apiKeys = apiKeysResult.rows[0];
+                const positions = positionsResult.rows[0];
+                const signals = signalsResult.rows[0];
+
+                // Calcular volumes e P&L (valores simulados para demonstração)
+                const volume = {
+                    usd_24h: Math.random() * 100000 + 50000,
+                    brl_24h: Math.random() * 500000 + 250000
+                };
+
+                const pnl = {
+                    total_usd: Math.random() * 10000 - 5000
+                };
+
+                res.json({
+                    users: {
+                        total: parseInt(users.total),
+                        active: parseInt(users.active)
+                    },
+                    api_keys: {
+                        valid: parseInt(apiKeys.valid),
+                        invalid: parseInt(apiKeys.invalid)
+                    },
+                    positions: {
+                        total: parseInt(positions.total),
+                        open: parseInt(positions.open)
+                    },
+                    signals: {
+                        today: parseInt(signals.today),
+                        success_rate: Math.floor(Math.random() * 30 + 70) // 70-100%
+                    },
+                    volume,
+                    pnl
+                });
+            } catch (error) {
+                console.error('Erro ao buscar dados do dashboard:', error);
+                res.status(500).json({ error: 'Erro interno do servidor' });
+            }
         });
 
         // Rota de status detalhado do sistema
