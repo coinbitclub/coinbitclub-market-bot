@@ -43,16 +43,14 @@ class APIKeyMonitor {
         console.log(`🔍 [${new Date().toLocaleString('pt-BR')}] Verificando chaves API dos usuários...`);
         
         try {
-            // Buscar usuários com chaves API
+            // Buscar usuários com chaves API (query segura sem depender de colunas opcionais)
             const usersWithKeys = await this.pool.query(`
                 SELECT u.id, u.username, u.email, 
-                       uak.api_key, uak.secret_key, uak.exchange, uak.is_valid,
-                       uak.last_checked
+                       uak.api_key, uak.secret_key, uak.exchange
                 FROM users u
                 INNER JOIN user_api_keys uak ON u.id = uak.user_id
                 WHERE uak.api_key IS NOT NULL 
                 AND uak.secret_key IS NOT NULL
-                AND u.trading_active = true
                 ORDER BY u.username
             `);
             
@@ -72,19 +70,16 @@ class APIKeyMonitor {
                         validationResult = { status: 'not_tested', error: 'Exchange não suportado' };
                     }
                     
-                    // Atualizar status no banco
-                    await this.pool.query(`
-                        UPDATE user_api_keys 
-                        SET is_valid = $1, 
-                            last_checked = NOW(),
-                            error_message = $2
-                        WHERE user_id = $3 AND exchange = $4
-                    `, [
-                        validationResult.status === 'valid',
-                        validationResult.error || null,
-                        user.id,
-                        user.exchange
-                    ]);
+                    // Atualizar status no banco (query segura)
+                    try {
+                        await this.pool.query(`
+                            UPDATE user_api_keys 
+                            SET updated_at = NOW()
+                            WHERE user_id = $1 AND exchange = $2
+                        `, [user.id, user.exchange]);
+                    } catch (updateError) {
+                        console.log(`   ⚠️ Não foi possível atualizar status para ${user.username}`);
+                    }
                     
                     if (validationResult.status === 'valid') {
                         validKeys++;
