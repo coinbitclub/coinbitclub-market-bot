@@ -318,6 +318,94 @@ class DashboardRealFinal {
         setInterval(() => this.updateMetrics(), 30000);
     }
 
+    generateHTML() {
+        return `
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>CoinbitClub - Dashboard Real</title>
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    margin: 0; 
+                    padding: 20px; 
+                    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+                    color: white;
+                }
+                .container { max-width: 1200px; margin: 0 auto; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+                .metric-card { 
+                    background: rgba(255,255,255,0.1); 
+                    padding: 20px; 
+                    border-radius: 10px; 
+                    text-align: center;
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255,255,255,0.2);
+                }
+                .metric-value { font-size: 2.5em; font-weight: bold; margin: 10px 0; }
+                .metric-label { font-size: 0.9em; opacity: 0.8; }
+                .status-active { color: #4ade80; }
+                .status-warning { color: #fbbf24; }
+                .footer { text-align: center; margin-top: 30px; opacity: 0.7; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🚀 COINBITCLUB - Dashboard Real</h1>
+                    <p>Sistema 100% Operacional - Dados em Tempo Real</p>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value status-active">${this.metrics.activeUsers}</div>
+                        <div class="metric-label">👥 Usuários Ativos</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-value status-active">${this.metrics.activeTraders}</div>
+                        <div class="metric-label">📈 Traders Ativos</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-value">${this.metrics.openPositions}</div>
+                        <div class="metric-label">🎯 Posições Abertas</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-value">${this.metrics.todayOrders}</div>
+                        <div class="metric-label">📋 Ordens Hoje</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-value">${this.metrics.todaySignals}</div>
+                        <div class="metric-label">📡 Sinais Hoje</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-value status-active">R$ ${this.metrics.totalBalance.toLocaleString('pt-BR')}</div>
+                        <div class="metric-label">💰 Saldo Total</div>
+                    </div>
+                </div>
+                
+                <div class="footer">
+                    <p>Status: <span class="status-active">${this.metrics.systemStatus}</span> | Última atualização: ${new Date().toLocaleString('pt-BR')}</p>
+                    <p>🤖 Sistema IA ativo | 📊 Análise de mercado em tempo real | 🔒 Trading real ativo</p>
+                </div>
+            </div>
+            
+            <script>
+                // Auto-refresh a cada 30 segundos
+                setTimeout(() => location.reload(), 30000);
+            </script>
+        </body>
+        </html>
+        `;
+    }
+
     start() {
         this.app.listen(this.port, () => {
             console.log(`🚀 Dashboard Real Final rodando em http://localhost:${this.port}`);
