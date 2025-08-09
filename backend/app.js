@@ -23,6 +23,11 @@ const CommissionSystem = require('./commission-system.js');
 const FinancialManager = require('./financial-manager.js');
 const { dashboardRealFinal } = require('./dashboard-real-final.js');
 const SignalTrackingAPI = require('./signal-tracking-api.js');
+const APIKeyMonitor = require('./api-key-monitor.js');
+
+// Importar coletores automáticos
+const AutomaticBalanceCollector = require('./coletor-saldos-automatico.js');
+const FearGreedCollector = require('./coletor-fear-greed-coinstats.js');
 
 class CoinBitClubServer {
     constructor() {
@@ -51,6 +56,13 @@ class CoinBitClubServer {
         this.signalProcessor = new MultiUserSignalProcessor();
         this.commissionSystem = new CommissionSystem();
         this.financialManager = new FinancialManager(this.pool);
+        
+        // Inicializar monitoramento de chaves API
+        this.apiKeyMonitor = new APIKeyMonitor(this.pool);
+        
+        // Inicializar coletores automáticos
+        this.balanceCollector = new AutomaticBalanceCollector();
+        this.fearGreedCollector = new FearGreedCollector();
         
         // Inicializar API de tracking detalhado
         this.signalTrackingAPI = new SignalTrackingAPI(this.app, this.pool);
@@ -149,39 +161,38 @@ class CoinBitClubServer {
         // API para o dashboard HTML
         this.app.get('/api/dashboard/summary', async (req, res) => {
             try {
-                // Tentar buscar dados do banco
-                let users, apiKeys, positions, signals;
-                
-                try {
-                    const [usersResult, apiKeysResult, positionsResult, signalsResult] = await Promise.all([
-                        this.pool.query('SELECT COUNT(*) as total, COUNT(CASE WHEN trading_active = true THEN 1 END) as active FROM users'),
-                        this.pool.query('SELECT COUNT(CASE WHEN is_valid = true THEN 1 END) as valid, COUNT(CASE WHEN is_valid = false THEN 1 END) as invalid FROM user_api_keys'),
-                        this.pool.query('SELECT COUNT(*) as total, COUNT(CASE WHEN status = \'open\' THEN 1 END) as open FROM positions'),
-                        this.pool.query('SELECT COUNT(*) as today FROM signals WHERE DATE(created_at) = CURRENT_DATE')
-                    ]);
+                // Buscar dados reais do banco
+                const [usersResult, apiKeysResult, positionsResult, signalsResult] = await Promise.all([
+                    this.pool.query('SELECT COUNT(*) as total, COUNT(CASE WHEN trading_active = true THEN 1 END) as active FROM users'),
+                    this.pool.query('SELECT COUNT(CASE WHEN is_valid = true THEN 1 END) as valid, COUNT(CASE WHEN is_valid = false THEN 1 END) as invalid FROM user_api_keys'),
+                    this.pool.query('SELECT COUNT(*) as total, COUNT(CASE WHEN status = \'open\' THEN 1 END) as open FROM positions'),
+                    this.pool.query('SELECT COUNT(*) as today FROM signals WHERE DATE(created_at) = CURRENT_DATE')
+                ]);
 
-                    users = usersResult.rows[0];
-                    apiKeys = apiKeysResult.rows[0];
-                    positions = positionsResult.rows[0];
-                    signals = signalsResult.rows[0];
-                } catch (dbError) {
-                    console.log('⚠️ Banco indisponível, usando dados simulados:', dbError.message);
-                    // Dados simulados quando banco não está disponível
-                    users = { total: '42', active: '35' };
-                    apiKeys = { valid: '38', invalid: '4' };
-                    positions = { total: '156', open: '23' };
-                    signals = { today: '12' };
-                }
+                const users = usersResult.rows[0];
+                const apiKeys = apiKeysResult.rows[0];
+                const positions = positionsResult.rows[0];
+                const signals = signalsResult.rows[0];
 
-                // Calcular volumes e P&L (valores simulados para demonstração)
-                const volume = {
-                    usd_24h: Math.random() * 100000 + 50000,
-                    brl_24h: Math.random() * 500000 + 250000
-                };
+                // Buscar volumes e P&L reais
+                const volumeResult = await this.pool.query(`
+                    SELECT 
+                        COALESCE(SUM(CASE WHEN currency = 'USD' THEN volume_24h END), 0) as usd_24h,
+                        COALESCE(SUM(CASE WHEN currency = 'BRL' THEN volume_24h END), 0) as brl_24h
+                    FROM user_balances 
+                    WHERE updated_at > NOW() - INTERVAL '24 hours'
+                `);
 
-                const pnl = {
-                    total_usd: Math.random() * 10000 - 5000
-                };
+                const pnlResult = await this.pool.query(`
+                    SELECT 
+                        COALESCE(SUM(pnl_usd), 0) as total_usd,
+                        COALESCE(AVG(CASE WHEN pnl_usd > 0 THEN 1 ELSE 0 END) * 100, 0) as success_rate
+                    FROM positions 
+                    WHERE status = 'closed'
+                `);
+
+                const volume = volumeResult.rows[0];
+                const pnl = pnlResult.rows[0];
 
                 res.json({
                     users: {
@@ -198,16 +209,25 @@ class CoinBitClubServer {
                     },
                     signals: {
                         today: parseInt(signals.today),
-                        success_rate: Math.floor(Math.random() * 30 + 70) // 70-100%
+                        success_rate: Math.round(parseFloat(pnl.success_rate) || 0)
                     },
-                    volume,
-                    pnl,
+                    volume: {
+                        usd_24h: parseFloat(volume.usd_24h) || 0,
+                        brl_24h: parseFloat(volume.brl_24h) || 0
+                    },
+                    pnl: {
+                        total_usd: parseFloat(pnl.total_usd) || 0
+                    },
                     status: 'operational',
                     timestamp: new Date().toISOString()
                 });
             } catch (error) {
                 console.error('Erro ao buscar dados do dashboard:', error);
-                res.status(500).json({ error: 'Erro interno do servidor' });
+                res.status(500).json({ 
+                    error: 'Erro interno do servidor',
+                    message: error.message,
+                    timestamp: new Date().toISOString()
+                });
             }
         });
 
@@ -656,6 +676,75 @@ class CoinBitClubServer {
             }
         });
 
+        // API para status do monitoramento de chaves
+        this.app.get('/api/monitor/status', (req, res) => {
+            try {
+                const status = this.apiKeyMonitor.getStatus();
+                res.json({
+                    monitoring: status,
+                    timestamp: new Date().toISOString()
+                });
+            } catch (error) {
+                res.status(500).json({
+                    error: 'Erro ao obter status do monitoramento',
+                    details: error.message
+                });
+            }
+        });
+
+        // API para forçar verificação das chaves
+        this.app.post('/api/monitor/check', async (req, res) => {
+            try {
+                await this.apiKeyMonitor.checkAllAPIKeys();
+                res.json({
+                    message: 'Verificação de chaves iniciada',
+                    timestamp: new Date().toISOString()
+                });
+            } catch (error) {
+                res.status(500).json({
+                    error: 'Erro ao verificar chaves',
+                    details: error.message
+                });
+            }
+        });
+
+        // API para status completo de todos os sistemas
+        this.app.get('/api/systems/status', (req, res) => {
+            try {
+                const systemsStatus = {
+                    server: {
+                        status: 'running',
+                        uptime: Math.floor(process.uptime()),
+                        memory: process.memoryUsage(),
+                        version: '5.1.1'
+                    },
+                    database: {
+                        status: 'connected',
+                        pool_total: this.pool.totalCount,
+                        pool_idle: this.pool.idleCount,
+                        pool_waiting: this.pool.waitingCount
+                    },
+                    modules: {
+                        signal_processor: this.signalProcessor ? 'initialized' : 'not_initialized',
+                        position_safety: this.positionSafety ? 'initialized' : 'not_initialized',
+                        commission_system: this.commissionSystem ? 'initialized' : 'not_initialized',
+                        financial_manager: this.financialManager ? 'initialized' : 'not_initialized',
+                        api_key_monitor: this.apiKeyMonitor ? 'running' : 'not_running',
+                        balance_collector: this.balanceCollector ? 'running' : 'not_running',
+                        fear_greed_collector: this.fearGreedCollector ? 'running' : 'not_running'
+                    },
+                    timestamp: new Date().toISOString()
+                };
+
+                res.json(systemsStatus);
+            } catch (error) {
+                res.status(500).json({
+                    error: 'Erro ao obter status dos sistemas',
+                    details: error.message
+                });
+            }
+        });
+
         // Dashboard Operacional Final - FLUXO OPERACIONAL COMPLETO
         this.app.get('/dashboard', dashboardRealFinal);
 
@@ -935,6 +1024,26 @@ class CoinBitClubServer {
                 console.log('💰 Sistema pronto para operações reais!');
                 console.log('🎉 COINBITCLUB MARKET BOT 100% OPERACIONAL!');
                 console.log('=========================================');
+                
+                // Iniciar monitoramento de chaves API
+                console.log('');
+                console.log('🔑 Iniciando monitoramento de chaves API...');
+                this.apiKeyMonitor.start();
+                
+                // Iniciar coletores automáticos
+                console.log('');
+                console.log('🔄 Iniciando coletores automáticos...');
+                console.log('💰 Iniciando coletor de saldos automático...');
+                this.balanceCollector.start();
+                
+                console.log('😱 Iniciando coletor Fear & Greed Index...');
+                // Coletar Fear & Greed a cada 30 minutos
+                this.fearGreedCollector.collectFearGreedData();
+                setInterval(() => {
+                    this.fearGreedCollector.collectFearGreedData();
+                }, 30 * 60 * 1000); // 30 minutos
+                
+                console.log('✅ Todos os sistemas automáticos iniciados!');
             });
 
         } catch (error) {
