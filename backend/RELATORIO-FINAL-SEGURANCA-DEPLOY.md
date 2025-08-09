@@ -149,13 +149,13 @@ railway up
 
 ---
 
-## 🚨 AÇÕES IMEDIATAS NECESSÁRIAS
+## 🚨 PRÓXIMOS PASSOS - DEPLOY EM PRODUÇÃO
 
-1. **Resolver conflitos de merge** (15 arquivos)
-2. **Fazer push final** 
-3. **Configurar variáveis Railway**
-4. **Executar deploy**
-5. **Monitorar logs pós-deploy**
+1. **✅ Resolver conflitos de merge** - **CONCLUÍDO**
+2. **✅ Fazer push final** - **CONCLUÍDO**
+3. **🔄 Configurar variáveis Railway** - **EM ANDAMENTO**
+4. **🔄 Executar deploy** - **PRÓXIMO**
+5. **🔄 Monitorar logs pós-deploy** - **AGUARDANDO**
 
 ---
 

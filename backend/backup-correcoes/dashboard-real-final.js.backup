@@ -1,11 +1,10 @@
-// SECURITY_VALIDATED: 2025-08-08T23:27:20.620Z
-// Este arquivo foi verificado e tem credenciais protegidas
+#!/usr/bin/env node
 
 /**
- * COINBITCLUB - DASHBOARD REAL FINAL
- * ===================================
+ * 📊 COINBITCLUB - DASHBOARD REAL FINAL
+ * =====================================
  * Dashboard final com dados 100% reais
- * Sem mock data - Sistema pronto para producao
+ * Sem mock data - Sistema pronto para produção
  */
 
 require('dotenv').config();
@@ -16,7 +15,7 @@ const fetch = require('node-fetch');
 class DashboardRealFinal {
     constructor() {
         this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL || 'postgresql://postgres:PROTECTED_DB_PASSWORD@trolley.proxy.rlwy.net:44790/railway',
+            connectionString: process.env.DATABASE_URL || 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
             ssl: { rejectUnauthorized: false }
         });
         
@@ -42,16 +41,53 @@ class DashboardRealFinal {
         try {
             console.log('🔄 Atualizando métricas reais...');
             
-            // Valores fixos temporários para evitar erros
-            this.metrics = {
-                activeUsers: 12,
-                activeTraders: 6,
-                openPositions: 0,
-                todayOrders: 0,
-                todaySignals: 0,
-                totalBalance: 3000,
-                systemStatus: 'OPERATIONAL'
-            };
+            // 1. Usuários totais
+            const totalUsers = await this.pool.query('SELECT COUNT(*) as count FROM users');
+            this.metrics.activeUsers = parseInt(totalUsers.rows[0].count);
+
+            // 2. Usuários com trading ativo
+            const activeTraders = await this.pool.query(`
+                SELECT COUNT(*) as count 
+                FROM users 
+                WHERE trading_active = true
+            `);
+            this.metrics.activeTraders = parseInt(activeTraders.rows[0].count);
+
+            // 3. Posições ativas (todas)
+            const openPositions = await this.pool.query(`
+                SELECT COUNT(*) as count 
+                FROM active_positions
+            `);
+            this.metrics.openPositions = parseInt(openPositions.rows[0].count);
+
+            // 4. Ordens de hoje
+            const todayOrders = await this.pool.query(`
+                SELECT COUNT(*) as count 
+                FROM orders 
+                WHERE created_at >= CURRENT_DATE
+            `);
+            this.metrics.todayOrders = parseInt(todayOrders.rows[0].count);
+
+            // 5. Sinais de hoje
+            const todaySignals = await this.pool.query(`
+                SELECT COUNT(*) as count 
+                FROM signal_history 
+                WHERE created_at >= CURRENT_DATE
+            `);
+            this.metrics.todaySignals = parseInt(todaySignals.rows[0].count);
+
+            // 6. Total de saldo dos usuários
+            const totalBalance = await this.pool.query(`
+                SELECT 
+                    COALESCE(SUM(balance_brl), 0) as total_brl,
+                    COALESCE(SUM(balance_usd), 0) as total_usd
+                FROM users 
+                WHERE trading_active = true
+            `);
+            
+            const brl = parseFloat(totalBalance.rows[0].total_brl) || 0;
+            const usd = parseFloat(totalBalance.rows[0].total_usd) || 0;
+            this.metrics.totalBalance = brl + (usd * 5.8); // Conversão aproximada
 
             console.log('✅ Métricas atualizadas:', this.metrics);
 
@@ -328,21 +364,5 @@ class DashboardRealFinal {
 }
 
 // Iniciar dashboard
-if (require.main === module) {
-    const dashboard = new DashboardRealFinal();
-    dashboard.start();
-}
-
-// Função para ser usada como middleware no app principal
-async function dashboardRealFinal(req, res) {
-    try {
-        const dashboardInstance = new DashboardRealFinal();
-        await dashboardInstance.updateMetrics();
-        res.send(dashboardInstance.generateHTML());
-    } catch (error) {
-        console.error('Erro ao renderizar dashboard:', error);
-        res.status(500).send('Erro interno do servidor');
-    }
-}
-
-module.exports = { DashboardRealFinal, dashboardRealFinal };
+const dashboard = new DashboardRealFinal();
+dashboard.start();
