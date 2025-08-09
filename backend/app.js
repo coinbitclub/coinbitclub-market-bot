@@ -14,6 +14,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const { Pool } = require('pg');
+const axios = require('axios');
 require('dotenv').config({ path: '.env.production' });
 
 // Importar módulos especializados - SISTEMA MULTI-USUÁRIO COM CHAVES INDIVIDUAIS
