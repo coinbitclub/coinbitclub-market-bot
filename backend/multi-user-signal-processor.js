@@ -15,13 +15,13 @@ const DetailedSignalTracker = class { constructor() {} };
 class MultiUserSignalProcessor {
     constructor() {
         this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL || 'postgresql://postgres:YOUR_DB_PASSWORD@your-host:port/database',
+            connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/database',
             ssl: { rejectUnauthorized: false }
         });
 
-        // Configurar OpenAI
+        // Configurar OpenAI - SEMPRE usar variável de ambiente
         this.openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY || 'placeholder-key'
+            apiKey: process.env.OPENAI_API_KEY || 'your-openai-key-here'
         });
 
         console.log('🚀 Multi-User Signal Processor iniciado (STUB MODE)');
