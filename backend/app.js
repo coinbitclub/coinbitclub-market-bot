@@ -1751,13 +1751,13 @@ class CoinBitClubServer {
         this.app.get('/api/dashboard/admin-logs', this.getLogsAdministrativosReal.bind(this));
         
         // Teste de conectividade
-        this.app.get('/api/test-connection', this.testDatabaseConnection.bind(this));
+        this.app.get('/api/test-connection', this.testDatabaseConnectionAPI.bind(this));
         
         console.log('✅ Rotas do Dashboard de Produção configuradas');
     }
 
-    // Teste de conexão com banco
-    async testDatabaseConnection(req, res) {
+    // Teste de conexão com banco (para API)
+    async testDatabaseConnectionAPI(req, res) {
         try {
             const result = await this.pool.query('SELECT NOW() as current_time, version() as postgres_version');
             res.json({
