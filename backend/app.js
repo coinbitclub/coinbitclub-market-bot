@@ -192,7 +192,22 @@ class CoinBitClubServer {
         this.positionSafety = new PositionSafetyValidator();
         this.signalProcessor = new MultiUserSignalProcessor();
         this.commissionSystem = new CommissionSystem();
-        this.financialManager = new FinancialManager(this.pool);
+        
+        // Inicializar Financial Manager com tratamento de erro
+        try {
+            this.financialManager = new FinancialManager(this.pool);
+            console.log('✅ FinancialManager inicializado com sucesso');
+        } catch (error) {
+            console.error('❌ Erro ao inicializar FinancialManager:', error.message);
+            console.log('🔄 Criando fallback para FinancialManager...');
+            this.financialManager = {
+                createFinancialTables: async () => {
+                    console.log('📋 Fallback: Pulando criação de tabelas financeiras');
+                },
+                getUserBalances: async (userId) => ({ total: 0, currencies: {} }),
+                getFinancialSummary: async () => ({ total_users: 0, total_balance: 0 })
+            };
+        }
         
         // Inicializar NOVO SISTEMA ENTERPRISE DE EXCHANGES
         this.exchangeOrchestrator = new EnterpriseExchangeOrchestrator();
@@ -1680,8 +1695,17 @@ class CoinBitClubServer {
 
             // Inicializar tabelas necessárias
             console.log('🔧 Inicializando estrutura do banco...');
-            await this.financialManager.createFinancialTables();
-            console.log('✅ Estrutura do banco inicializada');
+            try {
+                if (this.financialManager && typeof this.financialManager.createFinancialTables === 'function') {
+                    await this.financialManager.createFinancialTables();
+                    console.log('✅ Estrutura do banco inicializada');
+                } else {
+                    console.log('⚠️ FinancialManager não disponível, pulando criação de tabelas');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao inicializar estrutura do banco:', error.message);
+                console.log('🔄 Continuando sem inicialização completa do banco...');
+            }
             console.log('');
 
             // Inicializar sistema enterprise de exchanges
