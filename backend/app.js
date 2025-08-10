@@ -28,6 +28,9 @@ const SignalTrackingAPI = require('./signal-tracking-api.js');
 // NOVO SISTEMA ENTERPRISE DE EXCHANGES
 const EnterpriseExchangeOrchestrator = require('./enterprise-exchange-orchestrator.js');
 
+// SISTEMA DE TRATAMENTO DE ERROS INTEGRADO
+const ErrorHandlingSystem = require('./error-handling-system.js');
+
 // SISTEMA DE MONITORAMENTO AUTOMÁTICO
 const MonitoringIntegration = require('./monitoring-integration.js');
 
@@ -56,6 +59,30 @@ class CoinBitClubServer {
             connectionString: process.env.DATABASE_URL || 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
             ssl: { rejectUnauthorized: false }
         });
+
+        // SISTEMA DE TRATAMENTO DE ERROS INTEGRADO
+        this.errorHandler = new ErrorHandlingSystem(this.pool, console);
+
+        // Helper para executar queries com tratamento automático de erros
+        this.safeQuery = async (query, params = [], context = {}) => {
+            try {
+                return await this.pool.query(query, params);
+            } catch (error) {
+                console.log(`🚨 Erro em query capturado: ${error.message}`);
+                
+                // Tentar tratamento automático
+                const handlingResult = await this.errorHandler.createErrorMiddleware()(error, context);
+                
+                if (handlingResult.success) {
+                    console.log(`✅ Erro tratado automaticamente: ${handlingResult.action}`);
+                    // Tentar query novamente após correção
+                    return await this.pool.query(query, params);
+                } else {
+                    console.log(`❌ Erro não pôde ser tratado automaticamente: ${handlingResult.error}`);
+                    throw error; // Re-throw se não conseguiu tratar
+                }
+            }
+        };
 
         // Inicializar módulos - SISTEMA MULTI-USUÁRIO!
         this.positionSafety = new PositionSafetyValidator();
@@ -905,6 +932,321 @@ class CoinBitClubServer {
                 res.status(500).json({
                     error: 'Erro ao obter status dos sistemas',
                     details: error.message
+                });
+            }
+        });
+
+        // API para verificar IP atual e diagnosticar problemas
+        this.app.get('/api/ip-diagnostic', async (req, res) => {
+            try {
+                const diagnostics = {
+                    timestamp: new Date().toISOString(),
+                    ip_info: {},
+                    ngrok_status: {},
+                    exchange_access: {},
+                    recommendations: []
+                };
+
+                // 1. Verificar IP público atual
+                try {
+                    const ipResponse = await axios.get('https://api.ipify.org?format=json', { timeout: 5000 });
+                    diagnostics.ip_info.public_ip = ipResponse.data.ip;
+
+                    // Verificar geolocalização
+                    const geoResponse = await axios.get(`http://ip-api.com/json/${ipResponse.data.ip}`, { timeout: 5000 });
+                    if (geoResponse.data.status === 'success') {
+                        diagnostics.ip_info.location = {
+                            country: geoResponse.data.country,
+                            countryCode: geoResponse.data.countryCode,
+                            region: geoResponse.data.regionName,
+                            city: geoResponse.data.city,
+                            isp: geoResponse.data.isp,
+                            org: geoResponse.data.org
+                        };
+
+                        // Verificar se é região restrita
+                        const restrictedCountries = ['US', 'CN', 'MY', 'SG', 'JP'];
+                        if (restrictedCountries.includes(geoResponse.data.countryCode)) {
+                            diagnostics.recommendations.push({
+                                type: 'WARNING',
+                                message: `IP está em região restrita (${geoResponse.data.country}). Binance pode bloquear acesso.`,
+                                solution: 'Configure Ngrok com região permitida ou use VPN'
+                            });
+                        }
+                    }
+                } catch (error) {
+                    diagnostics.ip_info.error = error.message;
+                }
+
+                // 2. Verificar status do Ngrok
+                try {
+                    const ngrokResponse = await axios.get('http://127.0.0.1:4040/api/tunnels', { timeout: 3000 });
+                    if (ngrokResponse.data.tunnels && ngrokResponse.data.tunnels.length > 0) {
+                        const tunnel = ngrokResponse.data.tunnels[0];
+                        diagnostics.ngrok_status = {
+                            active: true,
+                            url: tunnel.public_url,
+                            name: tunnel.name,
+                            proto: tunnel.proto,
+                            config: tunnel.config
+                        };
+                    } else {
+                        diagnostics.ngrok_status = { active: false, message: 'Nenhum túnel ativo' };
+                        diagnostics.recommendations.push({
+                            type: 'ERROR',
+                            message: 'Ngrok não está ativo - IP não é fixo',
+                            solution: 'Verificar NGROK_AUTH_TOKEN e NGROK_ENABLED no Railway'
+                        });
+                    }
+                } catch (error) {
+                    diagnostics.ngrok_status = { active: false, error: error.message };
+                    diagnostics.recommendations.push({
+                        type: 'ERROR', 
+                        message: 'Ngrok não está rodando',
+                        solution: 'Configurar variáveis NGROK_* no Railway e redeploy'
+                    });
+                }
+
+                // 3. Testar acesso às exchanges
+                const exchanges = [
+                    { name: 'bybit_mainnet', url: 'https://api.bybit.com/v5/market/time' },
+                    { name: 'bybit_testnet', url: 'https://api-testnet.bybit.com/v5/market/time' },
+                    { name: 'binance_mainnet', url: 'https://api.binance.com/api/v3/time' },
+                    { name: 'binance_testnet', url: 'https://testnet.binance.vision/api/v3/time' }
+                ];
+
+                for (const exchange of exchanges) {
+                    try {
+                        const response = await axios.get(exchange.url, { 
+                            timeout: 5000,
+                            headers: { 'User-Agent': 'CoinBitClub-Bot/1.0' }
+                        });
+                        diagnostics.exchange_access[exchange.name] = {
+                            status: 'accessible',
+                            response_time: response.headers['x-response-time'] || 'unknown',
+                            server_time: response.data.serverTime || response.data.time || 'unknown'
+                        };
+                    } catch (error) {
+                        diagnostics.exchange_access[exchange.name] = {
+                            status: 'blocked',
+                            error: error.response?.status || error.code,
+                            message: error.response?.data?.msg || error.message
+                        };
+
+                        if (error.response?.status === 403) {
+                            diagnostics.recommendations.push({
+                                type: 'ERROR',
+                                message: `${exchange.name}: IP bloqueado (403 Forbidden)`,
+                                solution: 'Adicionar IP atual no whitelist da exchange'
+                            });
+                        } else if (error.message.includes('restricted location')) {
+                            diagnostics.recommendations.push({
+                                type: 'ERROR',
+                                message: `${exchange.name}: Região geográfica bloqueada`,
+                                solution: 'Usar Ngrok com região permitida (ex: Europa)'
+                            });
+                        }
+                    }
+                }
+
+                // 4. Verificar problemas de banco de dados
+                try {
+                    const duplicateCheck = await this.pool.query(`
+                        SELECT user_id, asset, account_type, COUNT(*) as count
+                        FROM balances 
+                        GROUP BY user_id, asset, account_type 
+                        HAVING COUNT(*) > 1
+                        LIMIT 5
+                    `);
+
+                    if (duplicateCheck.rows.length > 0) {
+                        diagnostics.database_issues = {
+                            duplicate_balance_records: duplicateCheck.rows.length,
+                            examples: duplicateCheck.rows
+                        };
+                        diagnostics.recommendations.push({
+                            type: 'WARNING',
+                            message: 'Registros duplicados na tabela balances',
+                            solution: 'Executar limpeza de dados duplicados'
+                        });
+                    }
+                } catch (error) {
+                    diagnostics.database_issues = { error: error.message };
+                }
+
+                res.json(diagnostics);
+
+            } catch (error) {
+                res.status(500).json({
+                    error: 'Erro no diagnóstico',
+                    details: error.message
+                });
+            }
+        });
+
+        // 🧪 ENDPOINTS DE TESTE PARA SISTEMA DE TRATAMENTO DE ERROS
+        
+        // Teste de Database Constraint Error
+        this.app.post('/api/test/constraint-error', async (req, res) => {
+            try {
+                console.log('🧪 Testando Database Constraint Error...');
+                
+                // Simular inserção duplicada na tabela balances
+                const testData = {
+                    user_id: 1,
+                    asset: 'BTCUSDT',
+                    account_type: 'spot',
+                    balance: 1.5
+                };
+
+                try {
+                    // Inserir o primeiro registro
+                    await this.pool.query(`
+                        INSERT INTO balances (user_id, asset, account_type, balance, updated_at)
+                        VALUES ($1, $2, $3, $4, NOW())
+                    `, [testData.user_id, testData.asset, testData.account_type, testData.balance]);
+
+                    // Tentar inserir novamente (deve gerar constraint error)
+                    await this.pool.query(`
+                        INSERT INTO balances (user_id, asset, account_type, balance, updated_at)
+                        VALUES ($1, $2, $3, $4, NOW())
+                    `, [testData.user_id, testData.asset, testData.account_type, testData.balance + 0.1]);
+
+                } catch (constraintError) {
+                    console.log('❌ Constraint error capturado:', constraintError.message);
+                    
+                    // Usar o sistema de tratamento de erros
+                    const handlingResult = await this.errorHandler.handleConstraintError(constraintError, testData);
+                    
+                    return res.json({
+                        test: 'DATABASE_CONSTRAINT_ERROR',
+                        error_detected: true,
+                        error_type: constraintError.code,
+                        handling_result: handlingResult,
+                        message: 'Constraint error tratado com sucesso',
+                        stats: this.errorHandler.getErrorStats()
+                    });
+                }
+
+                res.json({
+                    test: 'DATABASE_CONSTRAINT_ERROR',
+                    error_detected: false,
+                    message: 'Nenhum constraint error gerado - dados inseridos com sucesso'
+                });
+
+            } catch (error) {
+                console.error('Erro no teste de constraint:', error);
+                res.status(500).json({
+                    test: 'DATABASE_CONSTRAINT_ERROR',
+                    error: 'Erro durante teste',
+                    details: error.message
+                });
+            }
+        });
+
+        // Teste de API Key Format Error
+        this.app.post('/api/test/api-key-error', async (req, res) => {
+            try {
+                console.log('🧪 Testando API Key Format Error...');
+                
+                const testCases = [
+                    {
+                        name: 'Binance Key Too Short',
+                        user_id: 1,
+                        exchange: 'binance',
+                        api_key: 'short_key_123',
+                        api_secret: 'short_secret'
+                    },
+                    {
+                        name: 'Bybit Key Invalid Characters',
+                        user_id: 2,
+                        exchange: 'bybit',
+                        api_key: 'invalid@key#with$symbols',
+                        api_secret: 'also@invalid#secret$here'
+                    },
+                    {
+                        name: 'Binance Empty Keys',
+                        user_id: 3,
+                        exchange: 'binance',
+                        api_key: '',
+                        api_secret: ''
+                    }
+                ];
+
+                const results = [];
+
+                for (const testCase of testCases) {
+                    console.log(`  🔍 Testando: ${testCase.name}`);
+                    
+                    try {
+                        // Simular erro de API key format
+                        const mockError = new Error(`API key format invalid for ${testCase.exchange}`);
+                        
+                        // Usar o sistema de tratamento de erros
+                        const handlingResult = await this.errorHandler.handleAPIKeyError(mockError, testCase);
+                        
+                        results.push({
+                            test_case: testCase.name,
+                            error_handled: true,
+                            handling_result: handlingResult
+                        });
+
+                    } catch (handlingError) {
+                        results.push({
+                            test_case: testCase.name,
+                            error_handled: false,
+                            error: handlingError.message
+                        });
+                    }
+                }
+
+                res.json({
+                    test: 'API_KEY_FORMAT_ERROR',
+                    test_cases_run: testCases.length,
+                    results: results,
+                    stats: this.errorHandler.getErrorStats(),
+                    message: 'Testes de API key format concluídos'
+                });
+
+            } catch (error) {
+                console.error('Erro no teste de API key:', error);
+                res.status(500).json({
+                    test: 'API_KEY_FORMAT_ERROR',
+                    error: 'Erro durante teste',
+                    details: error.message
+                });
+            }
+        });
+
+        // Status do sistema de tratamento de erros
+        this.app.get('/api/error-handling/status', (req, res) => {
+            try {
+                const stats = this.errorHandler.getErrorStats();
+                
+                res.json({
+                    system: 'ERROR_HANDLING_SYSTEM',
+                    status: 'ACTIVE',
+                    statistics: stats,
+                    capabilities: [
+                        'Database Constraint Error Detection',
+                        'API Key Format Validation',
+                        'Automatic Error Correction',
+                        'Duplicate Record Cleanup',
+                        'Invalid Key Marking'
+                    ],
+                    endpoints: {
+                        test_constraint: 'POST /api/test/constraint-error',
+                        test_api_keys: 'POST /api/test/api-key-error',
+                        status: 'GET /api/error-handling/status'
+                    },
+                    timestamp: new Date().toISOString()
+                });
+
+            } catch (error) {
+                res.status(500).json({
+                    system: 'ERROR_HANDLING_SYSTEM',
+                    status: 'ERROR',
+                    error: error.message
                 });
             }
         });

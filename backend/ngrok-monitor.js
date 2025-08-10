@@ -53,8 +53,12 @@ class NgrokMonitor {
         return new Promise((resolve, reject) => {
             console.log('🔗 Estabelecendo túnel...');
             
+            // Região preferencial: EU para evitar restrições US
+            const region = process.env.NGROK_REGION || 'eu';
+            console.log(`🌍 Usando região: ${region}`);
+            
             // Iniciar ngrok via HTTP simples (mais confiável)
-            this.ngrokProcess = spawn('ngrok', ['http', '3000', '--region=us'], {
+            this.ngrokProcess = spawn('ngrok', ['http', '3000', `--region=${region}`], {
                 detached: false,
                 stdio: ['ignore', 'pipe', 'pipe']
             });
@@ -100,7 +104,7 @@ class NgrokMonitor {
                 console.log('========================');
                 console.log(`📡 URL Pública: ${publicUrl}`);
                 console.log(`🔢 IP/Subdomain: ${newIP}`);
-                console.log(`🌍 Região: US East`);
+                console.log(`🌍 Região: ${process.env.NGROK_REGION || 'EU (Europa)'}`);
                 console.log(`🔒 HTTPS: Ativo`);
 
                 this.currentIP = newIP;
@@ -120,7 +124,7 @@ class NgrokMonitor {
                     url: publicUrl,
                     ip: newIP,
                     timestamp: new Date().toISOString(),
-                    region: 'us'
+                    region: process.env.NGROK_REGION || 'eu'
                 }, null, 2));
 
             } else {
