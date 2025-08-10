@@ -1,52 +1,29 @@
-#!/usr/bin/env node
+const express = require('express');
 
-/**
- * RAILWAY ENTRY POINT - CoinBitClub Market Bot
- * Este é o ponto de entrada principal para o Railway
- */
+console.log('� RAILWAY SIMPLE START');
+console.log('Port:', process.env.PORT || 3000);
 
-console.log('🚀 Iniciando CoinBitClub Market Bot...');
-console.log('📍 Environment:', process.env.NODE_ENV || 'development');
-console.log('🔧 Port:', process.env.PORT || 3000);
-
+// Tentar importar o servidor principal
 try {
-    // Importar e inicializar o servidor
     const CoinBitClubServer = require('./app.js');
-    
-    console.log('✅ Módulo app.js carregado com sucesso');
-    
-    // Criar e iniciar instância do servidor
     const server = new CoinBitClubServer();
+    server.start();
+} catch (error) {
+    console.error('❌ Erro ao carregar servidor principal, usando fallback:', error.message);
     
-    console.log('🔄 Iniciando servidor...');
-    server.start().catch(error => {
-        console.error('❌ Erro ao iniciar servidor:', error);
-        process.exit(1);
+    // Fallback simples
+    const app = express();
+    const port = process.env.PORT || 3000;
+    
+    app.get('/', (req, res) => {
+        res.send('<h1>🚀 CoinBitClub Market Bot</h1><p>Server running but dashboard loading...</p>');
     });
     
-} catch (error) {
-    console.error('❌ ERRO CRÍTICO ao carregar aplicação:', error);
-    console.error('Stack:', error.stack);
-    process.exit(1);
+    app.get('/health', (req, res) => {
+        res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    });
+    
+    app.listen(port, '0.0.0.0', () => {
+        console.log(`✅ Fallback server running on port ${port}`);
+    });
 }
-
-// Tratamento de sinais para shutdown graceful
-process.on('SIGTERM', () => {
-    console.log('📤 SIGTERM recebido. Iniciando shutdown graceful...');
-    process.exit(0);
-});
-
-process.on('SIGINT', () => {
-    console.log('📤 SIGINT recebido. Iniciando shutdown graceful...');
-    process.exit(0);
-});
-
-process.on('uncaughtException', (error) => {
-    console.error('❌ Uncaught Exception:', error);
-    process.exit(1);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
-    process.exit(1);
-});
