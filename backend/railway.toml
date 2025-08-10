@@ -15,4 +15,4 @@ ANALYTICS_ENABLED = "true"
 
 [environments.production.build]
 buildCommand = "npm install --production"
-startCommand = "node app.js"
+startCommand = "node index.js"
