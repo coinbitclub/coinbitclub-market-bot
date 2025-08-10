@@ -4,10 +4,14 @@
   "description": "Sistema de Trading Automatizado CoinBitClub",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node start.js",
+    "app": "node app.js",
     "railway": "node railway-ngrok-integration.js",
-    "dev": "node app.js",
-    "test": "node test-complete.js"
+    "dev": "node start.js",
+    "test": "node test-complete.js",
+    "test-local": "node test-local.js",
+    "deploy": "node auto-deploy.js",
+    "ip-fix": "node start.js"
   },
   "dependencies": {
     "express": "^4.18.2",

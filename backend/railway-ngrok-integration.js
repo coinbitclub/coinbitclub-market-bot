@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 
 /**
- * 🚂 RAILWAY + NGROK INTEGRATION
- * ==============================
+ * 🌐 RAILWAY NGROK INTEGRATION - IP FIXO ENTERPRISE v2.0
+ * ======================================================
  * 
- * Integra Ngrok com Railway para IP fixo automático
+ * Solução robusta para IP fixo no Railway usando Ngrok
+ * Integração automática com restart e health check
  */
 
 const { spawn, fork } = require('child_process');
 const axios = require('axios');
 const fs = require('fs');
+require('dotenv').config();
 
 class RailwayNgrokIntegration {
     constructor() {

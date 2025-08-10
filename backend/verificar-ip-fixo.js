@@ -132,13 +132,39 @@ class IPFixoChecker {
         console.log('\n🎯 RESUMO DO IP FIXO:');
         console.log('=' .repeat(50));
         
+        // Verificar se há arquivo de informações do Ngrok
+        try {
+            if (require('fs').existsSync('./ngrok-info.json')) {
+                const ngrokInfo = JSON.parse(require('fs').readFileSync('./ngrok-info.json', 'utf8'));
+                console.log(`✅ SEU IP FIXO: ${ngrokInfo.url}`);
+                console.log(`🏷️ Subdomínio: ${ngrokInfo.subdomain || 'não definido'}`);
+                console.log(`📅 Estabelecido: ${new Date(ngrokInfo.timestamp).toLocaleString()}`);
+                console.log('🔒 Este é o URL que deve ser usado nas exchanges');
+                console.log('📋 Configure este IP no whitelist da Bybit/Binance');
+                console.log('');
+                console.log('🔗 URLs para whitelist:');
+                console.log(`   • Webhook: ${ngrokInfo.url}/webhook`);
+                console.log(`   • API: ${ngrokInfo.url}/api/*`);
+                console.log(`   • Health: ${ngrokInfo.url}/health`);
+                return ngrokInfo.url;
+            }
+        } catch (error) {
+            console.log('⚠️ Erro ao ler informações do Ngrok:', error.message);
+        }
+        
         // Se Ngrok está configurado
         const ngrokSubdomain = process.env.NGROK_SUBDOMAIN;
-        if (ngrokSubdomain) {
+        const ngrokEnabled = process.env.NGROK_ENABLED === 'true';
+        
+        if (ngrokEnabled && ngrokSubdomain) {
             const ngrokUrl = `https://${ngrokSubdomain}.ngrok.io`;
-            console.log(`✅ SEU IP FIXO: ${ngrokUrl}`);
+            console.log(`✅ SEU IP FIXO CONFIGURADO: ${ngrokUrl}`);
             console.log('🔒 Este é o URL que deve ser usado nas exchanges');
             console.log('📋 Configure este IP no whitelist da Bybit/Binance');
+            console.log('');
+            console.log('⚠️ ATENÇÃO: Ngrok pode não estar ativo ainda');
+            console.log('   Aguarde alguns minutos após o deploy');
+            console.log('   Ou reinicie o serviço no Railway');
             return ngrokUrl;
         }
         
@@ -146,7 +172,10 @@ class IPFixoChecker {
         console.log('💡 Para configurar:');
         console.log('   1. Configure NGROK_AUTH_TOKEN no Railway');
         console.log('   2. Configure NGROK_SUBDOMAIN=coinbitclub-bot');
-        console.log('   3. Redeploy o sistema');
+        console.log('   3. Configure NGROK_ENABLED=true');
+        console.log('   4. Redeploy o sistema');
+        console.log('');
+        console.log('📖 Consulte o arquivo DEPLOY-GUIDE.md para instruções completas');
         
         return null;
     }

@@ -25,11 +25,12 @@ RUN curl -sSL https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.t
 # Create app directory
 WORKDIR /usr/src/app
 
-# Copy package files
-COPY package*.json ./
+# Copy ONLY package.json first (no lock file to force clean install)
+COPY package.json ./
 
-# Install dependencies using package-lock.json
-RUN npm ci --only=production --silent
+# CRITICAL: Use npm install with clear cache to avoid ANY sync issues
+RUN npm cache clean --force
+RUN npm install --production --no-audit --no-fund --no-package-lock
 
 # Copy the rest of application
 COPY . .
