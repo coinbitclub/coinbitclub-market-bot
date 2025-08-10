@@ -2,9 +2,9 @@
   "name": "coinbitclub-market-bot",
   "version": "3.0.0",
   "description": "Sistema de Trading Automatizado CoinBitClub",
-  "main": "minimal-server.js",
+  "main": "hybrid-server.js",
   "scripts": {
-    "start": "node minimal-server.js",
+    "start": "node hybrid-server.js",
     "main": "node app.js",
     "railway": "node railway-ngrok-integration.js",
     "dev": "node start.js",

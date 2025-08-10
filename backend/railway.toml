@@ -15,4 +15,4 @@ ANALYTICS_ENABLED = "true"
 
 [environments.production.build]
 buildCommand = "npm install --production"
-startCommand = "node minimal-server.js"
+startCommand = "node hybrid-server.js"
