@@ -192,9 +192,15 @@ class CoinBitClubServer {
         // Configurar rotas do dashboard de produção com dados reais
         this.setupDashboardProductionRoutes();
 
-        // Rota principal - Dashboard HTML
-        this.app.get('/', (req, res) => {
-            res.sendFile(path.join(__dirname, 'public', 'index.html'));
+        // Rota principal - Dashboard HTML Dinâmico
+        this.app.get('/', async (req, res) => {
+            try {
+                const dashboardHTML = await this.gerarDashboardHTML();
+                res.send(dashboardHTML);
+            } catch (error) {
+                console.error('❌ Erro ao gerar dashboard:', error);
+                res.status(500).send('<h1>Erro interno do servidor</h1>');
+            }
         });
 
         // API para o dashboard HTML
@@ -1818,29 +1824,32 @@ class CoinBitClubServer {
     // Fluxo de sinais com dados reais corrigidos
     async getFluxoSinaisReal(req, res) {
         try {
-            // Query corrigida para tabela 'signals' (onde os dados realmente estão)
+            // Query corrigida para tabela 'signals' - ELIMINANDO ERROS NULL
             const signalsQuery = await this.pool.query(`
                 SELECT 
                     COUNT(*) as total_sinais,
                     COUNT(CASE WHEN created_at >= CURRENT_DATE THEN 1 END) as sinais_hoje,
                     COUNT(CASE WHEN created_at >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as sinais_semana,
-                    COUNT(CASE WHEN status = 'PROCESSED' THEN 1 END) as sinais_processados,
-                    COUNT(CASE WHEN action = 'BUY' OR signal_type LIKE '%LONG%' THEN 1 END) as sinais_buy,
-                    COUNT(CASE WHEN action = 'SELL' OR signal_type LIKE '%SHORT%' THEN 1 END) as sinais_sell,
-                    COUNT(DISTINCT symbol) as symbols_diferentes,
+                    COUNT(CASE WHEN status = 'PROCESSED' OR processed = true THEN 1 END) as sinais_processados,
+                    COUNT(CASE WHEN status = 'PENDING' OR processed = false OR processed IS NULL THEN 1 END) as sinais_pendentes,
+                    COUNT(CASE WHEN (action = 'BUY' OR signal_type ILIKE '%LONG%' OR signal_type ILIKE '%BUY%') THEN 1 END) as sinais_buy,
+                    COUNT(CASE WHEN (action = 'SELL' OR signal_type ILIKE '%SHORT%' OR signal_type ILIKE '%SELL%') THEN 1 END) as sinais_sell,
+                    COUNT(DISTINCT COALESCE(symbol, 'UNKNOWN')) as symbols_diferentes,
                     MAX(created_at) as ultimo_sinal,
-                    AVG(CASE WHEN fear_greed_index IS NOT NULL THEN fear_greed_index END) as fear_greed_medio
+                    COALESCE(AVG(CASE WHEN fear_greed_index IS NOT NULL AND fear_greed_index > 0 THEN fear_greed_index END), 50) as fear_greed_medio
                 FROM signals 
                 WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
             `);
             
-            // Query para análise de execução por ambiente
+            // Query para análise de execução por ambiente - CORRIGIDA
             const executionQuery = await this.pool.query(`
                 SELECT 
                     COUNT(*) as total_execucoes,
-                    COUNT(CASE WHEN processed = true THEN 1 END) as execucoes_sucesso,
-                    COUNT(CASE WHEN environment = 'mainnet' THEN 1 END) as mainnet_execucoes,
-                    COUNT(CASE WHEN environment = 'testnet' THEN 1 END) as testnet_execucoes
+                    COUNT(CASE WHEN (processed = true OR status = 'PROCESSED') THEN 1 END) as execucoes_sucesso,
+                    COUNT(CASE WHEN COALESCE(environment, 'mainnet') = 'mainnet' THEN 1 END) as mainnet_execucoes,
+                    COUNT(CASE WHEN environment = 'testnet' THEN 1 END) as testnet_execucoes,
+                    COUNT(CASE WHEN status = 'APPROVED' THEN 1 END) as sinais_aprovados,
+                    COUNT(CASE WHEN status = 'REJECTED' THEN 1 END) as sinais_rejeitados
                 FROM signals 
                 WHERE created_at >= CURRENT_DATE
             `);
@@ -1865,23 +1874,29 @@ class CoinBitClubServer {
             const execution = executionQuery.rows[0];
             const latestSignals = latestSignalsQuery.rows;
             
-            // Calcular taxa de aprovação
-            const taxaAprovacao = signals.total_sinais > 0 
-                ? ((signals.sinais_processados / signals.total_sinais) * 100).toFixed(1)
+            // Calcular métricas corrigidas
+            const totalRecebidos = parseInt(signals?.total_sinais || 0);
+            const totalProcessados = parseInt(signals?.sinais_processados || 0);
+            const totalPendentes = parseInt(signals?.sinais_pendentes || 0);
+            const taxaAprovacao = totalRecebidos > 0 
+                ? ((totalProcessados / totalRecebidos) * 100).toFixed(1)
                 : '0.0';
 
             res.json({
                 success: true,
                 data: {
+                    // MÉTRICAS PRINCIPAIS - RECEBIDOS vs PROCESSADOS
                     total: parseInt(signals?.sinais_hoje || 0),
-                    processed: parseInt(signals?.sinais_processados || 0),
-                    pending: parseInt(signals?.sinais_hoje || 0) - parseInt(signals?.sinais_processados || 0),
-                    approved: parseInt(signals?.sinais_processados || 0),
-                    rejected: parseInt(signals?.total_sinais || 0) - parseInt(signals?.sinais_processados || 0),
+                    recebidos: totalRecebidos,
+                    processados: totalProcessados,
+                    pendentes: totalPendentes,
+                    approved: parseInt(execution?.sinais_aprovados || 0),
+                    rejected: parseInt(execution?.sinais_rejeitados || 0),
                     
                     // Estatísticas adicionais
                     sinais_semana: parseInt(signals?.sinais_semana || 0),
                     taxa_aprovacao: parseFloat(taxaAprovacao),
+                    taxa_processamento: totalRecebidos > 0 ? ((totalProcessados / totalRecebidos) * 100).toFixed(1) : '0.0',
                     symbols_diferentes: parseInt(signals?.symbols_diferentes || 0),
                     ultimo_sinal: signals?.ultimo_sinal || null,
                     fear_greed_medio: parseFloat(signals?.fear_greed_medio || 50),
@@ -2763,6 +2778,27 @@ class CoinBitClubServer {
             font-size: 12px;
             font-weight: bold;
         }
+        .signal-approved { 
+            background: #4CAF50; 
+            color: white; 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .signal-rejected { 
+            background: #ff5722; 
+            color: white; 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            font-size: 12px;
+            font-weight: bold;
+        } 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            font-size: 12px;
+            font-weight: bold;
+        }
         .mainnet { 
             background: #2196F3; 
             color: white; 
@@ -3097,37 +3133,44 @@ class CoinBitClubServer {
             document.getElementById('ia-analysis-content').innerHTML = content;
         }
 
-        // Função de renderização do fluxo de sinais
+        // Função de renderização do fluxo de sinais - CORRIGIDA
         function renderizarFluxoSinais(data) {
             const content = \`
                 <div class="real-data-grid">
                     <div class="metric-card">
-                        <div class="metric-title">SINAIS HOJE</div>
-                        <div class="metric-value">\${data.sinais_hoje || 0}</div>
-                        <div class="metric-detail">TradingView → Sistema</div>
+                        <div class="metric-title">SINAIS RECEBIDOS</div>
+                        <div class="metric-value">\${data.recebidos || 0}</div>
+                        <div class="metric-detail">Total TradingView</div>
                     </div>
                     <div class="metric-card">
                         <div class="metric-title">PROCESSADOS</div>
-                        <div class="metric-value">\${data.sinais_processados || 0}</div>
-                        <div class="metric-detail">Status: Executed</div>
+                        <div class="metric-value">\${data.processados || 0}</div>
+                        <div class="metric-detail">Taxa: \${data.taxa_processamento || 0}%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">PENDENTES</div>
+                        <div class="metric-value">\${data.pendentes || 0}</div>
+                        <div class="metric-detail">Aguardando execução</div>
                     </div>
                     <div class="metric-card">
                         <div class="metric-title">ÚLTIMO SINAL</div>
                         <div class="metric-value">\${data.ultimo_sinal ? new Date(data.ultimo_sinal).toLocaleTimeString('pt-BR') : 'N/A'}</div>
                         <div class="metric-detail">Recebido via Webhook</div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-title">WEBHOOK STATUS</div>
-                        <div class="metric-value">\${data.webhook_status || '✅'}</div>
-                        <div class="metric-detail">TradingView Connect</div>
-                    </div>
                 </div>
 
                 <div class="signals-breakdown">
                     <div>
-                        <h4 style="margin-bottom: 10px; color: #4CAF50;">📈 Tipos de Sinais</h4>
+                        <h4 style="margin-bottom: 10px; color: #4CAF50;">📊 Status de Processamento</h4>
                         <div class="signal-types">
-                            <div class="signal-buy">BUY: \${data.sinais_buy || 0}</div>
+                            <div class="signal-approved">✅ Aprovados: \${data.approved || 0}</div>
+                            <div class="signal-rejected">❌ Rejeitados: \${data.rejected || 0}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 10px; color: #2196F3;">📈 Tipos de Sinais</h4>
+                        <div class="signal-types">
+                            <div class="signal-buy">📈 BUY/LONG: \${data.sinais_buy || 0}</div>
                             <div class="signal-sell">SELL: \${data.sinais_sell || 0}</div>
                         </div>
                     </div>
