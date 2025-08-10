@@ -1,35 +1,56 @@
-# RAILWAY DOCKERFILE - NO CACHE VERSION
-FROM node:18-alpine
+# 🔥 DOCKERFILE FORCE REBUILD - NO CACHE WHATSOEVER
+# ===================================================
+# Railway cache buster version with timestamp: 2025-08-09-21:46:xx
+# This forces complete rebuild by changing base layer
 
-# Install system dependencies for Ngrok
-RUN apk add --no-cache curl bash python3 make g++
+FROM node:18-slim
 
-# Install Ngrok
-RUN curl -s https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz | tar xzf - -C /usr/local/bin
+# Force cache invalidation with current timestamp
+ARG CACHE_BUST=20250809214600
+RUN echo "Cache bust: $CACHE_BUST"
 
-# Set working directory
-WORKDIR /app
+# Install ALL system dependencies in one layer to avoid cache
+RUN apt-get update && apt-get install -y \
+    curl \
+    bash \
+    python3 \
+    build-essential \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy package files
-COPY package*.json ./
+# Download and install Ngrok directly
+RUN curl -sSL https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz \
+    | tar -xz -C /usr/local/bin
 
-# Install dependencies with npm install (not npm ci)
-RUN npm install --production --no-audit --no-fund
+# Create app directory
+WORKDIR /usr/src/app
 
-# Copy application code
+# Copy ONLY package.json first (no lock file to force clean install)
+COPY package.json ./
+
+# CRITICAL: Use npm install with clear cache to avoid ANY sync issues
+RUN npm cache clean --force
+RUN npm install --production --no-audit --no-fund --no-package-lock
+
+# Copy the rest of application
 COPY . .
 
-# Set permissions
-RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
-RUN chown -R nextjs:nodejs /app
-USER nextjs
+# Create non-root user
+RUN groupadd -r nodejs && useradd -r -g nodejs nodejs
+RUN chown -R nodejs:nodejs /usr/src/app
+USER nodejs
+
+# Environment setup
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV FORCE_REBUILD=true
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
 
 # Expose port
 EXPOSE 3000
 
-# Environment variables
-ENV NODE_ENV=production
-ENV PORT=3000
-
-# Start command - use npm start to trigger railway-ngrok-integration.js
+# Start application
 CMD ["npm", "start"]
