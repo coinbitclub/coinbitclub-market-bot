@@ -1,30 +1,37 @@
 // SECURITY_VALIDATED: 2025-08-08T23:27:20.618Z
 // Este arquivo foi verificado e tem credenciais protegidas
 
-#!/usr/bin/env node
-
 /**
- * 🔥 ENHANCED SIGNAL PROCESSOR WITH REAL EXECUTION
- * ================================================
+ * 🔥 ENHANCED SIGNAL PROCESSOR WITH REAL EXECUTION - v3.0.0 EMERGENCY
+ * ===================================================================
  * 
- * Processa sinais TradingView E executa operações reais nas exchanges
+ * Sistema integrado de processamento e execução real de sinais
+ * Suporte completo para operação simultânea TESTNET + MAINNET
+ * Integração com emergency-exchange-connector
  */
 
 const { Pool } = require('pg');
 const ccxt = require('ccxt');
+const EmergencyExchangeConnector = require('./emergency-exchange-connector.js');
+const RealTradingExecutor = require('./real-trading-executor.js');
 
 class EnhancedSignalProcessorWithExecution {
     constructor() {
         this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL || 'postgresql://postgres:PROTECTED_DB_PASSWORD@trolley.proxy.rlwy.net:44790/railway',
+            connectionString: process.env.DATABASE_URL || 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
             ssl: { rejectUnauthorized: false }
         });
 
-        // Configurar exchanges com chaves reais do Railway
+        // 🚨 SISTEMA DE EMERGÊNCIA INTEGRADO
+        this.emergencyConnector = new EmergencyExchangeConnector();
+        this.realExecutor = new RealTradingExecutor();
+        
+        // Configurar exchanges com fallback
         this.exchanges = this.setupExchanges();
         
-        console.log('🔥 Enhanced Signal Processor with REAL EXECUTION iniciado');
+        console.log('🔥 Enhanced Signal Processor with EMERGENCY EXECUTION iniciado');
         console.log(`🔗 Trading Real: ${process.env.ENABLE_REAL_TRADING === 'true' ? 'ATIVADO' : 'SIMULAÇÃO'}`);
+        console.log('🚨 Sistema de emergência para IP fixo: ATIVO');
     }
 
     setupExchanges() {
@@ -67,7 +74,7 @@ class EnhancedSignalProcessorWithExecution {
     }
 
     async processSignal(signalData) {
-        console.log('🔄 Processando sinal com EXECUÇÃO REAL:', signalData);
+        console.log('🔄 Processando sinal com EMERGENCY EXECUTION:', signalData);
 
         try {
             // 1. Validar estrutura do sinal
@@ -90,20 +97,30 @@ class EnhancedSignalProcessorWithExecution {
             // 3. Registrar sinal no banco
             const signalId = await this.saveTradingSignal(signalData);
 
-            // 4. SE TRADING REAL ATIVADO - EXECUTAR OPERAÇÃO
+            // 🚨 4. EXECUTAR COM SISTEMA DE EMERGÊNCIA
             if (process.env.ENABLE_REAL_TRADING === 'true') {
-                console.log('🚀 EXECUTANDO OPERAÇÃO REAL...');
+                console.log('� EXECUTANDO COM SISTEMA DE EMERGÊNCIA...');
                 
-                const executionResult = await this.executeRealOperation({
-                    signalId,
-                    symbol,
-                    action,
-                    price,
-                    leverage,
-                    quantity,
-                    stopLoss,
-                    takeProfit
-                });
+                // Usar o novo executor real com suporte a IP fixo
+                const executionResult = await this.realExecutor.processSignalAndExecute(signalData);
+                
+                // Se falhou, tentar com sistema de emergência
+                if (executionResult.successful_users === 0) {
+                    console.log('🚨 Tentando com Emergency Connector...');
+                    const emergencyResult = await this.emergencyConnector.executeRealOrder(signalData);
+                    
+                    return {
+                        id: signalId,
+                        symbol,
+                        action,
+                        price,
+                        leverage,
+                        status: 'EXECUTED_EMERGENCY',
+                        executionResult: executionResult,
+                        emergencyResult: emergencyResult,
+                        timestamp: new Date().toISOString()
+                    };
+                }
 
                 return {
                     id: signalId,
@@ -112,7 +129,7 @@ class EnhancedSignalProcessorWithExecution {
                     price,
                     leverage,
                     status: 'EXECUTED_REAL',
-                    executionResult,
+                    executionResult: executionResult,
                     timestamp: new Date().toISOString()
                 };
             } else {

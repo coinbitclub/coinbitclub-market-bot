@@ -184,13 +184,14 @@ async function loadMainSystem() {
         const CoinBitClubServer = require('./app.js');
         const mainServer = new CoinBitClubServer();
         
-        // Não fazer app.listen no sistema principal - usar o nosso
+        // Salvar referência
         global.mainServerInstance = mainServer;
         
-        // Configurar rotas do sistema principal
-        mainServer.app = app; // Usar nossa instância do Express
+        // Adicionar rotas do painel manualmente
+        setupPainelRoutes(mainServer);
         
         console.log('✅ Sistema principal carregado com sucesso!');
+        console.log('🎯 Painel de controle disponível em: /painel');
         systemState.mainSystemLoaded = true;
         systemState.mainSystemError = null;
         
@@ -199,6 +200,129 @@ async function loadMainSystem() {
         systemState.mainSystemError = error.message;
         systemState.fallbackMode = true;
     }
+}
+
+// Configurar rotas do painel no hybrid server
+function setupPainelRoutes(mainServer) {
+    console.log('🎯 Configurando rotas do painel...');
+    
+    // 🏠 Dashboard Principal do Painel
+    app.get('/painel', (req, res) => {
+        if (mainServer && typeof mainServer.gerarHTMLPainelControle === 'function') {
+            res.send(mainServer.gerarHTMLPainelControle());
+        } else {
+            res.send(getPainelFallbackHTML());
+        }
+    });
+
+    // 📊 Dashboard Executivo
+    app.get('/painel/executivo', (req, res) => {
+        res.send('<h1>Dashboard Executivo - Em desenvolvimento</h1>');
+    });
+
+    // 🔄 Fluxo Operacional
+    app.get('/painel/fluxo', (req, res) => {
+        res.send('<h1>Fluxo Operacional - Em desenvolvimento</h1>');
+    });
+
+    // 🧠 Análise de Decisões
+    app.get('/painel/decisoes', (req, res) => {
+        res.send('<h1>Análise de Decisões - Em desenvolvimento</h1>');
+    });
+
+    // 👥 Monitoramento de Usuários
+    app.get('/painel/usuarios', (req, res) => {
+        res.send('<h1>Monitoramento de Usuários - Em desenvolvimento</h1>');
+    });
+
+    // 🚨 Sistema de Alertas
+    app.get('/painel/alertas', (req, res) => {
+        res.send('<h1>Sistema de Alertas - Em desenvolvimento</h1>');
+    });
+
+    // 🔧 Diagnósticos Técnicos
+    app.get('/painel/diagnosticos', (req, res) => {
+        res.send('<h1>Diagnósticos Técnicos - Em desenvolvimento</h1>');
+    });
+
+    // APIs para dados reais
+    app.get('/api/painel/executivo', async (req, res) => {
+        if (mainServer && typeof mainServer.getExecutivoReal === 'function') {
+            await mainServer.getExecutivoReal(req, res);
+        } else {
+            res.json({ success: false, error: 'Sistema principal não carregado' });
+        }
+    });
+
+    app.get('/api/painel/fluxo', (req, res) => {
+        res.json({ success: true, data: { message: "Fluxo operacional - em implementação" } });
+    });
+
+    app.get('/api/painel/decisoes', (req, res) => {
+        res.json({ success: true, data: { message: "Decisões da IA - em implementação" } });
+    });
+
+    app.get('/api/painel/usuarios', (req, res) => {
+        res.json({ success: true, data: { message: "Usuários - em implementação" } });
+    });
+
+    app.get('/api/painel/alertas', (req, res) => {
+        res.json({ success: true, data: { message: "Alertas - em implementação" } });
+    });
+
+    app.get('/api/painel/diagnosticos', (req, res) => {
+        res.json({ success: true, data: { message: "Diagnósticos - em implementação" } });
+    });
+
+    console.log('✅ Rotas do painel configuradas');
+}
+
+// HTML de fallback para o painel
+function getPainelFallbackHTML() {
+    return `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Painel de Controle - CoinBitClub</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #1e293b; color: #e2e8f0; padding: 2rem; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .status { background: #dc2626; color: white; padding: 1rem; border-radius: 0.5rem; text-align: center; }
+        .menu { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
+        .menu-item { background: #374151; padding: 1rem; border-radius: 0.5rem; text-decoration: none; color: #e2e8f0; }
+        .menu-item:hover { background: #4b5563; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Painel de Controle Trading Real</h1>
+            <p>Sistema de Monitoramento CoinBitClub</p>
+        </div>
+        
+        <div class="status">
+            ⚠️ Sistema principal não carregado - Modo fallback
+        </div>
+        
+        <div class="menu">
+            <a href="/painel/executivo" class="menu-item">📊 Dashboard Executivo</a>
+            <a href="/painel/fluxo" class="menu-item">🔄 Fluxo Operacional</a>
+            <a href="/painel/decisoes" class="menu-item">🧠 Análise de Decisões</a>
+            <a href="/painel/usuarios" class="menu-item">👥 Usuários</a>
+            <a href="/painel/alertas" class="menu-item">🚨 Alertas</a>
+            <a href="/painel/diagnosticos" class="menu-item">🔧 Diagnósticos</a>
+        </div>
+        
+        <div style="margin-top: 2rem; text-align: center; color: #94a3b8;">
+            <p>Aguarde o carregamento completo do sistema ou verifique os logs para mais detalhes.</p>
+            <button onclick="location.reload()" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 0.25rem; cursor: pointer;">🔄 Recarregar</button>
+        </div>
+    </div>
+</body>
+</html>`;
 }
 
 // Catch-all 404

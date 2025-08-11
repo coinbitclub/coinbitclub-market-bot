@@ -2,6 +2,9 @@ const { Pool } = require('pg');
 const axios = require('axios');
 const OpenAI = require('openai');
 
+// IMPORTAR EXECUTORES REAIS
+const EnhancedSignalProcessorWithExecution = require('./enhanced-signal-processor-with-execution.js');
+
 // STUBS TEMPORÁRIOS PARA DEPLOY
 const SignalHistoryAnalyzer = class { constructor() {} };
 const OrderManager = class { constructor() {} };
@@ -24,16 +27,37 @@ class MultiUserSignalProcessor {
             apiKey: process.env.OPENAI_API_KEY || 'your-openai-key-here'
         });
 
-        console.log('🚀 Multi-User Signal Processor iniciado (STUB MODE)');
+        // INTEGRAR EXECUTOR REAL
+        this.realExecutor = new EnhancedSignalProcessorWithExecution();
+
+        console.log('🚀 Multi-User Signal Processor iniciado com EXECUTORES REAIS INTEGRADOS');
+        console.log('🔥 Enhanced Signal Processor: ATIVO');
+        console.log(`⚡ Trading Real: ${process.env.ENABLE_REAL_TRADING === 'true' ? 'HABILITADO' : 'SIMULAÇÃO'}`);
     }
 
     async processSignal(signalData) {
         try {
-            console.log('📊 Processando sinal:', signalData);
-            return { success: true, message: 'Signal processed in stub mode' };
+            console.log('📊 Processando sinal com EXECUTOR REAL:', signalData);
+            
+            // USAR O EXECUTOR REAL PARA PROCESSAR O SINAL
+            const resultado = await this.realExecutor.processSignal(signalData);
+            
+            console.log('✅ Sinal processado pelo executor real:', resultado);
+            return { 
+                success: true, 
+                message: 'Signal processed by real executor',
+                executionResult: resultado,
+                executorUsed: 'EnhancedSignalProcessorWithExecution',
+                tradingMode: process.env.ENABLE_REAL_TRADING === 'true' ? 'REAL' : 'SIMULATION'
+            };
+            
         } catch (error) {
-            console.error('❌ Erro ao processar sinal:', error.message);
-            return { success: false, error: error.message };
+            console.error('❌ Erro ao processar sinal com executor real:', error.message);
+            return { 
+                success: false, 
+                error: error.message,
+                executorUsed: 'EnhancedSignalProcessorWithExecution'
+            };
         }
     }
 }

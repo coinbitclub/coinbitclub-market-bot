@@ -75,13 +75,13 @@ class AnaliseOperacoesFinal {
             });
 
             // Verificar se há positions ativas
-            const positionsAtivas = positions.rows.filter(p => p.is_active && p.size > 0);
+            const positionsAtivas = positions.rows.filter(p => p.is_active && p.position_size > 0);
             
             if (positionsAtivas.length > 0) {
                 this.log(`⚠️  ATENÇÃO: ${positionsAtivas.length} POSITIONS ATIVAS ENCONTRADAS!`, 'WARNING');
                 positionsAtivas.forEach(pos => {
                     const isTestnet = pos.testnet ? '(TESTNET)' : '(MAINNET)';
-                    this.log(`   🚨 ${pos.symbol} ${pos.side} ${pos.size} @ ${pos.entry_price} ${isTestnet}`, 'WARNING');
+                    this.log(`   🚨 ${pos.symbol} ${pos.side} ${pos.position_size} @ ${pos.entry_price} ${isTestnet}`, 'WARNING');
                 });
             } else {
                 this.log('✅ Nenhuma position ativa encontrada');
@@ -200,7 +200,7 @@ class AnaliseOperacoesFinal {
             console.log('='.repeat(70));
             this.log('🎯 RESUMO FINAL DE OPERAÇÕES:', 'SUCCESS');
             
-            const positionsAtivas = positions.filter(p => p.is_active && p.size > 0);
+            const positionsAtivas = positions.filter(p => p.is_active && p.position_size > 0);
             const positionsMainnet = positionsAtivas.filter(p => !p.testnet);
             const positionsTestnet = positionsAtivas.filter(p => p.testnet);
             

@@ -219,18 +219,33 @@ class AutomaticBalanceCollector {
             console.log(`\n🔄 COLETA #${this.collectCount} - ${timestamp}`);
             console.log('='.repeat(50));
             
-            // Buscar usuários com chaves API válidas
+            // Buscar usuários com chaves API válidas (usando colunas corretas)
             const users = await pool.query(`
-                SELECT DISTINCT u.id, u.username, uak.exchange, uak.api_key, uak.api_secret, uak.environment
-                FROM users u
-                INNER JOIN user_api_keys uak ON u.id = uak.user_id
-                WHERE u.id IN (14, 15, 16) 
-                AND u.is_active = true 
-                AND uak.is_active = true
-                AND uak.api_key IS NOT NULL 
-                AND uak.api_secret IS NOT NULL
-                AND uak.validation_status = 'valid'
-                ORDER BY u.id, uak.exchange
+                SELECT 
+                    id, 
+                    username,
+                    account_type,
+                    testnet_mode,
+                    CASE 
+                        WHEN bybit_api_key IS NOT NULL THEN 'bybit'
+                        WHEN binance_api_key IS NOT NULL THEN 'binance'
+                    END as exchange,
+                    CASE 
+                        WHEN bybit_api_key IS NOT NULL THEN bybit_api_key
+                        WHEN binance_api_key IS NOT NULL THEN binance_api_key
+                    END as api_key,
+                    CASE 
+                        WHEN bybit_api_secret IS NOT NULL THEN bybit_api_secret
+                        WHEN binance_api_secret IS NOT NULL THEN binance_api_secret
+                    END as api_secret
+                FROM users 
+                WHERE (bybit_api_key IS NOT NULL OR binance_api_key IS NOT NULL)
+                AND (ativo = true OR is_active = true)
+                AND (
+                    (bybit_api_key IS NOT NULL AND bybit_api_secret IS NOT NULL) OR
+                    (binance_api_key IS NOT NULL AND binance_api_secret IS NOT NULL)
+                )
+                ORDER BY id
             `);
 
             if (users.rows.length === 0) {
@@ -245,8 +260,17 @@ class AutomaticBalanceCollector {
             for (const user of users.rows) {
                 console.log(`👤 USUÁRIO ${user.id} (${user.username}) - ${user.exchange.toUpperCase()}:`);
                 
+                // Verificar se tem chave e secret
+                if (!user.api_key || !user.api_secret) {
+                    console.log(`      ❌ Chaves incompletas (key: ${!!user.api_key}, secret: ${!!user.api_secret})`);
+                    continue;
+                }
+                
                 let balance = 0;
-                const environment = user.environment || 'testnet';
+                
+                // Determinar ambiente baseado no account_type
+                const environment = user.account_type === 'testnet' || user.testnet_mode ? 'testnet' : 'mainnet';
+                console.log(`      🏷️ Ambiente: ${environment} (tipo: ${user.account_type}, testnet: ${user.testnet_mode})`);
                 
                 if (user.exchange.toLowerCase() === 'binance') {
                     balance = await this.getBinanceBalance(user.api_key, user.api_secret, environment);

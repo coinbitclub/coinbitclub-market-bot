@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 console.log('😱 COLETOR FEAR & GREED INDEX - COINSTATS API');
 console.log('============================================');
 
