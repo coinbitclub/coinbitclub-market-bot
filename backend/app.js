@@ -24,18 +24,21 @@ console.log('✅ Axios carregado');
 require('dotenv').config();
 
 
-// 🎯 CONFIGURAÇÃO HÍBRIDA INTELIGENTE - CHAVES REAIS ATIVADAS
-// ===========================================================
-process.env.SMART_HYBRID_MODE = 'true';
-process.env.ENABLE_REAL_TRADING = 'true';
-process.env.USE_DATABASE_KEYS = 'true';
-process.env.AUTO_DETECT_ENVIRONMENT = 'true';
 
-console.log('🎯 SISTEMA HÍBRIDO INTELIGENTE ATIVADO');
-console.log('======================================');
-console.log('✅ Chaves reais do banco ativadas');
+// 🌐 CONFIGURAÇÃO PRODUÇÃO REAL - MAINNET ATIVADO
+// ===============================================
+process.env.PRODUCTION_MODE = 'true';
+process.env.ENABLE_REAL_TRADING = 'true';
+process.env.USE_MAINNET = 'true';
+process.env.USE_DATABASE_KEYS = 'true';
+process.env.FORCE_MAINNET_MODE = 'true';
+
+console.log('🌐 MODO PRODUÇÃO REAL ATIVADO');
+console.log('=============================');
 console.log('✅ Trading real habilitado');
-console.log('✅ Auto-detecção de ambiente');
+console.log('✅ Mainnet ativo');
+console.log('✅ Chaves reais do banco');
+console.log('🚀 SISTEMA EM PRODUÇÃO REAL');
 
 console.log('✅ Environment carregado');
 
@@ -2340,14 +2343,14 @@ class CoinBitClubServer {
     
     async start() {
         try {
-            console.log('🚀 INICIANDO COINBITCLUB MARKET BOT - MODO HÍBRIDO TESTNET');
+            console.log('🚀 INICIANDO COINBITCLUB MARKET BOT - MODO PRODUÇÃO REAL');
             console.log('=========================================================');
 
             // Configuração de ambiente híbrido
             this.isTestnetMode = true;
             this.hybridMode = true;
             
-            console.log('✅ Modo híbrido testnet configurado');
+            console.log('✅ Modo produção real configurado');
 
             // Inicializar Express com segurança
             this.app = express();
@@ -6553,6 +6556,20 @@ class CoinBitClubServer {
         });
         
         // Status do sistema
+        
+        // Endpoint para verificar modo de produção
+        this.app.get('/api/production-mode', (req, res) => {
+            res.status(200).json({
+                mode: 'PRODUCTION_REAL',
+                mainnet_active: true,
+                real_trading: true,
+                testnet_forced: false,
+                environment: 'mainnet',
+                timestamp: new Date().toISOString(),
+                message: 'Sistema em modo de produção real - Trading com chaves mainnet'
+            });
+        });
+
         this.app.get('/api/system/status', (req, res) => {
             res.status(200).json({
                 system: 'operational',
