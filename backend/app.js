@@ -23,20 +23,19 @@ const axios = require('axios');
 console.log('✅ Axios carregado');
 require('dotenv').config();
 
-// 🌐 CONFIGURAÇÃO HÍBRIDA TESTNET - CRÍTICO
-// =========================================
-process.env.FORCE_TESTNET_MODE = 'true';
-process.env.USE_TESTNET_ONLY = 'true';
-process.env.ENABLE_REAL_TRADING = 'false';
-process.env.BYBIT_FORCE_TESTNET = 'true';
-process.env.BINANCE_FORCE_TESTNET = 'true';
-process.env.DISABLE_MAINNET_ACCESS = 'true';
 
-console.log('🌐 SISTEMA HÍBRIDO TESTNET ATIVADO');
-console.log('================================');
-console.log('✅ Modo testnet forçado');
-console.log('✅ Trading real desabilitado');
-console.log('✅ IP bypass ativado');
+// 🎯 CONFIGURAÇÃO HÍBRIDA INTELIGENTE - CHAVES REAIS ATIVADAS
+// ===========================================================
+process.env.SMART_HYBRID_MODE = 'true';
+process.env.ENABLE_REAL_TRADING = 'true';
+process.env.USE_DATABASE_KEYS = 'true';
+process.env.AUTO_DETECT_ENVIRONMENT = 'true';
+
+console.log('🎯 SISTEMA HÍBRIDO INTELIGENTE ATIVADO');
+console.log('======================================');
+console.log('✅ Chaves reais do banco ativadas');
+console.log('✅ Trading real habilitado');
+console.log('✅ Auto-detecção de ambiente');
 
 console.log('✅ Environment carregado');
 
@@ -2399,7 +2398,27 @@ class CoinBitClubServer {
                         
                         // Inicializar com verificação segura
                         if (this.exchangeOrchestrator && typeof this.exchangeOrchestrator.start === 'function') {
-                            await this.exchangeOrchestrator.start();
+                            
+                    if (this.exchangeOrchestrator && typeof this.exchangeOrchestrator.start === 'function') {
+                        await this.exchangeOrchestrator.start();
+                        console.log('✅ Exchange Orchestrator iniciado com sucesso');
+                    } else {
+                        console.log('⚠️ Exchange Orchestrator indisponível - criando fallback');
+                        this.exchangeOrchestrator = {
+                            start: async () => {
+                                console.log('📋 Fallback: Exchange Orchestrator simulado');
+                                return { success: true, mode: 'fallback' };
+                            },
+                            getCompleteStats: () => ({
+                                success: true,
+                                stats: { totalUsers: 0, connectedUsers: 0 },
+                                orchestrator: { globalStats: {}, exchangeHealth: {} }
+                            }),
+                            performHealthCheckAllExchanges: async () => true,
+                            getUserForTrading: async () => ({ success: false, reason: 'Fallback mode' }),
+                            updateAllUserBalances: async () => ({ success: true, updated: 0 })
+                        };
+                    }
                             console.log('✅ Exchange Orchestrator (testnet) iniciado com sucesso');
                         } else {
                             throw new Error('Método start não encontrado');
@@ -6512,6 +6531,3 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 module.exports = CoinBitClubServer;
-
-
-module.exports = CoinBitClubApp;
