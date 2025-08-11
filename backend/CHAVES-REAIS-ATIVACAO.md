@@ -20,18 +20,29 @@
 
 ### 🚀 COMO EXECUTAR NO RAILWAY
 
-**Opção 1: Via Railway CLI**
+**🎯 CORREÇÕES APLICADAS (SITUAÇÃO ATUAL)**
+- ✅ `setupAPIRoutes` adicionado
+- ✅ Health check corrigido 
+- ✅ 3 versões do app disponíveis
+
+**Opção 1: Endpoint HTTP (Mais Fácil)**
+- Acesse: `https://seu-app.railway.app/ativar-chaves-reais`
+- O sistema executará automaticamente
+
+**Opção 2: Via Railway CLI**
 ```bash
 railway run node railway-activate-real-keys.js
 ```
 
-**Opção 2: Via Terminal Railway**
+**Opção 3: Via Terminal Railway**
 1. Acesse o terminal do Railway
 2. Execute: `node railway-activate-real-keys.js`
 
-**Opção 3: Endpoint HTTP (Recomendado)**
-- Acesse: `https://seu-app.railway.app/ativar-chaves-reais`
-- O sistema executará automaticamente
+**🆘 Se ainda houver problemas:**
+```bash
+# Use a versão minimalista
+node app-minimal.js
+```
 
 ### 📊 VERIFICAÇÕES QUE SERÃO FEITAS
 
