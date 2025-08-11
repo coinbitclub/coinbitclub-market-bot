@@ -25,20 +25,44 @@ require('dotenv').config();
 
 
 
-// 🌐 CONFIGURAÇÃO PRODUÇÃO REAL - MAINNET ATIVADO
-// ===============================================
-process.env.PRODUCTION_MODE = 'true';
-process.env.ENABLE_REAL_TRADING = 'true';
-process.env.USE_MAINNET = 'true';
-process.env.USE_DATABASE_KEYS = 'true';
-process.env.FORCE_MAINNET_MODE = 'true';
 
-console.log('🌐 MODO PRODUÇÃO REAL ATIVADO');
-console.log('=============================');
-console.log('✅ Trading real habilitado');
-console.log('✅ Mainnet ativo');
-console.log('✅ Chaves reais do banco');
-console.log('🚀 SISTEMA EM PRODUÇÃO REAL');
+// 🎯 CONFIGURAÇÃO CORRETA - PRODUÇÃO TESTNET + MANAGEMENT HÍBRIDO
+// ===============================================================
+
+// Detectar ambiente
+const isManagementMode = process.env.RAILWAY_ENVIRONMENT_NAME === 'management' || 
+                        process.env.NODE_ENV === 'management' ||
+                        process.env.APP_MODE === 'management';
+
+if (isManagementMode) {
+    // MANAGEMENT: Modo Híbrido (chaves reais quando disponíveis)
+    console.log('🔧 MODO MANAGEMENT DETECTADO - CONFIGURAÇÃO HÍBRIDA');
+    process.env.SMART_HYBRID_MODE = 'true';
+    process.env.ENABLE_REAL_TRADING = 'true';
+    process.env.USE_DATABASE_KEYS = 'true';
+    process.env.AUTO_DETECT_ENVIRONMENT = 'true';
+    process.env.FORCE_TESTNET_PRODUCTION = 'false';
+    
+    console.log('🔧 MANAGEMENT: Modo Híbrido Ativo');
+    console.log('✅ Chaves reais quando disponíveis');
+    console.log('✅ Auto-detecção de ambiente');
+    console.log('✅ Trading inteligente');
+} else {
+    // PRODUÇÃO: Modo Testnet (sempre seguro)
+    console.log('🧪 MODO PRODUÇÃO DETECTADO - CONFIGURAÇÃO TESTNET');
+    process.env.PRODUCTION_MODE = 'true';
+    process.env.ENABLE_REAL_TRADING = 'false';
+    process.env.USE_TESTNET = 'true';
+    process.env.FORCE_TESTNET_PRODUCTION = 'true';
+    process.env.USE_DATABASE_KEYS = 'false';
+    
+    console.log('🧪 PRODUÇÃO: Modo Testnet Seguro');
+    console.log('✅ Trading em testnet apenas');
+    console.log('✅ Sem risco financeiro');
+    console.log('✅ Ambiente de teste seguro');
+}
+
+console.log('🎯 CONFIGURAÇÃO CORRETA APLICADA');
 
 console.log('✅ Environment carregado');
 
@@ -2343,7 +2367,7 @@ class CoinBitClubServer {
     
     async start() {
         try {
-            console.log('🚀 INICIANDO COINBITCLUB MARKET BOT - MODO PRODUÇÃO REAL');
+            console.log('🚀 INICIANDO COINBITCLUB MARKET BOT - CONFIGURAÇÃO CORRETA');
             console.log('=========================================================');
 
             // Configuração de ambiente híbrido
@@ -6567,6 +6591,26 @@ class CoinBitClubServer {
                 environment: 'mainnet',
                 timestamp: new Date().toISOString(),
                 message: 'Sistema em modo de produção real - Trading com chaves mainnet'
+            });
+        });
+
+        
+        // Endpoint para verificar modo atual (produção vs management)
+        this.app.get('/api/current-mode', (req, res) => {
+            const isManagement = process.env.RAILWAY_ENVIRONMENT_NAME === 'management' || 
+                                process.env.NODE_ENV === 'management' ||
+                                process.env.APP_MODE === 'management';
+            
+            res.status(200).json({
+                environment: isManagement ? 'management' : 'production',
+                mode: isManagement ? 'HYBRID' : 'TESTNET',
+                trading_type: isManagement ? 'real_when_available' : 'testnet_only',
+                real_trading: isManagement ? 'conditional' : 'disabled',
+                testnet_forced: !isManagement,
+                message: isManagement ? 
+                    'Management: Modo híbrido - chaves reais quando disponíveis' :
+                    'Produção: Modo testnet - trading seguro apenas',
+                timestamp: new Date().toISOString()
             });
         });
 
