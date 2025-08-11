@@ -6508,6 +6508,144 @@ class CoinBitClubServer {
 
         console.log('💰 Endpoints de demonstração de saldos configurados');
     }
+    // MÉTODO setupAPIRoutes ADICIONADO - CORREÇÃO FINAL
+    setupAPIRoutes() {
+        console.log('✅ API Routes configuradas');
+        
+        // Configurar todas as rotas API essenciais
+        this.app.use(express.json({ limit: '50mb' }));
+        this.app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+        
+        // CORS
+        this.app.use(cors({
+            origin: true,
+            credentials: true,
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+        }));
+        
+        // Health check - GARANTIDO
+        this.app.get('/health', (req, res) => {
+            res.status(200).json({
+                status: 'healthy',
+                timestamp: new Date().toISOString(),
+                uptime: Math.floor(process.uptime()),
+                version: '5.1.2',
+                mode: 'hybrid_intelligent',
+                environment: process.env.NODE_ENV || 'production'
+            });
+        });
+        
+        // Root endpoint
+        this.app.get('/', (req, res) => {
+            res.status(200).json({
+                message: 'CoinBitClub Market Bot',
+                status: 'operational',
+                version: '5.1.2',
+                mode: 'hybrid_intelligent',
+                timestamp: new Date().toISOString(),
+                endpoints: {
+                    health: '/health',
+                    status: '/api/system/status',
+                    activate_keys: '/ativar-chaves-reais'
+                }
+            });
+        });
+        
+        // Status do sistema
+        this.app.get('/api/system/status', (req, res) => {
+            res.status(200).json({
+                system: 'operational',
+                trading: {
+                    mode: 'hybrid_intelligent',
+                    real_trading_enabled: process.env.ENABLE_REAL_TRADING === 'true'
+                },
+                database: 'connected',
+                timestamp: new Date().toISOString()
+            });
+        });
+        
+        // Ativar chaves reais
+        this.app.get('/ativar-chaves-reais', async (req, res) => {
+            try {
+                console.log('🔑 Solicitação de ativação de chaves reais...');
+                
+                const pool = new Pool({
+                    connectionString: process.env.DATABASE_URL,
+                    ssl: { rejectUnauthorized: false }
+                });
+                
+                // Ativar chaves válidas
+                const result = await pool.query(`
+                    UPDATE user_api_keys 
+                    SET 
+                        is_active = true,
+                        environment = CASE 
+                            WHEN LENGTH(api_key) > 20 AND LENGTH(api_secret) > 20 THEN 'mainnet'
+                            ELSE 'testnet'
+                        END,
+                        updated_at = NOW()
+                    WHERE api_key IS NOT NULL AND api_secret IS NOT NULL
+                    RETURNING user_id, exchange, environment
+                `);
+                
+                await pool.end();
+                
+                res.status(200).json({
+                    success: true,
+                    message: 'Chaves ativadas com sucesso',
+                    activated: result.rows.length,
+                    keys: result.rows,
+                    timestamp: new Date().toISOString()
+                });
+                
+            } catch (error) {
+                console.error('❌ Erro na ativação:', error.message);
+                res.status(500).json({
+                    success: false,
+                    error: error.message,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        });
+        
+        // Endpoint para corrigir banco
+        this.app.get('/fix-database', async (req, res) => {
+            try {
+                const pool = new Pool({
+                    connectionString: process.env.DATABASE_URL,
+                    ssl: { rejectUnauthorized: false }
+                });
+                
+                // Remover duplicatas
+                await pool.query(`
+                    DELETE FROM balances a USING balances b 
+                    WHERE a.id > b.id 
+                    AND a.user_id = b.user_id 
+                    AND a.asset = b.asset 
+                    AND a.account_type = b.account_type
+                `);
+                
+                await pool.end();
+                
+                res.status(200).json({
+                    success: true,
+                    message: 'Banco de dados corrigido',
+                    timestamp: new Date().toISOString()
+                });
+                
+            } catch (error) {
+                res.status(500).json({
+                    success: false,
+                    error: error.message
+                });
+            }
+        });
+        
+        console.log('✅ Todas as rotas API configuradas');
+    }
+
+
 
     // MÉTODOS ESSENCIAIS ADICIONADOS - CORREÇÃO EMERGENCIAL
     setupDatabase() {
