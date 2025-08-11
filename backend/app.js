@@ -2494,30 +2494,40 @@ class CoinBitClubServer {
             this.setupAPIRoutes();
             console.log('✅ Rotas de API configuradas');
 
-            // Iniciar servidor HTTP
-            const PORT = process.env.PORT || 3001;
-            this.server = this.app.listen(PORT, '0.0.0.0', () => {
-                console.log('🎉 COINBITCLUB MARKET BOT ONLINE');
-                console.log('=================================');
-                console.log(`🚀 Servidor rodando na porta ${PORT}`);
-                console.log(`🧪 Modo: ${this.isTestnetMode ? 'TESTNET' : 'PRODUCTION'}`);
-                console.log(`🌐 Endpoints disponíveis:`);
-                console.log(`   • http://localhost:${PORT}/dashboard`);
-                console.log(`   • http://localhost:${PORT}/api/dados-tempo-real`);
-                console.log(`   • http://localhost:${PORT}/api/status`);
-                console.log('=================================');
-            });
+            // CORREÇÃO: Só iniciar servidor HTTP se não estiver sendo usado pelo hybrid-server
+            if (!process.env.HYBRID_SERVER_MODE) {
+                // Iniciar servidor HTTP
+                const PORT = process.env.PORT || 3001;
+                this.server = this.app.listen(PORT, '0.0.0.0', () => {
+                    console.log('🎉 COINBITCLUB MARKET BOT ONLINE');
+                    console.log('=================================');
+                    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+                    console.log(`🧪 Modo: ${this.isTestnetMode ? 'TESTNET' : 'PRODUCTION'}`);
+                    console.log(`🌐 Endpoints disponíveis:`);
+                    console.log(`   • http://localhost:${PORT}/dashboard`);
+                    console.log(`   • http://localhost:${PORT}/api/dados-tempo-real`);
+                    console.log(`   • http://localhost:${PORT}/api/status`);
+                    console.log('=================================');
+                });
+            } else {
+                console.log('🔗 Rotas configuradas para hybrid-server');
+            }
 
         } catch (error) {
             console.error('❌ Erro ao inicializar aplicação:', error.message);
             console.log('🔄 Tentando modo de recuperação...');
             
-            // Modo de recuperação mínimo
-            const PORT = process.env.PORT || 3001;
-            this.server = this.app.listen(PORT, '0.0.0.0', () => {
-                console.log('⚠️ MODO DE RECUPERAÇÃO ATIVO');
-                console.log(`🚀 Servidor básico na porta ${PORT}`);
-            });
+            // CORREÇÃO: Só iniciar servidor de recuperação se não estiver no hybrid-server
+            if (!process.env.HYBRID_SERVER_MODE) {
+                // Modo de recuperação mínimo
+                const PORT = process.env.PORT || 3001;
+                this.server = this.app.listen(PORT, '0.0.0.0', () => {
+                    console.log('⚠️ MODO DE RECUPERAÇÃO ATIVO');
+                    console.log(`🚀 Servidor básico na porta ${PORT}`);
+                });
+            } else {
+                console.log('⚠️ Erro na inicialização - hybrid-server continuará');
+            }
         }
     }
 

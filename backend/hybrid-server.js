@@ -181,19 +181,47 @@ async function loadMainSystem() {
     try {
         console.log('🔄 Tentando carregar sistema principal...');
         
+        // Configurar modo hybrid-server para evitar conflito de porta
+        process.env.HYBRID_SERVER_MODE = 'true';
+        
         const CoinBitClubServer = require('./app.js');
         const mainServer = new CoinBitClubServer();
+        
+        // CORREÇÃO: Inicializar o sistema principal
+        console.log('🚀 Inicializando sistema principal...');
+        await mainServer.start();
+        
+        // INTEGRAÇÃO COMPLETA: Adicionar todas as rotas do app.js no hybrid-server
+        if (mainServer.app && mainServer.app._router) {
+            console.log('🔗 Integrando rotas do sistema principal...');
+            
+            // Montar as rotas do app.js no hybrid-server
+            app.use('/', mainServer.app);
+            
+            console.log('✅ Rotas integradas com sucesso!');
+        }
         
         // Salvar referência
         global.mainServerInstance = mainServer;
         
-        // Adicionar rotas do painel manualmente
+        // Adicionar rotas do painel manualmente (se necessário)
         setupPainelRoutes(mainServer);
         
-        console.log('✅ Sistema principal carregado com sucesso!');
-        console.log('🎯 Painel de controle disponível em: /painel');
+        console.log('✅ Sistema principal carregado e inicializado com sucesso!');
+        console.log('🎯 Todas as rotas agora disponíveis');
+        console.log('🔗 Endpoints do app.js integrados');
         systemState.mainSystemLoaded = true;
         systemState.mainSystemError = null;
+        
+        // Adicionar catch-all 404 DEPOIS de todas as rotas
+        app.use('*', (req, res) => {
+            res.status(404).json({
+                error: 'Endpoint not found',
+                path: req.originalUrl,
+                systemMode: systemState.mainSystemLoaded ? 'full' : 'fallback',
+                timestamp: new Date().toISOString()
+            });
+        });
         
     } catch (error) {
         console.warn('⚠️ Erro ao carregar sistema principal:', error.message);
@@ -324,16 +352,6 @@ function getPainelFallbackHTML() {
 </body>
 </html>`;
 }
-
-// Catch-all 404
-app.use('*', (req, res) => {
-    res.status(404).json({
-        error: 'Endpoint not found',
-        path: req.originalUrl,
-        systemMode: systemState.mainSystemLoaded ? 'full' : 'fallback',
-        timestamp: new Date().toISOString()
-    });
-});
 
 // Iniciar servidor
 app.listen(port, '0.0.0.0', () => {
