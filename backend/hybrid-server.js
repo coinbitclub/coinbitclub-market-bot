@@ -13,6 +13,19 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// CORS headers para APIs
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
+
 // Estado do sistema
 let systemState = {
     mainSystemLoaded: false,
@@ -448,14 +461,121 @@ function setupPainelRoutes(mainServer) {
     console.log('✅ Rotas do painel configuradas');
 }
 
+// ROTAS DE WEBHOOK - CRÍTICAS PARA TRADINGVIEW
+// Estas rotas DEVEM funcionar sempre, independente do sistema principal
+app.post('/api/webhooks/signal', (req, res) => {
+    console.log('📡 Webhook signal recebido:', req.body);
+    
+    // Tentar processar com sistema principal se disponível
+    if (systemState.mainSystemLoaded && global.mainServerInstance && 
+        typeof global.mainServerInstance.processWebhookSignal === 'function') {
+        try {
+            global.mainServerInstance.processWebhookSignal(req, res);
+            return;
+        } catch (error) {
+            console.warn('⚠️ Erro no sistema principal para webhook, usando fallback:', error.message);
+        }
+    }
+    
+    // Fallback sempre funcional
+    res.json({
+        status: 'received',
+        mode: systemState.mainSystemLoaded ? 'hybrid_degraded' : 'hybrid_fallback',
+        signal: req.body,
+        timestamp: new Date().toISOString(),
+        note: 'Signal received but may need manual processing'
+    });
+});
+
+app.post('/webhook', (req, res) => {
+    console.log('📡 Webhook geral recebido:', req.body);
+    res.json({
+        status: 'received',
+        mode: systemState.mainSystemLoaded ? 'full' : 'fallback',
+        data: req.body,
+        timestamp: new Date().toISOString()
+    });
+});
+
+app.post('/api/webhooks/trading', (req, res) => {
+    console.log('📡 Trading webhook recebido:', req.body);
+    res.json({
+        status: 'received',
+        mode: systemState.mainSystemLoaded ? 'full' : 'fallback',
+        tradingData: req.body,
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Rotas GET para webhook (TradingView pode usar GET para testar)
+app.get('/api/webhooks/signal', (req, res) => {
+    res.json({
+        status: 'webhook_endpoint_active',
+        method: 'GET',
+        acceptsMethods: ['GET', 'POST'],
+        system: 'CoinBitClub Market Bot',
+        mode: systemState.mainSystemLoaded ? 'full' : 'fallback',
+        timestamp: new Date().toISOString()
+    });
+});
+
+app.get('/webhook', (req, res) => {
+    res.json({
+        status: 'webhook_endpoint_active',
+        method: 'GET',
+        acceptsMethods: ['GET', 'POST'],
+        system: 'CoinBitClub Market Bot',
+        timestamp: new Date().toISOString()
+    });
+});
+
+app.get('/api/webhooks/trading', (req, res) => {
+    res.json({
+        status: 'webhook_endpoint_active',
+        method: 'GET',
+        acceptsMethods: ['GET', 'POST'],
+        system: 'CoinBitClub Market Bot',
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Função de fallback para criar rotas principais manualmente
 function setupMainRoutesFallback(mainServer) {
     console.log('🔧 Configurando rotas de fallback...');
     
-    // REMOVIDO: Rotas /status e /api/dashboard/summary já definidas no início do arquivo
-    // Evitar definições duplicadas que causam conflitos no Express
+    // Verificar se as rotas não existem e adicionar
+    const existingRoutes = app._router?.stack?.map(layer => layer.route?.path).filter(Boolean) || [];
     
-    console.log('✅ Rotas de fallback configuradas (rotas principais já definidas)');
+    if (!existingRoutes.includes('/status')) {
+        app.get('/status', (req, res) => {
+            res.json({
+                status: 'active',
+                mode: 'fallback',
+                timestamp: new Date().toISOString(),
+                system: 'CoinBitClub Market Bot'
+            });
+        });
+        console.log('✅ Rota /status adicionada');
+    }
+    
+    if (!existingRoutes.includes('/api/dashboard/summary')) {
+        app.get('/api/dashboard/summary', (req, res) => {
+            res.json({
+                status: 'active',
+                mode: 'fallback',
+                summary: {
+                    totalUsers: 0,
+                    activeSignals: 0,
+                    positions: 0,
+                    pnl: { total: 0, today: 0 }
+                },
+                timestamp: new Date().toISOString()
+            });
+        });
+        console.log('✅ Rota /api/dashboard/summary adicionada');
+    }
+    
+    console.log('✅ Rotas de fallback configuradas');
 }
 
 // Função para rotas de emergência

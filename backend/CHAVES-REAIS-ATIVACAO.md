@@ -20,10 +20,13 @@
 
 ### 🚀 COMO EXECUTAR NO RAILWAY
 
-**🎯 CORREÇÕES APLICADAS (SITUAÇÃO ATUAL)**
+**🎯 CORREÇÕES APLICADAS (SITUAÇÃO ATUAL - 11/08/2025 23:40)**
 - ✅ `setupAPIRoutes` adicionado
 - ✅ Health check corrigido 
 - ✅ 3 versões do app disponíveis
+- 🚨 **DEPLOY TRAVADO IDENTIFICADO**: Railway em modo fallback
+- 🔥 **FORCE REDEPLOY EXECUTADO**: Push forçado para destravar
+- ⏳ **AGUARDANDO**: Deploy ser processado (1-5 minutos)
 
 **Opção 1: Endpoint HTTP (Mais Fácil)**
 - Acesse: `https://seu-app.railway.app/ativar-chaves-reais`
