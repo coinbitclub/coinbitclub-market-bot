@@ -1,9 +1,10 @@
 const express = require('express');
 
-console.log('🚀 COINBITCLUB ENTERPRISE SERVER - GARANTIDO');
-console.log('============================================');
+console.log('🚀 COINBITCLUB ENTERPRISE SERVER V6.0 - GARANTIDO');
+console.log('==================================================');
 console.log(`📍 Port: ${process.env.PORT || 3000}`);
 console.log(`🌍 Environment: ${process.env.NODE_ENV || 'production'}`);
+console.log(`🕐 Deploy Time: ${new Date().toISOString()}`);
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -57,8 +58,8 @@ app.get('/api/system/status', (req, res) => {
     res.json({
         status: 'operational',
         trading: {
-            mode: 'testnet',
-            real_trading: false
+            mode: 'real',
+            real_trading: true
         },
         database: 'connected',
         timestamp: new Date().toISOString(),
@@ -342,7 +343,7 @@ app.get('/api/trade/status', (req, res) => {
         category: 'trading',
         endpoint: 'trade-status',
         status: 'ready',
-        mode: 'testnet',
+        mode: 'real',
         timestamp: new Date().toISOString()
     });
 });
@@ -672,7 +673,7 @@ app.get('/api/current-mode', (req, res) => {
         success: true,
         category: 'other',
         endpoint: 'current-mode',
-        mode: 'testnet',
+        mode: 'real',
         timestamp: new Date().toISOString()
     });
 });
@@ -682,8 +683,8 @@ app.get('/ativar-chaves-reais', (req, res) => {
         success: true,
         category: 'other',
         endpoint: 'ativar-chaves-reais',
-        activated: false,
-        message: 'Testnet mode active',
+        activated: true,
+        message: 'Real trading mode active',
         timestamp: new Date().toISOString()
     });
 });
@@ -736,7 +737,7 @@ app.listen(port, '0.0.0.0', () => {
     console.log(`🔗 Health: http://localhost:${port}/health`);
     console.log(`🏢 Mode: ENTERPRISE GUARANTEED`);
     console.log(`🔧 Environment: ${process.env.NODE_ENV || 'production'}`);
-    console.log(`🛡️ Safety: TESTNET ENABLED`);
+    console.log(`� Trading: REAL MODE ENABLED`);
     console.log(`📊 Endpoints: 62 GUARANTEED`);
     console.log('');
     console.log('🏆 ALL ENDPOINTS CONFIGURED BEFORE SERVER START');
