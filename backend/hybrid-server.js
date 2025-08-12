@@ -452,100 +452,20 @@ function setupPainelRoutes(mainServer) {
 function setupMainRoutesFallback(mainServer) {
     console.log('🔧 Configurando rotas de fallback...');
     
-    // Rota /status
-    app.get('/status', async (req, res) => {
-        try {
-            if (mainServer && typeof mainServer.pool !== 'undefined') {
-                const client = await mainServer.pool.connect();
-                await client.query('SELECT 1');
-                client.release();
-                
-                res.json({
-                    status: 'OK',
-                    timestamp: new Date().toISOString(),
-                    uptime: process.uptime(),
-                    environment: process.env.NODE_ENV || 'production',
-                    database: 'connected',
-                    mode: 'hybrid_fallback',
-                    version: '5.1.2'
-                });
-            } else {
-                res.json({
-                    status: 'OK',
-                    timestamp: new Date().toISOString(),
-                    uptime: process.uptime(),
-                    environment: process.env.NODE_ENV || 'production',
-                    database: 'unknown',
-                    mode: 'hybrid_fallback',
-                    version: '5.1.2'
-                });
-            }
-        } catch (error) {
-            res.status(503).json({
-                status: 'ERROR',
-                error: error.message,
-                timestamp: new Date().toISOString(),
-                database: 'disconnected',
-                mode: 'hybrid_fallback'
-            });
-        }
-    });
+    // REMOVIDO: Rotas /status e /api/dashboard/summary já definidas no início do arquivo
+    // Evitar definições duplicadas que causam conflitos no Express
     
-    // Rota /api/dashboard/summary
-    app.get('/api/dashboard/summary', async (req, res) => {
-        try {
-            res.json({
-                success: true,
-                summary: {
-                    totalUsers: 12,
-                    totalBalance: '15000.00',
-                    currency: 'USD',
-                    totalCommissions: '150.00',
-                    activePlans: {
-                        monthly: 8,
-                        prepaid: 4
-                    },
-                    mode: 'hybrid_fallback'
-                },
-                timestamp: new Date().toISOString()
-            });
-        } catch (error) {
-            res.status(500).json({
-                success: false,
-                error: error.message,
-                timestamp: new Date().toISOString()
-            });
-        }
-    });
-    
-    console.log('✅ Rotas de fallback configuradas');
+    console.log('✅ Rotas de fallback configuradas (rotas principais já definidas)');
 }
 
 // Função para rotas de emergência
 function setupEmergencyRoutes() {
     console.log('🚨 Configurando rotas de emergência...');
     
-    app.get('/status', (req, res) => {
-        res.json({
-            status: 'EMERGENCY_MODE',
-            timestamp: new Date().toISOString(),
-            uptime: process.uptime(),
-            mode: 'emergency_fallback',
-            version: '5.1.2',
-            message: 'Sistema em modo de emergência - funcionalidade limitada'
-        });
-    });
+    // REMOVIDO: Rotas /status e /api/dashboard/summary já definidas no início do arquivo
+    // Evitar definições duplicadas que causam conflitos no Express
     
-    app.get('/api/dashboard/summary', (req, res) => {
-        res.json({
-            success: false,
-            error: 'Sistema em modo de emergência',
-            mode: 'emergency_fallback',
-            timestamp: new Date().toISOString()
-        });
-    });
-    
-    console.log('✅ Rotas de emergência configuradas');
+    console.log('✅ Rotas de emergência configuradas (rotas principais já definidas)');
 }
 
 // HTML de fallback para o painel
