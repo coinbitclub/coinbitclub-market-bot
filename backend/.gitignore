@@ -1,47 +1,63 @@
-# Environment variables
+# 🔐 Environment variables
 .env
 .env.local
 .env.production
 .env.development
 .env.backup*
 
-# Sensitive files
+# 🔑 Sensitive files
 *key*
 *secret*
 *credentials*
 *.pem
 *.p12
+*API_KEY*
+*SECRET*
+*TOKEN*
+DATABASE_URL_REAL
+config-real.js
+chaves-*.js
 
-# Logs
+# 📊 Logs
 logs
 *.log
 npm-debug.log*
 
-# Dependencies
+# 📦 Dependencies
 node_modules/
 package-lock.json
 
-# OS
+# 💻 OS
 .DS_Store
 Thumbs.db
 
-# IDE
+# 🛠️ IDE
 .vscode/
 .idea/
 
-# Build
+# 🏗️ Build
 dist/
 build/
+coverage/
 
-# Temp
+# 🗂️ Temp
 temp/
 tmp/
 *.tmp
+*.temp
 
-# Database
+# 🗄️ Database
 *.db
 *.sqlite
 
-# Backups
+# 💾 Backups
 backup/
+backup-*/
+*-backup/
 *.backup
+safe-push-backup/
+
+# 🚀 Deploy específicos
+.railway/
+.vercel/
+.netlify/
