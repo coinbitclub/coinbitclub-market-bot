@@ -1,5 +1,18 @@
-{
+﻿{
+  "name": "coinbitclub-market-bot",
+  "version": "6.0.0",
+  "description": "Sistema de Trading Automatizado CoinBitClub Enterprise",
+  "main": "backend/enterprise-server-garantido.js",
+  "scripts": {
+    "start": "cd backend && node enterprise-server-garantido.js",
+    "dev": "cd backend && node enterprise-server-garantido.js",
+    "enterprise": "cd backend && node enterprise-server-garantido.js"
+  },
   "dependencies": {
-    "axios": "^1.11.0"
+    "axios": "^1.11.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "pg": "^8.11.0",
+    "dotenv": "^16.0.3"
   }
 }

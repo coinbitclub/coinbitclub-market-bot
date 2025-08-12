@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 
 /**
- * 🚀 COINBITCLUB MARKET BOT - PONTO DE ENTRADA PRINCIPAL
- * ======================================================
+ * 🚀 COINBITCLUB ENTERPRISE SERVER - MAIN ENTRY POINT
+ * ===================================================
  * 
- * Arquivo principal que inicializa o sistema completo
+ * Ponto de entrada principal - executa servidor enterprise
  */
 
 require('dotenv').config({ path: '.env.production' });
 
-const CoinBitClubServer = require('./app.js');
+console.log('🚀 COINBITCLUB ENTERPRISE - INICIANDO...');
+console.log('========================================');
+
+// Carregar servidor enterprise garantido
+require('./enterprise-server-garantido.js');
 
 // Handlers de erro global
 process.on('uncaughtException', (error) => {
