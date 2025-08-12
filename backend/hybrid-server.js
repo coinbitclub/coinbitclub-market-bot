@@ -1868,6 +1868,15 @@ function getPainelFallbackHTML() {
 </html>`;
 }
 
+// 🏢 CONFIGURAR TODOS OS ENDPOINTS ENTERPRISE ANTES DE INICIAR O SERVIDOR
+console.log('🏢 CONFIGURANDO SISTEMA ENTERPRISE COMPLETO...');
+console.log('===============================================');
+
+// Configurar TODOS os 85 endpoints enterprise como fallback garantido ANTES do server start
+setupAllEnterpriseEndpoints();
+
+console.log('✅ Todos os 85 endpoints enterprise configurados ANTES do server start!');
+
 // Iniciar servidor
 app.listen(port, '0.0.0.0', () => {
     console.log('');
@@ -1885,8 +1894,8 @@ app.listen(port, '0.0.0.0', () => {
     setTimeout(async () => {
         console.log('🏢 INICIANDO CONFIGURAÇÃO ENTERPRISE...');
         
-        // 1. Configurar todos os 85 endpoints enterprise
-        await setupEnterpriseEndpoints();
+        // 1. Endpoints já configurados antes do server start
+        console.log('✅ Endpoints enterprise já ativos desde o início');
         
         // 2. Tentar carregar sistema principal (sem afetar fallback)
         loadMainSystem().then(() => {
