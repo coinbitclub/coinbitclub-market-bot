@@ -12,9 +12,6 @@ require('dotenv').config({ path: '.env.production' });
 console.log('🚀 COINBITCLUB ENTERPRISE - INICIANDO...');
 console.log('========================================');
 
-// Carregar servidor enterprise garantido
-require('./enterprise-server-garantido.js');
-
 // Handlers de erro global
 process.on('uncaughtException', (error) => {
     console.error('❌ Erro não capturado:', error);
@@ -37,9 +34,6 @@ process.on('SIGINT', () => {
     process.exit(0);
 });
 
-// Inicializar servidor
-const server = new CoinBitClubServer();
-server.start().catch(error => {
-    console.error('💥 Falha ao iniciar servidor:', error);
-    process.exit(1);
-});
+// Carregar servidor enterprise garantido (auto-start)
+console.log('� Carregando enterprise server...');
+require('./enterprise-server-garantido.js');
