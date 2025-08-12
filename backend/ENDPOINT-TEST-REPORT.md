@@ -1,6 +1,6 @@
 # 🔍 Relatório de Endpoints - CoinBitClub
 
-**Data**: 11/08/2025, 19:49:26
+**Data**: 11/08/2025, 22:56:38
 **URL Base**: https://coinbitclub-market-bot-backend-production.up.railway.app
 
 ## 📊 Resumo Executivo
