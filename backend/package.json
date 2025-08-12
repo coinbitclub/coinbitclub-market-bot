@@ -4,7 +4,8 @@
   "description": "Sistema de Trading Automatizado CoinBitClub",
   "main": "hybrid-server.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node hybrid-server.js",
+    "app": "node app.js",
     "trade": "node sistema-trade-completo.js",
     "demo": "node exemplos-trades.js",
     "garantido": "node coinbitclub-garantido.js",
