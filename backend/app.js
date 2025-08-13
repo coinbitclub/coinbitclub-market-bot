@@ -3489,117 +3489,27 @@ class CoinBitClubServer {
             default: return 'NEUTRO';
         }
     }
-            const stats = aiStatsQuery.rows[0];
-            const fearGreed = fearGreedQuery.rows[0];
-            const performance = performanceQuery.rows[0];
+
+    // Método para inicializar o servidor
+    async inicializar() {
+        try {
+            console.log('🚀 Inicializando CoinBitClub Enterprise Server...');
             
-            // Análise mais recente
-            const latestAnalysis = analysis[0] || {};
+            // Verificar conexão com banco
+            await this.verificarConexaoBanco();
             
-            res.json({
-                success: true,
-                data: {
-                    latest_analysis: {
-                        market_direction: latestAnalysis.market_direction || 'NEUTRAL',
-                        confidence_score: parseFloat(latestAnalysis.confidence_score || 0),
-                        btc_price: parseFloat(latestAnalysis.btc_price || 0),
-                        btc_dominance: parseFloat(latestAnalysis.btc_dominance || 0),
-                        analysis_time: latestAnalysis.created_at || new Date()
-                    },
-                    fear_greed: {
-                        index: parseInt(fearGreed?.fear_greed_index || 50),
-                        classification: fearGreed?.classification || 'Neutral',
-                        updated_at: fearGreed?.created_at || new Date()
-                    },
-                    statistics: {
-                        total_analysis: parseInt(stats?.total_analysis || 0),
-                        bullish_signals: parseInt(stats?.bullish_signals || 0),
-                        bearish_signals: parseInt(stats?.bearish_signals || 0),
-                        neutral_signals: parseInt(stats?.neutral_signals || 0),
-                        avg_confidence: parseFloat(stats?.avg_confidence || 0).toFixed(2),
-                        max_confidence: parseFloat(stats?.max_confidence || 0).toFixed(2),
-                        min_confidence: parseFloat(stats?.min_confidence || 0).toFixed(2)
-                    },
-                    performance: {
-                        predictions_made: parseInt(performance?.predictions_made || 0),
-                        correct_predictions: parseInt(performance?.correct_predictions || 0),
-                        accuracy_rate: parseFloat(performance?.accuracy_rate || 0).toFixed(2)
-                    },
-                    recent_analysis: analysis.map(item => ({
-                        direction: item.market_direction,
-                        confidence: parseFloat(item.confidence_score || 0),
-                        btc_price: parseFloat(item.btc_price || 0),
-                        time: item.created_at
-                    }))
-                }
-            });
+            console.log('✅ Servidor inicializado com sucesso');
+            return true;
         } catch (error) {
-            console.log('Erro ao buscar dados de análise IA:', error.message);
-            
-            // Tentar query mais simples
-            try {
-                const simpleQuery = await this.pool.query(`
-                    SELECT COUNT(*) as total FROM ai_market_analysis 
-                    WHERE created_at >= CURRENT_DATE
-                `);
-                
-                res.json({
-                    success: true,
-                    data: {
-                        latest_analysis: {
-                            market_direction: 'NEUTRAL',
-                            confidence_score: 0,
-                            btc_price: 0,
-                            btc_dominance: 0,
-                            analysis_time: new Date()
-                        },
-                        fear_greed: {
-                            index: 50,
-                            classification: 'Neutral',
-                            updated_at: new Date()
-                        },
-                        statistics: {
-                            total_analysis: parseInt(simpleQuery.rows[0]?.total || 0),
-                            bullish_signals: 0, bearish_signals: 0, neutral_signals: 0,
-                            avg_confidence: '0.00', max_confidence: '0.00', min_confidence: '0.00'
-                        },
-                        performance: {
-                            predictions_made: 0,
-                            correct_predictions: 0,
-                            accuracy_rate: '0.00'
-                        },
-                        recent_analysis: []
-                    }
-                });
-            } catch (altError) {
-                res.json({
-                    success: false,
-                    error: error.message,
-                    data: {
-                        latest_analysis: {
-                            market_direction: 'NEUTRAL', confidence_score: 0,
-                            btc_price: 0, btc_dominance: 0, analysis_time: new Date()
-                        },
-                        fear_greed: {
-                            index: 50, classification: 'Neutral', updated_at: new Date()
-                        },
-                        statistics: {
-                            total_analysis: 0, bullish_signals: 0, bearish_signals: 0, neutral_signals: 0,
-                            avg_confidence: '0.00', max_confidence: '0.00', min_confidence: '0.00'
-                        },
-                        performance: {
-                            predictions_made: 0, correct_predictions: 0, accuracy_rate: '0.00'
-                        },
-                        recent_analysis: []
-                    }
-                });
-            }
+            console.error('❌ Erro ao inicializar servidor:', error.message);
+            return false;
         }
     }
+}
 
-    // Gerar HTML do dashboard com painel de controle completo
-    gerarDashboardHTML() {
-        return `<!DOCTYPE html>
+// Gerar HTML do dashboard com painel de controle completo
+function gerarDashboardHTML() {
+    return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -4841,9 +4751,12 @@ class CoinBitClubServer {
 </html>`;
     }
 
-    // 🧠 SISTEMA ADAPTATIVO DO PAINEL - AUTO-DETECÇÃO DE ESQUEMA
-    // Cache para estrutura das tabelas
-    tableStructures = {};
+// 🧠 SISTEMA ADAPTATIVO DO PAINEL - AUTO-DETECÇÃO DE ESQUEMA
+class PainelAdaptativo {
+    constructor(pool) {
+        this.pool = pool;
+        this.tableStructures = {};
+    }
 
     // Função para verificar colunas de uma tabela
     async getTableColumns(tableName) {
@@ -4892,9 +4805,9 @@ class CoinBitClubServer {
                 
                 // Adaptar query baseada nas colunas disponíveis
                 let chaveAPI = 'NULL';
-                if (colunas.includes('api_keyYOUR_API_KEY_HEREapi_key IS NOT NULL';
-                else if (colunas.includes('binance_api_keyYOUR_API_KEY_HEREbinance_api_key IS NOT NULL';
-                else if (colunas.includes('exchange_api_keyYOUR_API_KEY_HEREexchange_api_key IS NOT NULL';
+                if (colunas.includes('api_key')) chaveAPI = 'api_key IS NOT NULL';
+                else if (colunas.includes('binance_api_key')) chaveAPI = 'binance_api_key IS NOT NULL';
+                else if (colunas.includes('exchange_api_key')) chaveAPI = 'exchange_api_key IS NOT NULL';
                 
                 let dataCol = 'created_at';
                 if (!colunas.includes('created_at') && colunas.includes('data_criacao')) {
