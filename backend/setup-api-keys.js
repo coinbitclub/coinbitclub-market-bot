@@ -173,16 +173,15 @@ class APIKeyManager {
         // Exemplo de chaves (SUBSTITUA PELAS SUAS CHAVES REAIS)
         const exampleKeys = {
             bybit_testnet: {
-                api_key: 'SUA_CHAVE_BYBIT_TESTNET_AQUI',
+                api_key: YOUR_API_KEY_HERE,
                 secret_key: 'SUA_SECRET_BYBIT_TESTNET_AQUI'
             },
             bybit_mainnet: {
-                api_key: 'SUA_CHAVE_BYBIT_MAINNET_AQUI',
+                api_key: YOUR_API_KEY_HERE,
                 secret_key: 'SUA_SECRET_BYBIT_MAINNET_AQUI'
             },
             binance_testnet: {
-                api_key: 'SUA_CHAVE_BINANCE_TESTNET_AQUI',
-                secret_key: 'SUA_SECRET_BINANCE_TESTNET_AQUI'
+                api_key: "YOUR_BINANCE_API_KEY"YOUR_BINANCE_API_KEY"SUA_SECRET_BINANCE_TESTNET_AQUI'
             }
         };
 

@@ -259,8 +259,7 @@ class SystemCompleteCheck {
         
         // Verificar variáveis de ambiente críticas
         const criticalEnvVars = [
-            'DATABASE_URL',
-            'ENABLE_REAL_TRADING'
+            'DATABASE_URL"postgresql://username:password@host:port/database"ENABLE_REAL_TRADING'
         ];
 
         criticalEnvVars.forEach(envVar => {

@@ -50,11 +50,8 @@ class TradingFlowAnalyzer {
         const criticalVars = [
             'ENABLE_REAL_TRADING',
             'NODE_ENV',
-            'DATABASE_URL',
-            'BYBIT_API_KEY',
-            'BYBIT_API_SECRET',
-            'BINANCE_API_KEY',
-            'BINANCE_API_SECRET'
+            'DATABASE_URL"postgresql://username:password@host:port/database"BYBIT_API_KEYYOUR_API_KEY_HEREBYBIT_API_SECRET',
+            'BINANCE_API_KEYYOUR_API_KEY_HEREBINANCE_API_SECRET'
         ];
         
         const envStatus = {};
@@ -413,8 +410,7 @@ class TradingFlowAnalyzer {
                 return value === 'true';
             case 'NODE_ENV':
                 return ['development', 'production'].includes(value);
-            case 'DATABASE_URL':
-                return value && value.startsWith('postgresql://');
+            case 'DATABASE_URL"postgresql://username:password@host:port/database"postgresql://');
             default:
                 return !!value;
         }

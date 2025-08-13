@@ -81,7 +81,7 @@ console.log('const response = await fetch("/api/users/16/api-keys", {');
 console.log('  method: "POST",');
 console.log('  headers: { "Content-Type": "application/json" },');
 console.log('  body: JSON.stringify({');
-console.log('    apiKey: "sua_api_key",');
+console.log('    apiKey: "sua_api_keyYOUR_API_KEY_HERE);
 console.log('    apiSecret: "seu_secret",');
 console.log('    exchange: "bybit",');
 console.log('    environment: "production"');

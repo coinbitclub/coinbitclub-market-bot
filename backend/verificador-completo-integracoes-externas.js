@@ -255,19 +255,7 @@ class VerificadorIntegracoes {
             // Teste 1: Markets
             const responseMarkets = await axios.get(this.configuracoes.coinstats.markets, {
                 headers: {
-                    'X-API-KEY': this.configuracoes.coinstats.apiKey
-                }
-            });
-
-            // Teste 2: Fear & Greed
-            const responseFearGreed = await axios.get(this.configuracoes.coinstats.fearGreed, {
-                headers: {
-                    'X-API-KEY': this.configuracoes.coinstats.apiKey
-                }
-            });
-
-            this.resultados.coinstats = {
-                status: 'SUCESSO',
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HEREYOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE,
                 detalhes: {
                     markets: responseMarkets.data?.length || 0,
                     fearGreedValue: responseFearGreed.data?.value || 'N/A',

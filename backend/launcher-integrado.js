@@ -83,11 +83,7 @@ class LauncherIntegrado {
             {
                 nome: 'CoinStats Fear&Greed',
                 url: process.env.FEAR_GREED_URL || 'https://openapiv1.coinstats.app/insights/fear-and-greed',
-                headers: { 'X-API-KEY': process.env.COINSTATS_API_KEY },
-                essencial: true
-            },
-            {
-                nome: 'Binance Public',
+                headers: { 'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE,
                 url: 'https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT',
                 essencial: true
             },

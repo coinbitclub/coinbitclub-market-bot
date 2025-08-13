@@ -21,22 +21,13 @@ async function testePipelineCompleto() {
         console.log('===============================================');
         
         const chaves = {
-            'OPENAI_API_KEY': process.env.OPENAI_API_KEY,
-            'TWILIO_ACCOUNT_SID': process.env.TWILIO_ACCOUNT_SID,
+            'OPENAI_API_KEY"YOUR_OPENAI_API_KEY"TWILIO_ACCOUNT_SID': process.env.TWILIO_ACCOUNT_SID,
             'TWILIO_AUTH_TOKEN': process.env.TWILIO_AUTH_TOKEN,
-            'BINANCE_API_KEY': process.env.BINANCE_API_KEY,
-            'BINANCE_SECRET_KEY': process.env.BINANCE_SECRET_KEY,
-            'BYBIT_API_KEY': process.env.BYBIT_API_KEY,
-            'BYBIT_SECRET_KEY': process.env.BYBIT_SECRET_KEY,
+            'BINANCE_API_KEY"YOUR_BINANCE_API_KEY"BINANCE_SECRET_KEY': process.env.BINANCE_SECRET_KEY,
+            'BYBIT_API_KEYYOUR_API_KEY_HEREBYBIT_SECRET_KEY': process.env.BYBIT_SECRET_KEY,
             'STRIPE_SECRET_KEY': process.env.STRIPE_SECRET_KEY,
             'STRIPE_PUBLISHABLE_KEY': process.env.STRIPE_PUBLISHABLE_KEY,
-            'DATABASE_URL': process.env.DATABASE_URL
-        };
-        
-        for (const [nome, valor] of Object.entries(chaves)) {
-            if (valor) {
-                const mascarado = valor.length > 10 ? 
-                    valor.substring(0, 8) + '...' + valor.substring(valor.length - 4) : 
+            'DATABASE_URL"postgresql://username:password@host:port/database"...' + valor.substring(valor.length - 4) : 
                     valor.substring(0, 4) + '...';
                 console.log(`   ✅ ${nome}: ${mascarado} (${valor.length} chars)`);
             } else {
@@ -247,11 +238,7 @@ async function testePipelineCompleto() {
         let sucessos = [];
         
         // Verificar chaves críticas
-        const chavesCriticas = ['OPENAI_API_KEY', 'BINANCE_API_KEY', 'BYBIT_API_KEY'];
-        const chavesConfiguradas = chavesCriticas.filter(chave => process.env[chave]);
-        
-        if (chavesConfiguradas.length === chavesCriticas.length) {
-            sucessos.push('✅ Todas as chaves críticas configuradas');
+        const chavesCriticas = ['OPENAI_API_KEYYOUR_API_KEY_HEREBINANCE_API_KEYYOUR_API_KEY_HEREBYBIT_API_KEYYOUR_API_KEY_HERE✅ Todas as chaves críticas configuradas');
         } else {
             problemas.push(`❌ Chaves faltando: ${chavesCriticas.filter(c => !process.env[c]).join(', ')}`);
         }

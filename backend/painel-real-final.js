@@ -564,8 +564,7 @@ async function getDadosAdaptativos() {
             dados.usuarios.total = parseInt(resultUsuarios.rows[0]?.total || 0);
             
             // Usuários com chaves API REAIS
-            if (columns.includes('binance_api_key') || columns.includes('api_key')) {
-                const apiKeyColumn = columns.includes('binance_api_key') ? 'binance_api_key' : 'api_key';
+            if (columns.includes('binance_api_keyYOUR_API_KEY_HEREapi_keyYOUR_API_KEY_HEREbinance_api_keyYOUR_API_KEY_HEREbinance_api_keyYOUR_API_KEY_HEREapi_key';
                 const resultChaves = await pool.query(`
                     SELECT COUNT(*) as com_chaves 
                     FROM users 

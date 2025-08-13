@@ -16,9 +16,9 @@ function configurarVariaveisAmbiente() {
     console.log('🔧 Configurando variáveis de ambiente...');
     
     const requiredEnvVars = {
-        'DATABASE_URL': 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
-        'COINSTATS_API_KEY': 'ZFIxigBcVaCyXDL1Qp/Ork7TOL3+h07NM2f3YoSrMkI=',
-        'BINANCE_API_KEY': 'tEJm7uhqtpgAftcaVGlQbADfR1LOmeLW5WkN6gNNYKzmmXyHso4NSAiXHFXdXRxw',
+        'DATABASE_URL"postgresql://username:password@host:port/database"postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
+        'COINSTATS_API_KEYYOUR_API_KEY_HEREZFIxigBcVaCyXDL1Qp/Ork7TOL3+h07NM2f3YoSrMkI=',
+        'BINANCE_API_KEYYOUR_API_KEY_HEREtEJm7uhqtpgAftcaVGlQbADfR1LOmeLW5WkN6gNNYKzmmXyHso4NSAiXHFXdXRxw',
         'NODE_ENV': 'production',
         'PORT': '3000'
     };

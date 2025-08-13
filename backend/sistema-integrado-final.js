@@ -118,8 +118,7 @@ class SistemaIntegradoFinal {
             const fgStart = Date.now();
             const fgResponse = await axios.get(process.env.FEAR_GREED_URL, {
                 headers: {
-                    'X-API-KEY': process.env.COINSTATS_API_KEY,
-                    'Accept': 'application/json',
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json',
                     'User-Agent': 'CoinBitClub-Enterprise/1.0'
                 },
                 timeout: 15000
@@ -148,8 +147,7 @@ class SistemaIntegradoFinal {
             const marketsStart = Date.now();
             const marketsResponse = await axios.get('https://openapiv1.coinstats.app/markets', {
                 headers: {
-                    'X-API-KEY': process.env.COINSTATS_API_KEY,
-                    'Accept': 'application/json',
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json',
                     'User-Agent': 'CoinBitClub-Enterprise/1.0'
                 },
                 timeout: 15000
@@ -207,8 +205,7 @@ class SistemaIntegradoFinal {
             const coinStart = Date.now();
             const coinResponse = await axios.get('https://openapiv1.coinstats.app/coins/bitcoin', {
                 headers: {
-                    'X-API-KEY': process.env.COINSTATS_API_KEY,
-                    'Accept': 'application/json'
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
                 },
                 timeout: 15000
             });

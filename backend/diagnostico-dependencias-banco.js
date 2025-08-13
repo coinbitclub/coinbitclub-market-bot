@@ -57,11 +57,7 @@ class DiagnosticoDependenciasBanco {
                 analise.temPool = true;
             }
 
-            if (conteudo.includes('DATABASE_URL') || conteudo.includes('process.env.DATABASE_URL')) {
-                analise.temDatabaseUrl = true;
-            }
-
-            if (conteudo.includes('.query(') || conteudo.includes('pool.query') || conteudo.includes('client.query')) {
+            if (conteudo.includes('DATABASE_URL"postgresql://username:password@host:port/database"process.env.DATABASE_URL"postgresql://username:password@host:port/database".query(') || conteudo.includes('pool.query') || conteudo.includes('client.query')) {
                 analise.temQuery = true;
             }
 
@@ -102,8 +98,7 @@ class DiagnosticoDependenciasBanco {
             }
 
             // Verificar padrões hardcoded perigosos
-            if (conteudo.includes('PROTECTED_DB_PASSWORD') && !conteudo.includes('process.env.DATABASE_URL')) {
-                analise.problemas.push('SEGURANÇA: Connection string hardcoded sem fallback de env');
+            if (conteudo.includes('PROTECTED_DB_PASSWORD') && !conteudo.includes('process.env.DATABASE_URL"postgresql://username:password@host:port/database"SEGURANÇA: Connection string hardcoded sem fallback de env');
                 analise.status = 'CRÍTICO';
             }
 
@@ -237,16 +232,7 @@ class DiagnosticoDependenciasBanco {
             this.connectionStringsEncontradas.forEach(conn => {
                 if (conn.includes('PROTECTED_DB_PASSWORD')) {
                     console.log(`   🔴 ${conn} (HARDCODED - RISCO DE SEGURANÇA)`);
-                } else if (conn.includes('DATABASE_URL')) {
-                    console.log(`   ✅ ${conn} (Usando variável de ambiente)`);
-                } else {
-                    console.log(`   ⚠️ ${conn}`);
-                }
-            });
-        }
-
-        console.log(`\n🏗️ MÓDULOS PRINCIPAIS CRÍTICOS:`);
-        const modulosCriticos = ['app.js', 'financial-manager.js', 'commission-system.js', 'dashboard-real-final.js'];
+                } else if (conn.includes('DATABASE_URL"postgresql://username:password@host:port/database"app.js', 'financial-manager.js', 'commission-system.js', 'dashboard-real-final.js'];
         
         modulosCriticos.forEach(modulo => {
             const analise = this.arquivosAnalisados.find(a => a.arquivo === modulo);

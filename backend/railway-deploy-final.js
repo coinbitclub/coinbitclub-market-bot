@@ -211,8 +211,7 @@ class RailwayDeploymentPrep {
             }
 
             // Verificar conexão com banco
-            if (appContent.includes('Pool') && appContent.includes('DATABASE_URL')) {
-                console.log('✅ Configuração de conexão PostgreSQL encontrada');
+            if (appContent.includes('Pool') && appContent.includes('DATABASE_URL"postgresql://username:password@host:port/database"✅ Configuração de conexão PostgreSQL encontrada');
                 this.deployChecks.database = true;
             } else {
                 console.log('⚠️ Configuração de banco pode estar incompleta');

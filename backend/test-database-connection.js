@@ -80,8 +80,7 @@ async function testarConexaoBanco() {
     console.log('\n❌ NENHUMA CONEXÃO FOI BEM-SUCEDIDA');
     console.log('\n💡 SOLUÇÕES:');
     console.log('1. Verificar variáveis de ambiente:');
-    console.log('   - DATABASE_URL');
-    console.log('   - PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD');
+    console.log('   - DATABASE_URL"postgresql://username:password@host:port/database"   - PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD');
     console.log('2. Verificar se PostgreSQL está rodando');
     console.log('3. Verificar credenciais de acesso');
     console.log('4. Verificar configurações de SSL/firewall');

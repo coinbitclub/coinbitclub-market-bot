@@ -20,8 +20,7 @@ class TesteFuncionalCoinStats {
             console.log('\n1️⃣ Fear & Greed Index:');
             const fgResponse = await axios.get(process.env.FEAR_GREED_URL, {
                 headers: {
-                    'X-API-KEY': process.env.COINSTATS_API_KEY,
-                    'Accept': 'application/json'
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
                 },
                 timeout: 10000
             });
@@ -35,8 +34,7 @@ class TesteFuncionalCoinStats {
             console.log('\n2️⃣ Bitcoin Price (CoinStats):');
             const btcResponse = await axios.get('https://openapiv1.coinstats.app/coins/bitcoin', {
                 headers: {
-                    'X-API-KEY': process.env.COINSTATS_API_KEY,
-                    'Accept': 'application/json'
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
                 },
                 timeout: 10000
             });

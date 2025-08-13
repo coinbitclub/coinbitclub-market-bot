@@ -74,9 +74,7 @@ class ProductionStartup {
 
         // Verificar variáveis críticas
         const requiredVars = [
-            'DATABASE_URL',
-            'OPENAI_API_KEY',
-            'STRIPE_SECRET_KEY',
+            'DATABASE_URL"postgresql://username:password@host:port/database"OPENAI_API_KEYYOUR_API_KEY_HERESTRIPE_SECRET_KEY',
             'STRIPE_PUBLISHABLE_KEY'
         ];
 

@@ -6,12 +6,12 @@ const fetch = require('node-fetch');
 const TEST_KEYS = [
     {
         name: 'luiza_maria',
-        api_key: '9HZy9BiUW95iXprVRl',
+        api_key: YOUR_API_KEY_HERE,
         api_secret: 'QJjDXNmsIQq1gakTUk7FHAHZnjlEN8AaRkQ0'
     },
     {
         name: 'erica_santos', 
-        api_key: '2iNeNZQepHJS0lWBkf',
+        api_key: YOUR_API_KEY_HERE,
         api_secret: '1KkVFTExPQKzZwHsXaUKwzGVSCxCRW6izgDn'
     }
 ];

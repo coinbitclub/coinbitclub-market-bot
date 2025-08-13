@@ -62,19 +62,9 @@ class FinalSystemValidation {
 
             // Validar variáveis críticas
             const requiredVars = [
-                'DATABASE_URL',
-                'OPENAI_API_KEY',
-                'STRIPE_SECRET_KEY',
+                'DATABASE_URL"postgresql://username:password@host:port/database"OPENAI_API_KEYYOUR_API_KEY_HERESTRIPE_SECRET_KEY',
                 'STRIPE_PUBLISHABLE_KEY',
-                'BINANCE_MANAGEMENT_API_KEY',
-                'BYBIT_MANAGEMENT_API_KEY'
-            ];
-
-            const missingVars = [];
-            const configuredVars = [];
-
-            for (const envVar of requiredVars) {
-                if (!process.env[envVar] || process.env[envVar].includes('your_')) {
+                'BINANCE_MANAGEMENT_API_KEYYOUR_API_KEY_HEREBYBIT_MANAGEMENT_API_KEYYOUR_API_KEY_HEREyour_')) {
                     missingVars.push(envVar);
                 } else {
                     configuredVars.push(envVar);

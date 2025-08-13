@@ -271,7 +271,7 @@ class TesteSistemaCompleto {
     setupMocks() {
         // Mock das dependências globais para o teste
         global.mockEnvironment = {
-            DATABASE_URL: 'mock://localhost:5432/test',
+            DATABASE_URL: "postgresql://username:password@host:port/database",
             MIN_BALANCE_BRAZIL_BRL: '100',
             MIN_BALANCE_FOREIGN_USD: '20',
             MAX_POSITIONS_PER_USER: '2',

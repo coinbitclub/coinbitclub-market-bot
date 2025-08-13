@@ -52,8 +52,7 @@ class DiagnosticoCoinStats {
         try {
             const response = await axios.get(this.fearGreedUrl, {
                 headers: {
-                    'X-API-KEY': this.apiKey,
-                    'Accept': 'application/json',
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json',
                     'User-Agent': 'CoinBitClub-Enterprise/2.0'
                 },
                 timeout: 15000
@@ -90,8 +89,7 @@ class DiagnosticoCoinStats {
             try {
                 const response = await axios.get(url, {
                     headers: {
-                        'X-API-KEY': this.apiKey,
-                        'Accept': 'application/json'
+                        'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
                     },
                     timeout: 10000
                 });
@@ -159,8 +157,7 @@ class DiagnosticoCoinStats {
         try {
             const response = await axios.get('https://openapiv1.coinstats.app/coins', {
                 headers: {
-                    'X-API-KEY': this.apiKey,
-                    'Accept': 'application/json'
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
                 },
                 params: { limit: 1 },
                 timeout: 10000

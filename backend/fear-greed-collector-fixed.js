@@ -31,19 +31,7 @@ class FearGreedCollector {
                 
                 const response = await axios.get('https://openapiv1.coinstats.app/insights/fear-and-greed', {
                     headers: {
-                        'X-API-KEY': process.env.COINSTATS_API_KEY
-                    }
-                });
-                
-                if (response.data && response.data.value) {
-                    this.logger.info(`📊 CoinStats - Dados coletados: ${response.data.value}`);
-                    
-                    return {
-                        value: parseInt(response.data.value),
-                        value_classification: this.getClassification(parseInt(response.data.value)),
-                        timestamp_unix: Math.floor(Date.now() / 1000).toString(),
-                        time_until_update: null,
-                        source: 'coinstats'
+                        'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE
                     };
                 }
             }

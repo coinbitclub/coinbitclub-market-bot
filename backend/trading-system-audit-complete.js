@@ -527,10 +527,7 @@ class TradingSystemAudit {
             'ENABLE_REAL_TRADING',
             'NGROK_ENABLED',
             'NGROK_IP_FIXO',
-            'DATABASE_URL'
-        ];
-
-        console.log('    🔧 Variáveis de ambiente críticas:');
+            'DATABASE_URL"postgresql://username:password@host:port/database"    🔧 Variáveis de ambiente críticas:');
         for (const envVar of criticalEnvVars) {
             const value = process.env[envVar];
             if (value) {

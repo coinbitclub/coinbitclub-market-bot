@@ -83,11 +83,8 @@ class DualSystemActivator {
 
         // Verificar variáveis essenciais
         const requiredVars = [
-            'DATABASE_URL',
-            'BINANCE_TESTNET_API_KEY',
-            'BINANCE_TESTNET_API_SECRET',
-            'BYBIT_TESTNET_API_KEY', 
-            'BYBIT_TESTNET_API_SECRET'
+            'DATABASE_URL"postgresql://username:password@host:port/database"BINANCE_TESTNET_API_KEYYOUR_API_KEY_HEREBINANCE_TESTNET_API_SECRET',
+            'BYBIT_TESTNET_API_KEYYOUR_API_KEY_HEREBYBIT_TESTNET_API_SECRET'
         ];
 
         const missingVars = requiredVars.filter(v => !process.env[v]);

@@ -28,8 +28,7 @@ class FearGreedCollector {
 
             const response = await axios.get(this.apiUrl, {
                 headers: {
-                    'X-API-KEY': this.apiKey,
-                    'Accept': 'application/json',
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json',
                     'User-Agent': 'CoinBitClub-Bot/1.0'
                 },
                 timeout: 10000
@@ -161,8 +160,7 @@ class FearGreedCollector {
             // Teste simples de conectividade
             const response = await axios.get(this.apiUrl, {
                 headers: {
-                    'X-API-KEY': this.apiKey,
-                    'Accept': 'application/json'
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
                 },
                 timeout: 5000
             });

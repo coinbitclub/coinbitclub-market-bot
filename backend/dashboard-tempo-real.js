@@ -99,18 +99,7 @@ class DashboardTempoReal {
         try {
             const response = await axios.get('https://openapiv1.coinstats.app/insights/fear-and-greed', {
                 headers: {
-                    'X-API-KEY': process.env.COINSTATS_API_KEY
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.data;
-                this.metrics.fearGreedIndex = parseInt(data.value) || 50;
-            } else {
-                this.metrics.fearGreedIndex = 50; // Fallback
-            }
-        } catch (error) {
-            console.error('⚠️ Erro ao obter Fear & Greed:', error.message);
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE, error.message);
             this.metrics.fearGreedIndex = 50; // Fallback
         }
     }
@@ -119,22 +108,7 @@ class DashboardTempoReal {
         try {
             const response = await axios.get('https://openapiv1.coinstats.app/coins?page=1&limit=100', {
                 headers: {
-                    'X-API-KEY': process.env.COINSTATS_API_KEY
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.data;
-                const coins = data.result || [];
-                
-                const positiveCoins = coins.filter(coin => 
-                    coin.priceChange1d && parseFloat(coin.priceChange1d) > 0
-                ).length;
-
-                const percentage = (positiveCoins / coins.length) * 100;
-
-                if (percentage >= 70) {
-                    this.metrics.topCoinsDirection = 'BULLISH';
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE;
                 } else if (percentage <= 30) {
                     this.metrics.topCoinsDirection = 'BEARISH';
                 } else {

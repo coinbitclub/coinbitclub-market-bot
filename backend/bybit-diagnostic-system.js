@@ -421,20 +421,7 @@ class BybitDiagnosticSystem {
       issues.push('IP_WHITELIST_REQUIRED');
     }
     if (results.authentication.success && results.authentication.retCode === 10003) {
-      issues.push('INVALID_API_KEY');
-    }
-
-    return issues;
-  }
-
-  /**
-   * Gera recomendações baseado nos resultados
-   */
-  generateRecommendations(results) {
-    const recommendations = [];
-
-    if (!results.connectivity.success) {
-      recommendations.push('Verificar conectividade de rede e URL do endpoint');
+      issues.push('INVALID_API_KEYYOUR_API_KEY_HEREVerificar conectividade de rede e URL do endpoint');
     }
     if (!results.authentication.success) {
       if (results.authentication.retCode === 10010) {

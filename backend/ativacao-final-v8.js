@@ -97,7 +97,7 @@ class AtivacaoFinalV8 {
             JWT_SECRET: 'CoinBitClub2025SecretKeyForProductionUse32Chars',
             PORT: '3000',
             STRIPE_SECRET_KEY: '[STRIPE_SECRET_KEY_REMOVED]',
-            BYBIT_API_KEY: 'tEJm7uhqtpgAftcaVGIQbADfR1LOmeLW5WkNGNNYKzmmXYHso4N',
+            BYBIT_API_KEY: YOUR_API_KEY_HERE,
             BYBIT_API_SECRET: 'ufGxtl2pp4jlWg5uoPNbZr7Bj0xiLXxGH8Irqo1qEHZBD2d1Oc3U8UudKHA7cZ',
             TWILIO_ACCOUNT_SID: '[TWILIO_ACCOUNT_SID_REMOVED]',
             TWILIO_AUTH_TOKEN: '[SENSITIVE_DATA_REMOVED]'

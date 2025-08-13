@@ -16,14 +16,7 @@ const { Pool } = require('pg');
 class HybridTestnetSystem {
     constructor() {
         this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL || 'process.env.DATABASE_URL',
-            ssl: { rejectUnauthorized: false }
-        });
-    }
-
-    // Configurar todas as variáveis de ambiente para testnet
-    setupEnvironmentVariables() {
-        console.log('\n🔧 CONFIGURANDO VARIÁVEIS DE AMBIENTE');
+            connectionString: process.env.DATABASE_URL || 'process.env.DATABASE_URL"postgresql://username:password@host:port/database"\n🔧 CONFIGURANDO VARIÁVEIS DE AMBIENTE');
         console.log('====================================');
 
         // Forçar modo testnet

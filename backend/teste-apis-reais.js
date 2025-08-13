@@ -18,8 +18,7 @@ class TestadorAPIs {
         try {
             const url = process.env.FEAR_GREED_URL || 'https://openapiv1.coinstats.app/insights/fear-and-greed';
             const headers = {
-                'X-API-KEY': process.env.COINSTATS_API_KEY,
-                'Accept': 'application/json'
+                'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
             };
 
             console.log(`   🔗 URL: ${url}`);

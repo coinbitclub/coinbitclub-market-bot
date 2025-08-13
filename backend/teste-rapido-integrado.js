@@ -28,14 +28,7 @@ async function testeRapido() {
         // Fear & Greed
         console.log('   📊 CoinStats Fear & Greed...');
         const fgResp = await axios.get(process.env.FEAR_GREED_URL, {
-            headers: { 'X-API-KEY': process.env.COINSTATS_API_KEY },
-            timeout: 10000
-        });
-        const fearGreed = fgResp.data.now.value;
-        console.log(`   ✅ Fear & Greed: ${fearGreed}`);
-
-        // Bitcoin price
-        console.log('   💰 Binance BTC price...');
+            headers: { 'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE);
         const btcResp = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT', {
             timeout: 10000
         });
@@ -45,11 +38,7 @@ async function testeRapido() {
         // Dominância BTC (Markets API)
         console.log('   🏆 CoinStats Markets (BTC Dominance)...');
         const marketsResp = await axios.get('https://openapiv1.coinstats.app/markets', {
-            headers: { 'X-API-KEY': process.env.COINSTATS_API_KEY },
-            timeout: 10000
-        });
-        
-        console.log('   📄 Markets API Response structure:');
+            headers: { 'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE);
         console.log(JSON.stringify(marketsResp.data, null, 2));
 
         let btcDominance = null;

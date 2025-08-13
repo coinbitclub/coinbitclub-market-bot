@@ -145,16 +145,8 @@ class SecurityReviewer {
         // Substituir strings de conexão hardcoded
         content = content.replace(
             /postgresql:\/\/postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley\.proxy\.rlwy\.net:44790\/railway/g,
-            'process.env.DATABASE_URL'
-        );
-
-        // Garantir que DATABASE_URL seja sempre usado
-        content = content.replace(
-            /connectionString:\s*['"][^'"]+['"]/g,
-            'connectionString: process.env.DATABASE_URL'
-        );
-
-        if (modified || content !== fs.readFileSync(filePath, 'utf8')) {
+            'process.env.DATABASE_URL"postgresql://username:password@host:port/database""][^'"]+['"]/g,
+            'connectionString: process.env.DATABASE_URL"postgresql://username:password@host:port/database"utf8')) {
             // Fazer backup
             fs.writeFileSync(`${filePath}.backup`, fs.readFileSync(filePath, 'utf8'));
             

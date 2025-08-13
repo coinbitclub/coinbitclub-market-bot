@@ -343,24 +343,13 @@ class VerificadorIntegracoesExternas {
             // 1. Testar markets
             const marketsResponse = await axios.get(`${this.apis.coinstats.baseUrl}/markets`, {
                 headers: {
-                    'X-API-KEY': this.apis.coinstats.key
-                }
-            });
-
-            if (marketsResponse.status === 200) {
-                console.log(`✅ CoinStats markets: ${marketsResponse.data.length || 0} mercados`);
-                this.results.coinstats.tests.push({ test: 'markets', status: 'OK' });
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE, status: 'OK' });
             }
 
             // 2. Testar fear and greed
             const fearGreedResponse = await axios.get(`${this.apis.coinstats.baseUrl}/insights/fear-and-greed`, {
                 headers: {
-                    'X-API-KEY': this.apis.coinstats.key
-                }
-            });
-
-            if (fearGreedResponse.status === 200) {
-                console.log(`✅ CoinStats fear & greed: ${fearGreedResponse.data.value || 'N/A'}`);
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE}`);
                 this.results.coinstats.tests.push({ test: 'fear_greed', status: 'OK' });
             }
 

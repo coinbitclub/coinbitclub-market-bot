@@ -14,9 +14,9 @@ async function buscarChavesEspecificas() {
         // Chaves da imagem que queremos encontrar
         const chavesParaBuscar = [
             '9HZy9BiUW95iXprVRl',  // LUIZA api_key
-            'QJjDXNmsIQq1gakTUk7FHAHZnjlEN8AaRkQ0',  // LUIZA api_secret
+            YOUR_API_KEY_HERE,  // LUIZA api_secret
             '2iNeNZQepHJS0lWBkf',  // ERICA api_key
-            '1KkVFTExPQKzZwHsXaUKwzGVSCxCRW6izgDn'  // ERICA api_secret
+            YOUR_API_KEY_HERE  // ERICA api_secret
         ];
 
         console.log('📋 CHAVES A BUSCAR:');

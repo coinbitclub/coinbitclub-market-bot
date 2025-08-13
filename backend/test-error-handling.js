@@ -239,36 +239,35 @@ class ErrorHandlingTester {
             {
                 name: 'Binance - Key Too Short',
                 exchange: 'binance',
-                api_key: 'too_short',
+                api_key: YOUR_API_KEY_HERE,
                 api_secret: 'also_too_short',
                 expected: 'FAILED'
             },
             {
                 name: 'Binance - Valid Format',
                 exchange: 'binance', 
-                api_key: 'A'.repeat(64), // 64 caracteres válidos
+                api_key: YOUR_API_KEY_HERE.repeat(64), // 64 caracteres válidos
                 api_secret: 'B'.repeat(64),
                 expected: 'PASSED'
             },
             {
                 name: 'Bybit - Invalid Characters',
                 exchange: 'bybit',
-                api_key: 'invalid@key#symbols',
+                api_key: YOUR_API_KEY_HERE,
                 api_secret: 'invalid@secret#symbols',
                 expected: 'FAILED'
             },
             {
                 name: 'Bybit - Valid Format',
                 exchange: 'bybit',
-                api_key: 'validkey123',
+                api_key: YOUR_API_KEY_HERE,
                 api_secret: 'validsecret456789012345678901234567890',
                 expected: 'PASSED'
             },
             {
                 name: 'Empty Keys',
                 exchange: 'binance',
-                api_key: '',
-                api_secret: '',
+                api_key: 'YOUR_API_KEY_HERE',
                 expected: 'FAILED'
             }
         ];

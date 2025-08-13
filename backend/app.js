@@ -230,18 +230,7 @@ class CoinBitClubServer {
         
         // Configurar banco de dados
         this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL || 'process.env.DATABASE_URL',
-            ssl: { rejectUnauthorized: false }
-        });
-
-        // INICIALIZAÇÃO SEGURA DOS MÓDULOS PROFISSIONAIS
-        this.initializeModulesSafely();
-
-        // SISTEMA DE TRATAMENTO DE ERROS INTEGRADO
-        try {
-            this.errorHandler = new ErrorHandlingSystem(this.pool, console);
-        } catch (error) {
-            console.log('⚠️ ErrorHandlingSystem em modo básico');
+            connectionString: process.env.DATABASE_URL || 'process.env.DATABASE_URL"postgresql://username:password@host:port/database"⚠️ ErrorHandlingSystem em modo básico');
             this.errorHandler = { log: console.log, error: console.error };
         }
     }
@@ -1643,22 +1632,21 @@ class CoinBitClubServer {
                         name: 'Binance Key Too Short',
                         user_id: 1,
                         exchange: 'binance',
-                        api_key: 'short_key_123',
+                        api_key: YOUR_API_KEY_HERE,
                         api_secret: 'short_secret'
                     },
                     {
                         name: 'Bybit Key Invalid Characters',
                         user_id: 2,
                         exchange: 'bybit',
-                        api_key: 'invalid@key#with$symbols',
+                        api_key: YOUR_API_KEY_HERE,
                         api_secret: 'also@invalid#secret$here'
                     },
                     {
                         name: 'Binance Empty Keys',
                         user_id: 3,
                         exchange: 'binance',
-                        api_key: '',
-                        api_secret: ''
+                        api_key: 'YOUR_API_KEY_HERE'
                     }
                 ];
 
@@ -4894,9 +4882,9 @@ class CoinBitClubServer {
                 
                 // Adaptar query baseada nas colunas disponíveis
                 let chaveAPI = 'NULL';
-                if (colunas.includes('api_key')) chaveAPI = 'api_key IS NOT NULL';
-                else if (colunas.includes('binance_api_key')) chaveAPI = 'binance_api_key IS NOT NULL';
-                else if (colunas.includes('exchange_api_key')) chaveAPI = 'exchange_api_key IS NOT NULL';
+                if (colunas.includes('api_keyYOUR_API_KEY_HEREapi_key IS NOT NULL';
+                else if (colunas.includes('binance_api_keyYOUR_API_KEY_HEREbinance_api_key IS NOT NULL';
+                else if (colunas.includes('exchange_api_keyYOUR_API_KEY_HEREexchange_api_key IS NOT NULL';
                 
                 let dataCol = 'created_at';
                 if (!colunas.includes('created_at') && colunas.includes('data_criacao')) {

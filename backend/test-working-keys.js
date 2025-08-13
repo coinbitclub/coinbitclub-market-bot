@@ -27,7 +27,7 @@ async function coletarSaldosCorrigido() {
                 user_id: 15,
                 name: 'Paloma Amaral',
                 exchange: 'bybit',
-                api_key: 'iGBRNexUa9OwJQqfM1',
+                api_key: YOUR_API_KEY_HERE,
                 api_secret: 'IcJNBDWqKdePYw6GWwKKx8LH6vWjjGvNNxI0',
                 environment: 'mainnet'
             },
@@ -35,7 +35,7 @@ async function coletarSaldosCorrigido() {
                 user_id: 16,
                 name: 'Erica dos Santos',
                 exchange: 'bybit',
-                api_key: 'twS3VQO6t8L2yEwZaO',
+                api_key: YOUR_API_KEY_HERE,
                 api_secret: 'qhHKwRNyv72YFr4r4r51Aw1VBTvHuvGqJ2Hm',
                 environment: 'mainnet'
             }

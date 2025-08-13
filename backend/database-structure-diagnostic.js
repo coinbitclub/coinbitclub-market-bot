@@ -177,7 +177,7 @@ class DatabaseStructureDiagnostic {
             
             // Tentar encontrar onde estão as chaves API
             const possibleApiColumns = [
-                'binance_api_key', 'bybit_api_key', 'api_key', 'apikey',
+                'binance_api_keyYOUR_API_KEY_HEREbybit_api_keyYOUR_API_KEY_HEREapi_keyYOUR_API_KEY_HEREapikey',
                 'binance_key', 'bybit_key', 'exchange_key'
             ];
             
@@ -295,7 +295,7 @@ class DatabaseStructureDiagnostic {
                 SELECT column_name 
                 FROM information_schema.columns 
                 WHERE table_name = 'users' 
-                AND column_name IN ('binance_api_key', 'bybit_api_key', 'trading_enabled', 'nome')
+                AND column_name IN ('binance_api_keyYOUR_API_KEY_HEREbybit_api_keyYOUR_API_KEY_HEREtrading_enabled', 'nome')
                 ORDER BY column_name
             `);
             

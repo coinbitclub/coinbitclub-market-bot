@@ -13,11 +13,7 @@ console.log('🔧 Iniciando sistema...');
 console.log('');
 
 // Verificar configurações essenciais
-const requiredEnvs = ['DATABASE_URL'];
-const missingEnvs = requiredEnvs.filter(env => !process.env[env]);
-
-if (missingEnvs.length > 0) {
-    console.log('⚠️ Variáveis de ambiente em falta:', missingEnvs.join(', '));
+const requiredEnvs = ['DATABASE_URL"postgresql://username:password@host:port/database"⚠️ Variáveis de ambiente em falta:', missingEnvs.join(', '));
     console.log('🔧 Continuando com configurações padrão...');
 }
 

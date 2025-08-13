@@ -93,18 +93,8 @@ class ProductionDeployer {
         
         const envContent = fs.readFileSync('.env', 'utf8');
         const requiredVars = [
-            'DATABASE_URL',
-            'NGROK_AUTH_TOKEN',
-            'OPENAI_API_KEY'
-        ];
-        
-        for (const varName of requiredVars) {
-            if (!envContent.includes(varName)) {
-                throw new Error(`Variável ${varName} não encontrada no .env`);
-            }
-        }
-        
-        console.log('✅ Todas as variáveis de ambiente necessárias estão presentes');
+            'DATABASE_URL"postgresql://username:password@host:port/database"NGROK_AUTH_TOKEN',
+            'OPENAI_API_KEYYOUR_API_KEY_HERE✅ Todas as variáveis de ambiente necessárias estão presentes');
         
         // Verificar package.json
         const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));

@@ -29,13 +29,7 @@ async function testeValidacaoFinal() {
         
         // Fear & Greed
         const fgResp = await axios.get(process.env.FEAR_GREED_URL, {
-            headers: { 'X-API-KEY': process.env.COINSTATS_API_KEY },
-            timeout: 10000
-        });
-        const fearGreed = fgResp.data.now;
-        
-        // Bitcoin price
-        const btcResp = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT', {
+            headers: { 'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE, {
             timeout: 10000
         });
         const btcPrice = parseFloat(btcResp.data.lastPrice);

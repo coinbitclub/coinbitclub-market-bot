@@ -67,11 +67,7 @@ if (fs.existsSync(appJsPath)) {
     } else if (appJsContent.includes('[SENSITIVE_DATA_REMOVED]')) {
         console.log('⚠️  app.js - Ainda contém dados sanitizados');
     } else {
-        console.log('ℹ️  app.js - Usando apenas process.env.DATABASE_URL');
-    }
-}
-
-console.log('');
+        console.log('ℹ️  app.js - Usando apenas process.env.DATABASE_URL"postgresql://username:password@host:port/database"');
 console.log('🎯 VERIFICAÇÃO FINAL:');
 console.log('   • app.js: String de conexão restaurada ✅');
 console.log('   • check-database.js: Verificado ✅');

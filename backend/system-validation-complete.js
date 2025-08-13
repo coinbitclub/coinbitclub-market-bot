@@ -39,25 +39,19 @@ class CoinbitClubSystemValidator {
 
         // Configurações necessárias
         this.requiredEnvVars = [
-            'DATABASE_URL',
-            'STRIPE_SECRET_KEY',
+            'DATABASE_URL"postgresql://username:password@host:port/database"STRIPE_SECRET_KEY',
             'STRIPE_PUBLISHABLE_KEY',
-            'OPENAI_API_KEY',
-            'TWILIO_ACCOUNT_SID',
+            'OPENAI_API_KEYYOUR_API_KEY_HERETWILIO_ACCOUNT_SID',
             'TWILIO_AUTH_TOKEN',
-            'COINSTATS_API_KEY',
-            'BINANCE_TESTNET_API_KEY',
-            'BINANCE_TESTNET_API_SECRET',
-            'BYBIT_TESTNET_API_KEY',
-            'BYBIT_TESTNET_API_SECRET',
-            'BINANCE_MANAGEMENT_API_KEY',
-            'BINANCE_MANAGEMENT_API_SECRET'
+            'COINSTATS_API_KEYYOUR_API_KEY_HEREBINANCE_TESTNET_API_KEYYOUR_API_KEY_HEREBINANCE_TESTNET_API_SECRET',
+            'BYBIT_TESTNET_API_KEYYOUR_API_KEY_HEREBYBIT_TESTNET_API_SECRET',
+            'BINANCE_MANAGEMENT_API_KEYYOUR_API_KEY_HEREBINANCE_MANAGEMENT_API_SECRET'
         ];
 
         // Configuração real das APIs
         this.realApiKeys = {
-            OPENAI_API_KEY: '[SENSITIVE_DATA_REMOVED]',
-            COINSTATS_API_KEY: 'ZFIxigBcVaCyXDL1Qp/Ork7TOL3+h07NM2f3YoSrMkI=',
+            OPENAI_API_KEY: YOUR_API_KEY_HERE,
+            COINSTATS_API_KEY: YOUR_API_KEY_HERE,
             TWILIO_SID: '[SENSITIVE_DATA_REMOVED]',
             TWILIO_ACCOUNT_SID: '[SENSITIVE_DATA_REMOVED]',
             TWILIO_AUTH_TOKEN: '[SENSITIVE_DATA_REMOVED]',
@@ -66,11 +60,11 @@ class CoinbitClubSystemValidator {
             STRIPE_PUBLISHABLE_KEY: '[SENSITIVE_DATA_REMOVED]',
             FEAR_GREED_URL: 'https://openapiv1.coinstats.app/insights/fear-and-greed',
             // CHAVES REAIS DAS EXCHANGES
-            BINANCE_TESTNET_API_KEY: '43e7f148ec0f1e155f0451d683f881103803ed036efacb95e026ce8805882803',
+            BINANCE_TESTNET_API_KEY: YOUR_API_KEY_HERE,
             BINANCE_TESTNET_API_SECRET: 'af0d2856f3c6fe825f084fd28a0ab7b471e2a8fa88691e7c990b75be6557bd82',
-            BYBIT_TESTNET_API_KEY: '1FHeimNdrGvCSPABD4',
+            BYBIT_TESTNET_API_KEY: YOUR_API_KEY_HERE,
             BYBIT_TESTNET_API_SECRET: 'xX5KU5VhxvXy1YZ2sN51GCTLp4DGBxKygrwG',
-            DATABASE_URL: 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway'
+            DATABASE_URL: "postgresql://username:password@host:port/database"
         };
 
         this.pool = new Pool({
@@ -863,8 +857,7 @@ AFFILIATE_VIP_RATE=5.0
         try {
             const response = await axios.get(this.realApiKeys.FEAR_GREED_URL, {
                 headers: {
-                    'X-API-KEY': this.realApiKeys.COINSTATS_API_KEY,
-                    'Content-Type': 'application/json'
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
                 },
                 timeout: 10000
             });

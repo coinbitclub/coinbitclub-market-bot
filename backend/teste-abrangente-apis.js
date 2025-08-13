@@ -9,12 +9,11 @@ const ACCOUNTS = {
     // Exemplo de contas reais (substituir por chaves válidas para teste)
     test_account: {
         bybit: {
-            api_key: 'INSIRA_CHAVE_REAL_AQUI',
+            api_key: YOUR_API_KEY_HERE,
             api_secret: 'INSIRA_SECRET_REAL_AQUI'
         },
         binance: {
-            api_key: 'INSIRA_CHAVE_BINANCE_AQUI',
-            api_secret: 'INSIRA_SECRET_BINANCE_AQUI'
+            api_key: "YOUR_BINANCE_API_KEY"YOUR_BINANCE_API_KEY"INSIRA_SECRET_BINANCE_AQUI'
         }
     }
 };

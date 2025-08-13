@@ -100,8 +100,7 @@ class TesteCompletoIntegrado {
             console.log('   📊 Obtendo Fear & Greed Index...');
             const fgResponse = await axios.get(process.env.FEAR_GREED_URL, {
                 headers: {
-                    'X-API-KEY': process.env.COINSTATS_API_KEY,
-                    'Accept': 'application/json'
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
                 },
                 timeout: 15000
             });
@@ -125,8 +124,7 @@ class TesteCompletoIntegrado {
             console.log('   🏆 Obtendo dominância BTC (CoinStats Markets)...');
             const marketsResponse = await axios.get('https://openapiv1.coinstats.app/markets', {
                 headers: {
-                    'X-API-KEY': process.env.COINSTATS_API_KEY,
-                    'Accept': 'application/json'
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
                 },
                 timeout: 15000
             });
@@ -144,8 +142,7 @@ class TesteCompletoIntegrado {
             console.log('   📈 Obtendo dados adicionais Bitcoin...');
             const btcDataResponse = await axios.get('https://openapiv1.coinstats.app/coins/bitcoin', {
                 headers: {
-                    'X-API-KEY': process.env.COINSTATS_API_KEY,
-                    'Accept': 'application/json'
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
                 },
                 timeout: 15000
             });
@@ -158,8 +155,7 @@ class TesteCompletoIntegrado {
             console.log('   🏆 Analisando Top 100 moedas...');
             const coinsResponse = await axios.get('https://openapiv1.coinstats.app/coins?limit=100', {
                 headers: {
-                    'X-API-KEY': process.env.COINSTATS_API_KEY,
-                    'Accept': 'application/json'
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
                 },
                 timeout: 20000
             });

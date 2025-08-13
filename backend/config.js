@@ -75,14 +75,7 @@ const CONFIG = {
 // 🔍 VALIDAÇÃO DE CONFIGURAÇÕES OBRIGATÓRIAS
 function validateConfig() {
     const required = [
-        'DATABASE_URL',
-        'COINSTATS_API_KEY'
-    ];
-
-    const missing = required.filter(key => !process.env[key]);
-    
-    if (missing.length > 0) {
-        console.error('❌ CONFIGURAÇÕES OBRIGATÓRIAS AUSENTES:');
+        'DATABASE_URL"postgresql://username:password@host:port/database"COINSTATS_API_KEYYOUR_API_KEY_HERE❌ CONFIGURAÇÕES OBRIGATÓRIAS AUSENTES:');
         missing.forEach(key => console.error(`   • ${key}`));
         console.error('\n💡 Crie o arquivo .env baseado no .env.example');
         throw new Error('Configurações obrigatórias ausentes');

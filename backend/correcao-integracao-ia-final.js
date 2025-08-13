@@ -24,7 +24,7 @@ async function corrigirIntegracaoIA() {
 
         // 1. Verificar se OpenAI está realmente configurado
         console.log('1️⃣ Verificando configuração OpenAI...');
-        if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-proj-')) {
+        if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith("YOUR_OPENAI_API_KEY")) {
             console.log('   ✅ OpenAI API Key válida encontrada');
             console.log('   📝 Recomendação: Sistema pode usar OpenAI GPT para análise inteligente');
         } else {

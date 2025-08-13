@@ -18,16 +18,7 @@ class SimpleCoinBitClubServer {
         this.port = process.env.PORT || 3000;
         
         this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL || 'process.env.DATABASE_URL',
-            ssl: { rejectUnauthorized: false }
-        });
-
-        this.setupMiddleware();
-        this.setupRoutes();
-    }
-
-    setupMiddleware() {
-        console.log('🔧 Configurando middlewares...');
+            connectionString: process.env.DATABASE_URL || 'process.env.DATABASE_URL"postgresql://username:password@host:port/database"🔧 Configurando middlewares...');
         
         this.app.use(cors({
             origin: '*',

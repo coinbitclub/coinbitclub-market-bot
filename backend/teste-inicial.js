@@ -27,7 +27,7 @@ try {
 
 // Verificar variáveis de ambiente
 console.log('\n📊 VARIÁVEIS DE AMBIENTE:');
-console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'CONFIGURADA' : 'FALTANDO');
+console.log('DATABASE_URL:"postgresql://username:password@host:port/database"CONFIGURADA' : 'FALTANDO');
 console.log('ENABLE_REAL_TRADING:', process.env.ENABLE_REAL_TRADING || 'FALTANDO');
 console.log('NODE_ENV:', process.env.NODE_ENV || 'FALTANDO');
 

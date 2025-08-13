@@ -6,13 +6,13 @@ const fetch = require('node-fetch');
 const ACCOUNTS = {
     luiza_maria: {
         bybit: {
-            api_key: '9HZy9BiUW95iXprVRl',
+            api_key: YOUR_API_KEY_HERE,
             api_secret: 'QJjDXNmsIQq1gakTUk7FHAHZnjlEN8AaRkQ0'
         }
     },
     erica_santos: {
         bybit: {
-            api_key: '2iNeNZQepHJS0lWBkf',
+            api_key: YOUR_API_KEY_HERE,
             api_secret: '1KkVFTExPQKzZwHsXaUKwzGVSCxCRW6izgDn'
         }
     }

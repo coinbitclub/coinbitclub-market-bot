@@ -68,18 +68,11 @@ class RailwayVariablesUpdater {
         
         this.externalVariables = [
             // NÃO MEXER - Chaves externas
-            'DATABASE_URL',
-            'DATABASE_PUBLIC_URL', 
-            'OPENAI_API_KEY',
-            'COINSTATS_API_KEY',
-            'BINANCE_API_KEY',
-            'BINANCE_API_SECRET',
-            'BYBIT_API_KEY', 
-            'BYBIT_API_SECRET',
-            'BINANCE_TESTNET_API_KEY',
-            'BINANCE_TESTNET_API_SECRET',
-            'BYBIT_TESTNET_API_KEY',
-            'BYBIT_TESTNET_API_SECRET',
+            'DATABASE_URL"postgresql://username:password@host:port/database"DATABASE_PUBLIC_URL', 
+            'OPENAI_API_KEYYOUR_API_KEY_HERECOINSTATS_API_KEYYOUR_API_KEY_HEREBINANCE_API_KEYYOUR_API_KEY_HEREBINANCE_API_SECRET',
+            'BYBIT_API_KEYYOUR_API_KEY_HEREBYBIT_API_SECRET',
+            'BINANCE_TESTNET_API_KEYYOUR_API_KEY_HEREBINANCE_TESTNET_API_SECRET',
+            'BYBIT_TESTNET_API_KEYYOUR_API_KEY_HEREBYBIT_TESTNET_API_SECRET',
             'STRIPE_SECRET_KEY',
             'STRIPE_PUBLISHABLE_KEY',
             'JWT_SECRET',

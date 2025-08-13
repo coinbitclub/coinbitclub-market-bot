@@ -325,8 +325,7 @@ class SecurityFixer {
         console.log('1. Configure as seguintes variáveis de ambiente no Railway:');
         console.log('   • DATABASE_URL (já configurada)');
         console.log('   • DB_PASSWORD');
-        console.log('   • OPENAI_API_KEY');
-        console.log('   • BINANCE_API_KEY (se necessário)');
+        console.log('   • OPENAI_API_KEYYOUR_API_KEY_HERE   • BINANCE_API_KEY (se necessário)');
         console.log('   • BINANCE_API_SECRET (se necessário)');
         console.log('   • BYBIT_API_KEY (se necessário)');
         console.log('   • BYBIT_API_SECRET (se necessário)');

@@ -5,12 +5,12 @@ const fetch = require('node-fetch');
 // Chaves do usuário ID 16 encontradas no banco
 const TEST_KEYS = {
     bybit_mainnet: {
-        api_key: 'erica_test_api_key_bybit_2025',
+        api_key: YOUR_API_KEY_HERE,
         api_secret: 'erica_test_secret_bybit_2025',
         is_testnet: false
     },
     binance_testnet: {
-        api_key: 'erica_test_api_key_binance_2025',
+        api_key: YOUR_API_KEY_HERE,
         api_secret: 'erica_test_secret_binance_2025',
         is_testnet: true
     }

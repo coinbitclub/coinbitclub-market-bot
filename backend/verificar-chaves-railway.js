@@ -4,14 +4,10 @@ console.log('==========================================');
 
 // Lista das variáveis críticas do Railway
 const chavesEsperadas = [
-    'DATABASE_URL',
-    'OPENAI_API_KEY', 
-    'TWILIO_ACCOUNT_SID',
+    'DATABASE_URL"postgresql://username:password@host:port/database"OPENAI_API_KEYYOUR_API_KEY_HERETWILIO_ACCOUNT_SID',
     'TWILIO_AUTH_TOKEN',
-    'BINANCE_API_KEY',
-    'BINANCE_SECRET_KEY',
-    'BYBIT_API_KEY', 
-    'BYBIT_SECRET_KEY',
+    'BINANCE_API_KEYYOUR_API_KEY_HEREBINANCE_SECRET_KEY',
+    'BYBIT_API_KEYYOUR_API_KEY_HEREBYBIT_SECRET_KEY',
     'STRIPE_SECRET_KEY',
     'STRIPE_PUBLISHABLE_KEY',
     'JWT_SECRET',
@@ -51,11 +47,7 @@ if (chavesFaltando.length > 0) {
 
 // Verificar configurações críticas
 console.log('\n🎯 ANÁLISE CRÍTICA:');
-const chavesCriticas = ['DATABASE_URL', 'OPENAI_API_KEY', 'BINANCE_API_KEY', 'BYBIT_API_KEY'];
-const criticasFaltando = chavesCriticas.filter(chave => !process.env[chave]);
-
-if (criticasFaltando.length === 0) {
-    console.log('   ✅ TODAS AS CHAVES CRÍTICAS CONFIGURADAS!');
+const chavesCriticas = ['DATABASE_URL"postgresql://username:password@host:port/database"OPENAI_API_KEYYOUR_API_KEY_HEREBINANCE_API_KEYYOUR_API_KEY_HEREBYBIT_API_KEYYOUR_API_KEY_HERE   ✅ TODAS AS CHAVES CRÍTICAS CONFIGURADAS!');
     console.log('   ✅ Sistema pode funcionar normalmente');
 } else {
     console.log('   ❌ CHAVES CRÍTICAS FALTANDO:');

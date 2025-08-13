@@ -12,8 +12,7 @@ async function testeBasico() {
         console.log('\n📊 Testando CoinStats Fear & Greed...');
         const response = await axios.get(process.env.FEAR_GREED_URL, {
             headers: {
-                'X-API-KEY': process.env.COINSTATS_API_KEY,
-                'Accept': 'application/json'
+                'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
             },
             timeout: 10000
         });
@@ -25,8 +24,7 @@ async function testeBasico() {
         console.log('\n🏆 Testando CoinStats Markets...');
         const marketsResp = await axios.get('https://openapiv1.coinstats.app/markets', {
             headers: {
-                'X-API-KEY': process.env.COINSTATS_API_KEY,
-                'Accept': 'application/json'
+                'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
             },
             timeout: 10000
         });

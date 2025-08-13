@@ -26,8 +26,7 @@ class SistemaLeituraMercadoResilient {
                 nome: 'CoinStats_FearGreed',
                 url: process.env.FEAR_GREED_URL || 'https://openapiv1.coinstats.app/insights/fear-and-greed',
                 headers: {
-                    'X-API-KEY': process.env.COINSTATS_API_KEY,
-                    'Accept': 'application/json'
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
                 },
                 prioridade: 1,
                 tentativas: 0,
@@ -37,8 +36,7 @@ class SistemaLeituraMercadoResilient {
                 nome: 'CoinStats_Bitcoin',
                 url: 'https://api.coinstats.app/public/v1/coins/bitcoin',
                 headers: {
-                    'X-API-KEY': process.env.COINSTATS_API_KEY,
-                    'Accept': 'application/json'
+                    'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json'
                 },
                 prioridade: 2,
                 tentativas: 0,

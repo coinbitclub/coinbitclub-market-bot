@@ -13,8 +13,7 @@ const options = {
     path: '/markets',
     method: 'GET',
     headers: {
-        'X-API-KEY': process.env.COINSTATS_API_KEY,
-        'Accept': 'application/json',
+        'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE: 'application/json',
         'User-Agent': 'CoinBitClub-Bot/1.0'
     }
 };

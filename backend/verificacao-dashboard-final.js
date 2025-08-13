@@ -101,18 +101,7 @@ async function verificacaoCompleta() {
     try {
         // Testar CoinStats API
         const coinstatsResponse = await axios.get('https://api.coinstats.app/public/v1/fear-greed', {
-            headers: { 'X-API-KEY': process.env.COINSTATS_API_KEY }
-        });
-        console.log(`[API] 📊 CoinStats: ${coinstatsResponse.data.value} (${coinstatsResponse.data.category}) ✅`);
-        sucessos++;
-    } catch (error) {
-        console.log(`[API] 📊 CoinStats: Erro - ${error.message} ❌`);
-        problemas++;
-    }
-    
-    try {
-        // Testar Alternative.me API
-        const altResponse = await axios.get('https://api.alternative.me/fng/');
+            headers: { 'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE);
         const altData = altResponse.data.data[0];
         console.log(`[API] 📈 Alternative.me: ${altData.value} (${altData.value_classification}) ✅`);
         sucessos++;

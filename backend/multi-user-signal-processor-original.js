@@ -28,7 +28,7 @@ class MultiUserSignalProcessor {
         this.detailedTracker = new DetailedSignalTracker();
 
         // Configurar OpenAI para análise de IA
-        if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-')) {
+        if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith("YOUR_OPENAI_API_KEY")) {
             this.openai = new OpenAI({
                 apiKey: process.env.OPENAI_API_KEY,
             });

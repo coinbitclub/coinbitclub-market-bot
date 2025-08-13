@@ -143,7 +143,7 @@ class DatabaseNullAnalyzer {
             'trades': ['user_id', 'symbol', 'side', 'quantity', 'price'],
             'signals': ['symbol', 'signal_type', 'timestamp'],
             'signal_metrics_log': ['ticker', 'signal_type', 'ai_approved'],
-            'user_api_keys': ['user_id', 'exchange', 'api_key', 'secret_key']
+            'user_api_keys': ['user_id', 'exchange', 'api_keyYOUR_API_KEY_HEREsecret_key']
         };
 
         const criticalFields = criticalFieldsByTable[tableName];

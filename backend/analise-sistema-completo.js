@@ -43,11 +43,8 @@ async function testeCompleto() {
     console.log('=============================');
     
     const configsCriticas = {
-        'DATABASE_URL': process.env.DATABASE_URL || 'postgresql://postgres:xSgQNe6A3lHQhBNb@monorail.proxy.rlwy.net:28334/railway',
-        'OPENAI_API_KEY': process.env.OPENAI_API_KEY,
-        'BINANCE_API_KEY': process.env.BINANCE_API_KEY,
-        'BYBIT_API_KEY': process.env.BYBIT_API_KEY,
-        'TWILIO_ACCOUNT_SID': process.env.TWILIO_ACCOUNT_SID,
+        'DATABASE_URL"postgresql://username:password@host:port/database"postgresql://postgres:xSgQNe6A3lHQhBNb@monorail.proxy.rlwy.net:28334/railway',
+        'OPENAI_API_KEY"YOUR_OPENAI_API_KEY"BINANCE_API_KEY"YOUR_BINANCE_API_KEY"BYBIT_API_KEYYOUR_API_KEY_HERETWILIO_ACCOUNT_SID': process.env.TWILIO_ACCOUNT_SID,
         'STRIPE_SECRET_KEY': process.env.STRIPE_SECRET_KEY
     };
     

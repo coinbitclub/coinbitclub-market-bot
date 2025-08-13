@@ -18,14 +18,7 @@ const { Pool } = require('pg');
 class RailwayErrorFixer {
     constructor() {
         this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL || 'process.env.DATABASE_URL',
-            ssl: { rejectUnauthorized: false }
-        });
-    }
-
-    // CORREÇÃO 1: Forçar ambiente testnet para evitar erros 403
-    async forceTestnetMode() {
-        console.log('\n🔧 CORREÇÃO 1: FORÇANDO MODO TESTNET');
+            connectionString: process.env.DATABASE_URL || 'process.env.DATABASE_URL"postgresql://username:password@host:port/database"\n🔧 CORREÇÃO 1: FORÇANDO MODO TESTNET');
         console.log('====================================');
         
         try {

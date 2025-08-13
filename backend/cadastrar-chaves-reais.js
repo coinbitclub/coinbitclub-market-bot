@@ -29,25 +29,24 @@ const CHAVES_REAIS = {
         chaves: {
             // 🟣 BYBIT TESTNET
             bybit_testnet: {
-                api_key: 'SUBSTITUA_PELA_SUA_CHAVE_BYBIT_TESTNET',
+                api_key: YOUR_API_KEY_HERE,
                 secret_key: 'SUBSTITUA_PELA_SUA_SECRET_BYBIT_TESTNET'
             },
             
             // 🟣 BYBIT MAINNET  
             bybit_mainnet: {
-                api_key: 'SUBSTITUA_PELA_SUA_CHAVE_BYBIT_MAINNET',
+                api_key: YOUR_API_KEY_HERE,
                 secret_key: 'SUBSTITUA_PELA_SUA_SECRET_BYBIT_MAINNET'
             },
             
             // 🟡 BINANCE TESTNET
             binance_testnet: {
-                api_key: 'SUBSTITUA_PELA_SUA_CHAVE_BINANCE_TESTNET',
-                secret_key: 'SUBSTITUA_PELA_SUA_SECRET_BINANCE_TESTNET'
+                api_key: "YOUR_BINANCE_API_KEY"YOUR_BINANCE_API_KEY"SUBSTITUA_PELA_SUA_SECRET_BINANCE_TESTNET'
             }
             
             // 🟡 BINANCE MAINNET (Desabilitado no Brasil)
             // binance_mainnet: {
-            //     api_key: 'NAO_DISPONIVEL_NO_BRASIL',
+            //     api_key: YOUR_API_KEY_HERE,
             //     secret_key: 'NAO_DISPONIVEL_NO_BRASIL'
             // }
         }
@@ -59,7 +58,7 @@ const CHAVES_REAIS = {
     //     email: 'outro@email.com',
     //     chaves: {
     //         bybit_testnet: {
-    //             api_key: 'OUTRA_CHAVE...',
+    //             api_key: YOUR_API_KEY_HERE,
     //             secret_key: 'OUTRA_SECRET...'
     //         }
     //     }

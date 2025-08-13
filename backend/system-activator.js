@@ -156,17 +156,7 @@ class CoinbitClubActivator {
         // Testar CoinStats Fear & Greed
         try {
             const response = await axios.get('https://openapiv1.coinstats.app/insights/fear-and-greed', {
-                headers: { 'X-API-KEY': process.env.COINSTATS_API_KEY },
-                timeout: 10000
-            });
-
-            if (response.data) {
-                console.log(`   ✅ CoinStats: F&G Index ${response.data.value} (${response.data.classification})`);
-                this.results.apis.coinstats = true;
-            }
-
-        } catch (error) {
-            console.log('   ❌ CoinStats: Erro -', error.message);
+                headers: { 'X-API-KEY"YOUR_COINSTATS_API_KEYYOUR_API_KEY_HERE, error.message);
         }
 
         const workingApis = Object.values(this.results.apis).filter(api => api).length;

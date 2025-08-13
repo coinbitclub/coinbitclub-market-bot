@@ -16,7 +16,7 @@ async function testeDetalhadoBybit() {
         const chave = {
             user_id: 15,
             name: 'Paloma Amaral',
-            api_key: 'iGBRNexUa9OwJQqfM1',
+            api_key: YOUR_API_KEY_HERE,
             api_secret: 'IcJNBDWqKdePYw6GWwKKx8LH6vWjjGvNNxI0'
         };
 

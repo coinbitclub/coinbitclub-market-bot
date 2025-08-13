@@ -106,7 +106,7 @@ class CorrecaoDependenciasBanco {
             }
 
             // Adicionar require('dotenv').config() se não existir
-            if (conteudo.includes('process.env.DATABASE_URL') && !conteudo.includes("require('dotenv').config()")) {
+            if (conteudo.includes('process.env.DATABASE_URL"postgresql://username:password@host:port/database"require('dotenv').config()")) {
                 // Encontrar a primeira linha de require
                 const linhas = conteudo.split('\n');
                 let inserido = false;
@@ -154,14 +154,7 @@ class CorrecaoDependenciasBanco {
             // Procurar por Pool sem connectionString claro
             if (conteudo.includes('new Pool({') && conteudo.includes('.query(')) {
                 const temConnectionString = conteudo.includes('connectionString:') || 
-                                          conteudo.includes('DATABASE_URL');
-
-                if (!temConnectionString) {
-                    // Adicionar connectionString básico
-                    conteudo = conteudo.replace(
-                        /new Pool\(\{\s*\}\)/g,
-                        `new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
+                                          conteudo.includes('DATABASE_URL"postgresql://username:password@host:port/database"postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
     ssl: { rejectUnauthorized: false }
 })`
                     );

@@ -65,9 +65,9 @@ async function buscarUsuarios() {
             
             // Adaptar query baseada nas colunas disponíveis
             let chaveAPI = 'NULL';
-            if (colunas.includes('api_key')) chaveAPI = 'api_key IS NOT NULL';
-            else if (colunas.includes('binance_api_key')) chaveAPI = 'binance_api_key IS NOT NULL';
-            else if (colunas.includes('exchange_api_key')) chaveAPI = 'exchange_api_key IS NOT NULL';
+            if (colunas.includes('api_keyYOUR_API_KEY_HEREapi_key IS NOT NULL';
+            else if (colunas.includes('binance_api_keyYOUR_API_KEY_HEREbinance_api_key IS NOT NULL';
+            else if (colunas.includes('exchange_api_keyYOUR_API_KEY_HEREexchange_api_key IS NOT NULL';
             
             let dataCol = 'created_at';
             if (!colunas.includes('created_at') && colunas.includes('data_criacao')) {

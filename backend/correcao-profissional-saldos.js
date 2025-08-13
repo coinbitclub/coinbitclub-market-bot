@@ -40,7 +40,7 @@ class ProblemasSaldosCorretor {
             SELECT column_name, data_type, character_maximum_length
             FROM information_schema.columns 
             WHERE table_name = 'user_api_keys'
-            AND column_name IN ('api_key', 'secret_key', 'api_key_encrypted', 'secret_key_encrypted')
+            AND column_name IN ('api_keyYOUR_API_KEY_HEREsecret_key', 'api_key_encrypted', 'secret_key_encrypted')
             ORDER BY column_name
         `);
 
