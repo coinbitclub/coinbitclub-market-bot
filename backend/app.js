@@ -230,7 +230,17 @@ class CoinBitClubServer {
         
         // Configurar banco de dados
         this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL || 'process.env.DATABASE_URL"postgresql://username:password@host:port/database"⚠️ ErrorHandlingSystem em modo básico');
+            connectionString: process.env.DATABASE_URL || 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway',
+            ssl: { rejectUnauthorized: false }
+        });
+        
+        // Sistema de tratamento de erros
+        try {
+            ErrorHandlingSystem = require('./error-handling-system.js');
+            this.errorHandler = new ErrorHandlingSystem(this.pool);
+            console.log('✅ ErrorHandlingSystem carregado');
+        } catch (error) {
+            console.log('⚠️ ErrorHandlingSystem em modo básico');
             this.errorHandler = { log: console.log, error: console.error };
         }
     }

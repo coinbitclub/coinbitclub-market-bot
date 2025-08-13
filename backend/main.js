@@ -35,5 +35,45 @@ process.on('SIGINT', () => {
 });
 
 // Carregar servidor enterprise garantido (auto-start)
-console.log('� Carregando enterprise server...');
-require('./enterprise-server-garantido.js');
+console.log('⚡ Carregando enterprise server...');
+
+// Inicializar servidor principal
+try {
+    const { Pool } = require('pg');
+    
+    // Testar se os módulos necessários existem
+    console.log('🔍 Verificando dependências...');
+    
+    // Verificar se fixed-database-config existe
+    try {
+        require('./fixed-database-config');
+        console.log('✅ fixed-database-config encontrado');
+    } catch (err) {
+        console.log('❌ fixed-database-config não encontrado:', err.message);
+        process.exit(1);
+    }
+    
+    // Carregar o servidor
+    require('./app.js');
+    
+} catch (error) {
+    console.error('❌ Erro ao carregar servidor:', error.message);
+    console.log('🔄 Tentando modo de recuperação...');
+    
+    // Modo de recuperação básico
+    const express = require('express');
+    const app = express();
+    const port = process.env.PORT || 3000;
+    
+    app.get('/health', (req, res) => {
+        res.json({ 
+            status: 'recovery_mode', 
+            timestamp: new Date().toISOString(),
+            error: error.message 
+        });
+    });
+    
+    app.listen(port, () => {
+        console.log(`🛠️ Servidor de recuperação rodando na porta ${port}`);
+    });
+}

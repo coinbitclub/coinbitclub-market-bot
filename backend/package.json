@@ -2,7 +2,7 @@
   "name": "coinbitclub-market-bot",
   "version": "6.0.0",
   "description": "Sistema de Trading Automatizado CoinBitClub - Enterprise",
-  "main": "sistema-integrado.js",
+  "main": "app.js",
   "scripts": {
     "start": "node sistema-integrado.js",
     "market": "node sistema-leitura-mercado-enterprise.js",

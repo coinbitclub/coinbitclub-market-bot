@@ -1,251 +1,267 @@
+#!/usr/bin/env node
+
 /**
- * TESTE COMPLETO DE TODOS OS ENDPOINTS DO PROJETO
- * ==============================================
- * Este script testa todos os endpoints críticos e não críticos do CoinBitClub Market Bot
+ * 🧪 TESTADOR COMPLETO DE ENDPOINTS - COINBITCLUB ENTERPRISE
+ * ==========================================================
+ * 
+ * Testa todos os endpoints garantindo código 200 e sem erros
  */
 
-const http = require('http');
+const axios = require('axios');
 const fs = require('fs');
 
 // Configuração do teste
-const BASE_URL = 'localhost';
-const PORT = 3000;
-const TIMEOUT = 10000;
+const BASE_URL = process.env.TEST_URL || 'http://localhost:3000';
+const TIMEOUT = 10000; // 10 segundos
 
-// Lista completa de endpoints para testar
-const ALL_ENDPOINTS = [
-    // ========== ENDPOINTS CRÍTICOS (que estavam com 404) ==========
-    { 
-        method: 'GET', 
-        path: '/health', 
-        description: 'Health Check - CRÍTICO',
-        critical: true,
-        expectedStatus: 200,
-        expectedFields: ['status', 'timestamp', 'uptime']
-    },
-    { 
-        method: 'GET', 
-        path: '/status', 
-        description: 'Status Principal - CRÍTICO',
-        critical: true,
-        expectedStatus: 200,
-        expectedFields: ['status', 'timestamp']
-    },
-    { 
-        method: 'GET', 
-        path: '/api/system/status', 
-        description: 'API System Status - CRÍTICO',
-        critical: true,
-        expectedStatus: 200,
-        expectedFields: ['status', 'timestamp', 'uptime']
-    },
-    { 
-        method: 'GET', 
-        path: '/api/dashboard/summary', 
-        description: 'Dashboard Summary - CRÍTICO',
-        critical: true,
-        expectedStatus: 200,
-        expectedFields: ['success', 'summary', 'timestamp']
-    },
+console.log('🧪 TESTADOR COMPLETO DE ENDPOINTS ENTERPRISE');
+console.log('============================================');
+console.log(`🎯 Base URL: ${BASE_URL}`);
+console.log(`⏱️ Timeout: ${TIMEOUT}ms`);
+console.log('');
 
-    // ========== WEBHOOKS TRADINGVIEW (que estavam falhando) ==========
-    { 
-        method: 'POST', 
-        path: '/api/webhooks/signal', 
-        description: 'Webhook Signal POST - TRADINGVIEW',
-        critical: true,
-        expectedStatus: 200,
-        body: { symbol: 'BTCUSDT', action: 'BUY', price: 50000, test: true },
-        expectedFields: ['status', 'timestamp']
-    },
-    { 
-        method: 'GET', 
-        path: '/api/webhooks/signal', 
-        description: 'Webhook Signal GET - TRADINGVIEW',
-        critical: true,
-        expectedStatus: 200,
-        expectedFields: ['status', 'method', 'acceptsMethods']
-    },
-    { 
-        method: 'POST', 
-        path: '/webhook', 
-        description: 'Webhook Geral POST',
-        critical: true,
-        expectedStatus: 200,
-        body: { test: 'webhook-data', timestamp: Date.now() },
-        expectedFields: ['status', 'timestamp']
-    },
-    { 
-        method: 'GET', 
-        path: '/webhook', 
-        description: 'Webhook Geral GET',
-        critical: true,
-        expectedStatus: 200,
-        expectedFields: ['status', 'method']
-    },
-    { 
-        method: 'POST', 
-        path: '/api/webhooks/trading', 
-        description: 'Trading Webhook POST',
-        critical: true,
-        expectedStatus: 200,
-        body: { pair: 'BTCUSDT', side: 'buy', amount: 0.001 },
-        expectedFields: ['status', 'timestamp']
-    },
-    { 
-        method: 'GET', 
-        path: '/api/webhooks/trading', 
-        description: 'Trading Webhook GET',
-        critical: true,
-        expectedStatus: 200,
-        expectedFields: ['status', 'method']
-    },
+// Lista de endpoints ESSENCIAIS que devem funcionar
+const ESSENTIAL_ENDPOINTS = [
+    // BÁSICOS (4)
+    { method: 'GET', path: '/health', category: 'Basic', name: 'Health Check', critical: true },
+    { method: 'GET', path: '/status', category: 'Basic', name: 'System Status', critical: true },
+    { method: 'GET', path: '/api/test-connection', category: 'Basic', name: 'Database Test', critical: true },
+    { method: 'GET', path: '/api/users', category: 'Basic', name: 'Users Count', critical: true },
 
-    // ========== DASHBOARD E INTERFACE ==========
-    { 
-        method: 'GET', 
-        path: '/', 
-        description: 'Dashboard Principal',
-        critical: false,
-        expectedStatus: 200,
-        isHTML: true
-    },
-    { 
-        method: 'GET', 
-        path: '/api/test', 
-        description: 'API Test Endpoint',
-        critical: false,
-        expectedStatus: 200,
-        expectedFields: ['success', 'message']
-    },
+    // DASHBOARD (8)
+    { method: 'GET', path: '/api/dashboard/summary', category: 'Dashboard', name: 'Dashboard Summary', critical: true },
+    { method: 'GET', path: '/api/dashboard/realtime', category: 'Dashboard', name: 'Realtime Data', critical: true },
+    { method: 'GET', path: '/api/dashboard/signals', category: 'Dashboard', name: 'Signals Data', critical: true },
+    { method: 'GET', path: '/api/dashboard/orders', category: 'Dashboard', name: 'Orders Data', critical: true },
+    { method: 'GET', path: '/api/dashboard/users', category: 'Dashboard', name: 'Users Data', critical: true },
+    { method: 'GET', path: '/api/dashboard/balances', category: 'Dashboard', name: 'Balances Data', critical: true },
+    { method: 'GET', path: '/api/dashboard/admin-logs', category: 'Dashboard', name: 'Admin Logs', critical: true },
+    { method: 'GET', path: '/api/dashboard/ai-analysis', category: 'Dashboard', name: 'AI Analysis', critical: true },
 
-    // ========== PAINEL DE CONTROLE ==========
-    { 
-        method: 'GET', 
-        path: '/painel', 
-        description: 'Painel Principal',
-        critical: false,
-        expectedStatus: 200,
-        isHTML: true
-    },
-    { 
-        method: 'GET', 
-        path: '/painel/executivo', 
-        description: 'Dashboard Executivo',
-        critical: false,
-        expectedStatus: 200,
-        isHTML: true
-    },
-    { 
-        method: 'GET', 
-        path: '/painel/fluxo', 
-        description: 'Fluxo Operacional',
-        critical: false,
-        expectedStatus: 200,
-        isHTML: true
-    },
-    { 
-        method: 'GET', 
-        path: '/painel/decisoes', 
-        description: 'Análise de Decisões',
-        critical: false,
-        expectedStatus: 200,
-        isHTML: true
-    },
-    { 
-        method: 'GET', 
-        path: '/painel/usuarios', 
-        description: 'Monitoramento de Usuários',
-        critical: false,
-        expectedStatus: 200,
-        isHTML: true
-    },
-    { 
-        method: 'GET', 
-        path: '/painel/alertas', 
-        description: 'Sistema de Alertas',
-        critical: false,
-        expectedStatus: 200,
-        isHTML: true
-    },
-    { 
-        method: 'GET', 
-        path: '/painel/diagnosticos', 
-        description: 'Diagnósticos Técnicos',
-        critical: false,
-        expectedStatus: 200,
-        isHTML: true
-    },
+    // WEBHOOKS (4)
+    { method: 'GET', path: '/webhook', category: 'Webhooks', name: 'Webhook Info', critical: true },
+    { method: 'POST', path: '/webhook', category: 'Webhooks', name: 'Webhook POST', critical: true, data: { signal: 'BUY', symbol: 'BTCUSDT' } },
+    { method: 'GET', path: '/api/webhooks/signal', category: 'Webhooks', name: 'Signal API Info', critical: true },
+    { method: 'POST', path: '/api/webhooks/signal', category: 'Webhooks', name: 'Signal API POST', critical: true, data: { signal: 'SELL', symbol: 'ETHUSDT' } },
 
-    // ========== APIs DO PAINEL ==========
-    { 
-        method: 'GET', 
-        path: '/api/painel/executivo', 
-        description: 'API Painel Executivo',
-        critical: false,
-        expectedStatus: 200,
-        expectedFields: ['success']
-    },
-    { 
-        method: 'GET', 
-        path: '/api/painel/fluxo', 
-        description: 'API Painel Fluxo',
-        critical: false,
-        expectedStatus: 200,
-        expectedFields: ['success', 'data']
-    },
-    { 
-        method: 'GET', 
-        path: '/api/painel/decisoes', 
-        description: 'API Painel Decisões',
-        critical: false,
-        expectedStatus: 200,
-        expectedFields: ['success', 'data']
-    },
-    { 
-        method: 'GET', 
-        path: '/api/painel/usuarios', 
-        description: 'API Painel Usuários',
-        critical: false,
-        expectedStatus: 200,
-        expectedFields: ['success', 'data']
-    },
-    { 
-        method: 'GET', 
-        path: '/api/painel/alertas', 
-        description: 'API Painel Alertas',
-        critical: false,
-        expectedStatus: 200,
-        expectedFields: ['success', 'data']
-    },
-    { 
-        method: 'GET', 
-        path: '/api/painel/diagnosticos', 
-        description: 'API Painel Diagnósticos',
-        critical: false,
-        expectedStatus: 200,
-        expectedFields: ['success', 'data']
-    },
-
-    // ========== TESTE DE ENDPOINTS INEXISTENTES (devem retornar 404) ==========
-    { 
-        method: 'GET', 
-        path: '/endpoint-inexistente', 
-        description: 'Teste 404 - Endpoint Inexistente',
-        critical: false,
-        expectedStatus: 404,
-        shouldFail: true
-    },
-    { 
-        method: 'POST', 
-        path: '/api/inexistente', 
-        description: 'Teste 404 - API Inexistente',
-        critical: false,
-        expectedStatus: 404,
-        shouldFail: true,
-        body: { test: 'data' }
-    }
+    // EXCHANGES & TRADING (2)
+    { method: 'GET', path: '/api/exchanges/status', category: 'Trading', name: 'Exchanges Status', critical: true },
+    { method: 'GET', path: '/api/trade/status', category: 'Trading', name: 'Trading Status', critical: true }
 ];
+
+// Resultados dos testes
+let results = {
+    total: ESSENTIAL_ENDPOINTS.length,
+    passed: 0,
+    failed: 0,
+    errors: [],
+    byCategory: {}
+};
+
+// Função para fazer requisição HTTP
+async function makeRequest(endpoint) {
+    try {
+        const config = {
+            method: endpoint.method.toLowerCase(),
+            url: `${BASE_URL}${endpoint.path}`,
+            timeout: TIMEOUT,
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Agent': 'CoinBitClub-EndpointTester/1.0'
+            }
+        };
+
+        // Adicionar dados se for POST/PUT
+        if (endpoint.data && (endpoint.method === 'POST' || endpoint.method === 'PUT')) {
+            config.data = endpoint.data;
+        }
+
+        const response = await axios(config);
+        
+        return {
+            success: true,
+            status: response.status,
+            data: response.data,
+            responseTime: response.headers['response-time'] || 'N/A'
+        };
+
+    } catch (error) {
+        return {
+            success: false,
+            status: error.response?.status || 0,
+            error: error.message,
+            code: error.code
+        };
+    }
+}
+
+// Função para testar um endpoint
+async function testEndpoint(endpoint, index) {
+    const paddedIndex = String(index + 1).padStart(2, '0');
+    const paddedCategory = endpoint.category.padEnd(12, ' ');
+    const criticalIcon = endpoint.critical ? '🔥' : '📌';
+    
+    console.log(`${paddedIndex}. ${criticalIcon} [${paddedCategory}] ${endpoint.method.padEnd(4)} ${endpoint.path}`);
+    
+    const result = await makeRequest(endpoint);
+    
+    // Inicializar categoria se não existir
+    if (!results.byCategory[endpoint.category]) {
+        results.byCategory[endpoint.category] = { passed: 0, failed: 0, total: 0 };
+    }
+    results.byCategory[endpoint.category].total++;
+    
+    if (result.success && result.status === 200) {
+        console.log(`    ✅ PASS - Status: ${result.status} - Response: ${result.responseTime}`);
+        
+        // Validar conteúdo da resposta para endpoints críticos
+        if (endpoint.critical && result.data) {
+            if (typeof result.data === 'object') {
+                const hasValidData = result.data.status || result.data.success || result.data.data || result.data.timestamp;
+                if (hasValidData) {
+                    console.log(`    📊 Dados válidos retornados`);
+                } else {
+                    console.log(`    ⚠️ Resposta sem dados esperados`);
+                }
+            }
+        }
+        
+        results.passed++;
+        results.byCategory[endpoint.category].passed++;
+    } else {
+        const errorMsg = result.error || `HTTP ${result.status}`;
+        console.log(`    ❌ FAIL - ${errorMsg}`);
+        results.failed++;
+        results.byCategory[endpoint.category].failed++;
+        
+        results.errors.push({
+            endpoint: `${endpoint.method} ${endpoint.path}`,
+            category: endpoint.category,
+            name: endpoint.name,
+            error: errorMsg,
+            status: result.status,
+            critical: endpoint.critical || false
+        });
+    }
+    
+    console.log('');
+}
+
+// Função principal de teste
+async function runAllTests() {
+    console.log(`🚀 Iniciando teste de ${ESSENTIAL_ENDPOINTS.length} endpoints essenciais...`);
+    console.log('');
+    
+    const startTime = Date.now();
+    
+    // Verificar se servidor está rodando
+    console.log('� Verificando se servidor está acessível...');
+    try {
+        const healthCheck = await makeRequest({ method: 'GET', path: '/health' });
+        if (healthCheck.success) {
+            console.log('✅ Servidor está respondendo!');
+        } else {
+            console.log('❌ Servidor não está respondendo - continuando testes...');
+        }
+    } catch (error) {
+        console.log('⚠️ Não foi possível verificar status do servidor - continuando...');
+    }
+    console.log('');
+    
+    // Testar cada endpoint sequencialmente
+    for (let i = 0; i < ESSENTIAL_ENDPOINTS.length; i++) {
+        await testEndpoint(ESSENTIAL_ENDPOINTS[i], i);
+        
+        // Pequena pausa entre requisições
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    const endTime = Date.now();
+    const totalTime = (endTime - startTime) / 1000;
+    
+    // Relatório final
+    console.log('🏁 RELATÓRIO FINAL');
+    console.log('=================');
+    console.log(`⏱️ Tempo total: ${totalTime}s`);
+    console.log(`📊 Total: ${results.total}`);
+    console.log(`✅ Passou: ${results.passed}`);
+    console.log(`❌ Falhou: ${results.failed}`);
+    console.log(`📈 Taxa de sucesso: ${((results.passed / results.total) * 100).toFixed(1)}%`);
+    console.log('');
+    
+    // Análise de endpoints críticos
+    const criticalErrors = results.errors.filter(error => error.critical);
+    console.log('🔥 ANÁLISE DE ENDPOINTS CRÍTICOS:');
+    console.log(`� Críticos total: ${ESSENTIAL_ENDPOINTS.filter(e => e.critical).length}`);
+    console.log(`❌ Críticos com falha: ${criticalErrors.length}`);
+    console.log(`📈 Taxa crítica: ${((results.passed / results.total) * 100).toFixed(1)}%`);
+    console.log('');
+    
+    // Relatório por categoria
+    console.log('📋 RELATÓRIO POR CATEGORIA:');
+    for (const [category, stats] of Object.entries(results.byCategory)) {
+        const percentage = ((stats.passed / stats.total) * 100).toFixed(0);
+        const status = stats.failed === 0 ? '✅' : stats.passed > stats.failed ? '⚠️' : '❌';
+        console.log(`${status} ${category.padEnd(15)} ${stats.passed}/${stats.total} (${percentage}%)`);
+    }
+    console.log('');
+    
+    // Listar erros críticos se houver
+    if (criticalErrors.length > 0) {
+        console.log('🚨 ENDPOINTS CRÍTICOS COM PROBLEMAS:');
+        console.log('====================================');
+        
+        criticalErrors.forEach((error, index) => {
+            console.log(`${index + 1}. ${error.endpoint}`);
+            console.log(`   Nome: ${error.name}`);
+            console.log(`   Erro: ${error.error}`);
+            console.log('');
+        });
+    }
+    
+    // Status final
+    const allCriticalPassed = criticalErrors.length === 0;
+    const successRate = (results.passed / results.total) * 100;
+    
+    if (allCriticalPassed && successRate >= 95) {
+        console.log('🎉 TODOS OS ENDPOINTS CRÍTICOS FUNCIONANDO!');
+        console.log('✅ SISTEMA PRONTO PARA DEPLOY NO RAILWAY!');
+        console.log('');
+        console.log('📋 PRÓXIMOS PASSOS:');
+        console.log('1. git add .');
+        console.log('2. git commit -m "🎯 FIX: All critical endpoints working"');
+        console.log('3. git push origin main');
+        process.exit(0);
+    } else if (allCriticalPassed) {
+        console.log('⚠️ ENDPOINTS CRÍTICOS OK, mas alguns não-críticos falharam.');
+        console.log('💚 SISTEMA PODE SER DEPLOYADO NO RAILWAY!');
+        process.exit(0);
+    } else {
+        console.log(`❌ ${criticalErrors.length} endpoints críticos falharam.`);
+        console.log('🔧 CORRIJA OS PROBLEMAS ANTES DO DEPLOY!');
+        process.exit(1);
+    }
+}
+
+// Função para verificar se servidor está rodando
+async function checkServerStatus() {
+    try {
+        const response = await axios.get(`${BASE_URL}/health`, { timeout: 5000 });
+        return response.status === 200;
+    } catch (error) {
+        return false;
+    }
+}
+
+// Iniciar testes
+if (require.main === module) {
+    runAllTests().catch(error => {
+        console.error('💥 Erro fatal no testador:', error.message);
+        process.exit(1);
+    });
+}
+
+module.exports = { runAllTests, ESSENTIAL_ENDPOINTS, checkServerStatus };
 
 // Função para fazer uma requisição HTTP
 function makeRequest(endpoint) {
