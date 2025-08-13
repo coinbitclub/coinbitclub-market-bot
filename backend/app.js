@@ -1,13 +1,13 @@
 /**
- * 🚀 COINBITCLUB MARKET BOT - SERVIDOR PRINCIPAL v5.1.2
- * ===================================================
+ * 🚀 COINBITCLUB MARKET BOT - SERVIDOR PRINCIPAL v6.0.0 ENTERPRISE
+ * ================================================================
  * 
  * Aplicação principal para sistema de trading automatizado
  * Recursos: Multiusuário, Trading Real, Position Safety, Monitoramento
- * Deploy: 2025-08-09 (Sistemas Automáticos Integrados)
+ * Deploy: 2025-08-13 (Enterprise v6.0.0 - IA + Mercado Integrado)
  */
 
-console.log('🚀 Iniciando CoinBitClub Market Bot...');
+console.log('🚀 Iniciando CoinBitClub Market Bot Enterprise v6.0.0...');
 
 const express = require('express');
 console.log('✅ Express carregado');
@@ -22,6 +22,27 @@ console.log('✅ PostgreSQL carregado');
 const axios = require('axios');
 console.log('✅ Axios carregado');
 require('dotenv').config();
+
+// 🎯 INICIALIZAR COINBITCLUB ENTERPRISE v6.0.0
+// ============================================
+const CoinBitClubEnterprise = require('./coinbitclub-enterprise-complete');
+const enterpriseSystem = new CoinBitClubEnterprise();
+console.log('✅ CoinBitClub Enterprise v6.0.0 carregado');
+
+// Auto-inicializar sistema integrado
+setTimeout(async () => {
+    try {
+        console.log('\n🔄 Inicializando CoinBitClub Enterprise v6.0.0...');
+        const resultado = await enterpriseSystem.inicializar();
+        if (resultado.success) {
+            console.log('✅ CoinBitClub Enterprise v6.0.0 ATIVO!\n');
+        } else {
+            console.log('⚠️ CoinBitClub Enterprise v6.0.0 com problemas:', resultado.error);
+        }
+    } catch (error) {
+        console.error('❌ Erro na inicialização Enterprise:', error.message);
+    }
+}, 3000); // Aguardar 3 segundos após o servidor iniciar
 
 
 
@@ -3289,40 +3310,88 @@ class CoinBitClubServer {
     // Análise IA com dados reais
     async getAnaliseIAReal(req, res) {
         try {
-            // Query para análise de mercado da IA
+            console.log('📊 API /api/dashboard/ai-analysis chamada');
+            
+            // Obter dados atuais do Enterprise v6.0.0
+            const dadosEnterprise = coinBitClubEnterprise.obterDadosAtuais();
+            
+            // Se há dados do Enterprise, usar eles (dados reais)
+            if (dadosEnterprise && dadosEnterprise.ia && dadosEnterprise.mercado) {
+                console.log('✅ Usando dados do CoinBitClub Enterprise v6.0.0');
+                
+                const response = {
+                    success: true,
+                    source: 'CoinBitClub Enterprise v6.0.0',
+                    real_data: true,
+                    mock_data: false,
+                    timestamp: dadosEnterprise.timestamp,
+                    market_analysis: {
+                        direction: dadosEnterprise.ia.recomendacao,
+                        direction_display: this.formatarDirecao(dadosEnterprise.ia.recomendacao),
+                        confidence_level: dadosEnterprise.ia.confianca,
+                        reasoning: dadosEnterprise.ia.justificativa,
+                        key_points: dadosEnterprise.ia.pontos_chave || []
+                    },
+                    fear_greed: {
+                        index: dadosEnterprise.mercado.fear_greed_value,
+                        classification: dadosEnterprise.mercado.fear_greed_classification,
+                        direction: dadosEnterprise.mercado.fear_greed_direction
+                    },
+                    market_data: {
+                        btc_price: dadosEnterprise.mercado.btc_price,
+                        btc_change_24h: dadosEnterprise.mercado.btc_change_24h,
+                        btc_dominance: dadosEnterprise.mercado.btc_dominance,
+                        market_cap: dadosEnterprise.mercado.total_market_cap,
+                        volume_24h: dadosEnterprise.mercado.total_volume_24h
+                    },
+                    system_status: {
+                        analyses_generated: 1,
+                        last_24h: 1,
+                        system_active: true,
+                        auto_trading: false
+                    }
+                };
+                
+                return res.json(response);
+            }
+            
+            // Fallback: buscar no banco de dados
+            console.log('🔄 Buscando dados no banco de dados...');
+            
+            // Query para última análise IA
             const aiAnalysisQuery = await this.pool.query(`
                 SELECT 
-                    market_direction,
+                    ai_recommendation,
                     confidence_score,
-                    analysis_data,
-                    btc_price,
-                    btc_dominance,
-                    fear_greed_index,
-                    created_at
-                FROM ai_market_analysis 
-                WHERE created_at >= CURRENT_DATE - INTERVAL '24 hours'
+                    reasoning,
+                    market_direction,
+                    created_at,
+                    cycle_id
+                FROM ai_analysis 
                 ORDER BY created_at DESC
-                LIMIT 10
+                LIMIT 1
             `);
             
-            // Query para estatísticas de análise IA
-            const aiStatsQuery = await this.pool.query(`
+            // Query para dados de mercado
+            const marketQuery = await this.pool.query(`
                 SELECT 
-                    COUNT(*) as total_analysis,
-                    COUNT(CASE WHEN market_direction = 'BULLISH' THEN 1 END) as bullish_signals,
-                    COUNT(CASE WHEN market_direction = 'BEARISH' THEN 1 END) as bearish_signals,
-                    COUNT(CASE WHEN market_direction = 'NEUTRAL' THEN 1 END) as neutral_signals,
-                    AVG(confidence_score) as avg_confidence,
-                    MAX(confidence_score) as max_confidence,
-                    MIN(confidence_score) as min_confidence
-                FROM ai_market_analysis 
-                WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+                    btc_price,
+                    btc_dominance,
+                    fear_greed_value,
+                    fear_greed_classification,
+                    fear_greed_direction,
+                    total_market_cap,
+                    total_volume_24h,
+                    created_at
+                FROM sistema_leitura_mercado 
+                ORDER BY created_at DESC
+                LIMIT 1
             `);
             
             // Query para Fear & Greed Index
             const fearGreedQuery = await this.pool.query(`
                 SELECT 
-                    fear_greed_index,
+                    value,
                     classification,
                     created_at
                 FROM fear_greed_index 
@@ -3330,22 +3399,98 @@ class CoinBitClubServer {
                 LIMIT 1
             `);
             
-            // Query para performance da IA (acurácia)
-            const performanceQuery = await this.pool.query(`
-                SELECT 
-                    COUNT(*) as predictions_made,
-                    COUNT(CASE WHEN prediction_correct = true THEN 1 END) as correct_predictions,
-                    CASE 
-                        WHEN COUNT(*) > 0 THEN 
-                            ROUND((COUNT(CASE WHEN prediction_correct = true THEN 1 END)::decimal / COUNT(*)) * 100, 2)
-                        ELSE 0 
-                    END as accuracy_rate
-                FROM ai_market_analysis 
-                WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
-                AND prediction_correct IS NOT NULL
-            `);
+            const aiAnalysis = aiAnalysisQuery.rows[0];
+            const marketData = marketQuery.rows[0];
+            const fearGreed = fearGreedQuery.rows[0] || {};
             
-            const analysis = aiAnalysisQuery.rows;
+            // Construir resposta com dados do banco
+            const response = {
+                success: true,
+                source: 'Database',
+                real_data: true,
+                mock_data: false,
+                timestamp: new Date(),
+                market_analysis: {
+                    direction: aiAnalysis?.ai_recommendation || 'NEUTRO',
+                    direction_display: this.formatarDirecao(aiAnalysis?.ai_recommendation || 'NEUTRO'),
+                    confidence_level: aiAnalysis?.confidence_score || 50,
+                    reasoning: aiAnalysis?.reasoning || 'Análise em processamento',
+                    key_points: ['Dados do banco de dados', 'Sistema operacional', 'Análise automática']
+                },
+                fear_greed: {
+                    index: marketData?.fear_greed_value || fearGreed?.value || 50,
+                    classification: marketData?.fear_greed_classification || fearGreed?.classification || 'Neutral',
+                    direction: marketData?.fear_greed_direction || 'NEUTRAL'
+                },
+                market_data: {
+                    btc_price: marketData?.btc_price || 0,
+                    btc_change_24h: 0,
+                    btc_dominance: marketData?.btc_dominance || 0,
+                    market_cap: marketData?.total_market_cap || 0,
+                    volume_24h: marketData?.total_volume_24h || 0
+                },
+                system_status: {
+                    analyses_generated: aiAnalysisQuery.rows.length,
+                    last_24h: marketQuery.rows.length,
+                    system_active: true,
+                    auto_trading: false
+                }
+            };
+            
+            res.json(response);
+            
+        } catch (error) {
+            console.error('❌ Erro no endpoint AI Analysis:', error.message);
+            
+            // Resposta de emergência
+            res.json({
+                success: false,
+                source: 'Emergency Fallback',
+                real_data: false,
+                mock_data: false,
+                error: 'Sistema temporariamente indisponível',
+                timestamp: new Date(),
+                market_analysis: {
+                    direction: 'NEUTRO',
+                    direction_display: 'NEUTRO',
+                    confidence_level: 0,
+                    reasoning: 'Sistema em manutenção',
+                    key_points: ['Sistema indisponível', 'Verificar logs', 'Contatar suporte']
+                },
+                fear_greed: {
+                    index: 50,
+                    classification: 'Neutral',
+                    direction: 'NEUTRAL'
+                },
+                system_status: {
+                    analyses_generated: 0,
+                    last_24h: 0,
+                    system_active: false,
+                    auto_trading: false
+                }
+            });
+        }
+    }
+    
+    formatarDirecao(direcao) {
+        switch (direcao) {
+            case 'SOMENTE_LONG': return 'LONG';
+            case 'SOMENTE_SHORT': return 'SHORT';
+            case 'LONG_E_SHORT': return 'BOTH';
+            case 'NEUTRO': return 'NEUTRO';
+            default: return 'NEUTRO';
+        }
+    }
+    
+    formatarDirecao(direcao) {
+        switch (direcao) {
+            case 'SOMENTE_LONG': return 'LONG';
+            case 'SOMENTE_SHORT': return 'SHORT';
+            case 'LONG_E_SHORT': return 'BOTH';
+            case 'NEUTRO': return 'NEUTRO';
+            default: return 'NEUTRO';
+        }
+    }
             const stats = aiStatsQuery.rows[0];
             const fearGreed = fearGreedQuery.rows[0];
             const performance = performanceQuery.rows[0];

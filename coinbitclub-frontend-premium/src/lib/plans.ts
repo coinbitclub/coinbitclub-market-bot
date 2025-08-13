@@ -21,11 +21,11 @@ export const PLANS: Plan[] = [
     id: 'monthly_brazil',
     type: 'monthly',
     region: 'brazil',
-    name: 'Plano Mensal Brasil',
-    monthlyPrice: 120, // R$ 120/mês
+    name: 'Brasil PRO',
+    monthlyPrice: 297, // R$ 297/mês - VALOR CORRETO CONFORME ESPECIFICAÇÃO
     currency: 'BRL',
     commissionRate: 10, // 10% sobre lucros
-    minimumBalance: 60, // R$ 60 mínimo
+    minimumBalance: 100, // R$ 100 mínimo
     stripeProductId: 'prod_SbHejGiPSr1asV',
     features: [
       'Trading automatizado 24/7',
@@ -43,11 +43,11 @@ export const PLANS: Plan[] = [
     id: 'prepaid_brazil',
     type: 'prepaid',
     region: 'brazil',
-    name: 'Pré-pago Brasil',
+    name: 'Brasil FLEX',
     monthlyPrice: 0, // Sem mensalidade
     currency: 'BRL',
     commissionRate: 20, // 20% sobre lucros
-    minimumBalance: 60, // R$ 60 mínimo
+    minimumBalance: 100, // R$ 100 mínimo - AJUSTADO
     stripeProductId: 'prod_SbHgHezeyKfTVg',
     features: [
       'Trading automatizado 24/7',
@@ -66,11 +66,11 @@ export const PLANS: Plan[] = [
     id: 'monthly_international',
     type: 'monthly',
     region: 'international',
-    name: 'Monthly Plan International',
-    monthlyPrice: 40, // $40/mês
+    name: 'Global PRO',
+    monthlyPrice: 50, // $50/mês - CORRIGIDO CONFORME ESPECIFICAÇÃO
     currency: 'USD',
     commissionRate: 10, // 10% sobre lucros
-    minimumBalance: 15, // $15 mínimo
+    minimumBalance: 20, // $20 mínimo - AJUSTADO
     stripeProductId: 'prod_SbHhz5Ht3q1lul',
     features: [
       '24/7 Automated Trading',
@@ -87,11 +87,11 @@ export const PLANS: Plan[] = [
     id: 'prepaid_international',
     type: 'prepaid',
     region: 'international',
-    name: 'Prepaid International',
+    name: 'Global FLEX',
     monthlyPrice: 0, // Sem mensalidade
     currency: 'USD',
     commissionRate: 20, // 20% sobre lucros
-    minimumBalance: 15, // $15 mínimo
+    minimumBalance: 20, // $20 mínimo - AJUSTADO
     stripeProductId: 'prod_SbHiDqfrH2T8dI',
     features: [
       '24/7 Automated Trading',

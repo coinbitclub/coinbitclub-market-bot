@@ -21,6 +21,11 @@ const EnhancedSignalProcessor = require('./enhanced-signal-processor.js');
 const CommissionSystem = require('./commission-system.js');
 const FinancialManager = require('./financial-manager.js');
 
+// Importar mÃ³dulos Enterprise v6.0.0
+const EnterpriseAPIs = require('./backend/enterprise-apis.js');
+const EnterpriseUserManager = require('./backend/enterprise-user-manager.js');
+const EnterpriseSubscriptionManager = require('./backend/enterprise-subscription-manager.js');
+
 class CoinBitClubServer {
     constructor() {
         this.app = express();
@@ -48,6 +53,13 @@ class CoinBitClubServer {
         this.signalProcessor = new EnhancedSignalProcessor();
         this.commissionSystem = new CommissionSystem();
         this.financialManager = new FinancialManager(this.pool);
+
+        // Inicializar sistema Enterprise v6.0.0
+        console.log('🚀 Inicializando Sistema Enterprise v6.0.0...');
+        this.enterpriseAPIs = new EnterpriseAPIs();
+        this.enterpriseUserManager = new EnterpriseUserManager();
+        this.enterpriseSubscriptionManager = new EnterpriseSubscriptionManager();
+        console.log('✅ Sistema Enterprise v6.0.0 inicializado com sucesso!');
 
         this.setupMiddleware();
 
@@ -106,6 +118,51 @@ class CoinBitClubServer {
     }
 
     setupRoutes() {
+        // =====================================================
+        // INTEGRAÇÃO ENTERPRISE v6.0.0
+        // =====================================================
+        
+        // Integrar todas as APIs Enterprise
+        this.app.use('/api/enterprise', this.enterpriseAPIs.getRouter());
+        console.log('✅ Rotas Enterprise integradas em /api/enterprise/*');
+
+        // Status Enterprise específico
+        this.app.get('/enterprise/status', async (req, res) => {
+            try {
+                const [profileStats, subscriptionStats] = await Promise.all([
+                    this.enterpriseUserManager.getProfileStatistics(),
+                    this.enterpriseSubscriptionManager.getSubscriptionStatistics()
+                ]);
+
+                res.json({
+                    status: 'ENTERPRISE SYSTEM ONLINE',
+                    version: '6.0.0',
+                    timestamp: new Date().toISOString(),
+                    profileStatistics: profileStats,
+                    subscriptionStatistics: subscriptionStats,
+                    features: [
+                        'Sistema de Perfis Enterprise',
+                        'Integração Twilio SMS/OTP',
+                        'Pagamentos Stripe',
+                        'Sistema de Comissões',
+                        'Multi-níveis de Usuário',
+                        'Dashboard Administrativo'
+                    ]
+                });
+            } catch (error) {
+                console.error('❌ Erro no status enterprise:', error.message);
+                res.status(503).json({
+                    status: 'ENTERPRISE ERROR',
+                    error: error.message,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        });
+
+        // =====================================================
+        // ROTAS ORIGINAIS DO SISTEMA
+        // =====================================================
+        
         // Status detalhado com verificaÃ§Ã£o de banco
         this.app.get('/status', async (req, res) => {
             try {
@@ -120,7 +177,7 @@ class CoinBitClubServer {
                     environment: process.env.NODE_ENV || 'production',
                     database: 'connected',
                     trading: process.env.ENABLE_REAL_TRADING === 'true' ? 'REAL' : 'SIMULATION',
-                    version: "5.2.0-RAILWAY"'
+                    version: "6.0.0-ENTERPRISE-RAILWAY"
                 });
             } catch (error) {
                 res.status(503).json({
@@ -805,5 +862,6 @@ a p p . g e t ( " / h e a l t h " ,   ( r e q ,   r e s )   = >   { 
                  p o r t :   p r o c e s s . e n v . P O R T   | |   3 0 0 0 , 
                  r a i l w a y :   t r u e 
          } ) ; 
- } ) ;  
+ } ) ; 
+ 
  
