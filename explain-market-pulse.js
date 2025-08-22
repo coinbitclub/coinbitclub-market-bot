@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 const axios = require('axios');
 
 const pool = new Pool({
-  connectionString: 'postgresql://postgres:FYHVNKLIXYmRWdRLKNnYdCXhGNsgjLSr@autorack.proxy.rlwy.net:39170/railway'
+  connectionString: 'postgresql://postgres:ELjbkkgUASRCtdTAXVFgIssOXiLsRCPq@trolley.proxy.rlwy.net:44790/railway'
 });
 
 // Função para testar conectividade com APIs externas
