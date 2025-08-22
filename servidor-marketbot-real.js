@@ -2217,8 +2217,6 @@ async function processSignalAsync(signalBody, headers, ipAddress) {
     }
   }
 }
-  }
-});
 
 // Sistema de status detalhado
 app.get('/api/system/status', async (req, res) => {
