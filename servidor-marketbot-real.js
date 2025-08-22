@@ -928,64 +928,114 @@ function isGeoBlocked(error) {
          errorStr.includes('geographic');
 }
 
-// Market Pulse CORRIGIDO - usando PROXY NGROK
+// Market Pulse CORRIGIDO - usando APIs alternativas no Railway
 async function getMarketPulse() {
   try {
-    console.log('📊 Iniciando Market Pulse via PROXY NGROK...');
+    console.log('📊 Iniciando Market Pulse com APIs alternativas...');
     
-    // Tentar Binance primeiro via proxy
-    try {
-      console.log('🚀 Tentando Binance via PROXY NGROK...');
+    // No Railway, usar APIs que não bloqueiam
+    if (IS_RAILWAY) {
+      console.log('🌐 Usando CoinGecko para Market Pulse (Railway)...');
       
-      const binanceResponse = await makeRequestViaProxy('https://api.binance.com/api/v3/ticker/24hr');
-      const tickers = binanceResponse.data;
-      
-      // Filtrar TOP 100 pares USDT por volume
-      const usdtPairs = tickers
-        .filter(t => t.symbol.endsWith('USDT') && 
-                     !t.symbol.includes('UP') && 
-                     !t.symbol.includes('DOWN'))
-        .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-        .slice(0, 100);
-      
-      const positivePairs = usdtPairs.filter(t => parseFloat(t.priceChangePercent) > 0).length;
-      const marketPulse = (positivePairs / usdtPairs.length) * 100;
-      
-      console.log(`✅ Binance via PROXY: ${marketPulse.toFixed(1)}% (${usdtPairs.length} pares)`);
-      
-      return {
-        totalCoins: usdtPairs.length,
-        positiveCoins: positivePairs,
-        negativeCoins: usdtPairs.length - positivePairs,
-        positivePercentage: marketPulse,
-        volumeWeightedDelta: 0,
-        trend: marketPulse > 60 ? 'BULLISH' : marketPulse < 40 ? 'BEARISH' : 'NEUTRAL',
-        source: 'Binance_NGROK_Proxy',
-        timestamp: new Date().toISOString()
-      };
-      
-    } catch (binanceError) {
-      console.log(`❌ Binance via proxy falhou: ${binanceError.response?.status || binanceError.message}`);
-      
-      // Fallback: tentar Bybit via proxy
       try {
-        console.log('🔄 Tentando Bybit via PROXY NGROK...');
+        const response = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+          params: {
+            vs_currency: 'usd',
+            order: 'market_cap_desc',
+            per_page: 100,
+            page: 1,
+            sparkline: false,
+            price_change_percentage: '24h'
+          },
+          timeout: 15000,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0',
+            'Accept': 'application/json'
+          }
+        });
         
-        const bybitResponse = await makeRequestViaProxy('https://api.bybit.com/v5/market/tickers?category=spot');
-        const data = bybitResponse.data;
+        if (response.status === 200 && response.data) {
+          const coins = response.data;
+          const positiveCoins = coins.filter(coin => 
+            coin.price_change_percentage_24h && coin.price_change_percentage_24h > 0
+          ).length;
+          
+          const marketPulse = (positiveCoins / coins.length) * 100;
+          
+          console.log(`✅ CoinGecko Market Pulse: ${marketPulse.toFixed(1)}% (${coins.length} moedas)`);
+          
+          return {
+            totalCoins: coins.length,
+            positiveCoins: positiveCoins,
+            negativeCoins: coins.length - positiveCoins,
+            positivePercentage: marketPulse,
+            volumeWeightedDelta: 0,
+            trend: marketPulse > 60 ? 'BULLISH' : marketPulse < 40 ? 'BEARISH' : 'NEUTRAL',
+            source: 'CoinGecko_Railway',
+            timestamp: new Date().toISOString()
+          };
+        }
+      } catch (coinGeckoError) {
+        console.log(`⚠️ CoinGecko falhou: ${coinGeckoError.response?.status || coinGeckoError.message}`);
         
-        const usdtPairs = data.result.list
-          .filter(ticker => ticker.symbol.endsWith('USDT'))
-          .sort((a, b) => parseFloat(b.volume24h) - parseFloat(a.volume24h))
+        // Fallback: tentar CoinCap API
+        try {
+          console.log('🔄 Tentando CoinCap API...');
+          
+          const response = await axios.get('https://api.coincap.io/v2/assets', {
+            params: { limit: 100 },
+            timeout: 15000,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0',
+              'Accept': 'application/json'
+            }
+          });
+          
+          if (response.status === 200 && response.data && response.data.data) {
+            const assets = response.data.data;
+            const positiveAssets = assets.filter(asset => 
+              asset.changePercent24Hr && parseFloat(asset.changePercent24Hr) > 0
+            ).length;
+            
+            const marketPulse = (positiveAssets / assets.length) * 100;
+            
+            console.log(`✅ CoinCap Market Pulse: ${marketPulse.toFixed(1)}% (${assets.length} ativos)`);
+            
+            return {
+              totalCoins: assets.length,
+              positiveCoins: positiveAssets,
+              negativeCoins: assets.length - positiveAssets,
+              positivePercentage: marketPulse,
+              volumeWeightedDelta: 0,
+              trend: marketPulse > 60 ? 'BULLISH' : marketPulse < 40 ? 'BEARISH' : 'NEUTRAL',
+              source: 'CoinCap_Railway',
+              timestamp: new Date().toISOString()
+            };
+          }
+        } catch (coinCapError) {
+          console.log(`⚠️ CoinCap também falhou: ${coinCapError.response?.status || coinCapError.message}`);
+        }
+      }
+    } else {
+      // Ambiente local: tentar Binance primeiro via proxy
+      try {
+        console.log('🚀 Tentando Binance via PROXY NGROK...');
+        
+        const binanceResponse = await makeRequestViaProxy('https://api.binance.com/api/v3/ticker/24hr');
+        const tickers = binanceResponse.data;
+        
+        // Filtrar TOP 100 pares USDT por volume
+        const usdtPairs = tickers
+          .filter(t => t.symbol.endsWith('USDT') && 
+                       !t.symbol.includes('UP') && 
+                       !t.symbol.includes('DOWN'))
+          .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
           .slice(0, 100);
         
-        const positivePairs = usdtPairs.filter(ticker => 
-          parseFloat(ticker.price24hPcnt) > 0
-        ).length;
-        
+        const positivePairs = usdtPairs.filter(t => parseFloat(t.priceChangePercent) > 0).length;
         const marketPulse = (positivePairs / usdtPairs.length) * 100;
         
-        console.log(`✅ Bybit via PROXY: ${marketPulse.toFixed(1)}% (${usdtPairs.length} pares)`);
+        console.log(`✅ Binance via PROXY: ${marketPulse.toFixed(1)}% (${usdtPairs.length} pares)`);
         
         return {
           totalCoins: usdtPairs.length,
@@ -994,31 +1044,89 @@ async function getMarketPulse() {
           positivePercentage: marketPulse,
           volumeWeightedDelta: 0,
           trend: marketPulse > 60 ? 'BULLISH' : marketPulse < 40 ? 'BEARISH' : 'NEUTRAL',
-          source: 'Bybit_NGROK_Proxy',
+          source: 'Binance_NGROK_Proxy',
           timestamp: new Date().toISOString()
         };
         
-      } catch (bybitError) {
-        console.log(`❌ Bybit via proxy também falhou: ${bybitError.response?.status || bybitError.message}`);
-        throw new Error('Ambas exchanges falharam via proxy');
+      } catch (binanceError) {
+        console.log(`❌ Binance via proxy falhou: ${binanceError.response?.status || binanceError.message}`);
+        
+        // Fallback: tentar Bybit via proxy
+        try {
+          console.log('🔄 Tentando Bybit via PROXY NGROK...');
+          
+          const bybitResponse = await makeRequestViaProxy('https://api.bybit.com/v5/market/tickers?category=spot');
+          const data = bybitResponse.data;
+          
+          const usdtPairs = data.result.list
+            .filter(ticker => ticker.symbol.endsWith('USDT'))
+            .sort((a, b) => parseFloat(b.volume24h) - parseFloat(a.volume24h))
+            .slice(0, 100);
+          
+          const positivePairs = usdtPairs.filter(ticker => 
+            parseFloat(ticker.price24hPcnt) > 0
+          ).length;
+          
+          const marketPulse = (positivePairs / usdtPairs.length) * 100;
+          
+          console.log(`✅ Bybit via PROXY: ${marketPulse.toFixed(1)}% (${usdtPairs.length} pares)`);
+          
+          return {
+            totalCoins: usdtPairs.length,
+            positiveCoins: positivePairs,
+            negativeCoins: usdtPairs.length - positivePairs,
+            positivePercentage: marketPulse,
+            volumeWeightedDelta: 0,
+            trend: marketPulse > 60 ? 'BULLISH' : marketPulse < 40 ? 'BEARISH' : 'NEUTRAL',
+            source: 'Bybit_NGROK_Proxy',
+            timestamp: new Date().toISOString()
+          };
+          
+        } catch (bybitError) {
+          console.log(`❌ Bybit via proxy também falhou: ${bybitError.response?.status || bybitError.message}`);
+        }
       }
     }
     
-  } catch (error) {
-    console.error('⚠️ Erro Market Pulse via proxy:', error.message);
+    throw new Error('Todas as APIs falharam');
     
-    // Fallback conservador
-    const lastKnownValue = global.lastMarketPulse || 50.0;
-    console.log(`🆘 Usando valor de emergência: ${lastKnownValue}%`);
+  } catch (error) {
+    console.error('⚠️ Erro Market Pulse:', error.message);
+    
+    // Fallback conservador baseado em BTC se disponível
+    let fallbackValue = 50.0;
+    
+    try {
+      // Tentar obter tendência do BTC como indicador
+      const btcResponse = await axios.get('https://api.coingecko.com/api/v3/simple/price', {
+        params: {
+          ids: 'bitcoin',
+          vs_currencies: 'usd',
+          include_24hr_change: true
+        },
+        timeout: 5000
+      });
+      
+      if (btcResponse.data && btcResponse.data.bitcoin) {
+        const btcChange = btcResponse.data.bitcoin.usd_24h_change || 0;
+        // Se BTC subiu, assume mercado mais positivo
+        fallbackValue = btcChange > 0 ? 55 : 45;
+        console.log(`📊 Fallback baseado em BTC: ${btcChange.toFixed(2)}% -> Market Pulse: ${fallbackValue}%`);
+      }
+    } catch (btcError) {
+      console.log('⚠️ Não foi possível obter dados do BTC para fallback');
+    }
+    
+    console.log(`🆘 Usando valor inteligente de emergência: ${fallbackValue}%`);
     
     return { 
       totalCoins: 100,
-      positiveCoins: Math.round(100 * lastKnownValue / 100),
-      negativeCoins: Math.round(100 * (100 - lastKnownValue) / 100),
-      positivePercentage: lastKnownValue, 
+      positiveCoins: Math.round(100 * fallbackValue / 100),
+      negativeCoins: Math.round(100 * (100 - fallbackValue) / 100),
+      positivePercentage: fallbackValue, 
       volumeWeightedDelta: 0,
-      trend: 'NEUTRAL',
-      source: 'emergency_fallback',
+      trend: fallbackValue > 55 ? 'BULLISH' : fallbackValue < 45 ? 'BEARISH' : 'NEUTRAL',
+      source: 'intelligent_fallback',
       timestamp: new Date().toISOString(),
       error: true
     };
