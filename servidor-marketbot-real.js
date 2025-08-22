@@ -12,6 +12,30 @@ const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ========================================
+// CONFIGURAÇÃO NGROK RAILWAY VARIABLES
+// ========================================
+
+console.log('🔧 Carregando configurações NGROK do Railway...');
+
+const NGROK_CONFIG = {
+  authToken: process.env.NGROK_AUTH_TOKEN,
+  region: process.env.NGROK_REGION || 'us',
+  subdomain: process.env.NGROK_SUBDOMAIN || 'marketbot-trading',
+  fixedIP: process.env.NGROK_IP_FIXO
+};
+
+if (NGROK_CONFIG.authToken) {
+  console.log('✅ NGROK_AUTH_TOKEN configurado');
+  console.log(`🌍 NGROK_REGION: ${NGROK_CONFIG.region}`);
+  console.log(`🏷️ NGROK_SUBDOMAIN: ${NGROK_CONFIG.subdomain}`);
+  if (NGROK_CONFIG.fixedIP) {
+    console.log(`🎯 NGROK_IP_FIXO: ${NGROK_CONFIG.fixedIP}`);
+  }
+} else {
+  console.log('⚠️ NGROK_AUTH_TOKEN não configurado - usando IPs padrão');
+}
+
 console.log('✅ Express carregado');
 
 // ========================================
@@ -83,6 +107,54 @@ function markNgrokIPFailure(ip, error) {
       console.log(`🚫 IP NGROK ${ip} marcado como indisponível (5+ falhas)`);
     }
   }
+}
+
+// ========================================
+// TESTE DE CONECTIVIDADE NGROK TUNNEL
+// ========================================
+
+async function testNgrokTunnel() {
+  console.log('🔍 Testando conectividade do túnel NGROK...');
+  
+  if (!NGROK_CONFIG.authToken) {
+    console.log('⚠️ NGROK_AUTH_TOKEN não configurado - usando IPs estáticos');
+    return false;
+  }
+  
+  try {
+    // Testa se o túnel NGROK está ativo através do subdomain
+    const ngrokUrl = `https://${NGROK_CONFIG.subdomain}.ngrok.io/status`;
+    console.log(`🔗 Testando túnel: ${ngrokUrl}`);
+    
+    const response = await axios.get(ngrokUrl, { timeout: 5000 });
+    if (response.status === 200) {
+      console.log('✅ Túnel NGROK ativo e funcionando!');
+      return true;
+    }
+  } catch (error) {
+    console.log(`⚠️ Túnel NGROK não está ativo: ${error.message}`);
+  }
+  
+  // Fallback: testar IP fixo se configurado
+  if (NGROK_CONFIG.fixedIP) {
+    try {
+      console.log(`🎯 Testando IP fixo NGROK: ${NGROK_CONFIG.fixedIP}`);
+      const agent = new https.Agent({ localAddress: NGROK_CONFIG.fixedIP });
+      const response = await axios.get('https://api.binance.com/api/v3/time', { 
+        httpsAgent: agent, 
+        timeout: 5000 
+      });
+      
+      if (response.status === 200) {
+        console.log('✅ IP fixo NGROK funcionando para exchanges!');
+        return true;
+      }
+    } catch (error) {
+      console.log(`⚠️ IP fixo NGROK falhou: ${error.message}`);
+    }
+  }
+  
+  return false;
 }
 
 // Função para rotacionar para próximo IP
@@ -2806,6 +2878,9 @@ app.get('/health', async (req, res) => {
     // Verificar saúde do banco de dados
     const dbCheck = await pool.query('SELECT NOW()');
     
+    // Testar conectividade NGROK
+    const ngrokStatus = await testNgrokTunnel();
+    
     // Coletar métricas do sistema
     const memoryUsage = process.memoryUsage();
     const uptime = process.uptime();
@@ -2832,6 +2907,37 @@ app.get('/health', async (req, res) => {
     res.status(500).json({
       status: 'unhealthy',
       error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// NGROK Status Endpoint
+app.get('/api/ngrok/status', async (req, res) => {
+  try {
+    const ngrokStatus = await testNgrokTunnel();
+    
+    const response = {
+      ngrok: {
+        tunnel_active: ngrokStatus,
+        auth_token_configured: !!NGROK_CONFIG.authToken,
+        region: NGROK_CONFIG.region,
+        subdomain: NGROK_CONFIG.subdomain,
+        fixed_ip: NGROK_CONFIG.fixedIP || 'Not configured',
+        timestamp: new Date().toISOString()
+      },
+      ips: {
+        available_ngrok_ips: NGROK_IPS,
+        failure_counts: ngrokFailureCount,
+        current_ip_index: currentNgrokIndex
+      }
+    };
+    
+    res.json(response);
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to check NGROK status',
+      message: error.message,
       timestamp: new Date().toISOString()
     });
   }
@@ -3411,6 +3517,7 @@ app.listen(PORT, '0.0.0.0', async () => {
   
   // TESTAR CONECTIVIDADE NGROK PRIMEIRO
   console.log('\n🔧 TESTANDO CONECTIVIDADE NGROK...');
+  await testNgrokTunnel();
   await testNgrokConnectivity();
   
   // INICIALIZAÇÃO AUTOMÁTICA COMPLETA
