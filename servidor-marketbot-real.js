@@ -187,7 +187,7 @@ console.log(`🔢 IPs NGROK disponíveis: ${NGROK_IPS.length} configurados`);
 console.log(`📊 Status dos IPs: ${NGROK_IPS.map(ip => `${ip}(${ngrokFailureCount[ip]})`).join(', ')}`);
 
 // SISTEMA CORRIGIDO: NGROK HTTP PROXY (não IP binding)
-const { HttpsProxyAgent } = require('https-proxy-agent');
+// HttpsProxyAgent já importado no topo do arquivo
 
 // Configurar proxy NGROK correto
 const NGROK_PROXY_CONFIG = {
