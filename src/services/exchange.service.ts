@@ -223,11 +223,70 @@ export class ExchangeService {
       secret: credentials.apiSecret,
       sandbox: credentials.testnet || false,
       enableRateLimit: true,
-      timeout: 30000,
+      timeout: 45000, // Timeout aumentado para 45s
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
     };
 
     if (credentials.passphrase) {
       config.passphrase = credentials.passphrase;
+    }
+
+    // Configurações específicas para Bybit com retry automático
+    if (exchangeType === ExchangeType.BYBIT || exchangeType === ExchangeType.BYBIT_TESTNET) {
+      config.options = {
+        defaultType: 'linear',
+        hedgeMode: false,
+        portfolioMargin: false,
+        recvWindow: 30000
+      };
+      
+      const exchange = new ccxt.bybit(config);
+      
+      // Implementar retry automático para métodos críticos
+      const originalFetch = exchange.fetch.bind(exchange);
+      exchange.fetch = async function(url: string, method = 'GET', headers?: any, body?: any) {
+        const retryConfigs = [
+          { baseURL: 'https://api.bybit.com', name: 'primary' },
+          { baseURL: 'https://api-testnet.bybit.com', name: 'testnet' }
+        ];
+        
+        for (const retryConfig of retryConfigs) {
+          for (let attempt = 1; attempt <= 2; attempt++) {
+            try {
+              // Substituir base URL se necessário
+              if (url.includes('api.bybit.com') && retryConfig.name === 'testnet') {
+                url = url.replace('api.bybit.com', 'api-testnet.bybit.com');
+              }
+              
+              const result = await originalFetch(url, method, headers, body);
+              return result;
+              
+            } catch (error: any) {
+              if (error.message && error.message.includes('403') && attempt === 1) {
+                // Retry uma vez em caso de 403
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                continue;
+              }
+              
+              if (attempt === 2 || !error.message.includes('403')) {
+                throw error;
+              }
+            }
+          }
+        }
+        
+        throw new Error('Todas as tentativas de conexão falharam');
+      };
+      
+      return exchange;
     }
 
     switch (exchangeType) {

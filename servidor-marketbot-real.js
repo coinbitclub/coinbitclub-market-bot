@@ -1429,28 +1429,78 @@ async function executeTradeForUser(user, actionData, originalSignal) {
     console.log(`🔑 API Key: ${user.api_key.substring(0, 8)}...`);
     console.log(`⚠️  ATENÇÃO: Esta operação utilizará DINHEIRO REAL!`);
     
-    // PRIMEIRA ETAPA: Obter diferença de tempo
+    // PRIMEIRA ETAPA: Sincronização com retry inteligente
     console.log(`⏰ Sincronizando tempo com servidor Bybit...`);
     
-    const tempExchange = new ccxt.bybit({
-      apiKey: user.api_key,
-      secret: user.api_secret,
-      sandbox: user.is_testnet,
-      enableRateLimit: true,
-      timeout: 30000
-    });
-    
     let timeDifference = 0;
-    try {
-      const serverTime = await tempExchange.fetchTime();
-      const localTime = Date.now();
-      timeDifference = serverTime - localTime;
-      console.log(`⏰ Diferença temporal detectada: ${timeDifference}ms`);
-      await tempExchange.close();
-    } catch (syncError) {
-      console.error(`⚠️ Erro na sincronização inicial:`, syncError.message);
-      await tempExchange.close();
-      throw new Error(`Falha na sincronização de tempo: ${syncError.message}`);
+    let syncSuccess = false;
+    
+    // Configurações de retry com fallback
+    const syncConfigs = [
+      {
+        name: 'primary',
+        baseURL: 'https://api.bybit.com',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'application/json',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Connection': 'keep-alive',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Origin': 'https://www.bybit.com',
+          'Referer': 'https://www.bybit.com/'
+        }
+      },
+      {
+        name: 'fallback-testnet',
+        baseURL: 'https://api-testnet.bybit.com',
+        headers: {
+          'User-Agent': 'TradingBot/1.0',
+          'Accept': 'application/json'
+        }
+      }
+    ];
+    
+    for (const config of syncConfigs) {
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          console.log(`🔄 Tentativa ${attempt}/2 com ${config.name}...`);
+          
+          const axios = require('axios');
+          const response = await axios.get(`${config.baseURL}/v5/market/time`, {
+            timeout: 10000 + (attempt * 2000),
+            headers: config.headers,
+            maxRedirects: 5
+          });
+          
+          if (response.data && response.data.result && response.data.result.timeSecond) {
+            const serverTime = parseInt(response.data.result.timeSecond) * 1000; // Converter para ms
+            const localTime = Date.now();
+            timeDifference = serverTime - localTime;
+            
+            console.log(`✅ Sincronização com ${config.name} bem-sucedida!`);
+            console.log(`⏰ Diferença temporal: ${timeDifference}ms`);
+            syncSuccess = true;
+            break;
+          }
+          
+        } catch (syncError) {
+          console.log(`❌ Falha com ${config.name} tentativa ${attempt}: ${syncError.response?.status || syncError.message}`);
+          
+          if (attempt < 2) {
+            console.log(`⏳ Aguardando 2s antes da próxima tentativa...`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+        }
+      }
+      
+      if (syncSuccess) break;
+    }
+    
+    if (!syncSuccess) {
+      console.log(`⚠️ Sincronização falhou, usando tempo local (pode causar erros de timestamp)`);
+      timeDifference = 0; // Continuar mesmo assim
     }
     
     // SEGUNDA ETAPA: Criar exchange principal com correção
@@ -1460,6 +1510,15 @@ async function executeTradeForUser(user, actionData, originalSignal) {
       sandbox: user.is_testnet,
       enableRateLimit: true,
       timeout: 45000, // 45 segundos timeout
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      },
       options: {
         defaultType: 'linear', // Usar derivativos lineares (USDT)
         hedgeMode: false, // Usar one-way mode (não hedge)
