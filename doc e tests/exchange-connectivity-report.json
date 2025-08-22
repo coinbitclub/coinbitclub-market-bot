@@ -1,0 +1,85 @@
+{
+  "timestamp": "2025-08-21T15:26:54.186Z",
+  "ngrok_domain": "marketbot.ngrok.app",
+  "ip_resolution": {
+    "status": "success",
+    "ips": [
+      "15.229.184.96",
+      "54.94.135.43",
+      "56.125.142.8",
+      "54.207.219.70",
+      "52.67.28.7"
+    ]
+  },
+  "exchange_connectivity": {
+    "binance": {
+      "status": "success",
+      "tests": [
+        {
+          "name": "Binance Time",
+          "status": "success",
+          "responseTime": "316ms",
+          "statusCode": 200
+        },
+        {
+          "name": "Binance Server Status",
+          "status": "success",
+          "responseTime": "282ms",
+          "statusCode": 200
+        },
+        {
+          "name": "Binance Exchange Info",
+          "status": "success",
+          "responseTime": "651ms",
+          "statusCode": 200
+        },
+        {
+          "name": "Binance 24hr Ticker",
+          "status": "success",
+          "responseTime": "281ms",
+          "statusCode": 200
+        }
+      ]
+    },
+    "bybit": {
+      "status": "success",
+      "tests": [
+        {
+          "name": "Bybit Server Time",
+          "status": "success",
+          "responseTime": "436ms",
+          "statusCode": 200
+        },
+        {
+          "name": "Bybit Market Status",
+          "status": "success",
+          "responseTime": "367ms",
+          "statusCode": 200
+        },
+        {
+          "name": "Bybit Ticker",
+          "status": "success",
+          "responseTime": "367ms",
+          "statusCode": 200
+        }
+      ]
+    }
+  },
+  "webhook_status": {
+    "status": "success",
+    "statusCode": 200,
+    "response": {
+      "success": true,
+      "message": "Webhook TradingView processado com sucesso",
+      "data": {
+        "signalId": "c04fdddc-dd62-4c63-a306-f16d163e692d",
+        "symbol": "BTCUSDT",
+        "signalType": "LONG",
+        "status": "PENDING",
+        "entryPrice": 50000
+      },
+      "timestamp": "2025-08-21T15:26:53.586Z"
+    }
+  },
+  "overall_status": "success"
+}

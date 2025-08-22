@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketBot - Demonstração Frontend</title>
+    <link rel="stylesheet" href="frontend-integration-styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+<body>
+    <!-- ========================================
+         CABEÇALHO
+         ======================================== -->
+    <header style="background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%); color: white; padding: 2rem 0; text-align: center; margin-bottom: 2rem;">
+        <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700;">
+            🚀 MarketBot
+        </h1>
+        <p style="margin: 0.5rem 0 0; font-size: 1.125rem; opacity: 0.9;">
+            Trading Automatizado com Inteligência Artificial
+        </p>
+    </header>
+
+    <!-- ========================================
+         CONTAINER PRINCIPAL
+         ======================================== -->
+    <div id="marketbot-pricing">
+        <!-- O conteúdo será injetado pelo JavaScript -->
+    </div>
+
+    <!-- ========================================
+         RODAPÉ COM INFORMAÇÕES
+         ======================================== -->
+    <footer style="background: #f8f9fa; padding: 3rem 0; text-align: center; margin-top: 3rem; border-top: 1px solid #e8eaed;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+            <h3 style="color: #3c4043; margin-bottom: 1rem;">📊 Sistema Financeiro Completo</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                <!-- Status do Sistema -->
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h4 style="color: #34a853; margin-bottom: 1rem;">✅ Sistema Operacional</h4>
+                    <ul style="list-style: none; text-align: left; color: #5f6368;">
+                        <li>🏦 Database: 7/7 tabelas ativas</li>
+                        <li>💳 Stripe: Pagamentos configurados</li>
+                        <li>🎫 Cupons: 5 tipos disponíveis</li>
+                        <li>👥 Afiliados: Sistema funcional</li>
+                        <li>⚡ API: 10/10 endpoints ativos</li>
+                    </ul>
+                </div>
+
+                <!-- Cupons Disponíveis -->
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h4 style="color: #ff6b35; margin-bottom: 1rem;">🎫 Cupons Ativos</h4>
+                    <ul style="list-style: none; text-align: left; color: #5f6368;">
+                        <li><strong>Desconto:</strong></li>
+                        <li>• WELCOME10 (10% off)</li>
+                        <li>• PROMO20 (20% off)</li>
+                        <li>• VIP25 (25% off)</li>
+                        <li><strong>Crédito:</strong></li>
+                        <li>• CREDIT250BRL (R$ 250)</li>
+                        <li>• CREDIT50USD ($50)</li>
+                    </ul>
+                </div>
+
+                <!-- Links de Pagamento -->
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h4 style="color: #1a73e8; margin-bottom: 1rem;">💳 Stripe Configurado</h4>
+                    <ul style="list-style: none; text-align: left; color: #5f6368;">
+                        <li>🇧🇷 PRO Brasil: R$ 297/mês</li>
+                        <li>🌍 PRO Global: $50/mês</li>
+                        <li>💰 Recargas Brasil: R$ 150-5000</li>
+                        <li>💰 Recargas Global: $30-1000</li>
+                        <li>🔗 Links diretos funcionais</li>
+                    </ul>
+                </div>
+
+                <!-- Endpoints da API -->
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h4 style="color: #9c27b0; margin-bottom: 1rem;">🔗 API Endpoints</h4>
+                    <ul style="list-style: none; text-align: left; color: #5f6368; font-family: monospace; font-size: 0.9rem;">
+                        <li>/api/v1/health</li>
+                        <li>/api/v1/coupons-affiliates/*</li>
+                        <li>/api/v1/payment/*</li>
+                        <li>/api/v1/test/*</li>
+                        <li><strong>Base:</strong> marketbot.ngrok.app</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Informações Técnicas -->
+            <div style="background: #e8f5e8; padding: 1.5rem; border-radius: 12px; margin: 2rem 0;">
+                <h4 style="color: #2e7d32; margin-bottom: 1rem;">🛠️ Informações para Desenvolvedores</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; text-align: left;">
+                    <div>
+                        <strong>Backend:</strong><br>
+                        • Node.js + TypeScript<br>
+                        • Express.js<br>
+                        • PostgreSQL (Railway)
+                    </div>
+                    <div>
+                        <strong>Integrações:</strong><br>
+                        • Stripe Payments<br>
+                        • NGROK Tunnel<br>
+                        • Webhook handling
+                    </div>
+                    <div>
+                        <strong>Frontend:</strong><br>
+                        • Vanilla JS / React ready<br>
+                        • CSS moderno<br>
+                        • Responsivo mobile
+                    </div>
+                    <div>
+                        <strong>Arquivos:</strong><br>
+                        • frontend-integration-examples.js<br>
+                        • frontend-integration-styles.css<br>
+                        • FRONTEND_INTEGRATION_GUIDE.md
+                    </div>
+                </div>
+            </div>
+
+            <!-- URLs de Teste -->
+            <div style="background: #fff3e0; padding: 1.5rem; border-radius: 12px; border: 2px solid #ff9800;">
+                <h4 style="color: #f57f17; margin-bottom: 1rem;">🧪 URLs de Teste</h4>
+                <div style="font-family: monospace; color: #5f6368;">
+                    <p><strong>API Base:</strong> https://marketbot.ngrok.app/api/v1</p>
+                    <p><strong>Health Check:</strong> https://marketbot.ngrok.app/api/v1/health</p>
+                    <p><strong>Test Coupon:</strong> https://marketbot.ngrok.app/api/v1/test/validate-coupon/WELCOME10</p>
+                    <p><strong>Test Credit:</strong> https://marketbot.ngrok.app/api/v1/test/validate-coupon/CREDIT250BRL</p>
+                </div>
+            </div>
+
+            <!-- Instruções Finais -->
+            <div style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%); color: white; border-radius: 12px;">
+                <h4 style="margin-bottom: 1rem;">📚 Próximos Passos</h4>
+                <ol style="text-align: left; max-width: 600px; margin: 0 auto;">
+                    <li>Integre os exemplos JavaScript no seu frontend</li>
+                    <li>Personalize os estilos CSS conforme sua marca</li>
+                    <li>Configure os webhooks do Stripe para produção</li>
+                    <li>Implemente autenticação de usuários</li>
+                    <li>Teste todos os fluxos de pagamento</li>
+                </ol>
+            </div>
+
+            <p style="margin-top: 2rem; color: #5f6368; font-size: 0.9rem;">
+                🚀 <strong>MarketBot</strong> - Sistema financeiro completo e pronto para produção<br>
+                📧 Suporte técnico: contato@marketbot.com
+            </p>
+        </div>
+    </footer>
+
+    <!-- ========================================
+         SCRIPTS
+         ======================================== -->
+    <script src="frontend-integration-examples.js"></script>
+    
+    <script>
+        // ========================================
+        // CONFIGURAÇÃO DE DEMONSTRAÇÃO
+        // ========================================
+        
+        // Simular usuário logado para demonstração
+        const demoUser = {
+            id: 123,
+            name: 'João Silva',
+            email: 'joao@exemplo.com',
+            plan: 'flex',
+            wallet: {
+                brl: 0,
+                usd: 0
+            }
+        };
+
+        // Função para mostrar notificações de teste
+        function showTestNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 10000;
+                animation: slideInRight 0.3s ease-out;
+                max-width: 300px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            `;
+            
+            const bgColor = type === 'success' ? '#34a853' : 
+                           type === 'error' ? '#ea4335' : 
+                           type === 'warning' ? '#fbbc04' : '#1a73e8';
+            
+            notification.style.backgroundColor = bgColor;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        // Override das funções de API para demonstração
+        const originalAPI = window.MarketBot.api;
+        
+        // Simular respostas da API para demonstração
+        window.MarketBot.api.validateCoupon = async function(code) {
+            // Simular delay da rede
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            const upperCode = code.toUpperCase();
+            
+            // Cupons de desconto
+            if (upperCode === 'WELCOME10') {
+                return {
+                    success: true,
+                    coupon: {
+                        type: 'discount',
+                        discount: 10,
+                        description: '🎉 Desconto de boas-vindas de 10%!'
+                    }
+                };
+            }
+            
+            if (upperCode === 'PROMO20') {
+                return {
+                    success: true,
+                    coupon: {
+                        type: 'discount',
+                        discount: 20,
+                        description: '🔥 Promoção especial - 20% de desconto!'
+                    }
+                };
+            }
+            
+            if (upperCode === 'VIP25') {
+                return {
+                    success: true,
+                    coupon: {
+                        type: 'discount',
+                        discount: 25,
+                        description: '👑 Cupom VIP - 25% de desconto exclusivo!'
+                    }
+                };
+            }
+            
+            // Cupons de crédito
+            if (upperCode === 'CREDIT250BRL') {
+                return {
+                    success: true,
+                    coupon: {
+                        type: 'credit',
+                        creditAmount: 250,
+                        currency: 'BRL',
+                        description: '💰 Crédito de R$ 250 para sua carteira!'
+                    }
+                };
+            }
+            
+            if (upperCode === 'CREDIT50USD') {
+                return {
+                    success: true,
+                    coupon: {
+                        type: 'credit',
+                        creditAmount: 50,
+                        currency: 'USD',
+                        description: '💰 Crédito de $50 para sua carteira!'
+                    }
+                };
+            }
+            
+            // Cupom inválido
+            return {
+                success: false,
+                coupon: {
+                    reason: 'Cupom não encontrado ou expirado'
+                }
+            };
+        };
+
+        // Simular geração de código de afiliado
+        window.MarketBot.api.generateAffiliate = async function(userId) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const affiliateCode = `MKT${userId}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+            
+            return {
+                success: true,
+                affiliateCode,
+                userId,
+                commissionRate: 15
+            };
+        };
+
+        // Override da função de aplicação de crédito
+        window.MarketBot.couponManager.applyCreditCoupon = async function(code, userId) {
+            const couponData = await window.MarketBot.api.validateCoupon(code);
+            
+            if (!couponData.success || couponData.coupon.type !== 'credit') {
+                throw new Error(couponData.coupon.reason || 'Cupom inválido');
+            }
+            
+            // Simular aplicação do crédito
+            await new Promise(resolve => setTimeout(resolve, 1200));
+            
+            const { creditAmount, currency } = couponData.coupon;
+            
+            // Atualizar carteira demo
+            if (currency === 'BRL') {
+                demoUser.wallet.brl += creditAmount;
+            } else {
+                demoUser.wallet.usd += creditAmount;
+            }
+            
+            // Mostrar notificação
+            showTestNotification(
+                `💰 ${creditAmount} ${currency} adicionados à sua carteira!`,
+                'success'
+            );
+            
+            return {
+                success: true,
+                creditAdded: creditAmount,
+                currency,
+                message: `${creditAmount} ${currency} adicionados à sua carteira!`
+            };
+        };
+
+        // Adicionar informações de demonstração ao DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            // Adicionar indicador de demonstração
+            const demoIndicator = document.createElement('div');
+            demoIndicator.style.cssText = `
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                background: linear-gradient(135deg, #ff6b35 0%, #ff8a65 100%);
+                color: white;
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                font-size: 0.875rem;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            `;
+            demoIndicator.textContent = '🧪 MODO DEMONSTRAÇÃO';
+            document.body.appendChild(demoIndicator);
+            
+            // Mostrar carteira do usuário demo
+            const walletIndicator = document.createElement('div');
+            walletIndicator.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: linear-gradient(135deg, #34a853 0%, #66bb6a 100%);
+                color: white;
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                font-size: 0.875rem;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            `;
+            
+            function updateWallet() {
+                walletIndicator.textContent = `💰 R$ ${demoUser.wallet.brl} | $${demoUser.wallet.usd}`;
+            }
+            
+            updateWallet();
+            document.body.appendChild(walletIndicator);
+            
+            // Atualizar carteira periodicamente para demonstração
+            setInterval(updateWallet, 1000);
+            
+            // Mensagem de boas-vindas
+            setTimeout(() => {
+                showTestNotification(
+                    '🎉 Bem-vindo à demonstração do MarketBot! Teste todos os recursos.',
+                    'info'
+                );
+            }, 2000);
+        });
+
+        // Adicionar estilos de animação
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

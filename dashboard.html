@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketBot Enterprise - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #4ecdc4;
+            border-bottom: 2px solid rgba(78, 205, 196, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .metric-label {
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .metric-value.positive {
+            color: #4ecdc4;
+        }
+
+        .metric-value.negative {
+            color: #ff6b6b;
+        }
+
+        .positions-table {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .positions-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .positions-table th,
+        .positions-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .positions-table th {
+            background: rgba(0, 0, 0, 0.3);
+            font-weight: 600;
+            color: #4ecdc4;
+        }
+
+        .positions-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-open {
+            background: #4ecdc4;
+            color: #000;
+        }
+
+        .status-closed {
+            background: #ff6b6b;
+            color: #fff;
+        }
+
+        .side-buy {
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+
+        .side-sell {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .logs-container {
+            max-height: 400px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .log-entry {
+            padding: 10px;
+            border-left: 3px solid #4ecdc4;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .log-timestamp {
+            font-size: 0.8em;
+            color: #bbb;
+            margin-bottom: 5px;
+        }
+
+        .log-success {
+            border-left-color: #4ecdc4;
+        }
+
+        .log-error {
+            border-left-color: #ff6b6b;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            border: none;
+            color: white;
+            padding: 15px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #4ecdc4;
+        }
+
+        .chart-container {
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .market-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .indicator-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .indicator-allow {
+            background: #4ecdc4;
+        }
+
+        .indicator-block {
+            background: #ff6b6b;
+        }
+
+        .confidence-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #4ecdc4);
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .positions-table {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 MarketBot Enterprise Dashboard</h1>
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-dot"></div>
+                <span>Sistema Online</span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot"></div>
+                <span>Trading Ativo</span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot"></div>
+                <span>Market Intelligence</span>
+            </div>
+            <div class="status-item" id="lastUpdate">
+                <div class="status-dot"></div>
+                <span>Última Atualização: --:--</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Overview Cards -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>📊 Visão Geral</h3>
+                <div id="overview-metrics" class="loading">Carregando...</div>
+            </div>
+
+            <div class="card">
+                <h3>🧠 Market Intelligence</h3>
+                <div id="market-intelligence" class="loading">Carregando...</div>
+            </div>
+
+            <div class="card">
+                <h3>📈 Performance</h3>
+                <div id="performance-metrics" class="loading">Carregando...</div>
+            </div>
+
+            <div class="card">
+                <h3>👥 Usuários Ativos</h3>
+                <div id="user-metrics" class="loading">Carregando...</div>
+            </div>
+        </div>
+
+        <!-- Posições Ativas -->
+        <div class="positions-table">
+            <h3 style="padding: 20px; margin: 0; color: #4ecdc4;">🎯 Posições de Trading (Tempo Real)</h3>
+            <div id="positions-container" class="loading" style="padding: 20px;">
+                Carregando posições...
+            </div>
+        </div>
+
+        <!-- Analytics e Logs -->
+        <div class="dashboard-grid" style="margin-top: 30px;">
+            <div class="card">
+                <h3>📊 Analytics</h3>
+                <div id="analytics-data" class="loading">Carregando...</div>
+            </div>
+
+            <div class="card">
+                <h3>📝 Logs do Sistema</h3>
+                <div id="system-logs" class="logs-container loading">Carregando logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <button class="refresh-btn" onclick="refreshDashboard()" title="Atualizar Dashboard">
+        🔄
+    </button>
+
+    <script>
+        let isLoading = false;
+
+        // Funções de formatação
+        function formatCurrency(value) {
+            if (value === null || value === undefined) return '--';
+            return `$${parseFloat(value).toFixed(2)}`;
+        }
+
+        function formatPercentage(value) {
+            if (value === null || value === undefined) return '--';
+            return `${parseFloat(value).toFixed(1)}%`;
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return '--';
+            return new Date(dateString).toLocaleString('pt-BR');
+        }
+
+        function formatRelativeTime(dateString) {
+            if (!dateString) return '--';
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            
+            if (diffMins < 60) return `${diffMins}min atrás`;
+            if (diffHours < 24) return `${diffHours}h atrás`;
+            return `${Math.floor(diffHours / 24)}d atrás`;
+        }
+
+        // Carregar dados do overview
+        async function loadOverview() {
+            try {
+                const response = await fetch('/api/dashboard/overview');
+                const data = await response.json();
+                
+                const overview = data.overview;
+                const successRateClass = overview.success_rate >= 60 ? 'positive' : 
+                                       overview.success_rate >= 40 ? '' : 'negative';
+                
+                document.getElementById('overview-metrics').innerHTML = `
+                    <div class="metric">
+                        <span class="metric-label">Posições Abertas</span>
+                        <span class="metric-value positive">${overview.open_positions}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Trades Realizados</span>
+                        <span class="metric-value">${overview.closed_positions}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Trades com Lucro</span>
+                        <span class="metric-value positive">${overview.profitable_trades}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Taxa de Acerto</span>
+                        <span class="metric-value ${successRateClass}">${formatPercentage(overview.success_rate)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Trades (24h)</span>
+                        <span class="metric-value">${overview.trades_24h}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Usuários Ativos</span>
+                        <span class="metric-value">${overview.active_users}</span>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erro carregando overview:', error);
+                document.getElementById('overview-metrics').innerHTML = `
+                    <div style="color: #ff6b6b; text-align: center;">
+                        ❌ Erro carregando dados<br>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Carregar market intelligence
+        async function loadMarketIntelligence() {
+            try {
+                const response = await fetch('/api/dashboard/market');
+                const data = await response.json();
+                
+                const market = data.current_decision;
+                const stats = data.signal_stats;
+                
+                document.getElementById('market-intelligence').innerHTML = `
+                    <div class="market-indicator">
+                        <div class="indicator-dot ${market.allow_long ? 'indicator-allow' : 'indicator-block'}"></div>
+                        <span>LONG: ${market.allow_long ? 'PERMITIDO' : 'BLOQUEADO'}</span>
+                    </div>
+                    <div class="market-indicator">
+                        <div class="indicator-dot ${market.allow_short ? 'indicator-allow' : 'indicator-block'}"></div>
+                        <span>SHORT: ${market.allow_short ? 'PERMITIDO' : 'BLOQUEADO'}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Confiança do Mercado</span>
+                        <span class="metric-value">${market.confidence}%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: ${market.confidence}%"></div>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Sinais Processados (24h)</span>
+                        <span class="metric-value">${stats.total_24h}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Taxa de Sucesso Sinais</span>
+                        <span class="metric-value">${formatPercentage(stats.success_rate)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Última Atualização</span>
+                        <span class="metric-value" style="font-size: 0.9em;">${formatRelativeTime(market.last_update)}</span>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erro carregando market intelligence:', error);
+                document.getElementById('market-intelligence').innerHTML = `
+                    <div style="color: #ff6b6b; text-align: center;">
+                        ❌ Erro carregando Market Intelligence<br>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Carregar posições
+        async function loadPositions() {
+            try {
+                const response = await fetch('/api/dashboard/positions');
+                const data = await response.json();
+                
+                if (data.positions.length === 0) {
+                    document.getElementById('positions-container').innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #bbb;">
+                            📈 Nenhuma posição encontrada
+                        </div>
+                    `;
+                    return;
+                }
+
+                const tableHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Símbolo</th>
+                                <th>Lado</th>
+                                <th>Quantidade</th>
+                                <th>Preço Entrada</th>
+                                <th>Preço Saída</th>
+                                <th>P&L (USD)</th>
+                                <th>Status</th>
+                                <th>Duração</th>
+                                <th>Usuário</th>
+                                <th>Exchange</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.positions.map(pos => `
+                                <tr>
+                                    <td><strong>${pos.symbol}</strong></td>
+                                    <td class="${pos.side.toLowerCase() === 'buy' ? 'side-buy' : 'side-sell'}">
+                                        ${pos.side}
+                                    </td>
+                                    <td>${pos.size}</td>
+                                    <td>${formatCurrency(pos.entry_price)}</td>
+                                    <td>${pos.exit_price ? formatCurrency(pos.exit_price) : '--'}</td>
+                                    <td class="${pos.pnl_usd > 0 ? 'metric-value positive' : pos.pnl_usd < 0 ? 'metric-value negative' : ''}">
+                                        ${pos.pnl_usd ? formatCurrency(pos.pnl_usd) : '--'}
+                                    </td>
+                                    <td>
+                                        <span class="status-badge ${pos.status.toLowerCase() === 'open' ? 'status-open' : 'status-closed'}">
+                                            ${pos.status}
+                                        </span>
+                                    </td>
+                                    <td>${pos.duration_hours}h</td>
+                                    <td style="font-size: 0.9em;">${pos.user_email}</td>
+                                    <td>${pos.exchange}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                
+                document.getElementById('positions-container').innerHTML = tableHTML;
+            } catch (error) {
+                console.error('Erro carregando posições:', error);
+                document.getElementById('positions-container').innerHTML = `
+                    <div style="color: #ff6b6b; text-align: center; padding: 20px;">
+                        ❌ Erro carregando posições<br>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Carregar analytics
+        async function loadAnalytics() {
+            try {
+                const response = await fetch('/api/dashboard/analytics');
+                const data = await response.json();
+                
+                let analyticsHTML = '<h4>👥 Performance por Usuário</h4>';
+                
+                if (data.user_performance.length === 0) {
+                    analyticsHTML += '<div style="text-align: center; color: #bbb; padding: 20px;">Nenhum dado de performance disponível</div>';
+                } else {
+                    analyticsHTML += data.user_performance.slice(0, 5).map(user => `
+                        <div class="metric">
+                            <span class="metric-label">${user.email}</span>
+                            <span class="metric-value">${user.total_trades} trades (${formatPercentage(user.success_rate)})</span>
+                        </div>
+                    `).join('');
+                }
+
+                analyticsHTML += '<h4 style="margin-top: 20px;">📊 Top Símbolos</h4>';
+                
+                if (data.symbol_performance.length === 0) {
+                    analyticsHTML += '<div style="text-align: center; color: #bbb; padding: 20px;">Nenhum dado de símbolos disponível</div>';
+                } else {
+                    analyticsHTML += data.symbol_performance.slice(0, 5).map(symbol => `
+                        <div class="metric">
+                            <span class="metric-label">${symbol.symbol}</span>
+                            <span class="metric-value">${symbol.total_trades} trades (${formatPercentage(symbol.success_rate)})</span>
+                        </div>
+                    `).join('');
+                }
+                
+                document.getElementById('analytics-data').innerHTML = analyticsHTML;
+            } catch (error) {
+                console.error('Erro carregando analytics:', error);
+                document.getElementById('analytics-data').innerHTML = `
+                    <div style="color: #ff6b6b; text-align: center;">
+                        ❌ Erro carregando analytics<br>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Carregar logs
+        async function loadLogs() {
+            try {
+                const response = await fetch('/api/dashboard/logs?limit=20');
+                const data = await response.json();
+                
+                if (data.logs.length === 0) {
+                    document.getElementById('system-logs').innerHTML = `
+                        <div style="text-align: center; color: #bbb; padding: 20px;">
+                            📝 Nenhum log encontrado
+                        </div>
+                    `;
+                    return;
+                }
+
+                const logsHTML = data.logs.map(log => `
+                    <div class="log-entry ${log.success ? 'log-success' : 'log-error'}">
+                        <div class="log-timestamp">${formatDateTime(log.created_at)}</div>
+                        <div><strong>${log.event_type}</strong></div>
+                        ${log.user_email ? `<div>Usuário: ${log.user_email}</div>` : ''}
+                        ${log.symbol ? `<div>Símbolo: ${log.symbol}</div>` : ''}
+                        ${log.amount_usd ? `<div>Valor: ${formatCurrency(log.amount_usd)}</div>` : ''}
+                        ${log.exchange_used ? `<div>Exchange: ${log.exchange_used}</div>` : ''}
+                    </div>
+                `).join('');
+                
+                document.getElementById('system-logs').innerHTML = logsHTML;
+            } catch (error) {
+                console.error('Erro carregando logs:', error);
+                document.getElementById('system-logs').innerHTML = `
+                    <div style="color: #ff6b6b; text-align: center;">
+                        ❌ Erro carregando logs<br>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Atualizar timestamp
+        function updateLastUpdate() {
+            const now = new Date();
+            document.getElementById('lastUpdate').innerHTML = `
+                <div class="status-dot"></div>
+                <span>Última Atualização: ${now.toLocaleTimeString('pt-BR')}</span>
+            `;
+        }
+
+        // Refresh completo do dashboard
+        async function refreshDashboard() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            const refreshBtn = document.querySelector('.refresh-btn');
+            refreshBtn.style.transform = 'rotate(360deg)';
+            
+            try {
+                await Promise.all([
+                    loadOverview(),
+                    loadMarketIntelligence(),
+                    loadPositions(),
+                    loadAnalytics(),
+                    loadLogs()
+                ]);
+                
+                updateLastUpdate();
+            } catch (error) {
+                console.error('Erro no refresh:', error);
+            } finally {
+                isLoading = false;
+                setTimeout(() => {
+                    refreshBtn.style.transform = 'rotate(0deg)';
+                }, 300);
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Dashboard MarketBot Enterprise iniciado');
+            refreshDashboard();
+            
+            // Auto-refresh a cada 30 segundos
+            setInterval(refreshDashboard, 30000);
+        });
+
+        // Performance metrics placeholder (será carregado via overview)
+        document.getElementById('performance-metrics').innerHTML = `
+            <div style="text-align: center; color: #4ecdc4;">
+                📊 Dados de performance<br>
+                serão carregados via overview
+            </div>
+        `;
+
+        // User metrics placeholder (será carregado via overview)  
+        document.getElementById('user-metrics').innerHTML = `
+            <div style="text-align: center; color: #4ecdc4;">
+                👥 Dados de usuários<br>
+                serão carregados via overview
+            </div>
+        `;
+    </script>
+</body>
+</html>

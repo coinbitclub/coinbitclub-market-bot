@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketBot Enterprise - Dashboard Produção</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .header .status {
+            font-size: 1.1em;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .card-header .icon {
+            margin-right: 10px;
+            font-size: 1.5em;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .metric-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .metric-negative {
+            color: #f44336;
+            border-left-color: #f44336;
+        }
+
+        .metric-warning {
+            color: #ff9800;
+            border-left-color: #ff9800;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+        }
+
+        .market-intelligence {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .intelligence-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .intelligence-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .positions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .positions-table th,
+        .positions-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .positions-table th {
+            background: rgba(255, 255, 255, 0.1);
+            font-weight: bold;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .status-open {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-closed {
+            background: #2196F3;
+            color: white;
+        }
+
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .user-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .loading {
+            text-align: center;
+            color: #ff9800;
+            font-style: italic;
+        }
+
+        .error {
+            text-align: center;
+            color: #f44336;
+            font-style: italic;
+        }
+
+        .refresh-btn {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(76, 175, 80, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .ai-analysis {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+        }
+
+        .ai-decision {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .ai-confidence {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .confidence-bar {
+            flex: 1;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin-left: 10px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48cab3);
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .market-intelligence {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 MarketBot Enterprise</h1>
+        <div class="status">PRODUÇÃO ATIVA - TRADING REAL</div>
+        <div style="margin-top: 10px;">
+            <button class="refresh-btn" onclick="refreshAllData()">🔄 Atualizar Dados</button>
+            <button class="refresh-btn" onclick="toggleAutoRefresh()">⏱️ Auto-Refresh: <span id="autoRefreshStatus">ON</span></button>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Visão Geral -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">📊</span>
+                <span>Visão Geral</span>
+            </div>
+            <div id="overview-content">
+                <div class="loading">Carregando dados...</div>
+            </div>
+        </div>
+
+        <!-- Market Intelligence -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🧠</span>
+                <span>Market Intelligence</span>
+            </div>
+            <div id="market-intelligence-content">
+                <div class="loading">Analisando mercado...</div>
+            </div>
+        </div>
+
+        <!-- Performance -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">📈</span>
+                <span>Performance</span>
+            </div>
+            <div id="performance-content">
+                <div class="loading">Calculando performance...</div>
+            </div>
+        </div>
+
+        <!-- Usuários Ativos -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">👥</span>
+                <span>Usuários Ativos</span>
+            </div>
+            <div id="users-content">
+                <div class="loading">Carregando usuários...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Posições de Trading -->
+    <div class="card">
+        <div class="card-header">
+            <span class="icon">💰</span>
+            <span>Posições de Trading (Tempo Real)</span>
+        </div>
+        <div id="positions-content">
+            <div class="loading">Carregando posições...</div>
+        </div>
+    </div>
+
+    <script>
+        let autoRefresh = true;
+        let refreshInterval;
+
+        // Configurações da API
+        const API_BASE = window.location.origin;
+
+        // Inicializar dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshAllData();
+            startAutoRefresh();
+        });
+
+        function startAutoRefresh() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            if (autoRefresh) {
+                refreshInterval = setInterval(refreshAllData, 30000); // 30 segundos
+            }
+        }
+
+        function toggleAutoRefresh() {
+            autoRefresh = !autoRefresh;
+            document.getElementById('autoRefreshStatus').textContent = autoRefresh ? 'ON' : 'OFF';
+            if (autoRefresh) {
+                startAutoRefresh();
+            } else {
+                clearInterval(refreshInterval);
+            }
+        }
+
+        async function refreshAllData() {
+            console.log('🔄 Atualizando todos os dados...');
+            await Promise.all([
+                loadOverview(),
+                loadMarketIntelligence(),
+                loadPerformance(),
+                loadUsers(),
+                loadPositions()
+            ]);
+        }
+
+        async function makeRequest(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(`Erro na requisição ${endpoint}:`, error);
+                throw error;
+            }
+        }
+
+        async function loadOverview() {
+            try {
+                const data = await makeRequest('/api/overview');
+                
+                const content = `
+                    <div class="metric">
+                        <span>Posições Abertas</span>
+                        <span class="metric-value">${data.openPositions || 0}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Trades Realizados (24h)</span>
+                        <span class="metric-value">${data.trades24h || 0}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Trades com Lucro</span>
+                        <span class="metric-value">${data.profitableTrades || 0}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Taxa de Acerto</span>
+                        <span class="metric-value">${data.successRate || '0.0'}%</span>
+                    </div>
+                    <div class="metric">
+                        <span>Usuários Ativos</span>
+                        <span class="metric-value">${data.activeUsers || 0}</span>
+                    </div>
+                `;
+                
+                document.getElementById('overview-content').innerHTML = content;
+            } catch (error) {
+                document.getElementById('overview-content').innerHTML = 
+                    '<div class="error">Erro ao carregar visão geral</div>';
+            }
+        }
+
+        async function loadMarketIntelligence() {
+            try {
+                const data = await makeRequest('/api/market/intelligence');
+                
+                const longStatus = data.allowLong ? 'PERMITIDO' : 'BLOQUEADO';
+                const shortStatus = data.allowShort ? 'PERMITIDO' : 'BLOQUEADO';
+                
+                const content = `
+                    <div class="metric">
+                        <span>📈 LONG</span>
+                        <span class="metric-value ${data.allowLong ? '' : 'metric-negative'}">${longStatus}</span>
+                    </div>
+                    <div class="metric">
+                        <span>📉 SHORT</span>
+                        <span class="metric-value ${data.allowShort ? '' : 'metric-negative'}">${shortStatus}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Confiança do Mercado</span>
+                        <span class="metric-value">${data.confidence || 50}%</span>
+                    </div>
+                    
+                    <div class="market-intelligence">
+                        <div class="intelligence-item">
+                            <div class="intelligence-value" style="color: ${getFearGreedColor(data.fearGreed)}">
+                                ${data.fearGreed || 50}
+                            </div>
+                            <div>Fear & Greed</div>
+                        </div>
+                        <div class="intelligence-item">
+                            <div class="intelligence-value" style="color: ${getMarketPulseColor(data.marketPulse)}">
+                                ${(data.marketPulse || 50).toFixed(1)}%
+                            </div>
+                            <div>Market Pulse</div>
+                        </div>
+                        <div class="intelligence-item">
+                            <div class="intelligence-value" style="color: #ff9800">
+                                ${(data.btcDominance || 50).toFixed(1)}%
+                            </div>
+                            <div>BTC Dominance</div>
+                        </div>
+                        <div class="intelligence-item">
+                            <div class="intelligence-value" style="color: #2196F3">
+                                ${data.signalsProcessed || 0}
+                            </div>
+                            <div>Sinais (24h)</div>
+                        </div>
+                    </div>
+
+                    ${data.aiDecision ? `
+                        <div class="ai-analysis">
+                            <div class="ai-decision">🤖 Análise IA: ${data.aiDecision.decision || 'N/A'}</div>
+                            <div class="ai-confidence">
+                                <span>Confiança:</span>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" style="width: ${data.aiDecision.confidence || 0}%"></div>
+                                </div>
+                                <span>${data.aiDecision.confidence || 0}%</span>
+                            </div>
+                            <div style="font-size: 0.9em; opacity: 0.8;">${data.aiDecision.reasoning || ''}</div>
+                        </div>
+                    ` : ''}
+                `;
+                
+                document.getElementById('market-intelligence-content').innerHTML = content;
+            } catch (error) {
+                document.getElementById('market-intelligence-content').innerHTML = 
+                    '<div class="error">Erro ao carregar market intelligence</div>';
+            }
+        }
+
+        async function loadPerformance() {
+            try {
+                const data = await makeRequest('/api/performance');
+                
+                const content = `
+                    <div class="metric">
+                        <span>P&L Total (USD)</span>
+                        <span class="metric-value ${(data.totalPnl || 0) >= 0 ? '' : 'metric-negative'}">
+                            $${(data.totalPnl || 0).toFixed(2)}
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span>Volume Negociado (24h)</span>
+                        <span class="metric-value">$${(data.volume24h || 0).toFixed(2)}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Melhor Trade</span>
+                        <span class="metric-value">$${(data.bestTrade || 0).toFixed(2)}</span>
+                    </div>
+                    <div class="metric">
+                        <span>Tempo Médio (Posição)</span>
+                        <span class="metric-value">${data.avgHoldTime || '0h'}</span>
+                    </div>
+                `;
+                
+                document.getElementById('performance-content').innerHTML = content;
+            } catch (error) {
+                document.getElementById('performance-content').innerHTML = 
+                    '<div class="error">Dados de performance serão carregados via overview</div>';
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const data = await makeRequest('/api/users/stats');
+                
+                let content = '<div class="user-stats">';
+                
+                if (data.users && data.users.length > 0) {
+                    data.users.forEach(user => {
+                        content += `
+                            <div class="user-card">
+                                <div style="font-weight: bold; margin-bottom: 10px;">
+                                    ${user.email || 'sistema@marketbot.com'}
+                                </div>
+                                <div class="metric" style="margin-bottom: 8px;">
+                                    <span>Posições</span>
+                                    <span>${user.openPositions || 0}</span>
+                                </div>
+                                <div class="metric" style="margin-bottom: 8px;">
+                                    <span>P&L</span>
+                                    <span class="${(user.totalPnl || 0) >= 0 ? '' : 'metric-negative'}">
+                                        $${(user.totalPnl || 0).toFixed(2)}
+                                    </span>
+                                </div>
+                                <div class="metric">
+                                    <span>Taxa Sucesso</span>
+                                    <span>${(user.successRate || 0).toFixed(1)}%</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    content += '<div style="text-align: center; padding: 20px;">Nenhum usuário ativo encontrado</div>';
+                }
+                
+                content += '</div>';
+                document.getElementById('users-content').innerHTML = content;
+            } catch (error) {
+                document.getElementById('users-content').innerHTML = 
+                    '<div class="error">Dados de usuários serão carregados via overview</div>';
+            }
+        }
+
+        async function loadPositions() {
+            try {
+                const data = await makeRequest('/api/positions');
+                
+                let content = '<table class="positions-table">';
+                content += `
+                    <thead>
+                        <tr>
+                            <th>Símbolo</th>
+                            <th>Lado</th>
+                            <th>Quantidade</th>
+                            <th>Preço Entrada</th>
+                            <th>P&L (USD)</th>
+                            <th>Status</th>
+                            <th>Duração</th>
+                            <th>Usuário</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+                
+                if (data.positions && data.positions.length > 0) {
+                    data.positions.forEach(position => {
+                        content += `
+                            <tr>
+                                <td>${position.symbol || 'N/A'}</td>
+                                <td style="color: ${position.side === 'BUY' ? '#4CAF50' : '#f44336'}">
+                                    ${position.side || 'N/A'}
+                                </td>
+                                <td>${position.size || '0'}</td>
+                                <td>$${(position.entryPrice || 0).toFixed(2)}</td>
+                                <td class="${(position.pnl || 0) >= 0 ? '' : 'metric-negative'}">
+                                    $${(position.pnl || 0).toFixed(2)}
+                                </td>
+                                <td>
+                                    <span class="status-badge ${position.status === 'OPEN' ? 'status-open' : 'status-closed'}">
+                                        ${position.status || 'UNKNOWN'}
+                                    </span>
+                                </td>
+                                <td>${position.duration || '0h'}</td>
+                                <td>${position.userEmail || 'sistema@marketbot.com'}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    content += '<tr><td colspan="8" style="text-align: center; padding: 20px;">Nenhuma posição encontrada</td></tr>';
+                }
+                
+                content += '</tbody></table>';
+                document.getElementById('positions-content').innerHTML = content;
+            } catch (error) {
+                document.getElementById('positions-content').innerHTML = 
+                    '<div class="error">Erro ao carregar posições</div>';
+            }
+        }
+
+        function getFearGreedColor(value) {
+            if (value < 25) return '#f44336'; // Extreme Fear - Red
+            if (value < 45) return '#ff9800'; // Fear - Orange
+            if (value < 55) return '#2196F3'; // Neutral - Blue
+            if (value < 75) return '#4CAF50'; // Greed - Green
+            return '#8BC34A'; // Extreme Greed - Light Green
+        }
+
+        function getMarketPulseColor(value) {
+            if (value < 40) return '#f44336'; // Bearish - Red
+            if (value < 60) return '#ff9800'; // Neutral - Orange
+            return '#4CAF50'; // Bullish - Green
+        }
+
+        // Auto-refresh a cada 30 segundos
+        console.log('🚀 Dashboard MarketBot Enterprise iniciado');
+        console.log('📊 Dados sendo atualizados automaticamente a cada 30 segundos');
+    </script>
+</body>
+</html>

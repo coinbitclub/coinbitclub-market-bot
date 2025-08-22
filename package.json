@@ -1,0 +1,32 @@
+{
+  "name": "marketbot-backend",
+  "version": "10.0.0",
+  "description": "MarketBot Backend Production v10.0 - Real Trading System with Market Intelligence Dashboard",
+  "main": "servidor-marketbot-real.js",
+  "scripts": {
+    "start": "node servidor-marketbot-real.js",
+    "dev": "node servidor-marketbot-real.js",
+    "railway": "node servidor-marketbot-real.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "ccxt": "^4.1.50",
+    "pg": "^8.11.3",
+    "axios": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "trading",
+    "cryptocurrency",
+    "bot",
+    "bybit",
+    "tradingview",
+    "market-intelligence",
+    "dashboard"
+  ],
+  "author": "MarketBot Team",
+  "license": "MIT"
+}
