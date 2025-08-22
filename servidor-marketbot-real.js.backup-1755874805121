@@ -251,192 +251,129 @@ async function getFearGreedIndex() {
   }
 }
 
-// Variáveis globais para cache do sistema de backup
-let apiStatus = {
-  binance: { available: true, lastError: null, lastCheck: 0 },
-  bybit: { available: true, lastError: null, lastCheck: 0 }
-};
-
-// Função para obter Market Pulse via Binance API
-async function getBinanceMarketPulse() {
-  try {
-    console.log('� Tentando Binance API...');
-    
-    const response = await fetch('https://api.binance.com/api/v3/ticker/24hr', {
-      timeout: 15000,
-      headers: { 'User-Agent': 'MarketBot/1.0' }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    const usdtPairs = data.filter(ticker => 
-      ticker.symbol.endsWith('USDT') && 
-      !ticker.symbol.includes('UP') && 
-      !ticker.symbol.includes('DOWN') &&
-      !ticker.symbol.includes('BEAR') &&
-      !ticker.symbol.includes('BULL')
-    );
-    
-    const positiveCount = usdtPairs.filter(ticker => 
-      parseFloat(ticker.priceChangePercent) > 0
-    ).length;
-    
-    const marketPulse = (positiveCount / usdtPairs.length) * 100;
-    
-    console.log(`✅ Binance: ${usdtPairs.length} pares, ${positiveCount} positivos (${marketPulse.toFixed(1)}%)`);
-    
-    return {
-      success: true,
-      marketPulse: marketPulse,
-      source: 'binance',
-      totalPairs: usdtPairs.length,
-      positivePairs: positiveCount
-    };
-    
-  } catch (error) {
-    console.log(`❌ Binance falhou: ${error.message}`);
-    
-    // Detectar códigos de bloqueio
-    const isBlocked = error.message.includes('451') || 
-                      error.message.includes('403') || 
-                      error.message.includes('429');
-    
-    return {
-      success: false,
-      error: error.message,
-      blocked: isBlocked,
-      source: 'binance'
-    };
-  }
-}
-
-// Função para obter Market Pulse via Bybit API
-async function getBybitMarketPulse() {
-  try {
-    console.log('📡 Tentando Bybit API...');
-    
-    const response = await fetch('https://api.bybit.com/v5/market/tickers?category=spot', {
-      timeout: 15000,
-      headers: { 'User-Agent': 'MarketBot/1.0' }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    const usdtPairs = data.result.list.filter(ticker => 
-      ticker.symbol.endsWith('USDT') && 
-      ticker.lastPrice && 
-      ticker.price24hPcnt
-    );
-    
-    const positiveCount = usdtPairs.filter(ticker => 
-      parseFloat(ticker.price24hPcnt) > 0
-    ).length;
-    
-    const marketPulse = (positiveCount / usdtPairs.length) * 100;
-    
-    console.log(`✅ Bybit: ${usdtPairs.length} pares, ${positiveCount} positivos (${marketPulse.toFixed(1)}%)`);
-    
-    return {
-      success: true,
-      marketPulse: marketPulse,
-      source: 'bybit',
-      totalPairs: usdtPairs.length,
-      positivePairs: positiveCount
-    };
-    
-  } catch (error) {
-    console.log(`❌ Bybit falhou: ${error.message}`);
-    
-    return {
-      success: false,
-      error: error.message,
-      source: 'bybit'
-    };
-  }
-}
-
-// Sistema inteligente de alternância entre APIs
-async function getMarketPulseWithFallback() {
-  const now = Date.now();
-  const RETRY_INTERVAL = 5 * 60 * 1000; // 5 minutos
-  
-  // Verificar se Binance pode ser tentada novamente
-  if (!apiStatus.binance.available && 
-      (now - apiStatus.binance.lastCheck) > RETRY_INTERVAL) {
-    console.log('🔄 Tentando reconectar Binance após 5 minutos...');
-    apiStatus.binance.available = true;
-  }
-  
-  // Tentar Binance primeiro (prioridade)
-  if (apiStatus.binance.available) {
-    const binanceResult = await getBinanceMarketPulse();
-    
-    if (binanceResult.success) {
-      // Binance funcionou, marcar como disponível
-      apiStatus.binance.available = true;
-      apiStatus.binance.lastError = null;
-      return binanceResult;
-    } else {
-      // Binance falhou
-      apiStatus.binance.lastError = binanceResult.error;
-      apiStatus.binance.lastCheck = now;
-      
-      // Se foi bloqueio, marcar como indisponível
-      if (binanceResult.blocked) {
-        console.log('🚫 Binance bloqueada, alternando para Bybit...');
-        apiStatus.binance.available = false;
-      }
-    }
-  }
-  
-  // Fallback para Bybit
-  console.log('🔄 Usando Bybit como backup...');
-  const bybitResult = await getBybitMarketPulse();
-  
-  if (bybitResult.success) {
-    return bybitResult;
-  } else {
-    // Ambas as APIs falharam
-    apiStatus.bybit.lastError = bybitResult.error;
-    apiStatus.bybit.lastCheck = now;
-    
-    throw new Error(`Todas as APIs falharam. Binance: ${apiStatus.binance.lastError}, Bybit: ${bybitResult.error}`);
-  }
-}
-
-// Market Pulse - Sistema com Backup Binance + Bybit
+// Market Pulse - TOP 100 Binance
 async function getMarketPulse() {
   try {
     console.log('📊 Iniciando Market Pulse analysis...');
     
-    const result = await getMarketPulseWithFallback();
+    const response = await fetch('https://api.binance.com/api/v3/ticker/24hr', {
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'MarketBot/1.0'
+      }
+    });
     
-    // Salvar último valor conhecido
-    global.lastMarketPulse = result.marketPulse;
+    if (!response.ok) {
+      throw new Error(`Binance API error: ${response.status} ${response.statusText}`);
+    }
     
-    // Log para acompanhamento
-    console.log(`📊 Market Pulse: ${result.marketPulse.toFixed(1)}% (${result.source})`);
-    console.log(`   Pares analisados: ${result.totalPairs} | Positivos: ${result.positivePairs}`);
+    const data = await response.json();
+    console.log('📊 Binance response type:', typeof data, Array.isArray(data) ? `Array[${data.length}]` : 'Not Array');
     
-    // Retornar no formato compatível com o sistema existente
+    // Validação robusta da resposta
+    let tickers = [];
+    
+    if (Array.isArray(data)) {
+      tickers = data;
+    } else if (data && typeof data === 'object') {
+      // Se for um objeto, tentar extrair array de diferentes propriedades
+      if (Array.isArray(data.data)) {
+        tickers = data.data;
+      } else if (Array.isArray(data.result)) {
+        tickers = data.result;
+      } else if (Array.isArray(data.tickers)) {
+        tickers = data.tickers;
+      } else {
+        console.error('⚠️ Market Pulse: Estrutura de dados não reconhecida:', Object.keys(data));
+        return { positivePercentage: 50, trend: 'NEUTRAL' };
+      }
+    } else {
+      console.error('⚠️ Market Pulse: Resposta inválida da Binance API:', typeof data);
+      return { positivePercentage: 50, trend: 'NEUTRAL' };
+    }
+    
+    console.log('📊 Tickers extraídos:', tickers.length);
+    
+    if (!Array.isArray(tickers) || tickers.length === 0) {
+      console.error('⚠️ Market Pulse: Nenhum ticker válido encontrado');
+      return { positivePercentage: 50, trend: 'NEUTRAL' };
+    }
+    
+    // Filtrar apenas pares USDT com validação extra
+    const usdtPairs = tickers.filter(ticker => {
+      try {
+        return ticker && 
+               typeof ticker === 'object' && 
+               ticker.symbol && 
+               typeof ticker.symbol === 'string' && 
+               ticker.symbol.endsWith('USDT') &&
+               ticker.priceChangePercent !== undefined &&
+               ticker.quoteVolume !== undefined;
+      } catch (filterError) {
+        return false;
+      }
+    });
+    
+    console.log('📊 Pares USDT válidos encontrados:', usdtPairs.length);
+    
+    if (usdtPairs.length === 0) {
+      console.error('⚠️ Market Pulse: Nenhum par USDT válido encontrado');
+      return { positivePercentage: 50, trend: 'NEUTRAL' };
+    }
+    
+    const top100 = usdtPairs.slice(0, 100);
+    
+    let positive = 0;
+    let negative = 0;
+    let totalVolume = 0;
+    let positiveVolume = 0;
+    let validPairs = 0;
+    
+    top100.forEach(ticker => {
+      try {
+        if (!ticker || !ticker.priceChangePercent || !ticker.quoteVolume) return;
+        
+        const priceChange = parseFloat(ticker.priceChangePercent);
+        const volume = parseFloat(ticker.quoteVolume);
+        
+        if (isNaN(priceChange) || isNaN(volume)) return;
+        
+        validPairs++;
+        totalVolume += volume;
+        
+        if (priceChange > 0) {
+          positive++;
+          positiveVolume += volume;
+        } else if (priceChange < 0) {
+          negative++;
+        }
+      } catch (tickerError) {
+        console.error('⚠️ Erro processando ticker:', tickerError.message);
+      }
+    });
+    
+    if (validPairs === 0) {
+      console.error('⚠️ Market Pulse: Nenhum par válido para análise');
+      return { positivePercentage: 50, trend: 'NEUTRAL' };
+    }
+    
+    const positivePercentage = (positive / validPairs) * 100;
+    const volumeWeightedDelta = totalVolume > 0 ? ((positiveVolume / totalVolume) - 0.5) * 100 : 0;
+    
     let trend = 'NEUTRAL';
-    if (result.marketPulse > 60) trend = 'BULLISH';
-    else if (result.marketPulse < 40) trend = 'BEARISH';
+    if (positivePercentage > 60) trend = 'BULLISH';
+    else if (positivePercentage < 40) trend = 'BEARISH';
+    
+    console.log(`📊 Market Pulse: ${positive}/${validPairs} positivos (${positivePercentage.toFixed(1)}%)`);
     
     return {
-      totalCoins: result.totalPairs,
-      positiveCoins: result.positivePairs,
-      negativeCoins: result.totalPairs - result.positivePairs,
-      positivePercentage: result.marketPulse,
-      volumeWeightedDelta: 0,
+      totalCoins: validPairs,
+      positiveCoins: positive,
+      negativeCoins: negative,
+      positivePercentage,
+      volumeWeightedDelta,
       trend,
-      source: result.source,
+      source: 'binance_24hr',
       timestamp: new Date().toISOString()
     };
     
@@ -444,20 +381,13 @@ async function getMarketPulse() {
     console.error('⚠️ Erro Market Pulse:', error.message);
     console.error('⚠️ Stack trace:', error.stack);
     
-    // Valor padrão de emergência baseado no último valor conhecido
-    const lastKnownValue = global.lastMarketPulse || 50.0;
-    console.log(`🆘 Usando valor de emergência: ${lastKnownValue}%`);
-    
+    // Fallback com dados neutros
     return { 
-      totalCoins: 500,
-      positiveCoins: Math.round(500 * lastKnownValue / 100),
-      negativeCoins: Math.round(500 * (100 - lastKnownValue) / 100),
-      positivePercentage: lastKnownValue, 
-      volumeWeightedDelta: 0,
+      positivePercentage: 50, 
       trend: 'NEUTRAL',
-      source: 'emergency_cache',
-      timestamp: new Date().toISOString(),
-      error: true
+      source: 'fallback',
+      error: error.message,
+      timestamp: new Date().toISOString()
     };
   }
 }
