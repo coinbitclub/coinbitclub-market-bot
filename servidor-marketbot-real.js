@@ -3598,7 +3598,6 @@ app.listen(PORT, '0.0.0.0', async () => {
   // TESTAR CONECTIVIDADE NGROK PRIMEIRO
   console.log('\n🔧 TESTANDO CONECTIVIDADE NGROK...');
   await testNgrokTunnel();
-  await testNgrokConnectivity();
   
   // INICIALIZAÇÃO AUTOMÁTICA COMPLETA
   console.log('\n🔄 INICIANDO SISTEMAS AUTOMÁTICOS...');
