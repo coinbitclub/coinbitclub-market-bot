@@ -21,7 +21,7 @@ console.log('🔧 Carregando configurações do Railway...');
 
 const NGROK_CONFIG = {
   authToken: process.env.NGROK_AUTH_TOKEN,
-  region: process.env.NGROK_REGION || 'us',
+  region: process.env.NGROK_REGION || 'eu', // Mudança para Europa (não bloqueada)
   subdomain: process.env.NGROK_SUBDOMAIN || 'marketbot-trading',
   fixedIP: process.env.NGROK_IP_FIXO
 };
