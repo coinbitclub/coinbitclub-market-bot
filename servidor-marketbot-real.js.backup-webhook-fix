@@ -2065,158 +2065,44 @@ app.get('/api/positions', async (req, res) => {
 });
 
 // Endpoint para receber webhooks do TradingView
-
-// WEBHOOK OTIMIZADO - RESPOSTA IMEDIATA (FIX 499)
 app.post('/api/webhooks/signal', async (req, res) => {
-  const startTime = Date.now();
-  
   try {
-    // 1. VALIDAÇÃO RÁPIDA (< 50ms)
+    console.log('📡 Webhook recebido:', req.body);
+    
+    // Validar token de segurança
     const token = req.query.token;
-    const signal = req.body;
-
-    console.log('📡 TradingView Signal Received (Fast Response):', {
-      timestamp: new Date().toISOString(),
-      hasToken: !!token,
-      signalSize: JSON.stringify(signal).length
-    });
-
-    // Atualizar estatísticas
-    if (global.webhookStats) {
-      global.webhookStats.total++;
-      global.webhookStats.lastReceived = new Date().toISOString();
-    }
-
-    // Validar token
     if (token !== '210406') {
-      console.log('❌ Token inválido:', token);
-      if (global.webhookStats) global.webhookStats.failed++;
-      
-      return res.status(401).json({ 
-        error: 'Token inválido',
-        received_token: token 
-      });
-    }
-
-    // 2. RESPOSTA IMEDIATA PARA TRADINGVIEW (< 100ms)
-    const responseTime = Date.now() - startTime;
-    res.status(200).json({
-      success: true,
-      message: 'Signal received and queued for processing',
-      timestamp: new Date().toISOString(),
-      webhook_id: `wh_${Date.now()}`,
-      response_time_ms: responseTime
-    });
-
-    console.log(`✅ Resposta enviada ao TradingView em ${responseTime}ms`);
-
-    // 3. PROCESSAMENTO ASSÍNCRONO (SEM BLOQUEAR RESPOSTA)
-    setImmediate(async () => {
-      try {
-        console.log('🔄 Iniciando processamento assíncrono...');
-        await processSignalAsync(signal, req.headers, req.ip);
-        
-        if (global.webhookStats) global.webhookStats.successful++;
-        
-      } catch (error) {
-        console.error('❌ Erro no processamento assíncrono:', error);
-        if (global.webhookStats) global.webhookStats.failed++;
-      }
-    });
-
-  } catch (error) {
-    console.error('❌ Erro no webhook:', error);
-    
-    const responseTime = Date.now() - startTime;
-    
-    // Ainda responder rapidamente mesmo com erro
-    if (!res.headersSent) {
-      res.status(500).json({
-        success: false,
-        error: 'Internal processing error',
-        timestamp: new Date().toISOString(),
-        response_time_ms: responseTime
-      });
+      return res.status(401).json({ error: 'Token inválido' });
     }
     
-    if (global.webhookStats) {
-      global.webhookStats.total++;
-      global.webhookStats.failed++;
-    }
-  }
-});
-
-// FUNÇÃO DE PROCESSAMENTO ASSÍNCRONO
-async function processSignalAsync(signalBody, headers, ipAddress) {
-  const processStartTime = Date.now();
-  
-  try {
-    console.log('📊 Processando sinal:', {
-      symbol: signalBody.symbol || 'N/A',
-      action: signalBody.action || 'N/A',
+    // Processar sinal
+    const signal = req.body;
+    const result = await processSignalWithRealTrading(signal);
+    
+    // Registrar webhook no sistema
+    await pool.query(`
+      INSERT INTO system_monitoring (event_type, details, created_at)
+      VALUES ('SIGNAL_PROCESSED', $1, NOW())
+    `, [JSON.stringify({
+      signal: signal,
+      result: result,
       timestamp: new Date().toISOString()
+    })]);
+    
+    res.json({
+      success: true,
+      message: 'Sinal processado com sucesso',
+      processed: result.processed,
+      errors: result.errors
     });
     
-    // 1. Registrar no banco com timeout de 5 segundos
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Database timeout')), 5000)
-    );
-    
-    const insertPromise = pool.query(`
-      INSERT INTO webhook_signals (
-        source, webhook_id, raw_data, token, ip_address, 
-        user_agent, received_at, processed, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, false, NOW())
-      RETURNING id
-    `, [
-      'TRADINGVIEW',
-      headers['x-webhook-id'] || `webhook-${Date.now()}`,
-      JSON.stringify(signalBody),
-      '210406',
-      ipAddress || 'unknown',
-      headers['user-agent'] || 'unknown',
-      new Date()
-    ]);
-
-    const result = await Promise.race([insertPromise, timeoutPromise]);
-    const webhookId = result.rows[0].id;
-    
-    console.log(`✅ Sinal registrado no banco: ID ${webhookId}`);
-
-    // 2. Processar trading com timeout de 15 segundos
-    const tradingTimeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Trading timeout')), 15000)
-    );
-    
-    const tradingPromise = processSignalWithRealTrading(signalBody);
-    const tradingResults = await Promise.race([tradingPromise, tradingTimeoutPromise]);
-    
-    console.log(`📈 Trading processado: ${tradingResults.processed || 0} usuários, ${tradingResults.errors?.length || 0} erros`);
-    
-    // 3. Marcar como processado
-    await Promise.race([
-      pool.query('UPDATE webhook_signals SET processed = true, processed_at = NOW() WHERE id = $1', [webhookId]),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Update timeout')), 3000))
-    ]);
-    
-    const processingTime = Date.now() - processStartTime;
-    console.log(`⚡ Processamento assíncrono concluído em ${processingTime}ms`);
-    
   } catch (error) {
-    console.error('❌ Erro no processamento assíncrono:', error.message);
-    
-    // Tentar novamente em 30 segundos para erros recuperáveis
-    if (error.message.includes('timeout') || 
-        error.message.includes('ECONNRESET') || 
-        error.message.includes('ENOTFOUND')) {
-      console.log('🔄 Agendando retry em 30 segundos...');
-      setTimeout(() => {
-        console.log('🔄 Executando retry do processamento...');
-        processSignalAsync(signalBody, headers, ipAddress);
-      }, 30000);
-    }
-  }
-}
+    console.error('❌ Erro processando webhook:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor',
+      message: error.message
+    });
   }
 });
 
