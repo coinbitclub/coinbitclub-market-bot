@@ -189,19 +189,25 @@ console.log(`📊 Status dos IPs: ${NGROK_IPS.map(ip => `${ip}(${ngrokFailureCou
 // SISTEMA CORRIGIDO: NGROK HTTP PROXY (não IP binding)
 // HttpsProxyAgent já importado no topo do arquivo
 
-// Configurar proxy NGROK correto
+// Detectar ambiente Railway e configurar proxy adequadamente
+const IS_RAILWAY = process.env.RAILWAY_ENVIRONMENT_NAME || process.env.PORT;
+
+// Configurar proxy NGROK correto (desabilitado no Railway)
 const NGROK_PROXY_CONFIG = {
   httpProxy: 'http://127.0.0.1:4040', // NGROK HTTP proxy local
   socksProxy: 'socks5://127.0.0.1:1080', // Fallback SOCKS5
-  enabled: !!NGROK_CONFIG.authToken
+  enabled: !!NGROK_CONFIG.authToken && !IS_RAILWAY // Desabilitar no Railway
 };
+
+console.log(`🌐 Ambiente detectado: ${IS_RAILWAY ? 'Railway' : 'Local'}`);
+console.log(`🔧 Proxy NGROK: ${NGROK_PROXY_CONFIG.enabled ? 'ATIVO' : 'DESABILITADO'}`);
 
 // Criar agentes HTTP/HTTPS com PROXY NGROK (CORRETO)
 function createExchangeAgent(isHttps = true, useNgrokProxy = true) {
   const AgentClass = isHttps ? https.Agent : http.Agent;
   
-  // USAR PROXY NGROK para contornar bloqueio geográfico
-  if (useNgrokProxy && NGROK_PROXY_CONFIG.enabled) {
+  // USAR PROXY NGROK apenas em ambiente local
+  if (useNgrokProxy && NGROK_PROXY_CONFIG.enabled && !IS_RAILWAY) {
     try {
       console.log(`🌐 Criando agente com PROXY NGROK: ${NGROK_PROXY_CONFIG.httpProxy}`);
       
@@ -252,8 +258,35 @@ const httpAgentFixed = createExchangeAgent(false, true);
 // Variável global para controlar se NGROK está disponível
 let NGROK_AVAILABLE = false;
 
-// Função para fazer requisições via PROXY NGROK
+// Função para fazer requisições via PROXY NGROK ou conexão direta no Railway
 async function makeRequestViaProxy(url, options = {}) {
+  // No Railway, usar conexão direta
+  if (IS_RAILWAY) {
+    console.log(`🌐 Requisição direta via Railway: ${url}`);
+    
+    const config = {
+      ...options,
+      timeout: 15000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0',
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+        ...options.headers
+      }
+    };
+    
+    try {
+      const response = await axios.get(url, config);
+      console.log(`✅ Sucesso via Railway: ${url}`);
+      return response;
+    } catch (error) {
+      console.log(`❌ Erro via Railway: ${error.response?.status || error.message}`);
+      throw error;
+    }
+  }
+  
+  // Ambiente local: tentar proxy NGROK
   console.log(`🌐 Requisição via PROXY NGROK: ${url}`);
   
   if (!NGROK_PROXY_CONFIG.enabled) {
