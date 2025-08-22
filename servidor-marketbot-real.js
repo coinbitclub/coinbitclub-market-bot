@@ -6,10 +6,174 @@ console.log('⚡ BANCO DE DADOS LIMPO - PRONTO PARA PRODUÇÃO');
 const express = require('express');
 const { Pool } = require('pg');
 const ccxt = require('ccxt');
+const https = require('https');
+const http = require('http');
+const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 console.log('✅ Express carregado');
+
+// ========================================
+// CONFIGURAÇÃO OBRIGATÓRIA COM IPS NGROK PARA EXCHANGES
+// ========================================
+
+// Sistema de requisições robusto com IPs NGROK obrigatórios
+console.log('🌐 Configurando sistema com IPs NGROK obrigatórios para exchanges...');
+
+// IPs NGROK obrigatórios para acessar Bybit e Binance
+const NGROK_IPS = [
+  '54.207.219.70',
+  '52.67.28.7', 
+  '56.125.142.8',
+  '54.94.135.43',
+  '15.229.184.96',
+  '132.255.160.131',
+  '132.255.171.176',
+  '132.255.249.43'
+];
+
+// Sistema de rotação automática de IPs NGROK
+let currentNgrokIndex = 0;
+let ngrokFailureCount = {};
+
+// Inicializar contadores de falha
+NGROK_IPS.forEach(ip => {
+  ngrokFailureCount[ip] = 0;
+});
+
+// Função para obter próximo IP NGROK disponível
+function getNextNgrokIP() {
+  // Se IP específico foi definido via variável de ambiente, usar sempre ele
+  if (process.env.NGROK_IP_FIXO && NGROK_IPS.includes(process.env.NGROK_IP_FIXO)) {
+    return process.env.NGROK_IP_FIXO;
+  }
+  
+  // Rotação automática: pular IPs com muitas falhas
+  let attempts = 0;
+  while (attempts < NGROK_IPS.length) {
+    const ip = NGROK_IPS[currentNgrokIndex];
+    
+    // Se IP tem menos de 5 falhas, usar ele
+    if (ngrokFailureCount[ip] < 5) {
+      return ip;
+    }
+    
+    // Próximo IP
+    currentNgrokIndex = (currentNgrokIndex + 1) % NGROK_IPS.length;
+    attempts++;
+  }
+  
+  // Se todos os IPs falharam muito, resetar contadores e usar o primeiro
+  console.log('⚠️ Todos os IPs NGROK falharam muito, resetando contadores...');
+  Object.keys(ngrokFailureCount).forEach(ip => {
+    ngrokFailureCount[ip] = 0;
+  });
+  
+  return NGROK_IPS[0];
+}
+
+// Função para marcar falha de IP
+function markNgrokIPFailure(ip, error) {
+  if (ngrokFailureCount[ip] !== undefined) {
+    ngrokFailureCount[ip]++;
+    console.log(`⚠️ IP NGROK ${ip} falhou (${ngrokFailureCount[ip]} vezes): ${error}`);
+    
+    if (ngrokFailureCount[ip] >= 5) {
+      console.log(`🚫 IP NGROK ${ip} marcado como indisponível (5+ falhas)`);
+    }
+  }
+}
+
+// Função para rotacionar para próximo IP
+function rotateToNextNgrokIP() {
+  currentNgrokIndex = (currentNgrokIndex + 1) % NGROK_IPS.length;
+  const newIP = getNextNgrokIP();
+  console.log(`🔄 Rotacionando para próximo IP NGROK: ${newIP}`);
+  return newIP;
+}
+
+// Detectar qual IP NGROK usar (com rotação automática)
+const SELECTED_NGROK_IP = getNextNgrokIP();
+
+console.log(`🌐 IP NGROK SELECIONADO: ${SELECTED_NGROK_IP}`);
+console.log(`🔢 IPs NGROK disponíveis: ${NGROK_IPS.length} configurados`);
+console.log(`📊 Status dos IPs: ${NGROK_IPS.map(ip => `${ip}(${ngrokFailureCount[ip]})`).join(', ')}`);
+
+// Criar agentes HTTP/HTTPS com IP NGROK obrigatório
+function createExchangeAgent(isHttps = true, useNgrokIP = true) {
+  const AgentClass = isHttps ? https.Agent : http.Agent;
+  
+  const config = {
+    keepAlive: true,
+    keepAliveMsecs: 30000,
+    maxSockets: 100,
+    maxFreeSockets: 50,
+    timeout: 30000,
+    freeSocketTimeout: 15000,
+    socketActiveTTL: 60000
+  };
+
+  // USAR IP NGROK OBRIGATORIAMENTE para exchanges
+  if (useNgrokIP) {
+    config.localAddress = SELECTED_NGROK_IP;
+    console.log(`🔗 Agente ${isHttps ? 'HTTPS' : 'HTTP'} com IP NGROK obrigatório: ${SELECTED_NGROK_IP}`);
+  }
+  
+  return new AgentClass(config);
+}
+
+// Agentes normais para APIs gerais (sem IP específico)
+function createOptimizedAgent(isHttps = true) {
+  const AgentClass = isHttps ? https.Agent : http.Agent;
+  
+  return new AgentClass({
+    keepAlive: true,
+    keepAliveMsecs: 30000,
+    maxSockets: 100,
+    maxFreeSockets: 50,
+    timeout: 30000,
+    freeSocketTimeout: 15000,
+    socketActiveTTL: 60000
+  });
+}
+
+// Criar agentes globais otimizados (para APIs gerais)
+const httpsAgentOptimized = createOptimizedAgent(true);
+const httpAgentOptimized = createOptimizedAgent(false);
+
+// Criar agentes OBRIGATÓRIOS com IP NGROK para exchanges (Binance/Bybit)
+const httpsAgentFixed = createExchangeAgent(true, true);
+const httpAgentFixed = createExchangeAgent(false, true);
+
+// Configurar axios global para máxima robustez
+axios.defaults.httpsAgent = httpsAgentOptimized;
+axios.defaults.httpAgent = httpAgentOptimized;
+axios.defaults.timeout = 25000; // 25 segundos
+axios.defaults.maxRedirects = 3;
+
+// Interceptor para retry automático
+axios.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const config = error.config;
+    
+    // Retry apenas para erros de rede/timeout
+    if (!config || config.__retryCount >= 2) {
+      return Promise.reject(error);
+    }
+    
+    config.__retryCount = config.__retryCount || 0;
+    config.__retryCount++;
+    
+    // Aguardar antes do retry
+    await new Promise(resolve => setTimeout(resolve, 1000 * config.__retryCount));
+    
+    return axios(config);
+  }
+);
+
+console.log('✅ Sistema de requisições otimizado configurado');
 
 // Configuração do banco de dados (Railway PostgreSQL)
 const pool = new Pool({
@@ -205,48 +369,60 @@ async function getMarketIntelligence() {
   }
 }
 
-// Fear & Greed Index com múltiplas fontes
+// Fear & Greed Index - APENAS COINSTATS
 async function getFearGreedIndex() {
   try {
-    // Tentar Alternative.me primeiro (mais confiável)
-    let response = await fetch('https://api.alternative.me/fng/', {
-      timeout: 5000
-    });
+    console.log('😨 Coletando Fear & Greed Index via CoinStats...');
     
-    if (response.ok) {
-      const data = await response.json();
-      const value = parseInt(data.data[0].value);
+    const requestConfig = {
+      timeout: 10000,
+      httpsAgent: httpsAgentOptimized,
+      httpAgent: httpAgentOptimized,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'X-API-KEY': 'ZFIxigBcVaCyXDL1Qp/Ork7TOL3+h07NM2f3YoSrMkI=',
+        'DNT': '1',
+        'Connection': 'keep-alive'
+      }
+    };
+    
+    console.log('📊 Usando CoinStats Fear & Greed API...');
+    const response = await axios.get('https://openapiv1.coinstats.app/insights/fear-and-greed', requestConfig);
+    
+    if (response.status === 200 && response.data) {
+      const fearGreedData = response.data;
+      
+      // Estrutura esperada da API CoinStats
+      const value = fearGreedData.value || fearGreedData.index || 50;
+      const classification = fearGreedData.classification || 
+                           fearGreedData.valueClassification || 
+                           (value > 75 ? 'Extreme Greed' : 
+                            value > 55 ? 'Greed' : 
+                            value > 45 ? 'Neutral' : 
+                            value > 25 ? 'Fear' : 'Extreme Fear');
+      
+      console.log(`✅ Fear & Greed: ${value} (${classification}) via CoinStats`);
       return {
-        value: value,
-        classification: data.data[0].value_classification,
-        source: 'alternative.me'
-      };
-    }
-    
-    // Fallback para CoinStats
-    response = await fetch('https://api.coinstats.app/public/v1/fear-greed', {
-      headers: { 'X-API-KEY': 'YOUR_COINSTATS_KEY' },
-      timeout: 5000
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      return {
-        value: data.value || 50,
-        classification: data.valueClassification || 'Neutral',
+        value: parseInt(value),
+        classification: classification,
         source: 'coinstats'
       };
     }
     
-    throw new Error('Ambas APIs falharam');
+    throw new Error('CoinStats Fear & Greed retornou dados inválidos');
     
   } catch (error) {
-    console.error('⚠️ Erro Fear & Greed, usando valor conservador:', error.message);
-    // Valor conservador neutro em caso de erro
+    console.error('⚠️ Erro Fear & Greed CoinStats:', error.response?.status || error.message);
+    
+    // Fallback valor conservador
+    console.log('🆘 Usando valor conservador Fear & Greed: 50 (Neutral)');
     return { 
       value: 50, 
       classification: 'Neutral', 
-      source: 'fallback'
+      source: 'fallback',
+      error: true
     };
   }
 }
@@ -256,6 +432,37 @@ let apiStatus = {
   binance: { available: true, lastError: null, lastCheck: 0 },
   bybit: { available: true, lastError: null, lastCheck: 0 }
 };
+
+// ========================================
+// SISTEMA DE PROXY PARA CONTORNAR BLOQUEIO GEOGRÁFICO
+// ========================================
+
+const PROXY_ENDPOINTS = {
+  market_data: [
+    'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h',
+    'https://min-api.cryptocompare.com/data/top/mktcapfull?limit=100&tsym=USD',
+    'https://api.coincap.io/v2/assets?limit=100'
+  ],
+  fear_greed: [
+    'https://api.alternative.me/fng/',
+    'https://api.coinstats.app/public/v1/fear-greed'
+  ],
+  btc_dominance: [
+    'https://openapiv1.coinstats.app/markets',
+    'https://api.coingecko.com/api/v3/global'
+  ]
+};
+
+// Sistema de detecção de bloqueio geográfico
+function isGeoBlocked(error) {
+  const errorStr = error.message || error.toString();
+  return errorStr.includes('CloudFront') || 
+         errorStr.includes('403') || 
+         errorStr.includes('451') ||
+         errorStr.includes('country') ||
+         errorStr.includes('region') ||
+         errorStr.includes('geographic');
+}
 
 // Função para obter Market Pulse via Binance API
 async function getBinanceMarketPulse() {
@@ -361,147 +568,171 @@ async function getBybitMarketPulse() {
   }
 }
 
-// Sistema inteligente de alternância entre APIs
+// Sistema inteligente de alternância entre APIs - APENAS BINANCE E BYBIT
 async function getMarketPulseWithFallback() {
-  console.log('📊 Iniciando Market Pulse com sistema robusto...');
+  console.log('📊 Iniciando Market Pulse com IP NGROK OBRIGATÓRIO - APENAS BINANCE E BYBIT...');
+  
+  // Configurar headers avançados para contornar detecção
+  const createRequestConfig = (timeout = 15000) => ({
+    timeout,
+    httpsAgent: httpsAgentFixed, // Usar agente com IP NGROK obrigatório
+    httpAgent: httpAgentFixed,
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'application/json',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Connection': 'keep-alive',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+      'DNT': '1',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'cross-site'
+    }
+  });
   
   const apis = [
-    // API 1: CoinGecko (Mais Confiável)
-    {
-      name: 'CoinGecko',
-      call: async () => {
-        const response = await axios.get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h', {
-          timeout: 15000,
-          headers: {
-            'User-Agent': 'MarketBot/1.0 (https://coinbitclub.com)',
-            'Accept': 'application/json',
-            'Accept-Language': 'en-US,en;q=0.9'
-          }
-        });
-        
-        const coins = response.data;
-        const positiveCoins = coins.filter(coin => coin.price_change_percentage_24h > 0).length;
-        const marketPulse = (positiveCoins / coins.length) * 100;
-        
-        console.log(`✅ CoinGecko: ${marketPulse.toFixed(1)}% (${coins.length} moedas)`);
-        return { success: true, marketPulse, source: 'CoinGecko' };
-      }
-    },
-    
-    // API 2: CryptoCompare
-    {
-      name: 'CryptoCompare',
-      call: async () => {
-        const response = await axios.get('https://min-api.cryptocompare.com/data/top/mktcapfull?limit=100&tsym=USD', {
-          timeout: 10000,
-          headers: {
-            'User-Agent': 'CryptoAnalyzer/1.0',
-            'Accept': 'application/json'
-          }
-        });
-        
-        const coins = response.data.Data;
-        const validCoins = coins.filter(coin => coin.RAW && coin.RAW.USD);
-        const positiveCoins = validCoins.filter(coin => coin.RAW.USD.CHANGEPCT24HOUR > 0).length;
-        const marketPulse = (positiveCoins / validCoins.length) * 100;
-        
-        console.log(`✅ CryptoCompare: ${marketPulse.toFixed(1)}% (${validCoins.length} moedas)`);
-        return { success: true, marketPulse, source: 'CryptoCompare' };
-      }
-    },
-    
-    // API 3: CoinCap
-    {
-      name: 'CoinCap',
-      call: async () => {
-        const response = await axios.get('https://api.coincap.io/v2/assets?limit=100', {
-          timeout: 10000,
-          headers: {
-            'User-Agent': 'MarketTracker/1.0',
-            'Accept': 'application/json'
-          }
-        });
-        
-        const coins = response.data.data;
-        const validCoins = coins.filter(coin => coin.changePercent24Hr !== null);
-        const positiveCoins = validCoins.filter(coin => parseFloat(coin.changePercent24Hr) > 0).length;
-        const marketPulse = (positiveCoins / validCoins.length) * 100;
-        
-        console.log(`✅ CoinCap: ${marketPulse.toFixed(1)}% (${validCoins.length} moedas)`);
-        return { success: true, marketPulse, source: 'CoinCap' };
-      }
-    },
-    
-    // API 4: Binance (com retry otimizado)
+    // API 1: Binance (com IP NGROK obrigatório e múltiplas tentativas) - PRIORIDADE
     {
       name: 'Binance',
       call: async () => {
-        const configs = [
-          { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' } },
-          { headers: { 'User-Agent': 'TradingBot/1.0', 'Accept': 'application/json' } }
+        console.log(`🚀 Tentando Binance com IP NGROK ${SELECTED_NGROK_IP} (TOP100)...`);
+        
+        const binanceConfigs = [
+          {
+            url: 'https://api.binance.com/api/v3/ticker/24hr',
+            config: createRequestConfig(12000)
+          },
+          {
+            url: 'https://api1.binance.com/api/v3/ticker/24hr',
+            config: createRequestConfig(10000)
+          },
+          {
+            url: 'https://api2.binance.com/api/v3/ticker/24hr',
+            config: createRequestConfig(8000)
+          }
         ];
         
-        for (const config of configs) {
+        for (const {url, config} of binanceConfigs) {
           try {
-            const response = await axios.get('https://api.binance.com/api/v3/ticker/24hr', {
-              timeout: 8000,
-              ...config
-            });
-            
+            const response = await axios.get(url, config);
             const tickers = response.data;
-            const usdtPairs = tickers.filter(t => t.symbol.endsWith('USDT'));
+            
+            // Filtrar TOP 100 pares USDT por volume
+            const usdtPairs = tickers
+              .filter(t => t.symbol.endsWith('USDT') && !t.symbol.includes('UP') && !t.symbol.includes('DOWN'))
+              .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+              .slice(0, 100); // TOP 100
+            
             const positivePairs = usdtPairs.filter(t => parseFloat(t.priceChangePercent) > 0).length;
             const marketPulse = (positivePairs / usdtPairs.length) * 100;
             
-            console.log(`✅ Binance: ${marketPulse.toFixed(1)}% (${usdtPairs.length} pares USDT)`);
-            return { success: true, marketPulse, source: 'Binance' };
+            console.log(`✅ Binance TOP100: ${marketPulse.toFixed(1)}% (${usdtPairs.length} pares USDT)`);
+            console.log(`📡 IP NGROK usado: ${SELECTED_NGROK_IP} via ${url}`);
+            return { success: true, marketPulse, source: 'Binance', totalPairs: usdtPairs.length, positivePairs };
           } catch (error) {
-            console.log(`⚠️ Binance tentativa falhou: ${error.response?.status || error.message}`);
+            console.log(`⚠️ Binance ${url} falhou: ${error.response?.status || error.message}`);
+            if (error.response?.status === 451 || error.response?.status === 403) {
+              console.log(`🚫 Bloqueio geográfico detectado em ${url}`);
+            }
           }
         }
-        throw new Error('Binance indisponível');
+        throw new Error('Todas as URLs do Binance falharam');
+      }
+    },
+    
+    // API 2: Bybit (Fallback com IP NGROK obrigatório)
+    {
+      name: 'Bybit',
+      call: async () => {
+        console.log(`💜 Tentando Bybit com IP NGROK ${SELECTED_NGROK_IP} (Fallback)...`);
+        
+        const bybitConfigs = [
+          {
+            url: 'https://api.bybit.com/v5/market/tickers?category=spot',
+            config: createRequestConfig(12000)
+          },
+          {
+            url: 'https://api-testnet.bybit.com/v5/market/tickers?category=spot',
+            config: createRequestConfig(8000)
+          }
+        ];
+        
+        for (const {url, config} of bybitConfigs) {
+          try {
+            const response = await axios.get(url, config);
+            const data = response.data;
+            
+            // Filtrar TOP 100 pares USDT por volume
+            const usdtPairs = data.result.list
+              .filter(ticker => ticker.symbol.endsWith('USDT') && ticker.lastPrice && ticker.price24hPcnt)
+              .sort((a, b) => parseFloat(b.volume24h) - parseFloat(a.volume24h))
+              .slice(0, 100); // TOP 100
+            
+            const positivePairs = usdtPairs.filter(ticker => 
+              parseFloat(ticker.price24hPcnt) > 0
+            ).length;
+            const marketPulse = (positivePairs / usdtPairs.length) * 100;
+            
+            console.log(`✅ Bybit TOP100: ${marketPulse.toFixed(1)}% (${usdtPairs.length} pares USDT)`);
+            console.log(`📡 IP NGROK usado: ${SELECTED_NGROK_IP} via ${url}`);
+            return { success: true, marketPulse, source: 'Bybit', totalPairs: usdtPairs.length, positivePairs };
+          } catch (error) {
+            console.log(`⚠️ Bybit ${url} falhou: ${error.response?.status || error.message}`);
+            if (error.response?.status === 451 || error.response?.status === 403) {
+              console.log(`🚫 Bloqueio geográfico detectado em ${url}`);
+            }
+          }
+        }
+        throw new Error('Todas as URLs do Bybit falharam');
       }
     }
   ];
-  
-  // Tentar cada API em sequência
+
+  // Tentar APIs em sequência: Binance primeiro, depois Bybit
   for (const api of apis) {
     try {
+      console.log(`� Testando ${api.name}...`);
       const result = await api.call();
-      if (result.success && result.marketPulse >= 0 && result.marketPulse <= 100) {
-        console.log(`🎯 Market Pulse obtido via ${api.name}: ${result.marketPulse.toFixed(1)}%`);
+      
+      if (result.success) {
+        console.log(`✅ Market Pulse obtido via ${api.name}: ${result.marketPulse.toFixed(1)}%`);
+        console.log(`🌐 Usando IP NGROK obrigatório: ${SELECTED_NGROK_IP}`);
         return result;
       }
     } catch (error) {
-      console.log(`❌ ${api.name} falhou: ${error.message.substring(0, 50)}`);
+      console.log(`❌ ${api.name} falhou: ${error.message}`);
+      
+      // Detectar se é bloqueio geográfico
+      if (isGeoBlocked(error)) {
+        console.log(`🌍 Bloqueio geográfico detectado em ${api.name}`);
+      }
     }
   }
-  
-  // Se tudo falhar, usar valor baseado em análise técnica
-  console.log('🆘 Todas as APIs falharam, usando análise técnica de emergência...');
-  
-  // Análise baseada em Fear & Greed (quando disponível)
-  try {
-    const fearGreedResponse = await axios.get('https://api.alternative.me/fng/', { timeout: 5000 });
-    const fearGreed = fearGreedResponse.data.data[0].value;
-    
-    // Converter Fear & Greed em Market Pulse estimado
-    let estimatedPulse;
-    if (fearGreed < 25) {
-      estimatedPulse = 30 + (fearGreed / 25) * 10; // 30-40%
-    } else if (fearGreed < 75) {
-      estimatedPulse = 40 + ((fearGreed - 25) / 50) * 20; // 40-60%
-    } else {
-      estimatedPulse = 60 + ((fearGreed - 75) / 25) * 20; // 60-80%
-    }
-    
-    console.log(`📊 Market Pulse estimado via Fear&Greed(${fearGreed}): ${estimatedPulse.toFixed(1)}%`);
-    return { success: true, marketPulse: estimatedPulse, source: 'Fear&Greed Estimation' };
-    
-  } catch (fearGreedError) {
-    console.log('🔴 Fear & Greed também indisponível, usando valor neutro');
-    return { success: true, marketPulse: 50, source: 'Emergency Default' };
-  }
+
+  // Se todas as APIs falharam, retornar fallback
+  console.log('🆘 Todas as APIs falharam, usando Market Pulse conservador: 50%');
+  console.log(`🌐 IP NGROK configurado: ${SELECTED_NGROK_IP}`);
+  return {
+    success: false,
+    marketPulse: 50,
+    source: 'fallback-conservative',
+    totalPairs: 100,
+    positivePairs: 50,
+    error: 'Todas as APIs indisponíveis'
+  };
+}
+
+// Sistema de detecção de bloqueio geográfico
+function isGeoBlocked(error) {
+  const errorStr = error.message || error.toString();
+  return errorStr.includes('CloudFront') || 
+         errorStr.includes('403') || 
+         errorStr.includes('451') ||
+         errorStr.includes('country') ||
+         errorStr.includes('region') ||
+         errorStr.includes('geographic');
 }
 
 // Market Pulse - Sistema com Backup Binance + Bybit
@@ -556,30 +787,68 @@ async function getMarketPulse() {
   }
 }
 
-// BTC Dominance
+// BTC Dominance APENAS via CoinStats
 async function getBTCDominance() {
   try {
-    const response = await fetch('https://openapiv1.coinstats.app/markets', {
-      headers: {
-        'X-API-KEY': 'ZFIxigBcVaCyXDL1Qp/Ork7TOL3+h07NM2f3YoSrMkI='
-      }
-    });
-    const data = await response.json();
-    const dominance = data.btcDominance;
+    console.log('₿ Coletando BTC Dominance APENAS via CoinStats...');
     
-    let trend = 'STABLE';
-    if (dominance > 55) trend = 'RISING';
-    else if (dominance < 45) trend = 'FALLING';
+    const requestConfig = {
+      timeout: 8000,
+      httpsAgent: httpsAgentFixed,
+      httpAgent: httpAgentFixed,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'X-API-KEY': 'ZFIxigBcVaCyXDL1Qp/Ork7TOL3+h07NM2f3YoSrMkI=',
+        'DNT': '1',
+        'Connection': 'keep-alive'
+      }
+    };
+    
+    // Usar APENAS CoinStats conforme solicitado
+    console.log(`📊 Tentando CoinStats para BTC Dominance com IP NGROK ${SELECTED_NGROK_IP}...`);
+    const response = await axios.get('https://openapiv1.coinstats.app/markets', requestConfig);
+    
+    if (response.status === 200 && response.data && response.data.btcDominance) {
+      const dominance = response.data.btcDominance;
+      
+      let trend = 'STABLE';
+      if (dominance > 55) trend = 'RISING';
+      else if (dominance < 45) trend = 'FALLING';
+      
+      console.log(`✅ BTC Dominance: ${dominance.toFixed(1)}% (${trend}) via CoinStats`);
+      console.log(`📡 IP NGROK usado: ${SELECTED_NGROK_IP}`);
+      
+      return {
+        dominance,
+        trend,
+        source: 'coinstats',
+        recommendation: dominance < 45 ? 'LONG_ALTCOINS' : dominance > 55 ? 'SHORT_ALTCOINS' : 'NEUTRAL'
+      };
+    } else {
+      throw new Error('CoinStats BTC Dominance retornou dados inválidos');
+    }
+    
+  } catch (error) {
+    console.error('⚠️ Erro BTC Dominance CoinStats:', error.response?.status || error.message);
+    
+    if (error.response?.status === 451 || error.response?.status === 403) {
+      console.log('� Bloqueio geográfico detectado em CoinStats');
+    }
+    
+    // Fallback conservador
+    console.log('🆘 Usando valor conservador BTC Dominance: 50%');
+    console.log(`📡 IP NGROK configurado: ${SELECTED_NGROK_IP}`);
+    console.log(`📡 IP usado: ${RAILWAY_FIXED_IP || 'dinâmico'}`);
     
     return {
-      dominance,
-      trend,
-      source: 'coinstats',
-      recommendation: dominance < 45 ? 'LONG_ALTCOINS' : dominance > 55 ? 'SHORT_ALTCOINS' : 'NEUTRAL'
+      dominance: 50,
+      trend: 'STABLE',
+      source: 'fallback-conservative',
+      recommendation: 'NEUTRAL',
+      error: true
     };
-  } catch (error) {
-    console.error('⚠️ Erro BTC Dominance:', error);
-    return { dominance: 50, trend: 'STABLE', source: 'fallback', recommendation: 'NEUTRAL' };
   }
 }
 
