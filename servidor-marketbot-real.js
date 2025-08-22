@@ -114,10 +114,22 @@ function createExchangeAgent(isHttps = true, useNgrokIP = true) {
     socketActiveTTL: 60000
   };
 
-  // USAR IP NGROK OBRIGATORIAMENTE para exchanges
+  // TENTAR IP NGROK PRIMEIRO para exchanges (com fallback automático)
   if (useNgrokIP) {
-    config.localAddress = SELECTED_NGROK_IP;
-    console.log(`🔗 Agente ${isHttps ? 'HTTPS' : 'HTTP'} com IP NGROK obrigatório: ${SELECTED_NGROK_IP}`);
+    try {
+      config.localAddress = SELECTED_NGROK_IP;
+      console.log(`🔗 Agente ${isHttps ? 'HTTPS' : 'HTTP'} com IP NGROK: ${SELECTED_NGROK_IP}`);
+      
+      // Testar se o IP NGROK está disponível criando o agente
+      const testAgent = new AgentClass(config);
+      return testAgent;
+      
+    } catch (error) {
+      console.log(`⚠️ IP NGROK ${SELECTED_NGROK_IP} não disponível, usando conexão normal: ${error.message}`);
+      
+      // Remover localAddress para usar conexão normal
+      delete config.localAddress;
+    }
   }
   
   return new AgentClass(config);
@@ -142,9 +154,51 @@ function createOptimizedAgent(isHttps = true) {
 const httpsAgentOptimized = createOptimizedAgent(true);
 const httpAgentOptimized = createOptimizedAgent(false);
 
-// Criar agentes OBRIGATÓRIOS com IP NGROK para exchanges (Binance/Bybit)
+// Criar agentes com IP NGROK para exchanges (com fallback automático)
 const httpsAgentFixed = createExchangeAgent(true, true);
 const httpAgentFixed = createExchangeAgent(false, true);
+
+// Variável global para controlar se NGROK está disponível
+let NGROK_AVAILABLE = false;
+
+// Função para testar conectividade NGROK
+async function testNgrokConnectivity() {
+  try {
+    console.log(`🧪 Testando conectividade IP NGROK: ${SELECTED_NGROK_IP}...`);
+    
+    // Testar com um endpoint simples
+    const testAgent = createExchangeAgent(true, true);
+    const testConfig = {
+      timeout: 5000,
+      httpsAgent: testAgent,
+      headers: { 'User-Agent': 'MarketBot-Test/1.0' }
+    };
+    
+    // Tentar acessar Binance time endpoint
+    await axios.get('https://api.binance.com/api/v3/time', testConfig);
+    
+    NGROK_AVAILABLE = true;
+    console.log(`✅ IP NGROK ${SELECTED_NGROK_IP} funcionando!`);
+    return true;
+    
+  } catch (error) {
+    console.log(`⚠️ IP NGROK ${SELECTED_NGROK_IP} não disponível: ${error.code || error.message}`);
+    console.log(`🔄 Sistema funcionará com conexão normal (sem IP fixo)`);
+    
+    NGROK_AVAILABLE = false;
+    markNgrokIPFailure(SELECTED_NGROK_IP, error.code || error.message);
+    return false;
+  }
+}
+
+// Função para criar agente baseado na disponibilidade do NGROK
+function createSmartAgent(isHttps = true) {
+  if (NGROK_AVAILABLE) {
+    return createExchangeAgent(isHttps, true);
+  } else {
+    return createOptimizedAgent(isHttps);
+  }
+}
 
 // Configurar axios global para máxima robustez
 axios.defaults.httpsAgent = httpsAgentOptimized;
@@ -575,8 +629,8 @@ async function getMarketPulseWithFallback() {
   // Configurar headers avançados para contornar detecção
   const createRequestConfig = (timeout = 15000) => ({
     timeout,
-    httpsAgent: httpsAgentFixed, // Usar agente com IP NGROK obrigatório
-    httpAgent: httpAgentFixed,
+    httpsAgent: createSmartAgent(true), // Usar agente inteligente (NGROK se disponível)
+    httpAgent: createSmartAgent(false),
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       'Accept': 'application/json',
@@ -794,8 +848,8 @@ async function getBTCDominance() {
     
     const requestConfig = {
       timeout: 8000,
-      httpsAgent: httpsAgentFixed,
-      httpAgent: httpAgentFixed,
+      httpsAgent: createSmartAgent(true),
+      httpAgent: createSmartAgent(false),
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'application/json',
@@ -3354,6 +3408,10 @@ app.listen(PORT, '0.0.0.0', async () => {
   console.log(`🌐 Porta: ${PORT}`);
   console.log(`📡 Webhook: /api/webhooks/signal?token=210406`);
   console.log('🚀 SISTEMA DE TRADING REAL ATIVO!');
+  
+  // TESTAR CONECTIVIDADE NGROK PRIMEIRO
+  console.log('\n🔧 TESTANDO CONECTIVIDADE NGROK...');
+  await testNgrokConnectivity();
   
   // INICIALIZAÇÃO AUTOMÁTICA COMPLETA
   console.log('\n🔄 INICIANDO SISTEMAS AUTOMÁTICOS...');
